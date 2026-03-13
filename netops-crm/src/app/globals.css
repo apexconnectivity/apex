@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 222.2 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 40% 15%;
+    --primary: 190 80% 35%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 30% 25%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 30% 25%;
+    --destructive: 0 70% 35%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 20% 85%;
+    --input: 214 20% 85%;
+    --ring: 190 80% 35%;
+    --radius: 0.75rem;
+
+    /* Variables de estados - para badges y indicadores */
+    --success: 142 76% 36%;      /* Emerald - estados exitosos */
+    --warning: 38 92% 50%;        /* Amber - advertencias */
+    --info: 199 89% 48%;          /* Blue - información */
+    --error: 0 84% 50%;           /* Red - errores */
+
+    /* Variables de fases de proyecto - para pipeline */
+    --phase-discovery: 262 83% 58%;    /* Purple - Descubrimiento */
+    --phase-design: 190 80% 35%;       /* Cyan - Diseño */
+    --phase-development: 217 91% 54%;   /* Blue - Desarrollo */
+    --phase-testing: 38 92% 50%;       /* Amber - Pruebas */
+    --phase-deployment: 142 76% 36%;   /* Emerald - Despliegue */
+
+    /* Variables para efectos especiales */
+    --glow-cyan: 190 80% 50%;
+    --glow-blue: 199 89% 50%;
+  }
+
+  .dark {
+    --background: 222 50% 5%;
+    --foreground: 215 15% 70%;
+    --card: 222 45% 8%;
+    --card-foreground: 215 15% 75%;
+    --popover: 222 45% 8%;
+    --popover-foreground: 215 15% 75%;
+    --primary: 190 80% 35%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 25% 12%;
+    --secondary-foreground: 215 15% 75%;
+    --muted: 217 25% 12%;
+    --muted-foreground: 215 10% 50%;
+    --accent: 217 25% 12%;
+    --accent-foreground: 215 15% 75%;
+    --destructive: 0 60% 25%;
+    --destructive-foreground: 215 15% 75%;
+    --border: 217 25% 15%;
+    --input: 217 25% 15%;
+    --ring: 190 80% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-0.5;
+  }
+  
+  .card-hover-glow {
+    @apply transition-all duration-200 hover:shadow-xl hover:shadow-black/5 hover:shadow-cyan-500/10 hover:-translate-y-0.5;
+  }
+
+  .card-hover-scale {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/5 hover:-translate-y-0.5 overflow-hidden;
+  }
+
+  .card-hover-scale-glow {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/5 hover:shadow-cyan-500/10 hover:-translate-y-0.5 overflow-hidden;
+  }
+}

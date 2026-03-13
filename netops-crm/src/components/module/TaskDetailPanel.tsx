@@ -1,0 +1,466 @@
+"use client"
+
+import { useState } from 'react'
+import { X, Plus, CheckSquare, Calendar, User, AlertCircle, MessageSquare, Target, CheckCircle2, Circle, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { StatusBadge } from '@/components/module/StatusBadge'
+import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
+import { Proyecto } from '@/types/proyectos'
+
+interface TaskDetailPanelProps {
+  isOpen: boolean
+  onClose: () => void
+  tarea: Tarea | null
+  proyectos: Proyecto[]
+  usuarios: { id: string; nombre: string; rol: string }[]
+  subtareas: Subtarea[]
+  comentarios: Comentario[]
+  onUpdate: (tarea: Tarea) => void
+  onAddSubtarea: (nombre: string) => void
+  onToggleSubtarea: (id: string) => void
+  onAddComentario: (comentario: string) => void
+}
+
+export function TaskDetailPanel({
+  isOpen,
+  onClose,
+  tarea,
+  proyectos,
+  usuarios,
+  subtareas,
+  comentarios,
+  onUpdate,
+  onAddSubtarea,
+  onToggleSubtarea,
+  onAddComentario,
+}: TaskDetailPanelProps) {
+  const [newSubtarea, setNewSubtarea] = useState('')
+  const [newComentario, setNewComentario] = useState('')
+  const [editMode, setEditMode] = useState(false)
+  const [editedTarea, setEditedTarea] = useState<Tarea | null>(tarea)
+
+  // Update editedTarea when tarea changes
+  if (tarea && (!editedTarea || editedTarea.id !== tarea.id)) {
+    setEditedTarea(tarea)
+    setEditMode(false)
+  }
+
+  const handleSave = () => {
+    if (editedTarea) {
+      onUpdate(editedTarea)
+      setEditMode(false)
+    }
+  }
+
+  const completedSubtareas = subtareas.filter(s => s.completada).length
+
+  // Format fecha
+  const formatFecha = (fecha?: string) => {
+    if (!fecha) return 'No especificada'
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  // Get priority color
+  const getPrioridadColor = (prioridad: PrioridadTarea) => {
+    switch (prioridad) {
+      case 'Urgente': return 'text-red-400'
+      case 'Alta': return 'text-orange-400'
+      case 'Media': return 'text-amber-400'
+      case 'Baja': return 'text-blue-400'
+      default: return 'text-slate-400'
+    }
+  }
+
+  // Get estado icon
+  const getEstadoIcon = (estado: EstadoTarea) => {
+    switch (estado) {
+      case 'Completada':
+        return <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+      case 'En progreso':
+        return <Clock className="h-5 w-5 text-blue-400 flex-shrink-0 animate-pulse" />
+      case 'Bloqueada':
+        return <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+      default:
+        return <Circle className="h-5 w-5 text-slate-500 flex-shrink-0" />
+    }
+  }
+
+  // Get estado text class
+  const getEstadoClase = (estado: EstadoTarea) => {
+    switch (estado) {
+      case 'Completada':
+        return 'line-through text-muted-foreground'
+      case 'En progreso':
+        return 'text-blue-300'
+      case 'Bloqueada':
+        return 'text-red-300'
+      default:
+        return 'text-slate-300'
+    }
+  }
+
+  return (
+    <>
+      {/* Overlay con animación fade-in suave */}
+      <div
+        className={`absolute inset-0 bg-black/60 z-40 transition-all duration-500 ease-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      {/* Panel lateral con animación mejorada */}
+      <div
+        className={`absolute top-0 right-0 h-full w-[400px] max-w-[90vw] bg-slate-800/95 backdrop-blur-sm z-50 shadow-2xl shadow-black/50 transform transition-all duration-500 ease-out rounded-l-xl rounded-r-none ${isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'}`}
+      >
+        {/* Header del panel */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            {tarea && getEstadoIcon(tarea.estado)}
+            <h2 className="font-semibold text-white truncate max-w-[280px]">
+              {tarea?.nombre || 'Detalles de la Tarea'}
+            </h2>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Contenido */}
+        <div className="p-4 space-y-6 overflow-y-auto h-[calc(100%-64px)] pb-20">
+          {tarea ? (
+            <>
+              {/* Tags de estado, categoría y prioridad */}
+              <div className="flex flex-wrap gap-1.5">
+                <StatusBadge status={tarea.categoria} type="categoria" />
+                <StatusBadge status={tarea.prioridad} type="prioridad" />
+                <StatusBadge status={tarea.estado} type="estado" />
+              </div>
+
+              {/* Descripción */}
+              {tarea.descripcion && (
+                <p className="text-sm bg-slate-700/30 p-3 rounded-lg text-slate-300">
+                  {tarea.descripcion}
+                </p>
+              )}
+
+              {/* Modo edición */}
+              {editMode && editedTarea ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-slate-400 text-xs">Nombre</Label>
+                    <Input
+                      className="bg-slate-700/50 border-slate-600 text-white"
+                      value={editedTarea.nombre}
+                      onChange={(e) => setEditedTarea({ ...editedTarea, nombre: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-400 text-xs">Descripción</Label>
+                    <Textarea
+                      className="bg-slate-700/50 border-slate-600 text-white"
+                      value={editedTarea.descripcion || ''}
+                      onChange={(e) => setEditedTarea({ ...editedTarea, descripcion: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-slate-400 text-xs">Categoría</Label>
+                      <Select value={editedTarea.categoria} onValueChange={(v) => setEditedTarea({ ...editedTarea, categoria: v as CategoriaTarea })}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-xs">Prioridad</Label>
+                      <Select value={editedTarea.prioridad} onValueChange={(v) => setEditedTarea({ ...editedTarea, prioridad: v as PrioridadTarea })}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-xs">Estado</Label>
+                      <Select value={editedTarea.estado} onValueChange={(v) => setEditedTarea({ ...editedTarea, estado: v as EstadoTarea })}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-xs">Responsable</Label>
+                      <Select value={editedTarea.responsable_id || ''} onValueChange={(v) => setEditedTarea({ ...editedTarea, responsable_id: v, responsable_nombre: usuarios.find(u => u.id === v)?.nombre })}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                        <SelectContent>
+                          {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-xs">Fecha Vencimiento</Label>
+                      <Input
+                        type="date"
+                        className="bg-slate-700/50 border-slate-600 text-white"
+                        value={editedTarea.fecha_vencimiento || ''}
+                        onChange={(e) => setEditedTarea({ ...editedTarea, fecha_vencimiento: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-xs">Proyecto</Label>
+                      <Select value={editedTarea.proyecto_id} onValueChange={(v) => {
+                        const p = proyectos.find(pr => pr.id === v)
+                        setEditedTarea({ ...editedTarea, proyecto_id: v, proyecto_nombre: p?.nombre || '' })
+                      }}>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave} className="flex-1">Guardar</Button>
+                    <Button variant="outline" onClick={() => setEditMode(false)} className="border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Grid de información */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Proyecto */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <Target className="h-3.5 w-3.5" />
+                        <span className="text-xs">Proyecto</span>
+                      </div>
+                      <span className="text-sm font-medium text-white truncate block">
+                        {tarea.proyecto_nombre}
+                      </span>
+                    </div>
+
+                    {/* Fase */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <CheckSquare className="h-3.5 w-3.5" />
+                        <span className="text-xs">Fase</span>
+                      </div>
+                      <span className="text-sm font-medium text-white">
+                        {tarea.fase_nombre}
+                      </span>
+                    </div>
+
+                    {/* Responsable */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <User className="h-3.5 w-3.5" />
+                        <span className="text-xs">Responsable</span>
+                      </div>
+                      <span className="text-sm font-medium text-white truncate block">
+                        {tarea.responsable_nombre || 'Sin asignar'}
+                      </span>
+                    </div>
+
+                    {/* Fecha Vencimiento */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span className="text-xs">Vencimiento</span>
+                      </div>
+                      <span className={`text-sm font-medium ${tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada' ? 'text-red-400' : 'text-white'}`}>
+                        {formatFecha(tarea.fecha_vencimiento)}
+                      </span>
+                    </div>
+
+                    {/* Fecha Creación */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="text-xs">Creado</span>
+                      </div>
+                      <span className="text-sm font-medium text-white">
+                        {formatFecha(tarea.fecha_creacion)}
+                      </span>
+                    </div>
+
+                    {/* Prioridad */}
+                    <div className="bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span className="text-xs">Prioridad</span>
+                      </div>
+                      <span className={`text-sm font-medium ${getPrioridadColor(tarea.prioridad)}`}>
+                        {tarea.prioridad}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Botón editar */}
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditMode(true)}
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    Editar Tarea
+                  </Button>
+                </>
+              )}
+
+              {/* Subtareas */}
+              <div className="space-y-3 border-t border-slate-700/50 pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <CheckSquare className="h-4 w-4 text-slate-400" />
+                    Subtareas
+                  </h3>
+                  <span className="text-xs text-slate-400">
+                    {completedSubtareas}/{subtareas.length}
+                  </span>
+                </div>
+
+                {/* Barra de progreso */}
+                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${subtareas.length > 0 ? (completedSubtareas / subtareas.length) * 100 : 0}%` }}
+                  />
+                </div>
+
+                {/* Lista de subtareas */}
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                  {subtareas.length === 0 ? (
+                    <div className="text-center py-4 text-slate-500 text-sm">
+                      No hay subtareas
+                    </div>
+                  ) : (
+                    subtareas.map(st => (
+                      <div
+                        key={st.id}
+                        className="flex items-center gap-2 text-sm p-2 bg-slate-700/20 rounded-lg hover:bg-slate-700/40 transition-colors cursor-pointer"
+                        onClick={() => onToggleSubtarea(st.id)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={st.completada}
+                          onChange={() => onToggleSubtarea(st.id)}
+                          className="rounded border-slate-600 bg-slate-700"
+                        />
+                        <span className={st.completada ? 'line-through text-muted-foreground' : 'text-slate-200'}>
+                          {st.nombre}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Agregar subtarea */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nueva subtarea..."
+                    value={newSubtarea}
+                    onChange={(e) => setNewSubtarea(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newSubtarea) {
+                        onAddSubtarea(newSubtarea)
+                        setNewSubtarea('')
+                      }
+                    }}
+                    className="bg-slate-700/50 border-slate-600 text-white text-sm"
+                  />
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      if (newSubtarea) {
+                        onAddSubtarea(newSubtarea)
+                        setNewSubtarea('')
+                      }
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Comentarios */}
+              <div className="space-y-3 border-t border-slate-700/50 pt-4">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-slate-400" />
+                  Comentarios
+                </h3>
+
+                {/* Lista de comentarios */}
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                  {comentarios.length === 0 ? (
+                    <div className="text-center py-4 text-slate-500 text-sm">
+                      No hay comentarios
+                    </div>
+                  ) : (
+                    comentarios.map(c => (
+                      <div key={c.id} className="bg-slate-700/30 rounded-lg p-3">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="font-medium text-slate-300">{c.usuario_nombre}</span>
+                          <span className="text-slate-500">{new Date(c.fecha).toLocaleString('es-ES')}</span>
+                        </div>
+                        <p className="text-sm text-slate-200">{c.comentario}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Agregar comentario */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nuevo comentario..."
+                    value={newComentario}
+                    onChange={(e) => setNewComentario(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newComentario) {
+                        onAddComentario(newComentario)
+                        setNewComentario('')
+                      }
+                    }}
+                    className="bg-slate-700/50 border-slate-600 text-white text-sm"
+                  />
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      if (newComentario) {
+                        onAddComentario(newComentario)
+                        setNewComentario('')
+                      }
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+              <Target className="h-12 w-12 mb-4 opacity-50" />
+              <p className="text-sm">Selecciona una tarea para ver detalles</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
