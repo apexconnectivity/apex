@@ -59,6 +59,7 @@ interface MiniStatProps {
   variant?: StatVariant
   showBorder?: boolean
   iconPosition?: "left" | "right"
+  style?: React.CSSProperties
 }
 
 export function MiniStat({ 
@@ -70,13 +71,14 @@ export function MiniStat({
   size = "sm",
   variant = "default",
   showBorder = false,
-  iconPosition = "right"
+  iconPosition = "right",
+  style
 }: MiniStatProps) {
   const padding = size === "md" ? "p-6" : "p-4"
   const config = STAT_VARIANTS[variant]
   
   return (
-    <Card className={cn(
+    <Card style={style} className={cn(
       "card-hover overflow-hidden",
       showBorder && config.borderColor && `border ${config.borderColor}`,
       className

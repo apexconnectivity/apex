@@ -15,8 +15,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { RotateCcw, Plus, Building2 } from 'lucide-react'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, Modal, ProjectDetailPanel } from '@/components/module'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proyecto, FASES, FaseProyecto, MONEDAS } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
 import { Empresa, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
@@ -236,19 +237,26 @@ export default function ProyectosPage() {
             onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <StatGrid cols={5}>
             {FASES.map(fase => (
-              <ModuleCard key={fase.id} hover={false}>
-                <div className="flex items-center gap-3">
-                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: fase.color }} />
-                  <div>
-                    <p className="text-2xl font-bold">{proyectosPorFase[fase.id]?.length || 0}</p>
-                    <p className="text-xs text-muted-foreground">{fase.nombre}</p>
-                  </div>
-                </div>
-              </ModuleCard>
+              <MiniStat
+                key={fase.id}
+                value={proyectosPorFase[fase.id]?.length || 0}
+                label={fase.nombre}
+                variant="default"
+                showBorder
+                icon={
+                  fase.id === 1 ? <Lightbulb className="h-5 w-5" /> :
+                  fase.id === 2 ? <PenTool className="h-5 w-5" /> :
+                  fase.id === 3 ? <Layers className="h-5 w-5" /> :
+                  fase.id === 4 ? <Bug className="h-5 w-5" /> :
+                  <Rocket className="h-5 w-5" />
+                }
+                className="border-l-4"
+                style={{ borderLeftColor: fase.color }}
+              />
             ))}
-          </div>
+          </StatGrid>
 
           {view === 'pipeline' && (
             <div className="-mx-6 px-6 overflow-x-auto">
