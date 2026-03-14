@@ -11,10 +11,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical } from 'lucide-react'
+import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
 import { StatusBadge, ModuleCard, TaskDetailPanel } from '@/components/module'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proyecto } from '@/types/proyectos'
 
 const DEMO_PROYECTOS: Proyecto[] = [
@@ -349,14 +349,14 @@ export default function TareasPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <MiniStat value={stats.total} label="Total" />
-            <MiniStat value={stats.pendientes} label="Pendientes" valueColor="text-amber-400" />
-            <MiniStat value={stats.enProgreso} label="En Progreso" valueColor="text-blue-400" />
-            <MiniStat value={stats.completadas} label="Completadas" valueColor="text-emerald-400" />
-            <MiniStat value={stats.bloqueadas} label="Bloqueadas" valueColor="text-red-400" />
-            <MiniStat value={stats.overdue} label="Vencidas" valueColor="text-red-500" />
-          </div>
+          <StatGrid cols={6}>
+            <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-5 w-5" />} />
+            <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-5 w-5" />} />
+            <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Loader2 className="h-5 w-5" />} />
+            <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder icon={<CheckCircle className="h-5 w-5" />} />
+            <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder icon={<Ban className="h-5 w-5" />} />
+            <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder icon={<AlertTriangle className="h-5 w-5" />} />
+          </StatGrid>
 
           <div className="flex gap-4 items-center">
             <div className="flex items-center gap-2">
