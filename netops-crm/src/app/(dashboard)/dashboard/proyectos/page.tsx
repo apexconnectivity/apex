@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle } from 'lucide-react'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import {
@@ -27,7 +27,7 @@ import {
   DialogBody,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Proyecto, FASES, FaseProyecto, MONEDAS } from '@/types/proyectos'
+import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
 import { User } from '@/types/auth'
@@ -117,6 +117,17 @@ export default function ProyectosPage() {
   const [notasCierre, setNotasCierre] = useState('')
   const [errorsCierre, setErrorsCierre] = useState<Record<string, string>>({})
   const [isClosing, setIsClosing] = useState(false)
+
+  // Modal configurar fases
+  const [isModalConfigFases, setIsModalConfigFases] = useState(false)
+  const [fasesEditando, setFasesEditando] = useState<Fase[]>([...FASES])
+  const [isSavingFases, setIsSavingFases] = useState(false)
+
+  // Modal archivar proyecto
+  const [isModalArchivar, setIsModalArchivar] = useState(false)
+  const [proyectoAArchivar, setProyectoAArchivar] = useState<Proyecto | null>(null)
+  const [clasificacionArchivo, setClasificacionArchivo] = useState<'completado' | 'inconcluso'>('completado')
+  const [isArchiving, setIsArchiving] = useState(false)
 
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
@@ -237,6 +248,29 @@ export default function ProyectosPage() {
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, estado: 'activo', motivo_cierre: undefined, fecha_cierre: undefined } : p))
   }
 
+  const handleArchivar = (proyecto: Proyecto) => {
+    setProyectoAArchivar(proyecto)
+    // Clasificación automática según RN-PRO-16
+    // Si está en fase 5 y todas las tareas de fase 5 completadas -> completado
+    const tareasFase5 = tareas.filter(t => t.proyecto_id === proyecto.id && t.fase_origen === 5)
+    const todasCompletadas = tareasFase5.length > 0 && tareasFase5.every(t => t.estado === 'Completada')
+    setClasificacionArchivo(todasCompletadas ? 'completado' : 'inconcluso')
+    setIsModalArchivar(true)
+  }
+
+  const confirmarArchivar = () => {
+    if (!proyectoAArchivar) return
+
+    setIsArchiving(true)
+
+    // Simular archivado: eliminar el proyecto de la lista
+    setProyectos(prev => prev.filter(p => p.id !== proyectoAArchivar.id))
+
+    setIsArchiving(false)
+    setIsModalArchivar(false)
+    setProyectoAArchivar(null)
+  }
+
   // Abrir modal para nuevo proyecto
   const handleNewProyecto = () => {
     setNuevoProyecto({ ...PROYECTO_VACIO, id: String(Date.now()) })
@@ -342,7 +376,7 @@ export default function ProyectosPage() {
   }
 
   const selected = proyectos.find(p => p.id === selectedId)
-  const faseActual = FASES.find(f => f.id === selected?.fase_actual)
+  const faseActual = fasesEditando.find(f => f.id === selected?.fase_actual)
 
   return (
     <>
@@ -355,6 +389,7 @@ export default function ProyectosPage() {
               proyecto={selected}
               tareas={tareas}
               onCerrar={handleCerrar}
+              onArchivar={handleArchivar}
               canClose={canClose}
             />
           ) : null
@@ -365,12 +400,23 @@ export default function ProyectosPage() {
           title="Proyectos"
           description="Pipeline de proyectos"
           actions={
-            canMovePhases && (
-              <Button onClick={handleNewProyecto}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Proyecto
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsModalConfigFases(true)}
+                title="Configurar fases"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar Fases
               </Button>
-            )
+              {canMovePhases && (
+                <Button onClick={handleNewProyecto}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Proyecto
+                </Button>
+              )}
+            </>
           }
           tabs={[
             { value: 'pipeline', label: 'Pipeline' },
@@ -381,7 +427,7 @@ export default function ProyectosPage() {
         />
 
         <StatGrid cols={5}>
-          {FASES.map(fase => (
+          {fasesEditando.map(fase => (
             <MiniStat
               key={fase.id}
               value={proyectosPorFase[fase.id]?.length || 0}
@@ -403,7 +449,7 @@ export default function ProyectosPage() {
         {view === 'pipeline' && (
           <div className="-mx-6 px-6 overflow-x-auto">
             <div className="grid grid-cols-5 gap-4 min-w-[1400px] pb-2">
-              {FASES.map(fase => (
+              {fasesEditando.map(fase => (
                 <div key={fase.id} className="min-w-[280px]">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: fase.color }} />
@@ -892,6 +938,216 @@ export default function ProyectosPage() {
                 </>
               ) : (
                 'Cerrar Proyecto'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Archivar Proyecto */}
+      <Dialog open={isModalArchivar} onOpenChange={setIsModalArchivar}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Archive className="h-5 w-5 text-amber-500" />
+              Archivar Proyecto
+            </DialogTitle>
+          </DialogHeader>
+
+          <DialogBody className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              El proyecto <span className="font-semibold text-foreground">{proyectoAArchivar?.nombre}</span> será archivado y movido a Google Drive.
+            </p>
+
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+              <p className="text-sm text-amber-300 mb-2">
+                Clasificación automática:
+              </p>
+              <div className="flex items-center gap-2">
+                <Badge variant={clasificacionArchivo === 'completado' ? 'default' : 'secondary'} className={clasificacionArchivo === 'completado' ? 'bg-emerald-500' : ''}>
+                  {clasificacionArchivo === 'completado' ? '✓ Completado' : '⚠ Inconcluso'}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {clasificacionArchivo === 'completado'
+                  ? 'El proyecto se cerró desde fase 5 con todas las tareas completadas.'
+                  : 'El proyecto no cumple los criterios de completado.'}
+              </p>
+            </div>
+
+            <div>
+              <Label>Clasificación (puedes cambiarla)</Label>
+              <div className="flex gap-4 mt-2">
+                <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'completado' ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700'
+                  }`}>
+                  <input
+                    type="radio"
+                    name="clasificacion"
+                    checked={clasificacionArchivo === 'completado'}
+                    onChange={() => setClasificacionArchivo('completado')}
+                    className="sr-only"
+                  />
+                  <span className="text-sm">Completado</span>
+                </label>
+                <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'inconcluso' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-700'
+                  }`}>
+                  <input
+                    type="radio"
+                    name="clasificacion"
+                    checked={clasificacionArchivo === 'inconcluso'}
+                    onChange={() => setClasificacionArchivo('inconcluso')}
+                    className="sr-only"
+                  />
+                  <span className="text-sm">Inconcluso</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              <p>Destino en Drive:</p>
+              <p className="text-xs mt-1 font-mono">
+                {clasificacionArchivo === 'completado'
+                  ? '/Archivo Historico/Completados/2026/proyecto'
+                  : '/Archivo Historico/Inconclusos/2026/proyecto'}
+              </p>
+            </div>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalArchivar(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              className="bg-amber-500 hover:bg-amber-600"
+              onClick={confirmarArchivar}
+              disabled={isArchiving}
+            >
+              {isArchiving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Archivando...
+                </>
+              ) : (
+                'Archivar Proyecto'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Configurar Fases */}
+      <Dialog open={isModalConfigFases} onOpenChange={setIsModalConfigFases}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configurar Fases del Pipeline
+            </DialogTitle>
+          </DialogHeader>
+
+          <DialogBody className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Personaliza los nombres, colores y probabilidades de cada fase del pipeline.
+            </p>
+
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {fasesEditando.map((fase, index) => (
+                <div
+                  key={fase.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card/50"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Nombre</label>
+                      <Input
+                        value={fase.nombre}
+                        onChange={(e) => {
+                          const nuevasFases = [...fasesEditando]
+                          nuevasFases[index] = { ...fase, nombre: e.target.value }
+                          setFasesEditando(nuevasFases)
+                        }}
+                        placeholder="Nombre de la fase"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={fase.color}
+                          onChange={(e) => {
+                            const nuevasFases = [...fasesEditando]
+                            nuevasFases[index] = { ...fase, color: e.target.value }
+                            setFasesEditando(nuevasFases)
+                          }}
+                          className="w-10 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={fase.color}
+                          onChange={(e) => {
+                            const nuevasFases = [...fasesEditando]
+                            nuevasFases[index] = { ...fase, color: e.target.value }
+                            setFasesEditando(nuevasFases)
+                          }}
+                          placeholder="#Hex"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Probabilidad (%)</label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={fase.probabilidad_default}
+                        onChange={(e) => {
+                          const nuevasFases = [...fasesEditando]
+                          nuevasFases[index] = { ...fase, probabilidad_default: parseInt(e.target.value) || 0 }
+                          setFasesEditando(nuevasFases)
+                        }}
+                        placeholder="0-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFasesEditando([...FASES])}
+              >
+                Restaurar Valores Predeterminados
+              </Button>
+            </div>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalConfigFases(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setIsModalConfigFases(false)
+                // Aquí se guardaría en Supabase
+                alert('Configuración guardada (solo en memoria)')
+              }}
+              disabled={isSavingFases}
+            >
+              {isSavingFases ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Configuración'
               )}
             </Button>
           </DialogFooter>

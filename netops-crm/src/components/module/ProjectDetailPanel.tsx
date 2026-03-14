@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle } from 'lucide-react'
+import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle, Archive } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
@@ -14,6 +14,7 @@ interface ProjectDetailPanelProps {
   proyecto: Proyecto | null
   tareas: Tarea[]
   onCerrar?: (proyecto: Proyecto) => void
+  onArchivar?: (proyecto: Proyecto) => void
   canClose?: boolean
 }
 
@@ -23,6 +24,7 @@ export function ProjectDetailPanel({
   proyecto,
   tareas,
   onCerrar,
+  onArchivar,
   canClose,
 }: ProjectDetailPanelProps) {
   // Filtrar tareas por proyecto_id Y fase actual
@@ -311,6 +313,20 @@ export function ProjectDetailPanel({
               >
                 <XCircle className="h-4 w-4 mr-2" />
                 Cerrar Proyecto
+              </Button>
+            </div>
+          )}
+
+          {/* Botón de archivar proyecto - solo para proyectos cerrados */}
+          {canClose && proyecto && proyecto.estado === 'cerrado' && (
+            <div className="pt-4 border-t border-slate-700/50">
+              <Button
+                variant="outline"
+                className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500"
+                onClick={() => onArchivar?.(proyecto)}
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                Archivar Proyecto
               </Button>
             </div>
           )}
