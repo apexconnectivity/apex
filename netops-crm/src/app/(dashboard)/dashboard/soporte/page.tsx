@@ -14,10 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogB
 import { DndContext, DragOverlay, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragStartEvent, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical } from 'lucide-react'
+import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
 import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
 import { StatusBadge, ModuleCard, TicketDetailPanel } from '@/components/module'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Empresa } from '@/types/crm'
 
 const DEMO_EMPRESAS: Empresa[] = [
@@ -512,14 +512,14 @@ export default function SoportePage() {
 
           {view === 'tickets' && (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <MiniStat value={stats.total} label="Total" />
-                <MiniStat value={stats.abiertos} label="Abiertos" valueColor="text-red-400" />
-                <MiniStat value={stats.enProgreso} label="En Progreso" valueColor="text-blue-400" />
-                <MiniStat value={stats.resueltos} label="Resueltos" valueColor="text-emerald-400" />
-                <MiniStat value={stats.cerrados} label="Cerrados" valueColor="text-slate-400" />
-                <MiniStat value={stats.urgentes} label="Urgentes" valueColor="text-red-500" />
-              </div>
+              <StatGrid cols={6}>
+                <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-5 w-5" />} />
+                <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder icon={<CircleDot className="h-5 w-5" />} />
+                <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Clock className="h-5 w-5" />} />
+                <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder icon={<CheckCircle className="h-5 w-5" />} />
+                <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder icon={<Archive className="h-5 w-5" />} />
+                <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder icon={<Siren className="h-5 w-5" />} />
+              </StatGrid>
 
               <div className="flex gap-4 items-center">
                 <Filter className="h-4 w-4 text-muted-foreground" />
