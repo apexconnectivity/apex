@@ -11,12 +11,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getCanalIcon, getEstadoNotificacionColor } from '@/types/notificaciones'
 import {
   Bell, Settings, Slack, Mail, Clock, CheckCircle, XCircle,
   AlertCircle, Activity, Zap, Save, RefreshCw, Eye, EyeOff,
-  MessageSquare, Calendar, FileText, Building2, Ticket, User
+  MessageSquare, Calendar, FileText, Building2, Ticket, User, Send, AlertTriangle
 } from 'lucide-react'
 
 const DEMO_CONFIG: ConfiguracionGlobal = {
@@ -392,12 +392,12 @@ export default function NotificacionesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MiniStat value={stats.total} label="Total" />
-        <MiniStat value={stats.enviados} label="Enviados" valueColor="text-green-400" />
-        <MiniStat value={stats.fallidos} label="Fallidos" valueColor="text-red-400" />
-        <MiniStat value={stats.pendientes} label="Pendientes" valueColor="text-amber-400" />
-      </div>
+      <StatGrid cols={4}>
+        <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<Bell className="h-5 w-5" />} />
+        <MiniStat value={stats.enviados} label="Enviados" variant="success" showBorder icon={<Send className="h-5 w-5" />} />
+        <MiniStat value={stats.fallidos} label="Fallidos" variant="danger" showBorder icon={<AlertTriangle className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-5 w-5" />} />
+      </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
         <TabsList>
