@@ -1,18 +1,20 @@
 "use client"
 
 import { useMemo } from 'react'
-import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle, Archive } from 'lucide-react'
+import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle, Archive, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
+import { HistorialProyecto } from '@/types/proyectos'
 
 interface ProjectDetailPanelProps {
   isOpen: boolean
   onClose: () => void
   proyecto: Proyecto | null
   tareas: Tarea[]
+  historial?: HistorialProyecto[]
   onCerrar?: (proyecto: Proyecto) => void
   onArchivar?: (proyecto: Proyecto) => void
   canClose?: boolean
@@ -23,6 +25,7 @@ export function ProjectDetailPanel({
   onClose,
   proyecto,
   tareas,
+  historial = [],
   onCerrar,
   onArchivar,
   canClose,
@@ -295,6 +298,47 @@ export function ProjectDetailPanel({
                   )}
                 </div>
               </div>
+
+              {/* Sección de Historial */}
+              {historial.length > 0 && (
+                <div className="space-y-3 pt-4 border-t border-slate-700/50">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <History className="h-4 w-4 text-slate-400" />
+                    Historial del Proyecto
+                  </h3>
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                    {historial.map((evento) => (
+                      <div
+                        key={evento.id}
+                        className="flex items-start gap-3 p-2 bg-slate-700/20 rounded-lg text-xs"
+                      >
+                        <div className="mt-0.5">
+                          {evento.tipo_evento === 'cambio_fase' && <Target className="h-3.5 w-3.5 text-blue-400" />}
+                          {evento.tipo_evento === 'cierre' && <XCircle className="h-3.5 w-3.5 text-red-400" />}
+                          {evento.tipo_evento === 'reapertura' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
+                          {evento.tipo_evento === 'archivado' && <Archive className="h-3.5 w-3.5 text-amber-400" />}
+                          {evento.tipo_evento === 'creacion' && <Building2 className="h-3.5 w-3.5 text-slate-400" />}
+                          {evento.tipo_evento === 'edicion' && <Clock className="h-3.5 w-3.5 text-slate-400" />}
+                          {evento.tipo_evento === 'asignacion_responsable' && <User className="h-3.5 w-3.5 text-purple-400" />}
+                          {evento.tipo_evento === 'asignacion_contacto' && <User className="h-3.5 w-3.5 text-purple-400" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-slate-300">{evento.descripcion}</p>
+                          <p className="text-slate-500 mt-0.5">
+                            {new Date(evento.fecha).toLocaleString('es-ES', {
+                              day: '2-digit',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                            {evento.usuario_nombre && ` • ${evento.usuario_nombre}`}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-slate-500">

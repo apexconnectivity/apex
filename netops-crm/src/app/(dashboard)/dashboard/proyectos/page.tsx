@@ -27,7 +27,7 @@ import {
   DialogBody,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS } from '@/types/proyectos'
+import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
 import { User } from '@/types/auth'
@@ -129,6 +129,34 @@ export default function ProyectosPage() {
   const [clasificacionArchivo, setClasificacionArchivo] = useState<'completado' | 'inconcluso'>('completado')
   const [isArchiving, setIsArchiving] = useState(false)
 
+  // Historial de proyectos
+  const [historialProyectos, setHistorialProyectos] = useState<Record<string, HistorialProyecto[]>>({})
+
+  // Función para agregar evento al historial
+  const agregarHistorial = (
+    proyectoId: string,
+    tipo: HistorialProyecto['tipo_evento'],
+    descripcion: string,
+    datosAnteriores?: Record<string, unknown>,
+    datosNuevos?: Record<string, unknown>
+  ) => {
+    const nuevoEvento: HistorialProyecto = {
+      id: crypto.randomUUID(),
+      proyecto_id: proyectoId,
+      tipo_evento: tipo,
+      descripcion,
+      fecha: new Date().toISOString(),
+      usuario_nombre: 'Usuario Actual', // TODO: obtener del contexto de auth
+      datos_anteriores: datosAnteriores,
+      datos_nuevos: datosNuevos,
+    }
+
+    setHistorialProyectos(prev => ({
+      ...prev,
+      [proyectoId]: [nuevoEvento, ...(prev[proyectoId] || [])]
+    }))
+  }
+
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
   const [nuevaEmpresa, setNuevaEmpresa] = useState<Partial<Empresa>>({
@@ -207,7 +235,23 @@ export default function ProyectosPage() {
   }, [proyectos, tareas])
 
   const handleFase = (id: string, fase: number) => {
+    const proyecto = proyectos.find(p => p.id === id)
+    const faseAnterior = proyecto?.fase_actual
+    const faseAnteriorNombre = fasesEditando.find(f => f.id === faseAnterior)?.nombre
+    const faseNuevaNombre = fasesEditando.find(f => f.id === fase)?.nombre
+
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p))
+
+    // Registrar en historial
+    if (proyecto && faseAnteriorNombre && faseNuevaNombre) {
+      agregarHistorial(
+        id,
+        'cambio_fase',
+        `Cambió de fase "${faseAnteriorNombre}" a "${faseNuevaNombre}"`,
+        { fase_actual: faseAnterior },
+        { fase_actual: fase }
+      )
+    }
   }
 
   const handleCerrar = (proyecto: Proyecto) => {
@@ -232,6 +276,7 @@ export default function ProyectosPage() {
     setIsClosing(true)
 
     // Cerrar el proyecto
+    const faseActualNombre = fasesEditando.find(f => f.id === proyectoACerrar.fase_actual)?.nombre
     setProyectos(prev => prev.map(p => p.id === proyectoACerrar.id ? {
       ...p,
       estado: 'cerrado',
@@ -239,13 +284,35 @@ export default function ProyectosPage() {
       motivo_cierre: motivoCierre
     } : p))
 
+    // Registrar en historial
+    agregarHistorial(
+      proyectoACerrar.id,
+      'cierre',
+      `Proyecto cerrado en fase "${faseActualNombre}". Motivo: ${motivoCierre}`,
+      { estado: 'activo' },
+      { estado: 'cerrado', motivo_cierre: motivoCierre }
+    )
+
     setIsClosing(false)
     setIsModalCerrar(false)
     setProyectoACerrar(null)
   }
 
   const handleReabrir = (id: string) => {
+    const proyecto = proyectos.find(p => p.id === id)
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, estado: 'activo', motivo_cierre: undefined, fecha_cierre: undefined } : p))
+
+    // Registrar en historial
+    if (proyecto) {
+      const faseNombre = fasesEditando.find(f => f.id === proyecto.fase_actual)?.nombre
+      agregarHistorial(
+        id,
+        'reapertura',
+        `Proyecto reabierto en fase "${faseNombre}"`,
+        { estado: 'cerrado' },
+        { estado: 'activo' }
+      )
+    }
   }
 
   const handleArchivar = (proyecto: Proyecto) => {
@@ -265,6 +332,15 @@ export default function ProyectosPage() {
 
     // Simular archivado: eliminar el proyecto de la lista
     setProyectos(prev => prev.filter(p => p.id !== proyectoAArchivar.id))
+
+    // Registrar en historial
+    agregarHistorial(
+      proyectoAArchivar.id,
+      'archivado',
+      `Proyecto archivado como "${clasificacionArchivo}"`,
+      { estado: 'cerrado' },
+      { estado: 'archivado', clasificacion: clasificacionArchivo }
+    )
 
     setIsArchiving(false)
     setIsModalArchivar(false)
@@ -388,6 +464,7 @@ export default function ProyectosPage() {
               onClose={() => setSelectedId(null)}
               proyecto={selected}
               tareas={tareas}
+              historial={selected ? historialProyectos[selected.id] || [] : []}
               onCerrar={handleCerrar}
               onArchivar={handleArchivar}
               canClose={canClose}

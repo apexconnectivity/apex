@@ -13,6 +13,29 @@ export interface Fase {
   probabilidad_default: number
 }
 
+// Tipos para el historial del proyecto
+export type TipoEventoHistorial =
+  | 'creacion'
+  | 'cambio_fase'
+  | 'cierre'
+  | 'reapertura'
+  | 'archivado'
+  | 'edicion'
+  | 'asignacion_responsable'
+  | 'asignacion_contacto'
+
+export interface HistorialProyecto {
+  id: string
+  proyecto_id: string
+  tipo_evento: TipoEventoHistorial
+  descripcion: string
+  fecha: string
+  usuario_id?: string
+  usuario_nombre?: string
+  datos_anteriores?: Record<string, unknown>
+  datos_nuevos?: Record<string, unknown>
+}
+
 export const FASES: Fase[] = [
   { id: 1, nombre: 'Prospecto', color: '#6b7280', probabilidad_default: 20 },
   { id: 2, nombre: 'Diagnóstico', color: '#3b82f6', probabilidad_default: 40 },
