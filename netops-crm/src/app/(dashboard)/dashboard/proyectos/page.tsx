@@ -257,7 +257,6 @@ export default function ProyectosPage() {
               onClose={() => setSelectedId(null)}
               proyecto={selected}
               tareas={tareas}
-              onAddTarea={() => {}}
             />
           ) : null
         }

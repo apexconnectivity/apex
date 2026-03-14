@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { X, Plus, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target } from 'lucide-react'
+import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
@@ -13,7 +13,6 @@ interface ProjectDetailPanelProps {
   onClose: () => void
   proyecto: Proyecto | null
   tareas: Tarea[]
-  onAddTarea?: () => void
 }
 
 export function ProjectDetailPanel({
@@ -21,12 +20,14 @@ export function ProjectDetailPanel({
   onClose,
   proyecto,
   tareas,
-  onAddTarea,
 }: ProjectDetailPanelProps) {
-  // Filtrar tareas por proyecto_id
+  // Filtrar tareas por proyecto_id Y fase actual
   const tareasDelProyecto = useMemo(() => {
     if (!proyecto) return []
-    return tareas.filter(t => t.proyecto_id === proyecto.id)
+    return tareas.filter(t => 
+      t.proyecto_id === proyecto.id && 
+      t.fase_origen === proyecto.fase_actual
+    )
   }, [tareas, proyecto])
 
   // Calcular progreso de tareas
@@ -245,35 +246,12 @@ export function ProjectDetailPanel({
                   />
                 </div>
 
-                {/* Botón agregar tarea */}
-                {onAddTarea && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onAddTarea}
-                    className="w-full border-dashed border-slate-600 text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700/50"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Tarea
-                  </Button>
-                )}
-
                 {/* Lista de tareas */}
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                   {tareasDelProyecto.length === 0 ? (
                     <div className="text-center py-8 text-slate-500">
                       <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No hay tareas para este proyecto</p>
-                      {onAddTarea && (
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={onAddTarea}
-                          className="text-blue-400 hover:text-blue-300 mt-2"
-                        >
-                          Crear primera tarea
-                        </Button>
-                      )}
+                      <p className="text-sm">No hay tareas en esta fase</p>
                     </div>
                   ) : (
                     tareasDelProyecto.map((tarea) => (
