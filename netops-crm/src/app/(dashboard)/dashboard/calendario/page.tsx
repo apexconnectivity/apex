@@ -11,12 +11,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, getEstadoColor, getTipoIcon, TIPOS_SOLICITUD } from '@/types/calendario'
 import {
   Calendar, ChevronLeft, ChevronRight, Plus, Clock, MapPin,
   Users, Video, X, Check, Mail, Phone, User, Building2,
-  AlertCircle, CalendarDays, List, Grid3X3
+  AlertCircle, CalendarDays, List, Grid3X3, CalendarCheck, CalendarX, GripHorizontal
 } from 'lucide-react'
 
 const DEMO_PROYECTOS = [
@@ -447,12 +447,12 @@ export default function CalendarioPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MiniStat value={stats.total} label="Total reuniones" />
-        <MiniStat value={stats.proximas} label="Próximas" valueColor="text-blue-400" />
-        <MiniStat value={stats.confirmadas} label="Confirmadas" valueColor="text-green-400" />
-        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" valueColor="text-amber-400" />
-      </div>
+      <StatGrid cols={4}>
+        <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder icon={<CalendarDays className="h-5 w-5" />} />
+        <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.confirmadas} label="Confirmadas" variant="success" showBorder icon={<CalendarCheck className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" variant="warning" showBorder icon={<CalendarX className="h-5 w-5" />} />
+      </StatGrid>
 
       {vista === 'calendario' && (
         <>
