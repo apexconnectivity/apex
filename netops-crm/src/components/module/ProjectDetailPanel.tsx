@@ -85,7 +85,7 @@ export function ProjectDetailPanel({
       {/* Panel lateral */}
       <div className="h-full flex flex-col">
         {/* Header del panel */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <div
               className="h-3 w-3 rounded-full"
@@ -106,7 +106,7 @@ export function ProjectDetailPanel({
         </div>
 
         {/* Contenido */}
-        <div className="p-4 space-y-6 overflow-y-auto h-[calc(100%-64px)] pb-20">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
           {proyecto ? (
             <>
               {/* Información del cliente */}

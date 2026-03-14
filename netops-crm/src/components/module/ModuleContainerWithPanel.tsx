@@ -25,7 +25,7 @@ export function ModuleContainerWithPanel({
       
       {/* Panel - transiciona de w-0 a w-1/5 */}
       <div className={cn(
-        "transition-all duration-500 border-l border-border/50 h-full rounded-r-xl overflow-hidden",
+        "transition-all duration-500 border-l border-border/50 h-full rounded-r-xl overflow-y-auto bg-slate-900/50",
         panelOpen ? "w-1/5" : "w-0"
       )}>
         {panelOpen && panel}
