@@ -89,11 +89,8 @@ export function ProjectDetailPanel({
         onClick={onClose}
       />
 
-      {/* Panel lateral con animación mejorada */}
-      <div
-        className={`absolute top-0 right-0 h-full w-[400px] max-w-[90vw] bg-slate-800/95 backdrop-blur-sm z-50 shadow-2xl shadow-black/50 transform transition-all duration-500 ease-out rounded-l-xl rounded-r-none ${isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'
-          }`}
-      >
+      {/* Panel lateral */}
+      <div className="h-full flex flex-col bg-slate-800">
         {/* Header del panel */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">

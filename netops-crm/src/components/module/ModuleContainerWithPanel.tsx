@@ -16,15 +16,18 @@ export function ModuleContainerWithPanel({
   className 
 }: ModuleContainerWithPanelProps) {
   return (
-    <div className="flex relative w-full h-full min-h-screen overflow-hidden">
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div className="flex h-full w-full">
+      {/* Contenido - ocupa el espacio restante */}
+      <div className="flex-1 min-w-0 overflow-hidden">
         <ModuleContainer className={className}>
           {children}
         </ModuleContainer>
       </div>
+      
+      {/* Panel - transiciona de w-0 a w-1/5 */}
       <div className={cn(
-        "transition-all duration-500 ease-out overflow-hidden border-l border-border/50 h-full rounded-l-xl",
-        panelOpen ? 'w-1/5' : 'w-0'
+        "transition-all duration-500 border-l border-border/50 h-full rounded-l-xl overflow-hidden",
+        panelOpen ? "w-1/5" : "w-0"
       )}>
         {panelOpen && panel}
       </div>
