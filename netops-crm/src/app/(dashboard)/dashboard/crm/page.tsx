@@ -583,7 +583,505 @@ export default function CRMPage() {
         </div>
 )}
 
-      {/* Listado de Empresas -省略 por daños en estructura */}
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Buscar empresas..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={tipoFilter} onValueChange={(v) => setTipoFilter(v as TipoEntidad | 'todos')}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos los tipos</SelectItem>
+            <SelectItem value="cliente">Clientes</SelectItem>
+            <SelectItem value="proveedor">Proveedores</SelectItem>
+            <SelectItem value="ambos">Ambos</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={industriaFilter} onValueChange={setIndustriaFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Industria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las industrias</SelectItem>
+            {INDUSTRIAS.map(ind => (
+              <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MiniStat
+          label="Total Empresas"
+          value={filteredEmpresas.length}
+          icon={<Building2 className="h-5 w-5" />}
+        />
+        <MiniStat
+          label="Clientes"
+          value={empresas.filter(e => e.tipo_entidad === 'cliente').length}
+          icon={<Users className="h-5 w-5" />}
+        />
+        <MiniStat
+          label="Proveedores"
+          value={empresas.filter(e => e.tipo_entidad === 'proveedor').length}
+          icon={<Building2 className="h-5 w-5" />}
+        />
+        <MiniStat
+          label="Contactos"
+          value={contactos.length}
+          icon={<Users className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* Listado de Empresas */}
+      {filteredEmpresas.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Building2 className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No se encontraron empresas</h3>
+            <p className="text-muted-foreground mb-4">
+              {canEdit ? 'Crea tu primera empresa haciendo clic en el botón de arriba.' : 'No hay empresas que coincidan con los filtros aplicados.'}
+            </p>
+            {canEdit && (
+              <Button onClick={handleNewEmpresa}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Empresa
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredEmpresas.map(empresa => (
+            <Card 
+              key={empresa.id} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setSelectedEmpresa(empresa)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                      empresa.tipo_entidad === 'cliente' ? 'bg-cyan-500/20 text-cyan-400' :
+                      empresa.tipo_entidad === 'proveedor' ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-purple-500/20 text-purple-400'
+                    }`}>
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{empresa.nombre}</h3>
+                      <p className="text-xs text-muted-foreground">{empresa.industria}</p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {empresa.tipo_entidad === 'cliente' ? 'Cliente' : 
+                     empresa.tipo_entidad === 'proveedor' ? 'Proveedor' : 'Ambos'}
+                  </Badge>
+                </div>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {empresa.email_principal && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3" />
+                      <span className="truncate">{empresa.email_principal}</span>
+                    </div>
+                  )}
+                  {empresa.telefono_principal && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3" />
+                      <span>{empresa.telefono_principal}</span>
+                    </div>
+                  )}
+                  {empresa.ciudad && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3 w-3" />
+                      <span>{empresa.ciudad}, {empresa.pais}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t text-xs text-muted-foreground">
+                  <span>{getContactos(empresa.id).length} contactos</span>
+                  <span>{getProyectos(empresa.id).length} proyectos</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Empresa */}
+      <EmpresaModal
+        open={isModalEmpresa}
+        onClose={() => { setIsModalEmpresa(false); setEditingEmpresa(null) }}
+        onSave={handleSaveEmpresa}
+        empresa={editingEmpresa}
+        isSaving={isSaving}
+        errors={errors}
+      />
+
+      {/* Vista Detallada de Empresa */}
+      <Dialog open={!!selectedEmpresa && !isModalEmpresa && !isModalContacto && !isModalDocumento} onOpenChange={(open) => !open && setSelectedEmpresa(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedEmpresa && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-4">
+                  <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${
+                    selectedEmpresa.tipo_entidad === 'cliente' ? 'bg-cyan-500/20 text-cyan-400' :
+                    selectedEmpresa.tipo_entidad === 'proveedor' ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-purple-500/20 text-purple-400'
+                  }`}>
+                    <Building2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl">{selectedEmpresa.nombre}</DialogTitle>
+                    <p className="text-sm text-muted-foreground">{selectedEmpresa.industria} • {selectedEmpresa.tamaño}</p>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <Tabs defaultValue="info" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="info">Información</TabsTrigger>
+                  <TabsTrigger value="contactos">Contactos ({getContactos(selectedEmpresa.id).length})</TabsTrigger>
+                  <TabsTrigger value="proyectos">Proyectos ({getProyectos(selectedEmpresa.id).length})</TabsTrigger>
+                  <TabsTrigger value="documentos">Documentos ({getDocumentos(selectedEmpresa.id).length})</TabsTrigger>
+                  <TabsTrigger value="notas">Notas</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="info" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-muted-foreground">Tipo</Label>
+                      <p className="font-medium">{selectedEmpresa.tipo_entidad === 'cliente' ? 'Cliente' : selectedEmpresa.tipo_entidad === 'proveedor' ? 'Proveedor' : 'Ambos'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Relación</Label>
+                      <p className="font-medium">{selectedEmpresa.tipo_relacion}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Email</Label>
+                      <p className="font-medium">{selectedEmpresa.email_principal || '-'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Teléfono</Label>
+                      <p className="font-medium">{selectedEmpresa.telefono_principal || '-'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Sitio Web</Label>
+                      <p className="font-medium">{selectedEmpresa.sitio_web || '-'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Dirección</Label>
+                      <p className="font-medium">{selectedEmpresa.direccion || '-'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Ciudad</Label>
+                      <p className="font-medium">{selectedEmpresa.ciudad || '-'} {selectedEmpresa.pais && `, ${selectedEmpresa.pais}`}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">RFC</Label>
+                      <p className="font-medium">{selectedEmpresa.rfc || '-'}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    {canEdit && (
+                      <Button variant="outline" onClick={() => handleEditEmpresa(selectedEmpresa)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </Button>
+                    )}
+                    {canEdit && (
+                      <Button variant="outline" className="text-red-500 hover:text-red-500" onClick={() => handleDeleteEmpresa(selectedEmpresa.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="contactos" className="mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium">Contactos</h3>
+                    {canEdit && (
+                      <Button size="sm" onClick={() => handleNewContacto(selectedEmpresa)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nuevo Contacto
+                      </Button>
+                    )}
+                  </div>
+                  {getContactos(selectedEmpresa.id).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No hay contactos registrados</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {getContactos(selectedEmpresa.id).map(contacto => (
+                        <div key={contacto.id} className="flex items-center justify-between p-3 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center">
+                              <span className="text-sm">{contacto.nombre.charAt(0)}</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{contacto.nombre}</p>
+                                {contacto.es_principal && <Badge variant="secondary" className="text-xs">Principal</Badge>}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{contacto.cargo} • {contacto.tipo_contacto}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-muted-foreground">{contacto.email}</p>
+                            {canEdit && (
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteContacto(contacto.id) }}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="proyectos" className="mt-4">
+                  {getProyectos(selectedEmpresa.id).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No hay proyectos asociados</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {getProyectos(selectedEmpresa.id).map(proyecto => (
+                        <div key={proyecto.id} className="p-3 rounded-lg border">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">{proyecto.nombre}</p>
+                              <p className="text-xs text-muted-foreground">{proyecto.descripcion}</p>
+                            </div>
+                            <StatusBadge status={proyecto.estado === 'activo' ? 'active' : proyecto.estado === 'cerrado' ? 'completed' : 'pending'} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="documentos" className="mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium">Documentos</h3>
+                    {canUploadDocuments && (
+                      <Button size="sm" onClick={() => handleNewDocumento(selectedEmpresa)}>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Subir Documento
+                      </Button>
+                    )}
+                  </div>
+                  {getDocumentos(selectedEmpresa.id).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No hay documentos</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {getDocumentos(selectedEmpresa.id).map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{doc.nombre_archivo}</p>
+                              <p className="text-xs text-muted-foreground">{doc.descripcion}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{doc.visibilidad}</Badge>
+                            {canEdit && (
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteDocumento(doc.id)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="notas" className="mt-4">
+                  {notaEditando ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={notaTemporal}
+                        onChange={(e) => setNotaTemporal(e.target.value)}
+                        placeholder="Escribe notas internas..."
+                        rows={6}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleSaveNota(selectedEmpresa.id)}>
+                          <Check className="h-4 w-4 mr-2" />
+                          Guardar
+                        </Button>
+                        <Button variant="outline" onClick={handleCancelNota}>
+                          <X className="h-4 w-4 mr-2" />
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-muted-foreground mb-4">
+                        {selectedEmpresa.notas_internas || 'Sin notas'}
+                      </p>
+                      <Button variant="outline" onClick={openNotaEdit}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        {selectedEmpresa.notas_internas ? 'Editar Notas' : 'Agregar Notas'}
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Contacto */}
+      <Dialog open={isModalContacto} onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingContacto?.id ? 'Editar' : 'Nuevo'} Contacto</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nombre *</Label>
+              <Input
+                value={editingContacto?.nombre || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, nombre: e.target.value })}
+                className={errors.nombre ? 'border-red-500' : ''}
+              />
+              {errors.nombre && <p className="text-red-500 text-xs">{errors.nombre}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Cargo</Label>
+              <Input
+                value={editingContacto?.cargo || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, cargo: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de Contacto *</Label>
+              <Select
+                value={editingContacto?.tipo_contacto || ''}
+                onValueChange={(v) => setEditingContacto({ ...editingContacto, tipo_contacto: v as TipoContacto })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_CONTACTO.map(tipo => (
+                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={editingContacto?.email || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, email: e.target.value })}
+                className={errors.email ? 'border-red-500' : ''}
+              />
+              {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Teléfono</Label>
+              <Input
+                value={editingContacto?.telefono || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, telefono: e.target.value })}
+                className={errors.telefono ? 'border-red-500' : ''}
+              />
+              {errors.telefono && <p className="text-red-500 text-xs">{errors.telefono}</p>}
+            </div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editingContacto?.es_principal || false}
+                onChange={(e) => setEditingContacto({ ...editingContacto, es_principal: e.target.checked })}
+              />
+              <span className="text-sm">Contacto principal</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editingContacto?.recibe_facturas || false}
+                onChange={(e) => setEditingContacto({ ...editingContacto, recibe_facturas: e.target.checked })}
+              />
+              <span className="text-sm">Recibe facturas</span>
+            </label>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsModalContacto(false); setEditingContacto(null) }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveContacto} disabled={isSaving}>
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Documento */}
+      <Dialog open={isModalDocumento} onOpenChange={(open) => { if (!open) { setIsModalDocumento(false); setEmpresaForDocumento(null) } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Subir Documento</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label>Visibilidad</Label>
+              <Select
+                value={newDocumento.visibilidad}
+                onValueChange={(v: 'interno' | 'publico') => setNewDocumento({ ...newDocumento, visibilidad: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="interno">Interno</SelectItem>
+                  <SelectItem value="publico">Público</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Descripción</Label>
+              <Input
+                value={newDocumento.descripcion}
+                onChange={(e) => setNewDocumento({ ...newDocumento, descripcion: e.target.value })}
+                placeholder="Descripción del documento"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nombre del Archivo</Label>
+              <Input
+                value={newDocumento.nombreArchivo}
+                onChange={(e) => setNewDocumento({ ...newDocumento, nombreArchivo: e.target.value })}
+                placeholder="ej: contrato_2024.pdf"
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsModalDocumento(false); setEmpresaForDocumento(null) }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveDocumento}>
+              <Upload className="h-4 w-4 mr-2" />
+              Subir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
