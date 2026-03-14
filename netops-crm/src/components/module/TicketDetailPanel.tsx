@@ -174,9 +174,14 @@ export function TicketDetailPanel({
                     </Button>
                   )}
                   {ticket.estado === 'En progreso' && (
-                    <Button onClick={() => onChangeState('Esperando cliente')} className="flex-1">
-                      Esperar cliente
-                    </Button>
+                    <>
+                      <Button onClick={() => onChangeState('Esperando cliente')} className="flex-1">
+                        Esperar cliente
+                      </Button>
+                      <Button onClick={() => onChangeState('Resuelto')} variant="outline" className="flex-1">
+                        <CheckCircle className="h-4 w-4 mr-2" />Marcar resuelto
+                      </Button>
+                    </>
                   )}
                   {ticket.estado === 'Esperando cliente' && (
                     <Button onClick={() => onChangeState('Resuelto')} className="flex-1">

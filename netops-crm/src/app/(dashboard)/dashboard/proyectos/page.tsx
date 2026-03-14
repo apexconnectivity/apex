@@ -15,12 +15,29 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, Modal, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon } from 'lucide-react'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Proyecto, FASES, FaseProyecto, MONEDAS } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
-import { Empresa, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
+import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
+import { User } from '@/types/auth'
+
+// Usuarios internos demo (técnicos y admin)
+const DEMO_USUARIOS: User[] = [
+  { id: '1', email: 'carlos@apex.com', nombre: 'Carlos Admin', telefono: '+54 9 11 1234-5678', activo: true, creado_en: '2024-01-01', cambiar_password_proximo_login: false, roles: ['admin'] },
+  { id: '2', email: 'laura@apex.com', nombre: 'Laura Pérez', telefono: '+54 9 11 2345-6789', activo: true, creado_en: '2024-02-15', cambiar_password_proximo_login: false, roles: ['tecnico'] },
+  { id: '3', email: 'juan@apex.com', nombre: 'Juan Técnico', telefono: '+54 9 11 3456-7890', activo: true, creado_en: '2024-03-01', cambiar_password_proximo_login: false, roles: ['tecnico'] },
+  { id: '4', email: 'marcos@apex.com', nombre: 'Marcos González', telefono: '+54 9 11 4567-8901', activo: true, creado_en: '2024-04-10', cambiar_password_proximo_login: false, roles: ['comercial'] },
+]
 
 const DEMO_PROYECTOS: Proyecto[] = [
   { id: '1', empresa_id: '1', nombre: 'Implementación Firewall Corp', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-01-15', fecha_estimada_fin: '2026-04-15', moneda: 'USD', monto_estimado: 25000, probabilidad_cierre: 90, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '1', contacto_tecnico_nombre: 'Juan Pérez', tags: ['seguridad'], requiere_compras: true, creado_en: '2026-01-15', cliente_nombre: 'Soluciones Tecnológicas SA' },
@@ -50,6 +67,16 @@ const DEMO_EMPRESAS: Empresa[] = [
   { id: '4', tipo_entidad: 'cliente', nombre: 'RetailMax', industria: 'Comercio', tamaño: 'Gran empresa', origen: 'Referencia', tipo_relacion: 'Cliente', telefono_principal: '+54 9 11 5555-9999', email_principal: 'contacto@retailmax.com', sitio_web: 'www.retailmax.com', ciudad: 'Córdoba', pais: 'Argentina', creado_en: '2024-05-15' },
 ]
 
+// Contactos de las empresas demo
+const DEMO_CONTACTOS: Contacto[] = [
+  { id: 'c1', empresa_id: '1', nombre: 'Juan Pérez', cargo: 'Director de TI', tipo_contacto: 'Técnico', email: 'jperez@solucionestec.com', telefono: '+54 9 11 4321-5679', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-01-15' },
+  { id: 'c2', empresa_id: '1', nombre: 'María García', cargo: 'Gerente de Compras', tipo_contacto: 'Compras', email: 'mgarcia@solucionestec.com', telefono: '+54 9 11 4321-5680', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-01-15' },
+  { id: 'c3', empresa_id: '2', nombre: 'Dr. Roberto Silva', cargo: 'Jefe de Sistemas', tipo_contacto: 'Técnico', email: 'rsilva@hospitalnorte.com', telefono: '+54 9 11 4789-1235', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-03-10' },
+  { id: 'c4', empresa_id: '2', nombre: 'Lic. Ana López', cargo: 'Directora Administrativa', tipo_contacto: 'Administrativo', email: 'alopez@hospitalnorte.com', telefono: '+54 9 11 4789-1236', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-03-10' },
+  { id: 'c5', empresa_id: '3', nombre: 'Mike Johnson', cargo: 'IT Manager', tipo_contacto: 'Técnico', email: 'mjohnson@techcorp.com', telefono: '+1 555-123-4568', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-04-01' },
+  { id: 'c6', empresa_id: '4', nombre: 'Carlos Martínez', cargo: 'Jefe de Infraestructura', tipo_contacto: 'Técnico', email: 'cmartinez@retailmax.com', telefono: '+54 9 11 5555-9998', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-05-15' },
+]
+
 const PROYECTO_VACIO: Partial<Proyecto> = {
   nombre: '',
   descripcion: '',
@@ -59,6 +86,10 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
   monto_estimado: 0,
   probabilidad_cierre: 20,
   requiere_compras: false,
+  responsable_id: '',
+  responsable_nombre: '',
+  contacto_tecnico_id: '',
+  contacto_tecnico_nombre: '',
 }
 
 export default function ProyectosPage() {
@@ -67,6 +98,8 @@ export default function ProyectosPage() {
   const [proyectos, setProyectos] = useState<Proyecto[]>(DEMO_PROYECTOS)
   const [tareas, setTareas] = useState<Tarea[]>(DEMO_TAREAS)
   const [empresas, setEmpresas] = useState<Empresa[]>(DEMO_EMPRESAS)
+  const [usuarios, setUsuarios] = useState<User[]>(DEMO_USUARIOS)
+  const [contactos, setContactos] = useState<Contacto[]>(DEMO_CONTACTOS)
   const [view, setView] = useState<'pipeline' | 'cerrados'>('pipeline')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -98,6 +131,19 @@ export default function ProyectosPage() {
   const canMovePhases = isAdmin || isComercial || isTecnico
   const canClose = isAdmin
 
+  // Filtrar usuarios internos (admin y técnico) para selector de responsable
+  const responsablesPosibles = usuarios.filter(u =>
+    u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
+  )
+
+  // Filtrar contactos de la empresa seleccionada para el selector de contacto técnico
+  const contactosDeEmpresa = nuevoProyecto?.empresa_id
+    ? contactos.filter(c => c.empresa_id === nuevoProyecto.empresa_id && c.activo)
+    : []
+
+  // Filtrar contactos técnicos de la empresa
+  const contactosTecnicos = contactosDeEmpresa.filter(c => c.tipo_contacto === 'Técnico')
+
   const proyectosPorFase = useMemo(() => {
     const r: Record<FaseProyecto, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
     proyectos.filter(p => p.estado === 'activo').forEach(p => { if (r[p.fase_actual]) r[p.fase_actual].push(p) })
@@ -115,20 +161,20 @@ export default function ProyectosPage() {
       proximaVence: string | null
       progreso: number
     }> = {}
-    
+
     proyectos.forEach(p => {
       const tareasDelProyecto = tareas.filter(t => t.proyecto_id === p.id)
       const total = tareasDelProyecto.length
       const completadas = tareasDelProyecto.filter(t => t.estado === 'Completada').length
       const enProgreso = tareasDelProyecto.filter(t => t.estado === 'En progreso').length
       const bloqueadas = tareasDelProyecto.filter(t => t.estado === 'Bloqueada').length
-      
+
       const pendientes = tareasDelProyecto
         .filter(t => t.estado !== 'Completada' && t.fecha_vencimiento)
         .sort((a, b) => new Date(a.fecha_vencimiento!).getTime() - new Date(b.fecha_vencimiento!).getTime())
       const proximaVence = pendientes[0]?.fecha_vencimiento || null
-      
-      r[p.id] = { 
+
+      r[p.id] = {
         total,
         completadas,
         enProgreso,
@@ -172,6 +218,14 @@ export default function ProyectosPage() {
       setErrors({ empresa_id: 'Selecciona una empresa cliente' })
       return
     }
+    if (!nuevoProyecto?.responsable_id) {
+      setErrors({ responsable_id: 'Selecciona un responsable técnico' })
+      return
+    }
+    if (!nuevoProyecto?.contacto_tecnico_id) {
+      setErrors({ contacto_tecnico_id: 'Selecciona un contacto técnico del cliente' })
+      return
+    }
     if (!nuevoProyecto?.moneda) {
       setErrors({ moneda: 'Selecciona una moneda' })
       return
@@ -189,12 +243,16 @@ export default function ProyectosPage() {
     await new Promise(r => setTimeout(r, 500))
 
     const empresa = empresas.find(e => e.id === nuevoProyecto.empresa_id)
+    const responsable = usuarios.find(u => u.id === nuevoProyecto.responsable_id)
+    const contactoTecnico = contactos.find(c => c.id === nuevoProyecto.contacto_tecnico_id)
     const now = new Date().toISOString().split('T')[0]
 
     setProyectos(prev => [...prev, {
       ...nuevoProyecto,
       id: String(Date.now()),
       cliente_nombre: empresa?.nombre,
+      responsable_nombre: responsable?.nombre,
+      contacto_tecnico_nombre: contactoTecnico?.nombre,
       creado_en: now,
     } as Proyecto])
 
@@ -281,375 +339,454 @@ export default function ProyectosPage() {
           onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
         />
 
-          <StatGrid cols={5}>
-            {FASES.map(fase => (
-              <MiniStat
-                key={fase.id}
-                value={proyectosPorFase[fase.id]?.length || 0}
-                label={fase.nombre}
-                variant="default"
-                showBorder
-                accentColor={fase.color}
-                icon={
-                  fase.id === 1 ? <Lightbulb className="h-5 w-5" /> :
+        <StatGrid cols={5}>
+          {FASES.map(fase => (
+            <MiniStat
+              key={fase.id}
+              value={proyectosPorFase[fase.id]?.length || 0}
+              label={fase.nombre}
+              variant="default"
+              showBorder
+              accentColor={fase.color}
+              icon={
+                fase.id === 1 ? <Lightbulb className="h-5 w-5" /> :
                   fase.id === 2 ? <PenTool className="h-5 w-5" /> :
-                  fase.id === 3 ? <Layers className="h-5 w-5" /> :
-                  fase.id === 4 ? <Bug className="h-5 w-5" /> :
-                  <Rocket className="h-5 w-5" />
-                }
-              />
-            ))}
-          </StatGrid>
+                    fase.id === 3 ? <Layers className="h-5 w-5" /> :
+                      fase.id === 4 ? <Bug className="h-5 w-5" /> :
+                        <Rocket className="h-5 w-5" />
+              }
+            />
+          ))}
+        </StatGrid>
 
-          {view === 'pipeline' && (
-            <div className="-mx-6 px-6 overflow-x-auto">
-              <div className="grid grid-cols-5 gap-4 min-w-[1400px] pb-2">
-                {FASES.map(fase => (
-                  <div key={fase.id} className="min-w-[280px]">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: fase.color }} />
-                      <h3 className="font-semibold">{fase.nombre}</h3>
-                      <Badge variant="secondary" className="ml-auto">{proyectosPorFase[fase.id]?.length || 0}</Badge>
-                    </div>
-                    <div className="space-y-3">
-                      {proyectosPorFase[fase.id]?.map(p => (
-                        <ProjectCard
-                          key={p.id}
-                          title={p.nombre}
-                          subtitle={p.cliente_nombre}
-                          progress={infoTareasPorProyecto[p.id]?.progreso}
-                          progressLabel="Avance"
-                          value={`${p.moneda} ${p.monto_estimado?.toLocaleString()}`}
-                          assignee={{ name: p.responsable_nombre || '' }}
-                          tags={(p.tags || []).map(tag => ({ label: tag }))}
-                          tasksInfo={infoTareasPorProyecto[p.id]}
-                          onClick={() => setSelectedId(p.id)}
-                        >
-                          {canMovePhases && (
-                            <div className="flex gap-1 mt-3 pt-2 border-t border-border/50">
-                              {fase.id > 1 && (
-                                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id - 1) }}>←</Button>
-                              )}
-                              {fase.id < 5 && (
-                                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id + 1) }}>→</Button>
-                              )}
-                            </div>
-                          )}
-                        </ProjectCard>
-                      ))}
-                    </div>
+        {view === 'pipeline' && (
+          <div className="-mx-6 px-6 overflow-x-auto">
+            <div className="grid grid-cols-5 gap-4 min-w-[1400px] pb-2">
+              {FASES.map(fase => (
+                <div key={fase.id} className="min-w-[280px]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: fase.color }} />
+                    <h3 className="font-semibold">{fase.nombre}</h3>
+                    <Badge variant="secondary" className="ml-auto">{proyectosPorFase[fase.id]?.length || 0}</Badge>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {view === 'cerrados' && (
-            <div className="space-y-3">
-              {proyectosCerrados.map(p => (
-                <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)} className="card-hover-scale bg-card">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{p.nombre}</h3>
-                        <StatusBadge status="Cerrado" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Cerrado: {p.fecha_cierre}</p>
-                    </div>
-                    {canClose && (
-                      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleReabrir(p.id) }}>
-                        <RotateCcw className="h-4 w-4 mr-1" /> Reabrir
-                      </Button>
-                    )}
+                  <div className="space-y-3">
+                    {proyectosPorFase[fase.id]?.map(p => (
+                      <ProjectCard
+                        key={p.id}
+                        title={p.nombre}
+                        subtitle={p.cliente_nombre}
+                        progress={infoTareasPorProyecto[p.id]?.progreso}
+                        progressLabel="Avance"
+                        value={`${p.moneda} ${p.monto_estimado?.toLocaleString()}`}
+                        assignee={{ name: p.responsable_nombre || '' }}
+                        tags={(p.tags || []).map(tag => ({ label: tag }))}
+                        tasksInfo={infoTareasPorProyecto[p.id]}
+                        onClick={() => setSelectedId(p.id)}
+                      >
+                        {canMovePhases && (
+                          <div className="flex gap-1 mt-3 pt-2 border-t border-border/50">
+                            {fase.id > 1 && (
+                              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id - 1) }}>←</Button>
+                            )}
+                            {fase.id < 5 && (
+                              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id + 1) }}>→</Button>
+                            )}
+                          </div>
+                        )}
+                      </ProjectCard>
+                    ))}
                   </div>
-                </ModuleCard>
+                </div>
               ))}
             </div>
-          )}
+          </div>
+        )}
+
+        {view === 'cerrados' && (
+          <div className="space-y-3">
+            {proyectosCerrados.map(p => (
+              <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)} className="card-hover-scale bg-card">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{p.nombre}</h3>
+                      <StatusBadge status="Cerrado" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Cerrado: {p.fecha_cierre}</p>
+                  </div>
+                  {canClose && (
+                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleReabrir(p.id) }}>
+                      <RotateCcw className="h-4 w-4 mr-1" /> Reabrir
+                    </Button>
+                  )}
+                </div>
+              </ModuleCard>
+            ))}
+          </div>
+        )}
       </ModuleContainerWithPanel>
 
       {/* Modal Nuevo Proyecto */}
-      <Modal
-        open={isModalNuevo}
-        onClose={() => setIsModalNuevo(false)}
-        title="Nuevo Proyecto"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="nombre">Nombre del Proyecto *</Label>
-            <Input
-              id="nombre"
-              value={nuevoProyecto.nombre || ''}
-              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, nombre: e.target.value })}
-              placeholder="Ej: Implementación de Red"
-              className={errors.nombre ? 'border-red-500' : ''}
-            />
-            {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
-          </div>
+      <Dialog open={isModalNuevo} onOpenChange={setIsModalNuevo}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>Nuevo Proyecto</DialogTitle>
+          </DialogHeader>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <Label htmlFor="empresa">Cliente *</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                onClick={() => setIsModalNuevaEmpresa(true)}
-              >
-                <Building2 className="h-3 w-3 mr-1" />
-                Nueva empresa
-              </Button>
-            </div>
-            <Select
-              value={nuevoProyecto.empresa_id || ''}
-              onValueChange={(value) => setNuevoProyecto({ ...nuevoProyecto, empresa_id: value })}
-            >
-              <SelectTrigger className={errors.empresa_id ? 'border-red-500' : ''}>
-                <SelectValue placeholder="Selecciona una empresa" />
-              </SelectTrigger>
-              <SelectContent>
-                {empresas.filter(e => e.tipo_entidad === 'cliente').map((empresa) => (
-                  <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.empresa_id && <p className="text-xs text-red-500 mt-1">{errors.empresa_id}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <DialogBody className="space-y-4">
             <div>
-              <Label htmlFor="moneda">Moneda *</Label>
+              <Label htmlFor="nombre">Nombre del Proyecto *</Label>
+              <Input
+                id="nombre"
+                value={nuevoProyecto.nombre || ''}
+                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, nombre: e.target.value })}
+                placeholder="Ej: Implementación de Red"
+                className={errors.nombre ? 'border-red-500' : ''}
+              />
+              {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="empresa">Cliente *</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsModalNuevaEmpresa(true)}
+                >
+                  <Building2 className="h-3 w-3 mr-1" />
+                  Nueva empresa
+                </Button>
+              </div>
               <Select
-                value={nuevoProyecto.moneda || 'USD'}
-                onValueChange={(value: "USD" | "MXN" | "EUR") => setNuevoProyecto({ ...nuevoProyecto, moneda: value })}
+                value={nuevoProyecto.empresa_id || ''}
+                onValueChange={(value) => setNuevoProyecto({ ...nuevoProyecto, empresa_id: value, contacto_tecnico_id: '', contacto_tecnico_nombre: '' })}
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className={errors.empresa_id ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Selecciona una empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MONEDAS.map((m) => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  {empresas.filter(e => e.tipo_entidad === 'cliente').map((empresa) => (
+                    <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.moneda && <p className="text-xs text-red-500 mt-1">{errors.moneda}</p>}
+              {errors.empresa_id && <p className="text-xs text-red-500 mt-1">{errors.empresa_id}</p>}
             </div>
-            <div>
-              <Label htmlFor="monto">Monto Estimado</Label>
-              <Input
-                id="monto"
-                type="number"
-                value={nuevoProyecto.monto_estimado || ''}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
-                placeholder="0"
-                className={errors.monto_estimado ? 'border-red-500' : ''}
-              />
-              {errors.monto_estimado && <p className="text-xs text-red-500 mt-1">{errors.monto_estimado}</p>}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="probabilidad">Probabilidad de Cierre (%)</Label>
-              <Input
-                id="probabilidad"
-                type="number"
-                min={0}
-                max={100}
-                value={nuevoProyecto.probabilidad_cierre || ''}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, probabilidad_cierre: Number(e.target.value) })}
-                placeholder="20"
-                className={errors.probabilidad_cierre ? 'border-red-500' : ''}
-              />
-              {errors.probabilidad_cierre && <p className="text-xs text-red-500 mt-1">{errors.probabilidad_cierre}</p>}
+              <Label htmlFor="responsable">Responsable *</Label>
+              <Select
+                value={nuevoProyecto.responsable_id || ''}
+                onValueChange={(value) => {
+                  const responsable = usuarios.find(u => u.id === value)
+                  setNuevoProyecto({
+                    ...nuevoProyecto,
+                    responsable_id: value,
+                    responsable_nombre: responsable?.nombre || ''
+                  })
+                }}
+              >
+                <SelectTrigger className={errors.responsable_id ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Selecciona un responsable" />
+                </SelectTrigger>
+                <SelectContent>
+                  {responsablesPosibles.map((usuario) => (
+                    <SelectItem key={usuario.id} value={usuario.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{usuario.nombre}</span>
+                        <Badge variant="secondary" className="text-xs ml-2">
+                          {usuario.roles.includes('admin') ? 'Admin' : 'Técnico'}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.responsable_id && <p className="text-xs text-red-500 mt-1">{errors.responsable_id}</p>}
             </div>
+
             <div>
-              <Label htmlFor="fecha">Fecha Estimada de Fin</Label>
-              <Input
-                id="fecha"
-                type="date"
-                value={nuevoProyecto.fecha_estimada_fin || ''}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, fecha_estimada_fin: e.target.value })}
-              />
+              <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
+              <Select
+                value={nuevoProyecto.contacto_tecnico_id || ''}
+                onValueChange={(value) => {
+                  const contacto = contactos.find(c => c.id === value)
+                  setNuevoProyecto({
+                    ...nuevoProyecto,
+                    contacto_tecnico_id: value,
+                    contacto_tecnico_nombre: contacto?.nombre || ''
+                  })
+                }}
+                disabled={!nuevoProyecto.empresa_id}
+              >
+                <SelectTrigger className={errors.contacto_tecnico_id ? 'border-red-500' : ''}>
+                  <SelectValue placeholder={nuevoProyecto.empresa_id ? "Selecciona un contacto" : "Selecciona primero un cliente"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {contactosTecnicos.map((contacto) => (
+                    <SelectItem key={contacto.id} value={contacto.id}>
+                      <div className="flex flex-col">
+                        <span>{contacto.nombre}</span>
+                        <span className="text-xs text-muted-foreground">{contacto.cargo}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.contacto_tecnico_id && <p className="text-xs text-red-500 mt-1">{errors.contacto_tecnico_id}</p>}
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              id="requiere_compras"
-              type="checkbox"
-              checked={nuevoProyecto.requiere_compras || false}
-              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: e.target.checked })}
-              className="h-4 w-4 rounded border-gray-300"
-            />
-            <Label htmlFor="requiere_compras" className="text-sm font-normal">
-              Requiere compras
-            </Label>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="moneda">Moneda *</Label>
+                <Select
+                  value={nuevoProyecto.moneda || 'USD'}
+                  onValueChange={(value: "USD" | "MXN" | "EUR") => setNuevoProyecto({ ...nuevoProyecto, moneda: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONEDAS.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.moneda && <p className="text-xs text-red-500 mt-1">{errors.moneda}</p>}
+              </div>
+              <div>
+                <Label htmlFor="monto">Monto Estimado</Label>
+                <Input
+                  id="monto"
+                  type="number"
+                  value={nuevoProyecto.monto_estimado || ''}
+                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
+                  placeholder="0"
+                  className={errors.monto_estimado ? 'border-red-500' : ''}
+                />
+                {errors.monto_estimado && <p className="text-xs text-red-500 mt-1">{errors.monto_estimado}</p>}
+              </div>
+            </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="probabilidad">Probabilidad de Cierre (%)</Label>
+                <Input
+                  id="probabilidad"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={nuevoProyecto.probabilidad_cierre || ''}
+                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, probabilidad_cierre: Number(e.target.value) })}
+                  placeholder="20"
+                  className={errors.probabilidad_cierre ? 'border-red-500' : ''}
+                />
+                {errors.probabilidad_cierre && <p className="text-xs text-red-500 mt-1">{errors.probabilidad_cierre}</p>}
+              </div>
+              <div>
+                <Label htmlFor="fecha">Fecha Estimada de Fin</Label>
+                <Input
+                  id="fecha"
+                  type="date"
+                  value={nuevoProyecto.fecha_estimada_fin || ''}
+                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, fecha_estimada_fin: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                id="requiere_compras"
+                type="checkbox"
+                checked={nuevoProyecto.requiere_compras || false}
+                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: e.target.checked })}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="requiere_compras" className="text-sm font-normal">
+                Requiere compras
+              </Label>
+            </div>
+          </DialogBody>
+
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalNuevo(false)}>
               Cancelar
             </Button>
             <Button onClick={handleSaveProyecto} disabled={isSaving}>
-              {isSaving ? 'Guardando...' : 'Crear Proyecto'}
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Crear Proyecto'
+              )}
             </Button>
-          </div>
-        </div>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Nueva Empresa */}
-      <Modal
-        open={isModalNuevaEmpresa}
-        onClose={() => setIsModalNuevaEmpresa(false)}
-        title="Nueva Empresa"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      <Dialog open={isModalNuevaEmpresa} onOpenChange={setIsModalNuevaEmpresa}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>Nueva Empresa</DialogTitle>
+          </DialogHeader>
+
+          <DialogBody className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="emp_nombre">Nombre *</Label>
+                <Input
+                  id="emp_nombre"
+                  value={nuevaEmpresa.nombre || ''}
+                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, nombre: e.target.value })}
+                  placeholder="Razón social"
+                  className={errorsEmpresa.nombre ? 'border-red-500' : ''}
+                />
+                {errorsEmpresa.nombre && <p className="text-xs text-red-500 mt-1">{errorsEmpresa.nombre}</p>}
+              </div>
+              <div>
+                <Label htmlFor="emp_tipo">Tipo</Label>
+                <Select
+                  value={nuevaEmpresa.tipo_entidad || 'cliente'}
+                  onValueChange={(value) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_entidad: value as TipoEntidad })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cliente">Cliente</SelectItem>
+                    <SelectItem value="proveedor">Proveedor</SelectItem>
+                    <SelectItem value="ambos">Ambos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="emp_industria">Industria</Label>
+                <Select
+                  value={nuevaEmpresa.industria || ''}
+                  onValueChange={(value: Industria) => setNuevaEmpresa({ ...nuevaEmpresa, industria: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INDUSTRIAS.map((ind) => (
+                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="emp_tamano">Tamaño</Label>
+                <Select
+                  value={nuevaEmpresa.tamaño || ''}
+                  onValueChange={(value: "Micro" | "PYME" | "Gran empresa") => setNuevaEmpresa({ ...nuevaEmpresa, tamaño: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TAMAÑOS.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="emp_email">Email</Label>
+                <Input
+                  id="emp_email"
+                  type="email"
+                  value={nuevaEmpresa.email_principal || ''}
+                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, email_principal: e.target.value })}
+                  placeholder="contacto@empresa.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="emp_telefono">Teléfono</Label>
+                <Input
+                  id="emp_telefono"
+                  value={nuevaEmpresa.telefono_principal || ''}
+                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, telefono_principal: e.target.value })}
+                  placeholder="+54 9 11 1234-5678"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="emp_nombre">Nombre *</Label>
+              <Label htmlFor="emp_direccion">Dirección</Label>
               <Input
-                id="emp_nombre"
-                value={nuevaEmpresa.nombre || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, nombre: e.target.value })}
-                placeholder="Razón social"
-                className={errorsEmpresa.nombre ? 'border-red-500' : ''}
-              />
-              {errorsEmpresa.nombre && <p className="text-xs text-red-500 mt-1">{errorsEmpresa.nombre}</p>}
-            </div>
-            <div>
-              <Label htmlFor="emp_tipo">Tipo</Label>
-              <Select
-                value={nuevaEmpresa.tipo_entidad || 'cliente'}
-                onValueChange={(value) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_entidad: value as TipoEntidad })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cliente">Cliente</SelectItem>
-                  <SelectItem value="proveedor">Proveedor</SelectItem>
-                  <SelectItem value="ambos">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_industria">Industria</Label>
-              <Select
-                value={nuevaEmpresa.industria || ''}
-                onValueChange={(value: Industria) => setNuevaEmpresa({ ...nuevaEmpresa, industria: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INDUSTRIAS.map((ind) => (
-                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="emp_tamano">Tamaño</Label>
-              <Select
-                value={nuevaEmpresa.tamaño || ''}
-                onValueChange={(value: "Micro" | "PYME" | "Gran empresa") => setNuevaEmpresa({ ...nuevaEmpresa, tamaño: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAMAÑOS.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_email">Email</Label>
-              <Input
-                id="emp_email"
-                type="email"
-                value={nuevaEmpresa.email_principal || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, email_principal: e.target.value })}
-                placeholder="contacto@empresa.com"
+                id="emp_direccion"
+                value={nuevaEmpresa.direccion || ''}
+                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, direccion: e.target.value })}
+                placeholder="Dirección completa"
               />
             </div>
-            <div>
-              <Label htmlFor="emp_telefono">Teléfono</Label>
-              <Input
-                id="emp_telefono"
-                value={nuevaEmpresa.telefono_principal || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, telefono_principal: e.target.value })}
-                placeholder="+54 9 11 1234-5678"
-              />
-            </div>
-          </div>
 
-          <div>
-            <Label htmlFor="emp_direccion">Dirección</Label>
-            <Input
-              id="emp_direccion"
-              value={nuevaEmpresa.direccion || ''}
-              onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, direccion: e.target.value })}
-              placeholder="Dirección completa"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_origen">Origen</Label>
-              <Select
-                value={nuevaEmpresa.origen || ''}
-                onValueChange={(value: Origen) => setNuevaEmpresa({ ...nuevaEmpresa, origen: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ORIGENES.map((o) => (
-                    <SelectItem key={o} value={o}>{o}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="emp_origen">Origen</Label>
+                <Select
+                  value={nuevaEmpresa.origen || ''}
+                  onValueChange={(value: Origen) => setNuevaEmpresa({ ...nuevaEmpresa, origen: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ORIGENES.map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="emp_relacion">Relación</Label>
+                <Select
+                  value={nuevaEmpresa.tipo_relacion || 'Cliente'}
+                  onValueChange={(value: TipoRelacion) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_relacion: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIPOS_RELACION.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="emp_relacion">Relación</Label>
-              <Select
-                value={nuevaEmpresa.tipo_relacion || 'Cliente'}
-                onValueChange={(value: TipoRelacion) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_relacion: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIPOS_RELACION.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          </DialogBody>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalNuevaEmpresa(false)}>
               Cancelar
             </Button>
             <Button onClick={handleSaveEmpresa} disabled={isSavingEmpresa}>
-              {isSavingEmpresa ? 'Guardando...' : 'Crear Empresa'}
+              {isSavingEmpresa ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Crear Empresa'
+              )}
             </Button>
-          </div>
-        </div>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

@@ -274,12 +274,35 @@ export default function SoportePage() {
   }
 
   const handleChangeState = (ticketId: string, estado: EstadoTicket) => {
+    // Buscar el ticket antes de cambiar
+    const ticket = tickets.find(t => t.id === ticketId)
+
     setTickets(prev => prev.map(t => t.id === ticketId ? {
       ...t,
       estado,
       fecha_cierre: estado === 'Cerrado' ? new Date().toISOString() : undefined,
       fecha_primera_respuesta: t.fecha_primera_respuesta || new Date().toISOString(),
     } : t))
+
+    // Si se cierra el ticket y tiene horas invertidas, sumarlas al contrato
+    if (estado === 'Cerrado' && ticket && ticket.tiempo_invertido_minutos > 0 && ticket.contrato_id) {
+      setContratos(prev => prev.map(c => {
+        if (c.id === ticket.contrato_id) {
+          const nuevasHoras = c.horas_consumidas_mes + (ticket.tiempo_invertido_minutos / 60)
+          // Verificar si se excedió el límite
+          if (nuevasHoras > c.horas_incluidas_mes) {
+            console.warn(`⚠️ ALERTA: Ticket ${ticket.numero_ticket} excedió las horas del contrato ${c.nombre}`)
+            // Aquí se podría mostrar una notificación
+          }
+          return {
+            ...c,
+            horas_consumidas_mes: nuevasHoras
+          }
+        }
+        return c
+      }))
+    }
+
     setSelectedId(null)
   }
 
