@@ -125,7 +125,7 @@ export default function DashboardLayout({
         <DashboardHeader />
 
         {/* Page content */}
-        <main className="px-6 py-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden">
+        <main className="px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto">
           {children}
         </main>
       </div>

@@ -229,8 +229,7 @@ export default function ProyectosPage() {
         }
         panelOpen={!!selectedId}
       >
-        <div className="space-y-6 w-full px-6">
-          <ModuleHeader
+        <ModuleHeader
           title="Proyectos"
           description="Pipeline de proyectos"
           actions={
@@ -334,7 +333,6 @@ export default function ProyectosPage() {
               ))}
             </div>
           )}
-        </div>
       </ModuleContainerWithPanel>
 
       {/* Modal Nuevo Proyecto */}

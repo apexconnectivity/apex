@@ -82,15 +82,8 @@ export function ProjectDetailPanel({
 
   return (
     <>
-      {/* Overlay con animación fade-in suave */}
-      <div
-        className={`absolute inset-0 bg-black/60 z-40 transition-all duration-500 ease-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        onClick={onClose}
-      />
-
       {/* Panel lateral */}
-      <div className="h-full flex flex-col bg-slate-800">
+      <div className="h-full flex flex-col">
         {/* Header del panel */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
