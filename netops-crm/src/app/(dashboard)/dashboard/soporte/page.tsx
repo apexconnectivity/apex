@@ -16,14 +16,20 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalList
 import { CSS } from '@dnd-kit/utilities'
 import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
 import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
-import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
+import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTicketModal, CreateContractModal, type CreateTicketData, type CreateContractData } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Empresa } from '@/types/crm'
+import { Proyecto } from '@/types/proyectos'
 
 const DEMO_EMPRESAS: Empresa[] = [
   { id: '1', nombre: 'Soluciones Tecnológicas SA', tipo_entidad: 'cliente', email_principal: 'contacto@soltec.com', telefono_principal: '+54 11 1234-5678', direccion: 'Av. Libertador 1000', ciudad: 'Buenos Aires', pais: 'Argentina', creado_en: '2024-01-15', tipo_relacion: 'Cliente' },
   { id: '2', nombre: 'Hospital Regional Norte', tipo_entidad: 'cliente', email_principal: 'info@hrn.com', telefono_principal: '+54 11 2345-6789', ciudad: 'Buenos Aires', pais: 'Argentina', creado_en: '2024-02-01', tipo_relacion: 'Cliente' },
   { id: '3', nombre: 'TechCorp International', tipo_entidad: 'cliente', ciudad: 'Miami', pais: 'EEUU', creado_en: '2024-03-01', tipo_relacion: 'Cliente' },
+]
+
+const DEMO_PROYECTOS: Proyecto[] = [
+  { id: 'p1', empresa_id: '1', nombre: 'Implementación CRM', fase_actual: 4, estado: 'activo', moneda: 'USD', probabilidad_cierre: 90, responsable_id: '3', contacto_tecnico_id: '1', requiere_compras: true, creado_en: '2025-06-01' },
+  { id: 'p2', empresa_id: '2', nombre: 'Migración Cloud', fase_actual: 2, estado: 'activo', moneda: 'USD', probabilidad_cierre: 40, responsable_id: '3', contacto_tecnico_id: '2', requiere_compras: false, creado_en: '2025-11-01' },
 ]
 
 const DEMO_USUARIOS = [
@@ -139,221 +145,6 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
   )
 }
 
-function CreateTicketModal({ contratos, onClose, onCreate }: {
-  contratos: ContratoSoporte[]
-  onClose: () => void
-  onCreate: (ticket: Omit<Ticket, 'id' | 'numero_ticket' | 'fecha_apertura' | 'tiempo_invertido_minutos'>) => void
-}) {
-  const [ticket, setTicket] = useState({
-    contrato_id: '',
-    tipo_origen: 'soporte' as TipoOrigen,
-    categoria: 'Soporte técnico' as CategoriaTicket,
-    titulo: '',
-    descripcion: '',
-    prioridad: 'Media' as PrioridadTicket,
-  })
-
-  const selectedContrato = contratos.find(c => c.id === ticket.contrato_id)
-
-  const handleCreate = () => {
-    if (!ticket.titulo || !ticket.descripcion || !ticket.contrato_id) return
-    onCreate({
-      ...ticket,
-      contrato_nombre: selectedContrato?.nombre,
-      creado_por: '1',
-      creado_por_nombre: 'Carlos Admin',
-      creado_por_cliente: false,
-      estado: 'Abierto',
-    })
-    onClose()
-  }
-
-  return (
-    <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle>Nuevo Ticket</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <Label>Cliente/Contrato *</Label>
-            <Select value={ticket.contrato_id} onValueChange={(v) => setTicket({ ...ticket, contrato_id: v })}>
-              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar contrato..." /></SelectTrigger>
-              <SelectContent>
-                {contratos.filter(c => c.estado === 'Activo').map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.empresa_nombre} - {c.nombre}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Categoría *</Label>
-            <Select value={ticket.categoria} onValueChange={(v) => setTicket({ ...ticket, categoria: v as CategoriaTicket })}>
-              <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIAS_TICKET.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Prioridad *</Label>
-            <Select value={ticket.prioridad} onValueChange={(v) => setTicket({ ...ticket, prioridad: v as PrioridadTicket })}>
-              <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PRIORIDADES_TICKET.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Título *</Label>
-            <Input value={ticket.titulo} onChange={(e) => setTicket({ ...ticket, titulo: e.target.value })} placeholder="Resumen del problema" />
-          </div>
-
-          <div>
-            <Label>Descripción *</Label>
-            <Textarea value={ticket.descripcion} onChange={(e) => setTicket({ ...ticket, descripcion: e.target.value })} placeholder="Descripción detallada del problema" rows={4} />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={!ticket.titulo || !ticket.descripcion || !ticket.contrato_id}>Crear Ticket</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function CreateContractModal({ empresas, usuarios, onClose, onCreate }: {
-  empresas: Empresa[]
-  usuarios: { id: string; nombre: string; rol: string }[]
-  onClose: () => void
-  onCreate: (contrato: Omit<ContratoSoporte, 'id' | 'creado_en'>) => void
-}) {
-  const [contrato, setContrato] = useState({
-    empresa_id: '',
-    nombre: '',
-    tipo: 'Premium' as const,
-    fecha_inicio: '',
-    fecha_fin: '',
-    renovacion_automatica: true,
-    estado: 'Activo' as const,
-    moneda: 'USD' as const,
-    monto_mensual: 0,
-    horas_incluidas_mes: 10,
-    tecnico_asignado_id: '',
-    notas: '',
-  })
-
-  const selectedEmpresa = empresas.find(e => e.id === contrato.empresa_id)
-  const tecnicos = usuarios.filter(u => u.rol === 'tecnico')
-
-  const handleCreate = () => {
-    if (!contrato.empresa_id || !contrato.nombre || !contrato.fecha_inicio || !contrato.fecha_fin) return
-    onCreate({
-      ...contrato,
-      empresa_nombre: selectedEmpresa?.nombre || '',
-      tecnico_asignado_nombre: usuarios.find(u => u.id === contrato.tecnico_asignado_id)?.nombre,
-      horas_consumidas_mes: 0,
-    })
-    onClose()
-  }
-
-  return (
-    <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle>Nuevo Contrato de Soporte</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <Label>Empresa *</Label>
-            <Select value={contrato.empresa_id} onValueChange={(v) => setContrato({ ...contrato, empresa_id: v })}>
-              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar empresa..." /></SelectTrigger>
-              <SelectContent>
-                {empresas.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Nombre del contrato *</Label>
-            <Input value={contrato.nombre} onChange={(e) => setContrato({ ...contrato, nombre: e.target.value })} placeholder="Ej: Soporte Premium 2026" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Tipo</Label>
-              <Select value={contrato.tipo} onValueChange={(v) => setContrato({ ...contrato, tipo: v as any })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CONTRATOS_TIPOS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Moneda</Label>
-              <Select value={contrato.moneda} onValueChange={(v) => setContrato({ ...contrato, moneda: v as any })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="MXN">MXN</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Fecha inicio *</Label>
-              <Input type="date" value={contrato.fecha_inicio} onChange={(e) => setContrato({ ...contrato, fecha_inicio: e.target.value })} />
-            </div>
-            <div>
-              <Label>Fecha fin *</Label>
-              <Input type="date" value={contrato.fecha_fin} onChange={(e) => setContrato({ ...contrato, fecha_fin: e.target.value })} />
-            </div>
-            <div>
-              <Label>Monto mensual</Label>
-              <Input type="number" value={contrato.monto_mensual} onChange={(e) => setContrato({ ...contrato, monto_mensual: parseInt(e.target.value) || 0 })} />
-            </div>
-            <div>
-              <Label>Horas incluidas/mes</Label>
-              <Input type="number" value={contrato.horas_incluidas_mes} onChange={(e) => setContrato({ ...contrato, horas_incluidas_mes: parseInt(e.target.value) || 0 })} />
-            </div>
-          </div>
-
-          <div>
-            <Label>Técnico asignado</Label>
-            <Select value={contrato.tecnico_asignado_id} onValueChange={(v) => setContrato({ ...contrato, tecnico_asignado_id: v })}>
-              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar técnico..." /></SelectTrigger>
-              <SelectContent>
-                {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nombre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Notas</Label>
-            <Textarea value={contrato.notas} onChange={(e) => setContrato({ ...contrato, notas: e.target.value })} placeholder="Notas adicionales" rows={2} />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="renovacion" checked={contrato.renovacion_automatica} onChange={(e) => setContrato({ ...contrato, renovacion_automatica: e.target.checked })} className="rounded" />
-            <Label htmlFor="renovacion" className="text-sm">Renovación automática</Label>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={!contrato.empresa_id || !contrato.nombre || !contrato.fecha_inicio || !contrato.fecha_fin}>Crear Contrato</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 export default function SoportePage() {
   const { user } = useAuth()
   const [view, setView] = useState<'contratos' | 'tickets'>('tickets')
@@ -441,15 +232,18 @@ export default function SoportePage() {
     urgentes: tickets.filter(t => t.prioridad === 'Urgente' && t.estado !== 'Cerrado').length,
   }), [tickets])
 
-  const handleCreateTicket = (ticket: Omit<Ticket, 'id' | 'numero_ticket' | 'fecha_apertura' | 'tiempo_invertido_minutos'>) => {
+  const handleCreateTicket = (data: CreateTicketData) => {
     const year = new Date().getFullYear()
     const num = tickets.length + 1
     const newTicket: Ticket = {
-      ...ticket,
+      ...data.ticket,
       id: Date.now().toString(),
       numero_ticket: `TK-${year}-${String(num).padStart(3, '0')}`,
       fecha_apertura: new Date().toISOString(),
       tiempo_invertido_minutos: 0,
+      creado_por: user?.id || '1',
+      creado_por_nombre: user?.nombre || 'Carlos Admin',
+      creado_por_cliente: false,
     }
     setTickets(prev => [...prev, newTicket])
     setComentarios(prev => ({ ...prev, [newTicket.id]: [] }))
@@ -483,9 +277,9 @@ export default function SoportePage() {
     setComentarios(prev => ({ ...prev, [ticketId]: [...(prev[ticketId] || []), newComentario] }))
   }
 
-  const handleCreateContract = (contrato: Omit<ContratoSoporte, 'id' | 'creado_en'>) => {
+  const handleCreateContract = (data: CreateContractData) => {
     const newContract: ContratoSoporte = {
-      ...contrato,
+      ...data.contrato,
       id: Date.now().toString(),
       creado_en: new Date().toISOString(),
     }
@@ -528,127 +322,132 @@ export default function SoportePage() {
         {view === 'tickets' && (
           <>
             <StatGrid cols={6}>
-                <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
-                <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
-                <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
-                <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
-                <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
-                <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
-              </StatGrid>
+              <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
+              <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
+              <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
+              <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
+              <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
+              <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
+            </StatGrid>
 
-              <div className="flex gap-4 items-center">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                  <SelectTrigger className="w-48 bg-background"><SelectValue placeholder="Filtrar estado" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos los estados</SelectItem>
-                    {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Ticket</Button>}
-              </div>
+            <div className="flex gap-4 items-center">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+                <SelectTrigger className="w-48 bg-background"><SelectValue placeholder="Filtrar estado" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos los estados</SelectItem>
+                  {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Ticket</Button>}
+            </div>
 
-              <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <div className="-mx-6 px-6 overflow-x-auto">
-                  <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
-                    {ESTADOS_TICKET.slice(0, 4).map(estado => (
-                      <div key={estado} className="min-w-[280px]" data-estado={estado}>
-                        <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
-                          <h3 className="font-semibold">{estado}</h3>
-                          <Badge variant="secondary" className="ml-auto">{getTicketsByEstado(estado).length}</Badge>
-                        </div>
-                        <SortableContext items={getTicketsByEstado(estado).map(t => t.id)} strategy={horizontalListSortingStrategy}>
-                          <div className="space-y-3 min-h-[200px] p-2 rounded-lg border border-dashed border-border/50">
-                            {getTicketsByEstado(estado).map(ticket => (
-                              <SortableTicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedId(ticket.id)} />
-                            ))}
-                            {getTicketsByEstado(estado).length === 0 && (
-                              <div className="text-center py-8 text-muted-foreground text-sm">No hay tickets</div>
-                            )}
-                          </div>
-                        </SortableContext>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <div className="-mx-6 px-6 overflow-x-auto">
+                <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
+                  {ESTADOS_TICKET.slice(0, 4).map(estado => (
+                    <div key={estado} className="min-w-[280px]" data-estado={estado}>
+                      <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
+                        <h3 className="font-semibold">{estado}</h3>
+                        <Badge variant="secondary" className="ml-auto">{getTicketsByEstado(estado).length}</Badge>
                       </div>
-                    ))}
-                  </div>
-                  <DragOverlay>
-                    {activeId ? (
-                      <Card className="shadow-xl rotate-3 cursor-grabbing">
-                        <CardContent className="p-4 space-y-2">
-                          <span className="text-xs font-mono text-muted-foreground">{tickets.find(t => t.id === activeId)?.numero_ticket}</span>
-                          <h4 className="font-semibold text-sm">{tickets.find(t => t.id === activeId)?.titulo}</h4>
-                        </CardContent>
-                      </Card>
-                    ) : null}
-                  </DragOverlay>
+                      <SortableContext items={getTicketsByEstado(estado).map(t => t.id)} strategy={horizontalListSortingStrategy}>
+                        <div className="space-y-3 min-h-[200px] p-2 rounded-lg border border-dashed border-border/50">
+                          {getTicketsByEstado(estado).map(ticket => (
+                            <SortableTicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedId(ticket.id)} />
+                          ))}
+                          {getTicketsByEstado(estado).length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground text-sm">No hay tickets</div>
+                          )}
+                        </div>
+                      </SortableContext>
+                    </div>
+                  ))}
                 </div>
-              </DndContext>
-            </>
-          )}
-
-          {view === 'contratos' && (
-            <>
-              <div className="flex justify-end">
-                {canCreate && <Button onClick={() => setShowCreateContract(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Contrato</Button>}
+                <DragOverlay>
+                  {activeId ? (
+                    <Card className="shadow-xl rotate-3 cursor-grabbing">
+                      <CardContent className="p-4 space-y-2">
+                        <span className="text-xs font-mono text-muted-foreground">{tickets.find(t => t.id === activeId)?.numero_ticket}</span>
+                        <h4 className="font-semibold text-sm">{tickets.find(t => t.id === activeId)?.titulo}</h4>
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                </DragOverlay>
               </div>
+            </DndContext>
+          </>
+        )}
 
-              <div className="grid gap-4">
-                {contratos.map(contrato => (
-                  <Card key={contrato.id} className="hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold">{contrato.nombre}</h3>
-                            <Badge variant={contrato.estado === 'Activo' ? 'default' : 'secondary'}>{contrato.estado}</Badge>
-                          </div>
-                          <p className="text-muted-foreground">{contrato.empresa_nombre}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{contrato.moneda} {contrato.monto_mensual}/mes</p>
-                          <p className="text-sm text-muted-foreground">{contrato.tipo}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
-                        <div><p className="text-muted-foreground">Inicio</p><p>{new Date(contrato.fecha_inicio).toLocaleDateString('es-ES')}</p></div>
-                        <div><p className="text-muted-foreground">Fin</p><p>{new Date(contrato.fecha_fin).toLocaleDateString('es-ES')}</p></div>
-                        <div><p className="text-muted-foreground">Técnico</p><p>{contrato.tecnico_asignado_nombre || 'Sin asignar'}</p></div>
-                        <div><p className="text-muted-foreground">Horas</p><p>{contrato.horas_consumidas_mes}/{contrato.horas_incluidas_mes}h</p></div>
-                      </div>
-                      <div className="mt-4 bg-slate-800/50 rounded-lg p-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>Horas consumidas este mes</span>
-                          <span className="font-medium">{Math.round(contrato.horas_consumidas_mes)}/{contrato.horas_incluidas_mes}h</span>
-                        </div>
-                        <div className="w-full bg-slate-700 h-2 rounded-full mt-2">
-                          <div
-                            className={`h-2 rounded-full ${contrato.horas_consumidas_mes > contrato.horas_incluidas_mes ? 'bg-red-500' : 'bg-cyan-500'}`}
-                            style={{ width: `${Math.min((contrato.horas_consumidas_mes / contrato.horas_incluidas_mes) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+        {view === 'contratos' && (
+          <>
+            <div className="flex justify-end">
+              {canCreate && <Button onClick={() => setShowCreateContract(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Contrato</Button>}
+            </div>
 
-          {showCreateTicket && (
-            <CreateTicketModal
-              contratos={contratos}
-              onClose={() => setShowCreateTicket(false)}
-              onCreate={handleCreateTicket}
-            />
-          )}
+            <div className="grid gap-4">
+              {contratos.map(contrato => (
+                <Card key={contrato.id} className="hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold">{contrato.nombre}</h3>
+                          <Badge variant={contrato.estado === 'Activo' ? 'default' : 'secondary'}>{contrato.estado}</Badge>
+                        </div>
+                        <p className="text-muted-foreground">{contrato.empresa_nombre}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">{contrato.moneda} {contrato.monto_mensual}/mes</p>
+                        <p className="text-sm text-muted-foreground">{contrato.tipo}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
+                      <div><p className="text-muted-foreground">Inicio</p><p>{new Date(contrato.fecha_inicio).toLocaleDateString('es-ES')}</p></div>
+                      <div><p className="text-muted-foreground">Fin</p><p>{new Date(contrato.fecha_fin).toLocaleDateString('es-ES')}</p></div>
+                      <div><p className="text-muted-foreground">Técnico</p><p>{contrato.tecnico_asignado_nombre || 'Sin asignar'}</p></div>
+                      <div><p className="text-muted-foreground">Horas</p><p>{contrato.horas_consumidas_mes}/{contrato.horas_incluidas_mes}h</p></div>
+                    </div>
+                    <div className="mt-4 bg-slate-800/50 rounded-lg p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Horas consumidas este mes</span>
+                        <span className="font-medium">{Math.round(contrato.horas_consumidas_mes)}/{contrato.horas_incluidas_mes}h</span>
+                      </div>
+                      <div className="w-full bg-slate-700 h-2 rounded-full mt-2">
+                        <div
+                          className={`h-2 rounded-full ${contrato.horas_consumidas_mes > contrato.horas_incluidas_mes ? 'bg-red-500' : 'bg-cyan-500'}`}
+                          style={{ width: `${Math.min((contrato.horas_consumidas_mes / contrato.horas_incluidas_mes) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
 
-          {showCreateContract && (
-            <CreateContractModal
-              empresas={DEMO_EMPRESAS}
-              usuarios={DEMO_USUARIOS}
-              onClose={() => setShowCreateContract(false)}
-              onCreate={handleCreateContract}
-            />
-          )}
+        {showCreateTicket && (
+          <CreateTicketModal
+            open={showCreateTicket}
+            onOpenChange={setShowCreateTicket}
+            contratos={contratos}
+            empresas={DEMO_EMPRESAS}
+            proyectos={DEMO_PROYECTOS}
+            usuarios={DEMO_USUARIOS}
+            onSave={handleCreateTicket}
+          />
+        )}
+
+        {showCreateContract && (
+          <CreateContractModal
+            open={showCreateContract}
+            onOpenChange={setShowCreateContract}
+            empresas={DEMO_EMPRESAS}
+            usuarios={DEMO_USUARIOS}
+            onSave={handleCreateContract}
+          />
+        )}
       </ModuleContainerWithPanel>
     </>
   )

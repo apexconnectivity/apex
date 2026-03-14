@@ -39,6 +39,8 @@ export interface ContratoSoporte {
 export interface Ticket {
   id: string
   numero_ticket: string
+  empresa_id?: string
+  empresa_nombre?: string
   contrato_id?: string
   contrato_nombre?: string
   proyecto_id?: string
@@ -52,6 +54,7 @@ export interface Ticket {
   creado_por_cliente: boolean
   fecha_apertura: string
   fecha_cierre?: string
+  fecha_ejecucion?: string  // Fecha/hora programada para ejecución (ventana de trabajo)
   estado: EstadoTicket
   prioridad: PrioridadTicket
   fecha_limite_respuesta?: string
