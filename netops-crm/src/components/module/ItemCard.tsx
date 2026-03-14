@@ -1,9 +1,8 @@
 import { ReactNode } from 'react'
-import { LucideIcon } from 'lucide-react'
+import { LucideIcon, MoreHorizontal, AlertTriangle, Calendar } from 'lucide-react'
 import { ModuleCard } from './ModuleCard'
 import { StatusBadge } from './StatusBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface ItemMeta {
@@ -41,6 +40,13 @@ interface ProjectCardProps {
     avatar?: string
   }
   tags?: { label: string; color?: string }[]
+  tasksInfo?: {
+    total: number
+    completadas: number
+    enProgreso: number
+    bloqueadas: number
+    proximaVence: string | null
+  }
   onClick?: () => void
   onMenuClick?: () => void
   className?: string
@@ -109,11 +115,17 @@ function ProjectCard({
   value,
   assignee,
   tags,
+  tasksInfo,
   onClick,
   onMenuClick,
   className = '',
   children
 }: ProjectCardProps) {
+  const formatFecha = (fecha: string) => {
+    const d = new Date(fecha)
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`
+  }
+
   return (
     <ModuleCard onClick={onClick} className={`group ${className}`}>
       <div className="flex items-start justify-between mb-3">
@@ -166,6 +178,42 @@ function ProjectCard({
         </div>
       )}
 
+      {tasksInfo && tasksInfo.total > 0 && (
+        <div className="space-y-1 mb-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">
+              {tasksInfo.completadas}/{tasksInfo.total} tareas
+            </span>
+            <div className="flex gap-0.5">
+              {Array.from({ length: tasksInfo.total }).map((_, i) => (
+                <span
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    i < tasksInfo.completadas ? 'bg-emerald-500' :
+                    i < tasksInfo.completadas + tasksInfo.enProgreso ? 'bg-blue-500' :
+                    'bg-slate-400'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {tasksInfo.bloqueadas > 0 && (
+            <div className="flex items-center gap-1 text-xs text-red-400">
+              <AlertTriangle className="h-3 w-3" />
+              <span>{tasksInfo.bloqueadas} bloqueada{tasksInfo.bloqueadas > 1 ? 's' : ''}</span>
+            </div>
+          )}
+          
+          {tasksInfo.proximaVence && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              <span>Vence: {formatFecha(tasksInfo.proximaVence)}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between pt-2 border-t border-border/50">
         {dueDate && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -179,12 +227,17 @@ function ProjectCard({
             </span>
           )}
           {assignee && (
-            <Avatar className="h-6 w-6 border border-border">
-              <AvatarImage src={assignee.avatar} />
-              <AvatarFallback className="text-[10px]">
-                {assignee.name.split(' ').map((n) => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-2">
+              <Avatar className="h-7 w-7 border border-border">
+                <AvatarImage src={assignee.avatar} />
+                <AvatarFallback className="text-[9px]">
+                  {assignee.name.split(' ').map((n) => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                {assignee.name}
+              </span>
+            </div>
           )}
         </div>
       </div>

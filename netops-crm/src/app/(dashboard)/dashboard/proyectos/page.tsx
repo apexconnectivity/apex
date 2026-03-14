@@ -106,6 +106,40 @@ export default function ProyectosPage() {
 
   const proyectosCerrados = useMemo(() => proyectos.filter(p => p.estado === 'cerrado'), [proyectos])
 
+  const infoTareasPorProyecto = useMemo(() => {
+    const r: Record<string, {
+      total: number
+      completadas: number
+      enProgreso: number
+      bloqueadas: number
+      proximaVence: string | null
+      progreso: number
+    }> = {}
+    
+    proyectos.forEach(p => {
+      const tareasDelProyecto = tareas.filter(t => t.proyecto_id === p.id)
+      const total = tareasDelProyecto.length
+      const completadas = tareasDelProyecto.filter(t => t.estado === 'Completada').length
+      const enProgreso = tareasDelProyecto.filter(t => t.estado === 'En progreso').length
+      const bloqueadas = tareasDelProyecto.filter(t => t.estado === 'Bloqueada').length
+      
+      const pendientes = tareasDelProyecto
+        .filter(t => t.estado !== 'Completada' && t.fecha_vencimiento)
+        .sort((a, b) => new Date(a.fecha_vencimiento!).getTime() - new Date(b.fecha_vencimiento!).getTime())
+      const proximaVence = pendientes[0]?.fecha_vencimiento || null
+      
+      r[p.id] = { 
+        total,
+        completadas,
+        enProgreso,
+        bloqueadas,
+        proximaVence,
+        progreso: total === 0 ? 0 : Math.round((completadas / total) * 100)
+      }
+    })
+    return r
+  }, [proyectos, tareas])
+
   const handleFase = (id: string, fase: number) => {
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p))
   }
@@ -284,11 +318,12 @@ export default function ProyectosPage() {
                           key={p.id}
                           title={p.nombre}
                           subtitle={p.cliente_nombre}
-                          progress={p.probabilidad_cierre}
-                          progressLabel="Probabilidad"
+                          progress={infoTareasPorProyecto[p.id]?.progreso}
+                          progressLabel="Avance"
                           value={`${p.moneda} ${p.monto_estimado?.toLocaleString()}`}
                           assignee={{ name: p.responsable_nombre || '' }}
                           tags={(p.tags || []).map(tag => ({ label: tag }))}
+                          tasksInfo={infoTareasPorProyecto[p.id]}
                           onClick={() => setSelectedId(p.id)}
                         >
                           {canMovePhases && (
