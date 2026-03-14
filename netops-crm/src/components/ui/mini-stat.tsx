@@ -60,6 +60,7 @@ interface MiniStatProps {
   showBorder?: boolean
   iconPosition?: "left" | "right"
   style?: React.CSSProperties
+  accentColor?: string
 }
 
 export function MiniStat({ 
@@ -72,7 +73,8 @@ export function MiniStat({
   variant = "default",
   showBorder = false,
   iconPosition = "right",
-  style
+  style,
+  accentColor
 }: MiniStatProps) {
   const padding = size === "md" ? "p-6" : "p-4"
   const config = STAT_VARIANTS[variant]
@@ -83,7 +85,7 @@ export function MiniStat({
       showBorder && config.borderColor && `border ${config.borderColor}`,
       className
     )}>
-      <CardContent className={cn(padding, "flex items-center justify-between")}>
+      <CardContent className={cn(padding, "flex items-center justify-between", accentColor && "border-l-[3px]")} style={accentColor ? { borderLeftColor: accentColor } : undefined}>
         <div className="min-w-0">
           <p className={cn("text-2xl font-bold tracking-tight", valueColor || config.valueColor)}>
             {value}

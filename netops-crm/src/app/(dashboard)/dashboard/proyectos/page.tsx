@@ -245,6 +245,7 @@ export default function ProyectosPage() {
                 label={fase.nombre}
                 variant="default"
                 showBorder
+                accentColor={fase.color}
                 icon={
                   fase.id === 1 ? <Lightbulb className="h-5 w-5" /> :
                   fase.id === 2 ? <PenTool className="h-5 w-5" /> :
@@ -252,8 +253,6 @@ export default function ProyectosPage() {
                   fase.id === 4 ? <Bug className="h-5 w-5" /> :
                   <Rocket className="h-5 w-5" />
                 }
-                className="border-l-4"
-                style={{ borderLeftColor: fase.color }}
               />
             ))}
           </StatGrid>
