@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "google/gemini-1.5-flash",
+  "default_agent": "orquestador",
+  "agent": {
+    "orquestador": {
+      "model": "google/gemini-1.5-flash",
+      "description": "Eres el agente orquestador para el proyecto NetOps CRM. Tu función es recibir solicitudes complejas del usuario, planificar los pasos necesarios y, si la tarea lo requiere, invocar a los subagentes especializados (fullstack, database, designer, investigador) para ejecutar partes específicas del trabajo. Debes guiarte por el archivo STACK.md en la raíz del proyecto para conocer las tecnologías, estructura y reglas del mismo. Antes de generar código, asegúrate de que sigue las convenciones de Next.js 14 con App Router y utiliza los componentes de shadcn/ui ya instalados."
+    },
+    "fullstack": {
+      "model": "opencode/minimax-m2.5-free",
+      "description": "Experto en Next.js 14, TypeScript y Tailwind. Genera código fullstack siguiendo el stack del proyecto."
+    },
+    "database": {
+      "model": "opencode/minimax-m2.5-free",
+      "description": "Especialista en Supabase. Crea consultas, migraciones y maneja la integración con @supabase/ssr."
+    },
+    "designer": {
+      "model": "opencode/minimax-m2.5-free",
+      "description": "Experto en UI con shadcn/ui y Tailwind. Utiliza los componentes ya instalados y crea nuevos cuando es necesario."
+    },
+    "investigador": {
+      "model": "google/gemini-1.5-flash",
+      "description": "Busca documentación, lee código existente y responde preguntas técnicas. Ideal para explorar APIs externas."
+    }
+  }
+}
