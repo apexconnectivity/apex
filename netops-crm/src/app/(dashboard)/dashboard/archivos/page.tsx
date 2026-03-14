@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive } from 'lucide-react'
 import { Archivo, CarpetaDrive, EntidadTipo, Visibilidad, formatBytes, getFileIcon, TAMAÑO_MAXIMO, TIPOS_ARCHIVO_PERMITIDOS } from '@/types/archivos'
@@ -350,7 +351,7 @@ export default function ArchivosPage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -481,6 +482,6 @@ export default function ArchivosPage() {
         onClose={() => setShowUpload(false)}
         onUpload={handleUpload}
       />
-    </div>
+    </ModuleContainer>
   )
 }

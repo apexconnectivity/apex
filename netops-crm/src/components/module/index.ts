@@ -1,6 +1,8 @@
 export { ModuleHeader } from './ModuleHeader'
 export { ModuleCard } from './ModuleCard'
 export { ModuleGrid } from './ModuleGrid'
+export { ModuleContainer } from './ModuleContainer'
+export { ModuleContainerWithPanel } from './ModuleContainerWithPanel'
 export { ModuleSearch, FilterChip, FilterGroup } from './ModuleSearch'
 export { ItemCard, ProjectCard } from './ItemCard'
 export { EmpresaCard } from './EmpresaCard'

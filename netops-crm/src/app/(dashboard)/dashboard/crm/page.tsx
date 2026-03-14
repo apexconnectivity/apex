@@ -13,6 +13,7 @@ import { EmpresaModal } from '@/components/module/EmpresaModal'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { EmpresaDetailModal } from '@/components/module/EmpresaDetailModal'
 import { SelectWithAdd } from '@/components/module/SelectWithAdd'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -524,7 +525,7 @@ export default function CRMPage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -857,9 +858,9 @@ export default function CRMPage() {
               <Upload className="h-4 w-4 mr-2" />
               Subir
             </Button>
-          </DialogFooter>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ModuleContainer>
   )
 }

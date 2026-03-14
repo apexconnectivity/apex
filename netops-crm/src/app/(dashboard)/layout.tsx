@@ -126,10 +126,7 @@ export default function DashboardLayout({
 
         {/* Page content */}
         <main className="px-6 py-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden">
-          <div className="relative min-h-full p-4 rounded-xl bg-slate-900/50">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-blue-500/5 pointer-events-none" />
-            {children}
-          </div>
+          {children}
         </main>
       </div>
     </div>

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, getEstadoColor, getTipoIcon, TIPOS_SOLICITUD } from '@/types/calendario'
 import {
@@ -426,7 +427,7 @@ export default function CalendarioPage() {
   const nombreDias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -516,6 +517,6 @@ export default function CalendarioPage() {
       <NuevaReunionModal isOpen={showNueva} onClose={() => setShowNueva(false)} onCreate={handleCreateReunion} proyectos={DEMO_PROYECTOS} usuarios={DEMO_USUARIOS} />
 
       {selectedReunion && <DetalleReunionModal reunion={selectedReunion} onClose={() => setSelectedReunion(null)} onCambiarEstado={handleCambiarEstado} />}
-    </div>
+    </ModuleContainer>
   )
 }

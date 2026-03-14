@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getCanalIcon, getEstadoNotificacionColor } from '@/types/notificaciones'
 import {
@@ -381,7 +382,7 @@ export default function NotificacionesPage() {
   }), [logs])
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -427,6 +428,6 @@ export default function NotificacionesPage() {
           <MisPreferenciasTab preferencia={preferencia} onUpdate={setPreferencia} />
         </TabsContent>
       </Tabs>
-    </div>
+    </ModuleContainer>
   )
 }

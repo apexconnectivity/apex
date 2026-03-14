@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, getEstadoColor, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
 import {
@@ -383,7 +384,7 @@ export default function ComprasPage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -503,6 +504,6 @@ export default function ComprasPage() {
       <NuevaOrdenModal isOpen={showNuevaOrden} onClose={() => setShowNuevaOrden(false)} onCreate={handleCreateOrden} proyectos={DEMO_PROYECTOS} proveedores={proveedores.map(p => ({ id: p.id, nombre: p.nombre }))} />
 
       {selectedOrden && <DetalleOrdenModal orden={selectedOrden} onClose={() => setSelectedOrden(null)} onCambiarEstado={handleCambiarEstado} />}
-    </div>
+    </ModuleContainer>
   )
 }

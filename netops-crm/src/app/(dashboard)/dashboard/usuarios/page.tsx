@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { Card, CardContent } from '@/components/ui/card'
-import { Modal } from '@/components/module'
+import { Modal, ModuleContainer } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -194,7 +194,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -380,6 +380,6 @@ export default function UsersPage() {
           </div>
         </Modal>
       )}
-    </div>
+    </ModuleContainer>
   )
 }

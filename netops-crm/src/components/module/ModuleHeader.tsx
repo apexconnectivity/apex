@@ -23,10 +23,10 @@ export function ModuleHeader({
 }: ModuleHeaderProps) {
   return (
     <div className={cn('flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/30', className)}>
-      <div className="bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 -mx-6 px-6 py-4 -mt-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground/90">{title}</h1>
+      <div>
+        <h1 className="text-3xl font-bold">{title}</h1>
         {description && (
-          <p className="text-sm text-muted-foreground/70 mt-0.5">{description}</p>
+          <p className="text-muted-foreground mt-1">{description}</p>
         )}
       </div>
 

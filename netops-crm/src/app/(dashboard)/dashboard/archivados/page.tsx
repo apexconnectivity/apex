@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat } from '@/components/ui/mini-stat'
 import { ProyectoArchivado, ProyectoCerrado, ConfigArchivado, Clasificacion, getClasificacionColor } from '@/types/archivado'
 import {
@@ -536,7 +537,7 @@ export default function ArchivadoPage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-x-hidden">
+    <ModuleContainer>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -596,6 +597,6 @@ export default function ArchivadoPage() {
           onConfirm={() => handleEliminar(deleteConfirm)}
         />
       )}
-    </div>
+    </ModuleContainer>
   )
 }
