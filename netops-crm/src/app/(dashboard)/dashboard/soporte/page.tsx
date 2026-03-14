@@ -156,6 +156,12 @@ export default function SoportePage() {
   const [showCreateTicket, setShowCreateTicket] = useState(false)
   const [showCreateContract, setShowCreateContract] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
+  const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
+  const [filtroCliente, setFiltroCliente] = useState<string>('todos')
+  const [filtroResponsable, setFiltroResponsable] = useState<string>('todos')
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState<string>('')
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState<string>('')
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -212,10 +218,23 @@ export default function SoportePage() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter(t => {
+      // Filtro por estado
       if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false
+      // Filtro por categoría
+      if (filtroCategoria !== 'todas' && t.categoria !== filtroCategoria) return false
+      // Filtro por prioridad
+      if (filtroPrioridad !== 'todas' && t.prioridad !== filtroPrioridad) return false
+      // Filtro por cliente/empresa
+      if (filtroCliente !== 'todos' && t.empresa_id !== filtroCliente && t.contrato_id !== filtroCliente) return false
+      // Filtro por responsable
+      if (filtroResponsable !== 'todos' && t.responsable_id !== filtroResponsable) return false
+      // Filtro por fecha desde
+      if (filtroFechaDesde && t.fecha_apertura < filtroFechaDesde) return false
+      // Filtro por fecha hasta
+      if (filtroFechaHasta && t.fecha_apertura > filtroFechaHasta) return false
       return true
     })
-  }, [tickets, filtroEstado])
+  }, [tickets, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaDesde, filtroFechaHasta])
 
   const ticketsPorEstado = useMemo(() => {
     const r: Record<EstadoTicket, Ticket[]> = { 'Abierto': [], 'En progreso': [], 'Esperando cliente': [], 'Resuelto': [], 'Cerrado': [] }
@@ -332,13 +351,101 @@ export default function SoportePage() {
 
             <div className="flex gap-4 items-center">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                <SelectTrigger className="w-48 bg-background"><SelectValue placeholder="Filtrar estado" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los estados</SelectItem>
-                  {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                </SelectContent>
-              </Select>
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground mr-1">Cliente:</Label>
+                <Select value={filtroCliente} onValueChange={setFiltroCliente}>
+                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {DEMO_EMPRESAS.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {isAdmin && (
+                <div className="flex items-center gap-1">
+                  <Label className="text-xs text-muted-foreground mr-1">Responsable:</Label>
+                  <Select value={filtroResponsable} onValueChange={setFiltroResponsable}>
+                    <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      {DEMO_USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
+                <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
+                <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas</SelectItem>
+                    {CATEGORIAS_TICKET.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
+                <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
+                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas</SelectItem>
+                    {PRIORIDADES_TICKET.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Desde:</Label>
+                <Input
+                  type="date"
+                  value={filtroFechaDesde}
+                  onChange={(e) => setFiltroFechaDesde(e.target.value)}
+                  className="w-32 h-8 bg-background"
+                />
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Hasta:</Label>
+                <Input
+                  type="date"
+                  value={filtroFechaHasta}
+                  onChange={(e) => setFiltroFechaHasta(e.target.value)}
+                  className="w-32 h-8 bg-background"
+                />
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFiltroCliente('todos')
+                  setFiltroResponsable('todos')
+                  setFiltroEstado('todos')
+                  setFiltroCategoria('todas')
+                  setFiltroPrioridad('todas')
+                  setFiltroFechaDesde('')
+                  setFiltroFechaHasta('')
+                }}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3 mr-1" /> Limpiar
+              </Button>
+
               {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Ticket</Button>}
             </div>
 
