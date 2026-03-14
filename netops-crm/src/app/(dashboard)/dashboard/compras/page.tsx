@@ -11,13 +11,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, getEstadoColor, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
 import {
   ShoppingCart, Plus, Package, FileText, Truck, CheckCircle, XCircle,
   Clock, AlertTriangle, Search, Filter, DollarSign, Calendar,
   Building2, Mail, Phone, Star, Save, Send, Download, Trash2,
-  ChevronRight, Eye, Edit, X
+  ChevronRight, Eye, Edit, X, ClipboardList, SendHorizontal, PackageCheck
 } from 'lucide-react'
 
 const DEMO_PROVEEDORES: Proveedor[] = [
@@ -395,12 +395,12 @@ export default function ComprasPage() {
         {canCreate && <Button onClick={() => setShowNuevaOrden(true)}><Plus className="h-4 w-4 mr-2" />Nueva Orden</Button>}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MiniStat value={stats.pendientes} label="Pendientes de aprobación" valueColor="text-amber-400" />
-        <MiniStat value={stats.enviadas} label="Enviadas" valueColor="text-purple-400" />
-        <MiniStat value={stats.recibidas} label="Recibidas" valueColor="text-green-400" />
-        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label="Total en órdenes" />
-      </div>
+      <StatGrid cols={4}>
+        <MiniStat value={stats.pendientes} label="Pendientes de aprobación" variant="warning" showBorder icon={<ClipboardList className="h-5 w-5" />} />
+        <MiniStat value={stats.enviadas} label="Enviadas" variant="info" showBorder icon={<SendHorizontal className="h-5 w-5" />} />
+        <MiniStat value={stats.recibidas} label="Recibidas" variant="success" showBorder icon={<PackageCheck className="h-5 w-5" />} />
+        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label="Total en órdenes" variant="primary" showBorder icon={<DollarSign className="h-5 w-5" />} />
+      </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
         <TabsList>
