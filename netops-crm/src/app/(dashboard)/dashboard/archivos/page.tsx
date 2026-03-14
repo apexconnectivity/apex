@@ -11,8 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { MiniStat } from '@/components/ui/mini-stat'
-import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe } from 'lucide-react'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive } from 'lucide-react'
 import { Archivo, CarpetaDrive, EntidadTipo, Visibilidad, formatBytes, getFileIcon, TAMAÑO_MAXIMO, TIPOS_ARCHIVO_PERMITIDOS } from '@/types/archivos'
 
 const DEMO_EMPRESAS = [
@@ -376,13 +376,13 @@ export default function ArchivosPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <MiniStat value={stats.total} label="Total archivos" />
-        <MiniStat value={stats.empresas} label="Empresas" />
-        <MiniStat value={stats.proyectos} label="Proyectos" />
-        <MiniStat value={stats.tickets} label="Tickets" />
-        <MiniStat value={formatBytes(stats.tamañoTotal)} label="Espacio usado" />
-      </div>
+      <StatGrid cols={5}>
+        <MiniStat value={stats.total} label="Total archivos" variant="primary" showBorder icon={<Files className="h-5 w-5" />} />
+        <MiniStat value={stats.empresas} label="Empresas" variant="info" showBorder icon={<Building2 className="h-5 w-5" />} />
+        <MiniStat value={stats.proyectos} label="Proyectos" variant="warning" showBorder icon={<Briefcase className="h-5 w-5" />} />
+        <MiniStat value={stats.tickets} label="Tickets" variant="success" showBorder icon={<Ticket className="h-5 w-5" />} />
+        <MiniStat value={formatBytes(stats.tamañoTotal)} label="Espacio usado" variant="default" showBorder icon={<HardDrive className="h-5 w-5" />} />
+      </StatGrid>
 
       {view === 'empresas' && (
         <div className="flex gap-4">
