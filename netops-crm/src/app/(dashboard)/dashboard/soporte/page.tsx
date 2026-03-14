@@ -16,7 +16,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalList
 import { CSS } from '@dnd-kit/utilities'
 import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
 import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
-import { StatusBadge, ModuleCard, TicketDetailPanel } from '@/components/module'
+import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Empresa } from '@/types/crm'
 
@@ -360,7 +360,8 @@ export default function SoportePage() {
   const [contratos, setContratos] = useState<ContratoSoporte[]>(DEMO_CONTRATOS)
   const [tickets, setTickets] = useState<Ticket[]>(DEMO_TICKETS)
   const [comentarios, setComentarios] = useState<Record<string, ComentarioTicket[]>>(DEMO_COMENTARIOS)
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = tickets.find(t => t.id === selectedId) || null
   const [showCreateTicket, setShowCreateTicket] = useState(false)
   const [showCreateContract, setShowCreateContract] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
@@ -456,7 +457,7 @@ export default function SoportePage() {
 
   const handleUpdateTicket = (updated: Ticket) => {
     setTickets(prev => prev.map(t => t.id === updated.id ? updated : t))
-    setSelectedTicket(updated)
+    setSelectedId(updated.id)
   }
 
   const handleChangeState = (ticketId: string, estado: EstadoTicket) => {
@@ -466,7 +467,7 @@ export default function SoportePage() {
       fecha_cierre: estado === 'Cerrado' ? new Date().toISOString() : undefined,
       fecha_primera_respuesta: t.fecha_primera_respuesta || new Date().toISOString(),
     } : t))
-    setSelectedTicket(null)
+    setSelectedId(null)
   }
 
   const handleAddComentario = (ticketId: string, comentario: string, es_interno: boolean) => {
@@ -496,23 +497,37 @@ export default function SoportePage() {
   }
 
   return (
-    <div className="flex relative w-full h-full min-h-screen overflow-hidden">
-      {/* Área de contenido principal */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="space-y-6 w-full px-6">
-          <div className="flex items-center justify-between">
-            <div><h1 className="text-3xl font-bold">Soporte</h1><p className="text-muted-foreground">Tickets y contratos de soporte</p></div>
-            <Tabs value={view} onValueChange={(v) => setView(v as 'contratos' | 'tickets')}>
-              <TabsList>
-                <TabsTrigger value="tickets">Tickets</TabsTrigger>
-                <TabsTrigger value="contratos">Contratos</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+    <>
+      <ModuleContainerWithPanel
+        panel={
+          selected ? (
+            <TicketDetailPanel
+              isOpen={!!selected}
+              onClose={() => setSelectedId(null)}
+              ticket={selected}
+              comentarios={comentarios[selected.id] || []}
+              onUpdate={handleUpdateTicket}
+              onAddComentario={(c, i) => handleAddComentario(selected.id, c, i)}
+              onChangeState={(e) => handleChangeState(selected.id, e)}
+            />
+          ) : null
+        }
+        panelOpen={!!selectedId}
+      >
+        <ModuleHeader
+          title="Soporte"
+          description="Tickets y contratos de soporte"
+          tabs={[
+            { value: 'tickets', label: 'Tickets' },
+            { value: 'contratos', label: 'Contratos' }
+          ]}
+          activeTab={view}
+          onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
+        />
 
-          {view === 'tickets' && (
-            <>
-              <StatGrid cols={6}>
+        {view === 'tickets' && (
+          <>
+            <StatGrid cols={6}>
                 <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
                 <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
                 <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
@@ -545,7 +560,7 @@ export default function SoportePage() {
                         <SortableContext items={getTicketsByEstado(estado).map(t => t.id)} strategy={horizontalListSortingStrategy}>
                           <div className="space-y-3 min-h-[200px] p-2 rounded-lg border border-dashed border-border/50">
                             {getTicketsByEstado(estado).map(ticket => (
-                              <SortableTicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedTicket(ticket)} />
+                              <SortableTicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedId(ticket.id)} />
                             ))}
                             {getTicketsByEstado(estado).length === 0 && (
                               <div className="text-center py-8 text-muted-foreground text-sm">No hay tickets</div>
@@ -634,25 +649,7 @@ export default function SoportePage() {
               onCreate={handleCreateContract}
             />
           )}
-        </div>
-      </div>
-
-      {/* Panel lateral integrado */}
-      <div
-        className={`transition-all duration-500 ease-out overflow-hidden border-l border-border/50 h-full rounded-l-xl ${selectedTicket ? 'w-[400px]' : 'w-0'}`}
-      >
-        {selectedTicket && (
-          <TicketDetailPanel
-            isOpen={!!selectedTicket}
-            onClose={() => setSelectedTicket(null)}
-            ticket={selectedTicket}
-            comentarios={comentarios[selectedTicket.id] || []}
-            onUpdate={handleUpdateTicket}
-            onAddComentario={(c, i) => handleAddComentario(selectedTicket.id, c, i)}
-            onChangeState={(e) => handleChangeState(selectedTicket.id, e)}
-          />
-        )}
-      </div>
-    </div>
+      </ModuleContainerWithPanel>
+    </>
   )
 }
