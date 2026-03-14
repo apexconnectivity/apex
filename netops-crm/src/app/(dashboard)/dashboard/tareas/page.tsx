@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
-import { StatusBadge, ModuleCard, TaskDetailPanel } from '@/components/module'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proyecto } from '@/types/proyectos'
 
@@ -241,7 +241,8 @@ export default function TareasPage() {
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
-  const [selectedTarea, setSelectedTarea] = useState<Tarea | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = tareas.find(t => t.id === selectedId) || null
   const [showCreate, setShowCreate] = useState(false)
 
   const isAdmin = user?.roles.includes('admin')
@@ -296,7 +297,7 @@ export default function TareasPage() {
 
   const handleUpdateTarea = (updated: Tarea) => {
     setTareas(prev => prev.map(t => t.id === updated.id ? updated : t))
-    setSelectedTarea(updated)
+    setSelectedId(updated.id)
   }
 
   const handleAddSubtarea = (tareaId: string, nombre: string) => {
@@ -335,21 +336,40 @@ export default function TareasPage() {
   }
 
   return (
-    <div className="flex relative w-full h-full min-h-screen overflow-hidden">
-      {/* Área de contenido principal */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="space-y-6 w-full px-6">
-          <div className="flex items-center justify-between">
-            <div><h1 className="text-3xl font-bold">Tareas</h1><p className="text-muted-foreground">Gestión de tareas por proyecto</p></div>
-            <div className="flex gap-2">
-              <Tabs value={view} onValueChange={(v) => setView(v as 'kanban' | 'lista')}>
-                <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="lista">Lista</TabsTrigger></TabsList>
-              </Tabs>
-              {canCreate && <Button onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-2" /> Nueva Tarea</Button>}
-            </div>
-          </div>
+    <>
+      <ModuleContainerWithPanel
+        panel={
+          selected ? (
+            <TaskDetailPanel
+              isOpen={!!selected}
+              onClose={() => setSelectedId(null)}
+              tarea={selected}
+              proyectos={DEMO_PROYECTOS}
+              usuarios={DEMO_USUARIOS}
+              subtareas={subtareas[selected.id] || []}
+              comentarios={comentarios[selected.id] || []}
+              onUpdate={handleUpdateTarea}
+              onAddSubtarea={(nombre) => handleAddSubtarea(selected.id, nombre)}
+              onToggleSubtarea={(id) => handleToggleSubtarea(selected.id, id)}
+              onAddComentario={(texto) => handleAddComentario(selected.id, texto)}
+            />
+          ) : null
+        }
+        panelOpen={!!selectedId}
+      >
+        <ModuleHeader
+          title="Tareas"
+          description="Gestión de tareas por proyecto"
+          actions={
+            canCreate && (
+              <Button onClick={() => setShowCreate(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
+              </Button>
+            )
+          }
+        />
 
-          <StatGrid cols={6}>
+        <StatGrid cols={6}>
             <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
             <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
             <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Loader2 className="h-5 w-5" />} />
@@ -389,7 +409,7 @@ export default function TareasPage() {
                     </div>
                     <div className="space-y-3">
                       {tareasPorEstado[estado]?.map(tarea => (
-                        <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedTarea(tarea)} onStatusChange={handleStatusChange} />
+                        <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
                       ))}
                       {tareasPorEstado[estado]?.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground text-sm">No hay tareas</div>
@@ -404,7 +424,7 @@ export default function TareasPage() {
           {view === 'lista' && (
             <div className="space-y-2">
               {filteredTareas.map(tarea => (
-                <Card key={tarea.id} className="cursor-pointer hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5" onClick={() => setSelectedTarea(tarea)}>
+                <Card key={tarea.id} className="cursor-pointer hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5" onClick={() => setSelectedId(tarea.id)}>
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -432,29 +452,17 @@ export default function TareasPage() {
               onCreate={handleCreateTarea}
             />
           )}
-        </div>
-      </div>
+      </ModuleContainerWithPanel>
 
-      {/* Panel lateral integrado */}
-      <div
-        className={`transition-all duration-500 ease-out overflow-hidden border-l border-border/50 h-full rounded-l-xl ${selectedTarea ? 'w-[400px]' : 'w-0'}`}
-      >
-        {selectedTarea && (
-          <TaskDetailPanel
-            isOpen={!!selectedTarea}
-            onClose={() => setSelectedTarea(null)}
-            tarea={selectedTarea}
-            proyectos={DEMO_PROYECTOS}
-            usuarios={DEMO_USUARIOS}
-            subtareas={subtareas[selectedTarea.id] || []}
-            comentarios={comentarios[selectedTarea.id] || []}
-            onUpdate={handleUpdateTarea}
-            onAddSubtarea={(nombre) => handleAddSubtarea(selectedTarea.id, nombre)}
-            onToggleSubtarea={(id) => handleToggleSubtarea(selectedTarea.id, id)}
-            onAddComentario={(texto) => handleAddComentario(selectedTarea.id, texto)}
-          />
-        )}
-      </div>
-    </div>
+      {/* Modals se mantienen fuera */}
+      {showCreate && (
+        <CreateTaskModal
+          proyectos={DEMO_PROYECTOS}
+          usuarios={DEMO_USUARIOS}
+          onClose={() => setShowCreate(false)}
+          onCreate={handleCreateTarea}
+        />
+      )}
+    </>
   )
 }

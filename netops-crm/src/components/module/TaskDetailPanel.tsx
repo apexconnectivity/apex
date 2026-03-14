@@ -110,18 +110,10 @@ export function TaskDetailPanel({
 
   return (
     <>
-      {/* Overlay con animación fade-in suave */}
-      <div
-        className={`absolute inset-0 bg-black/60 z-40 transition-all duration-500 ease-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={onClose}
-      />
-
-      {/* Panel lateral con animación mejorada */}
-      <div
-        className={`absolute top-0 right-0 h-full w-[400px] max-w-[90vw] bg-slate-800/95 backdrop-blur-sm z-50 shadow-2xl shadow-black/50 transform transition-all duration-500 ease-out rounded-l-xl rounded-r-none ${isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none'}`}
-      >
+      {/* Panel lateral */}
+      <div className="h-full flex flex-col">
         {/* Header del panel */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {tarea && getEstadoIcon(tarea.estado)}
             <h2 className="font-semibold text-white truncate max-w-[280px]">
@@ -139,7 +131,7 @@ export function TaskDetailPanel({
         </div>
 
         {/* Contenido */}
-        <div className="p-4 space-y-6 overflow-y-auto h-[calc(100%-64px)] pb-20">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
           {tarea ? (
             <>
               {/* Tags de estado, categoría y prioridad */}
