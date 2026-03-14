@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, Modal, ProjectDetailPanel } from '@/components/module'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, Modal, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proyecto, FASES, FaseProyecto, MONEDAS } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
@@ -214,28 +214,40 @@ export default function ProyectosPage() {
   const faseActual = FASES.find(f => f.id === selected?.fase_actual)
 
   return (
-    <div className="flex relative w-full h-full min-h-screen overflow-hidden">
-      {/* Área de contenido principal */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <>
+      <ModuleContainerWithPanel
+        panel={
+          selected ? (
+            <ProjectDetailPanel
+              isOpen={!!selected}
+              onClose={() => setSelectedId(null)}
+              proyecto={selected}
+              tareas={tareas}
+              onAddTarea={() => {}}
+            />
+          ) : null
+        }
+        panelOpen={!!selectedId}
+      >
         <div className="space-y-6 w-full px-6">
           <ModuleHeader
-            title="Proyectos"
-            description="Pipeline de proyectos"
-            actions={
-              canMovePhases && (
-                <Button onClick={handleNewProyecto}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nuevo Proyecto
-                </Button>
-              )
-            }
-            tabs={[
-              { value: 'pipeline', label: 'Pipeline' },
-              { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length }
-            ]}
-            activeTab={view}
-            onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
-          />
+          title="Proyectos"
+          description="Pipeline de proyectos"
+          actions={
+            canMovePhases && (
+              <Button onClick={handleNewProyecto}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Proyecto
+              </Button>
+            )
+          }
+          tabs={[
+            { value: 'pipeline', label: 'Pipeline' },
+            { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length }
+          ]}
+          activeTab={view}
+          onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
+        />
 
           <StatGrid cols={5}>
             {FASES.map(fase => (
@@ -323,24 +335,7 @@ export default function ProyectosPage() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Panel lateral integrado */}
-      <div
-        className={`transition-all duration-500 ease-out overflow-hidden border-l border-border/50 h-full rounded-l-xl ${selected ? 'w-[400px]' : 'w-0'}`}
-      >
-        {selected && (
-          <ProjectDetailPanel
-            isOpen={!!selected}
-            onClose={() => setSelectedId(null)}
-            proyecto={selected}
-            tareas={tareas}
-            onAddTarea={() => {
-              // TODO: Implementar creación de tareas
-            }}
-          />
-        )}
-      </div>
+      </ModuleContainerWithPanel>
 
       {/* Modal Nuevo Proyecto */}
       <Modal
@@ -623,6 +618,6 @@ export default function ProyectosPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   )
 }
