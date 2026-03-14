@@ -393,10 +393,10 @@ export default function NotificacionesPage() {
       </div>
 
       <StatGrid cols={4}>
-        <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<Bell className="h-5 w-5" />} />
-        <MiniStat value={stats.enviados} label="Enviados" variant="success" showBorder icon={<Send className="h-5 w-5" />} />
-        <MiniStat value={stats.fallidos} label="Fallidos" variant="danger" showBorder icon={<AlertTriangle className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<Bell className="h-5 w-5" />} />
+        <MiniStat value={stats.enviados} label="Enviados" variant="success" showBorder accentColor="#10b981" icon={<Send className="h-5 w-5" />} />
+        <MiniStat value={stats.fallidos} label="Fallidos" variant="danger" showBorder accentColor="#ef4444" icon={<AlertTriangle className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
       </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>

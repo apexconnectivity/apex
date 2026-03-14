@@ -396,10 +396,10 @@ export default function ComprasPage() {
       </div>
 
       <StatGrid cols={4}>
-        <MiniStat value={stats.pendientes} label="Pendientes de aprobación" variant="warning" showBorder icon={<ClipboardList className="h-5 w-5" />} />
-        <MiniStat value={stats.enviadas} label="Enviadas" variant="info" showBorder icon={<SendHorizontal className="h-5 w-5" />} />
-        <MiniStat value={stats.recibidas} label="Recibidas" variant="success" showBorder icon={<PackageCheck className="h-5 w-5" />} />
-        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label="Total en órdenes" variant="primary" showBorder icon={<DollarSign className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Pendientes de aprobación" variant="warning" showBorder accentColor="#f59e0b" icon={<ClipboardList className="h-5 w-5" />} />
+        <MiniStat value={stats.enviadas} label="Enviadas" variant="info" showBorder accentColor="#3b82f6" icon={<SendHorizontal className="h-5 w-5" />} />
+        <MiniStat value={stats.recibidas} label="Recibidas" variant="success" showBorder accentColor="#10b981" icon={<PackageCheck className="h-5 w-5" />} />
+        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label="Total en órdenes" variant="primary" showBorder accentColor="#06b6d4" icon={<DollarSign className="h-5 w-5" />} />
       </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>

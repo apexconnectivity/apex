@@ -448,10 +448,10 @@ export default function CalendarioPage() {
       </div>
 
       <StatGrid cols={4}>
-        <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder icon={<CalendarDays className="h-5 w-5" />} />
-        <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder icon={<Clock className="h-5 w-5" />} />
-        <MiniStat value={stats.confirmadas} label="Confirmadas" variant="success" showBorder icon={<CalendarCheck className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" variant="warning" showBorder icon={<CalendarX className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder accentColor="#06b6d4" icon={<CalendarDays className="h-5 w-5" />} />
+        <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.confirmadas} label="Confirmadas" variant="success" showBorder accentColor="#10b981" icon={<CalendarCheck className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<CalendarX className="h-5 w-5" />} />
       </StatGrid>
 
       {vista === 'calendario' && (

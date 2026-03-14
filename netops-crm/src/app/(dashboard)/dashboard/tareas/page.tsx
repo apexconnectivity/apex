@@ -350,12 +350,12 @@ export default function TareasPage() {
           </div>
 
           <StatGrid cols={6}>
-            <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-5 w-5" />} />
-            <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-5 w-5" />} />
-            <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Loader2 className="h-5 w-5" />} />
-            <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder icon={<CheckCircle className="h-5 w-5" />} />
-            <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder icon={<Ban className="h-5 w-5" />} />
-            <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder icon={<AlertTriangle className="h-5 w-5" />} />
+            <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
+            <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
+            <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Loader2 className="h-5 w-5" />} />
+            <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
+            <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor="#ef4444" icon={<Ban className="h-5 w-5" />} />
+            <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor="#dc2626" icon={<AlertTriangle className="h-5 w-5" />} />
           </StatGrid>
 
           <div className="flex gap-4 items-center">

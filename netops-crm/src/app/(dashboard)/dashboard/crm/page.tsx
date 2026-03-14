@@ -16,7 +16,7 @@ import { SelectWithAdd } from '@/components/module/SelectWithAdd'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MiniStat } from '@/components/ui/mini-stat'
+import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import {
   Select,
   SelectContent,
@@ -621,28 +621,40 @@ export default function CRMPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatGrid cols={4}>
         <MiniStat
           label="Total Empresas"
           value={filteredEmpresas.length}
           icon={<Building2 className="h-5 w-5" />}
+          variant="primary"
+          showBorder
+          accentColor="#06b6d4"
         />
         <MiniStat
           label="Clientes"
           value={empresas.filter(e => e.tipo_entidad === 'cliente').length}
           icon={<Users className="h-5 w-5" />}
+          variant="info"
+          showBorder
+          accentColor="#3b82f6"
         />
         <MiniStat
           label="Proveedores"
           value={empresas.filter(e => e.tipo_entidad === 'proveedor').length}
           icon={<Building2 className="h-5 w-5" />}
+          variant="warning"
+          showBorder
+          accentColor="#f59e0b"
         />
         <MiniStat
           label="Contactos"
           value={contactos.length}
           icon={<Users className="h-5 w-5" />}
+          variant="success"
+          showBorder
+          accentColor="#10b981"
         />
-      </div>
+      </StatGrid>
 
       {/* Listado de Empresas */}
       {filteredEmpresas.length === 0 ? (

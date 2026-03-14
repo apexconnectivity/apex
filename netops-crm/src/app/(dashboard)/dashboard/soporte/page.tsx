@@ -513,12 +513,12 @@ export default function SoportePage() {
           {view === 'tickets' && (
             <>
               <StatGrid cols={6}>
-                <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-5 w-5" />} />
-                <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder icon={<CircleDot className="h-5 w-5" />} />
-                <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Clock className="h-5 w-5" />} />
-                <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder icon={<CheckCircle className="h-5 w-5" />} />
-                <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder icon={<Archive className="h-5 w-5" />} />
-                <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder icon={<Siren className="h-5 w-5" />} />
+                <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
+                <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
+                <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
+                <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
+                <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
+                <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
               </StatGrid>
 
               <div className="flex gap-4 items-center">

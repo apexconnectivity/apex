@@ -377,11 +377,11 @@ export default function ArchivosPage() {
       </div>
 
       <StatGrid cols={5}>
-        <MiniStat value={stats.total} label="Total archivos" variant="primary" showBorder icon={<Files className="h-5 w-5" />} />
-        <MiniStat value={stats.empresas} label="Empresas" variant="info" showBorder icon={<Building2 className="h-5 w-5" />} />
-        <MiniStat value={stats.proyectos} label="Proyectos" variant="warning" showBorder icon={<Briefcase className="h-5 w-5" />} />
-        <MiniStat value={stats.tickets} label="Tickets" variant="success" showBorder icon={<Ticket className="h-5 w-5" />} />
-        <MiniStat value={formatBytes(stats.tamañoTotal)} label="Espacio usado" variant="default" showBorder icon={<HardDrive className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label="Total archivos" variant="primary" showBorder accentColor="#06b6d4" icon={<Files className="h-5 w-5" />} />
+        <MiniStat value={stats.empresas} label="Empresas" variant="info" showBorder accentColor="#3b82f6" icon={<Building2 className="h-5 w-5" />} />
+        <MiniStat value={stats.proyectos} label="Proyectos" variant="warning" showBorder accentColor="#f59e0b" icon={<Briefcase className="h-5 w-5" />} />
+        <MiniStat value={stats.tickets} label="Tickets" variant="success" showBorder accentColor="#10b981" icon={<Ticket className="h-5 w-5" />} />
+        <MiniStat value={formatBytes(stats.tamañoTotal)} label="Espacio usado" variant="default" showBorder accentColor="#64748b" icon={<HardDrive className="h-5 w-5" />} />
       </StatGrid>
 
       {view === 'empresas' && (
