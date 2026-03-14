@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target } from 'lucide-react'
+import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
@@ -13,6 +13,8 @@ interface ProjectDetailPanelProps {
   onClose: () => void
   proyecto: Proyecto | null
   tareas: Tarea[]
+  onCerrar?: (proyecto: Proyecto) => void
+  canClose?: boolean
 }
 
 export function ProjectDetailPanel({
@@ -20,12 +22,14 @@ export function ProjectDetailPanel({
   onClose,
   proyecto,
   tareas,
+  onCerrar,
+  canClose,
 }: ProjectDetailPanelProps) {
   // Filtrar tareas por proyecto_id Y fase actual
   const tareasDelProyecto = useMemo(() => {
     if (!proyecto) return []
-    return tareas.filter(t => 
-      t.proyecto_id === proyecto.id && 
+    return tareas.filter(t =>
+      t.proyecto_id === proyecto.id &&
       t.fase_origen === proyecto.fase_actual
     )
   }, [tareas, proyecto])
@@ -294,6 +298,20 @@ export function ProjectDetailPanel({
             <div className="flex flex-col items-center justify-center h-64 text-slate-500">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-sm">Selecciona un proyecto para ver detalles</p>
+            </div>
+          )}
+
+          {/* Botón de cerrar proyecto - al final del panel */}
+          {canClose && proyecto && proyecto.estado === 'activo' && (
+            <div className="pt-4 border-t border-slate-700/50">
+              <Button
+                variant="outline"
+                className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500"
+                onClick={() => onCerrar?.(proyecto)}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Cerrar Proyecto
+              </Button>
             </div>
           )}
         </div>

@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import {
@@ -109,6 +110,14 @@ export default function ProyectosPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSaving, setIsSaving] = useState(false)
 
+  // Modal cerrar proyecto
+  const [isModalCerrar, setIsModalCerrar] = useState(false)
+  const [proyectoACerrar, setProyectoACerrar] = useState<Proyecto | null>(null)
+  const [motivoCierre, setMotivoCierre] = useState('')
+  const [notasCierre, setNotasCierre] = useState('')
+  const [errorsCierre, setErrorsCierre] = useState<Record<string, string>>({})
+  const [isClosing, setIsClosing] = useState(false)
+
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
   const [nuevaEmpresa, setNuevaEmpresa] = useState<Partial<Empresa>>({
@@ -190,8 +199,38 @@ export default function ProyectosPage() {
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p))
   }
 
-  const handleCerrar = (id: string) => {
-    setProyectos(prev => prev.map(p => p.id === id ? { ...p, estado: 'cerrado', fecha_cierre: new Date().toISOString().split('T')[0], motivo_cierre: 'Completado' } : p))
+  const handleCerrar = (proyecto: Proyecto) => {
+    setProyectoACerrar(proyecto)
+    setMotivoCierre('')
+    setNotasCierre('')
+    setErrorsCierre({})
+    setIsModalCerrar(true)
+  }
+
+  const confirmarCerrar = () => {
+    setErrorsCierre({})
+
+    // Validar motivo obligatorio
+    if (!motivoCierre || motivoCierre.trim().length < 5) {
+      setErrorsCierre({ motivo_cierre: 'El motivo debe tener al menos 5 caracteres' })
+      return
+    }
+
+    if (!proyectoACerrar) return
+
+    setIsClosing(true)
+
+    // Cerrar el proyecto
+    setProyectos(prev => prev.map(p => p.id === proyectoACerrar.id ? {
+      ...p,
+      estado: 'cerrado',
+      fecha_cierre: new Date().toISOString().split('T')[0],
+      motivo_cierre: motivoCierre
+    } : p))
+
+    setIsClosing(false)
+    setIsModalCerrar(false)
+    setProyectoACerrar(null)
   }
 
   const handleReabrir = (id: string) => {
@@ -315,6 +354,8 @@ export default function ProyectosPage() {
               onClose={() => setSelectedId(null)}
               proyecto={selected}
               tareas={tareas}
+              onCerrar={handleCerrar}
+              canClose={canClose}
             />
           ) : null
         }
@@ -782,6 +823,75 @@ export default function ProyectosPage() {
                 </>
               ) : (
                 'Crear Empresa'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Cerrar Proyecto */}
+      <Dialog open={isModalCerrar} onOpenChange={setIsModalCerrar}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-500" />
+              Cerrar Proyecto
+            </DialogTitle>
+          </DialogHeader>
+
+          <DialogBody className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              El proyecto <span className="font-semibold text-foreground">{proyectoACerrar?.nombre}</span> pasará a estado "Cerrado" y desaparecerá del pipeline.
+            </p>
+
+            <div>
+              <Label htmlFor="motivo_cierre">Motivo del cierre *</Label>
+              <Select
+                value={motivoCierre}
+                onValueChange={(value) => setMotivoCierre(value)}
+              >
+                <SelectTrigger className={errorsCierre.motivo_cierre ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Selecciona un motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Proyecto completado">Proyecto completado</SelectItem>
+                  <SelectItem value="Cancelado por el cliente">Cancelado por el cliente</SelectItem>
+                  <SelectItem value="Pérdida de interés">Pérdida de interés</SelectItem>
+                  <SelectItem value="Presupuesto insuficiente">Presupuesto insuficiente</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+              {errorsCierre.motivo_cierre && <p className="text-xs text-red-500 mt-1">{errorsCierre.motivo_cierre}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="notas_cierre">Notas adicionales (opcional)</Label>
+              <Textarea
+                id="notas_cierre"
+                value={notasCierre}
+                onChange={(e) => setNotasCierre(e.target.value)}
+                placeholder="Agrega cualquier nota adicional sobre el cierre del proyecto..."
+                rows={3}
+              />
+            </div>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalCerrar(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmarCerrar}
+              disabled={isClosing}
+            >
+              {isClosing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Cerrando...
+                </>
+              ) : (
+                'Cerrar Proyecto'
               )}
             </Button>
           </DialogFooter>
