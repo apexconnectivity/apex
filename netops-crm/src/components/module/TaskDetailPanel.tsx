@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { X, Plus, CheckSquare, Calendar, User, AlertCircle, MessageSquare, Target, CheckCircle2, Circle, Clock } from 'lucide-react'
+import { X, Plus, CheckSquare, Calendar, User, AlertCircle, MessageSquare, Target, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,7 @@ interface TaskDetailPanelProps {
   onAddSubtarea: (nombre: string) => void
   onToggleSubtarea: (id: string) => void
   onAddComentario: (comentario: string) => void
+  onEdit?: () => void
 }
 
 export function TaskDetailPanel({
@@ -38,6 +39,7 @@ export function TaskDetailPanel({
   onAddSubtarea,
   onToggleSubtarea,
   onAddComentario,
+  onEdit,
 }: TaskDetailPanelProps) {
   const [newSubtarea, setNewSubtarea] = useState('')
   const [newComentario, setNewComentario] = useState('')
@@ -116,18 +118,31 @@ export function TaskDetailPanel({
         <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {tarea && getEstadoIcon(tarea.estado)}
-            <h2 className="font-semibold text-white truncate max-w-[280px]">
+            <h2 className="font-semibold text-white truncate max-w-[200px]">
               {tarea?.nombre || 'Detalles de la Tarea'}
             </h2>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEdit}
+                className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+                title="Editar tarea"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Contenido */}

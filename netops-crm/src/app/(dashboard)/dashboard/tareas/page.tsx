@@ -13,7 +13,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
-import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
+import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Proyecto } from '@/types/proyectos'
 
@@ -64,9 +65,17 @@ const DEMO_COMENTARIOS: Record<string, Comentario[]> = {
 
 function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
+  const isBlocked = tarea.estado === 'Bloqueada' || (tarea.dependencias && tarea.dependencias.length > 0)
+
+  const getNextStates = (): EstadoTarea[] => {
+    if (tarea.estado === 'Pendiente') return ['En progreso']
+    if (tarea.estado === 'En progreso') return ['Completada', 'Bloqueada']
+    if (tarea.estado === 'Bloqueada') return ['Pendiente', 'En progreso']
+    return []
+  }
 
   return (
-    <ModuleCard onClick={onClick} className="cursor-pointer">
+    <ModuleCard onClick={onClick} className="cursor-pointer group">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -95,145 +104,39 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
           </div>
         )}
 
-        {tarea.dependencias && tarea.dependencias.length > 0 && (
+        {isBlocked && (
           <div className="flex items-center gap-1 text-xs text-amber-400">
             <AlertCircle className="h-3 w-3" />
             <span>Bloqueada</span>
           </div>
         )}
 
-        {tarea.estado !== 'Completada' && (
-          <div className="flex gap-1 pt-2 border-t">
-            {ESTADOS.filter(e => e !== tarea.estado).slice(0, 2).map(estado => (
-              <Button key={estado} variant="ghost" size="sm" className="h-6 text-xs flex-1" onClick={(e) => { e.stopPropagation(); onStatusChange(tarea.id, estado) }}>
-                {estado === 'En progreso' ? '▶' : estado === 'Completada' ? '✓' : '⏸'}
-              </Button>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
+          <StatusBadge status={tarea.estado} type="estado" />
+          
+          {isBlocked && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Select value="" onValueChange={(v) => onStatusChange(tarea.id, v as EstadoTarea)}>
+                <SelectTrigger className="h-6 w-28 bg-background text-xs">
+                  <SelectValue placeholder="Cambiar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getNextStates().map(estado => (
+                    <SelectItem key={estado} value={estado} className="text-xs">
+                      {estado}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardContent>
     </ModuleCard>
   )
 }
 
 
-
-function CreateTaskModal({ proyectos, usuarios, onClose, onCreate }: {
-  proyectos: Proyecto[]
-  usuarios: { id: string; nombre: string; rol: string }[]
-  onClose: () => void
-  onCreate: (tarea: Omit<Tarea, 'id' | 'fecha_creacion' | 'orden' | 'creado_por'>) => void
-}) {
-  const [tarea, setTarea] = useState({
-    proyecto_id: '',
-    categoria: 'General' as CategoriaTarea,
-    nombre: '',
-    descripcion: '',
-    responsable_id: '',
-    asignado_a_cliente: false,
-    contacto_cliente_nombre: '',
-    fecha_vencimiento: '',
-    prioridad: 'Media' as PrioridadTarea,
-    estado: 'Pendiente' as EstadoTarea,
-  })
-
-  const selectedProyecto = proyectos.find(p => p.id === tarea.proyecto_id)
-
-  const handleCreate = () => {
-    if (!tarea.nombre || !tarea.proyecto_id) return
-    onCreate({
-      ...tarea,
-      proyecto_nombre: selectedProyecto?.nombre || '',
-      fase_origen: selectedProyecto?.fase_actual || 1,
-      fase_nombre: selectedProyecto ? ['Prospecto', 'Diagnóstico', 'Propuesta', 'Implementación', 'Cierre'][selectedProyecto.fase_actual - 1] : 'Prospecto',
-      responsable_nombre: usuarios.find(u => u.id === tarea.responsable_id)?.nombre,
-    })
-    onClose()
-  }
-
-  return (
-    <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle>Nueva Tarea</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <Label>Proyecto *</Label>
-            <Select value={tarea.proyecto_id} onValueChange={(v) => setTarea({ ...tarea, proyecto_id: v })}>
-              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proyecto..." /></SelectTrigger>
-              <SelectContent>
-                {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Nombre *</Label>
-            <Input value={tarea.nombre} onChange={(e) => setTarea({ ...tarea, nombre: e.target.value })} placeholder="Nombre de la tarea" />
-          </div>
-
-          <div>
-            <Label>Descripción</Label>
-            <Textarea value={tarea.descripcion} onChange={(e) => setTarea({ ...tarea, descripcion: e.target.value })} placeholder="Descripción opcional" rows={3} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Categoría</Label>
-              <Select value={tarea.categoria} onValueChange={(v) => setTarea({ ...tarea, categoria: v as CategoriaTarea })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Prioridad</Label>
-              <Select value={tarea.prioridad} onValueChange={(v) => setTarea({ ...tarea, prioridad: v as PrioridadTarea })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Responsable</Label>
-              <Select value={tarea.responsable_id} onValueChange={(v) => setTarea({ ...tarea, responsable_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                <SelectContent>
-                  {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Fecha Vencimiento</Label>
-              <Input type="date" value={tarea.fecha_vencimiento} onChange={(e) => setTarea({ ...tarea, fecha_vencimiento: e.target.value })} />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="asignado_cliente" checked={tarea.asignado_a_cliente} onChange={(e) => setTarea({ ...tarea, asignado_a_cliente: e.target.checked })} className="rounded" />
-            <Label htmlFor="asignado_cliente" className="text-sm">Asignar a cliente</Label>
-          </div>
-
-          {tarea.asignado_a_cliente && (
-            <div>
-              <Label>Nombre del contacto cliente</Label>
-              <Input value={tarea.contacto_cliente_nombre} onChange={(e) => setTarea({ ...tarea, contacto_cliente_nombre: e.target.value })} placeholder="Nombre del contacto" />
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={!tarea.nombre || !tarea.proyecto_id}>Crear Tarea</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 export default function TareasPage() {
   const { user } = useAuth()
@@ -252,6 +155,8 @@ export default function TareasPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tareas.find(t => t.id === selectedId) || null
   const [showCreate, setShowCreate] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
+  const [editingTarea, setEditingTarea] = useState<Tarea | null>(null)
 
   const isAdmin = user?.roles.includes('admin')
   const isComercial = user?.roles.includes('comercial')
@@ -311,17 +216,99 @@ export default function TareasPage() {
     } : t))
   }
 
-  const handleCreateTarea = (tarea: Omit<Tarea, 'id' | 'fecha_creacion' | 'orden' | 'creado_por'>) => {
-    const newTarea: Tarea = {
-      ...tarea,
-      id: Date.now().toString(),
-      fecha_creacion: new Date().toISOString(),
-      orden: tareas.length + 1,
-      creado_por: user?.id || '1',
+  const handleSaveTarea = (data: CreateTaskData) => {
+    if (data.mode === 'create') {
+      const newTarea: Tarea = {
+        ...data.tarea,
+        id: Date.now().toString(),
+        fecha_creacion: new Date().toISOString(),
+        orden: tareas.length + 1,
+        creado_por: user?.id || '1',
+      }
+      setTareas(prev => [...prev, newTarea])
+      
+      if (data.subtareas && data.subtareas.length > 0) {
+        const newSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
+          id: Date.now().toString() + '-' + i,
+          tarea_id: newTarea.id,
+          nombre: s.nombre,
+          completada: s.completada || false,
+          orden: i + 1
+        }))
+        setSubtareas(prev => ({ ...prev, [newTarea.id]: newSubtareas }))
+      } else {
+        setSubtareas(prev => ({ ...prev, [newTarea.id]: [] }))
+      }
+      
+      if (data.comentarios && data.comentarios.length > 0) {
+        const newComentarios: Comentario[] = data.comentarios.map((c, i) => ({
+          id: Date.now().toString() + '-' + i,
+          tarea_id: newTarea.id,
+          usuario_id: c.usuario_id,
+          usuario_nombre: c.usuario_nombre,
+          es_cliente: c.es_cliente,
+          comentario: c.comentario,
+          fecha: new Date().toISOString()
+        }))
+        setComentarios(prev => ({ ...prev, [newTarea.id]: newComentarios }))
+      } else {
+        setComentarios(prev => ({ ...prev, [newTarea.id]: [] }))
+      }
+    } else {
+      const updatedTarea: Tarea = {
+        ...data.tarea,
+        id: editingTarea?.id || '',
+        fecha_creacion: editingTarea?.fecha_creacion || new Date().toISOString(),
+        orden: editingTarea?.orden || 1,
+        creado_por: editingTarea?.creado_por || user?.id || '1',
+      }
+      setTareas(prev => prev.map(t => t.id === updatedTarea.id ? updatedTarea : t))
+      
+      if (data.subtareas) {
+        const taskSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
+          id: s.id || Date.now().toString() + '-' + i,
+          tarea_id: updatedTarea.id,
+          nombre: s.nombre,
+          completada: s.completada || false,
+          orden: i + 1
+        }))
+        setSubtareas(prev => ({ ...prev, [updatedTarea.id]: taskSubtareas }))
+      }
+      
+      if (data.comentarios) {
+        const taskComentarios: Comentario[] = data.comentarios.map((c, i) => ({
+          id: c.id || Date.now().toString() + '-' + i,
+          tarea_id: updatedTarea.id,
+          usuario_id: c.usuario_id,
+          usuario_nombre: c.usuario_nombre,
+          es_cliente: c.es_cliente,
+          comentario: c.comentario,
+          fecha: new Date().toISOString()
+        }))
+        setComentarios(prev => ({ ...prev, [updatedTarea.id]: taskComentarios }))
+      }
+      
+      setSelectedId(updatedTarea.id)
     }
-    setTareas(prev => [...prev, newTarea])
-    setSubtareas(prev => ({ ...prev, [newTarea.id]: [] }))
-    setComentarios(prev => ({ ...prev, [newTarea.id]: [] }))
+  }
+
+  const handleDeleteTarea = () => {
+    if (editingTarea) {
+      setTareas(prev => prev.filter(t => t.id !== editingTarea.id))
+      setSubtareas(prev => {
+        const newSubtareas = { ...prev }
+        delete newSubtareas[editingTarea.id]
+        return newSubtareas
+      })
+      setComentarios(prev => {
+        const newComentarios = { ...prev }
+        delete newComentarios[editingTarea.id]
+        return newComentarios
+      })
+      setShowEdit(false)
+      setEditingTarea(null)
+      setSelectedId(null)
+    }
   }
 
   const handleUpdateTarea = (updated: Tarea) => {
@@ -392,6 +379,7 @@ export default function TareasPage() {
               onAddSubtarea={(nombre) => handleAddSubtarea(selected.id, nombre)}
               onToggleSubtarea={(id) => handleToggleSubtarea(selected.id, id)}
               onAddComentario={(texto) => handleAddComentario(selected.id, texto)}
+              onEdit={() => { setEditingTarea(selected); setShowEdit(true) }}
             />
           ) : null
         }
@@ -559,25 +547,29 @@ export default function TareasPage() {
             </div>
           )}
 
-          {showCreate && (
-            <CreateTaskModal
-              proyectos={DEMO_PROYECTOS}
-              usuarios={DEMO_USUARIOS}
-              onClose={() => setShowCreate(false)}
-              onCreate={handleCreateTarea}
-            />
-          )}
       </ModuleContainerWithPanel>
 
-      {/* Modals se mantienen fuera */}
-      {showCreate && (
-        <CreateTaskModal
-          proyectos={DEMO_PROYECTOS}
-          usuarios={DEMO_USUARIOS}
-          onClose={() => setShowCreate(false)}
-          onCreate={handleCreateTarea}
-        />
-      )}
+      <CreateTaskModal
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        proyectos={DEMO_PROYECTOS}
+        usuarios={DEMO_USUARIOS}
+        currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
+        onSave={handleSaveTarea}
+      />
+
+      <CreateTaskModal
+        open={showEdit}
+        onOpenChange={setShowEdit}
+        proyectos={DEMO_PROYECTOS}
+        usuarios={DEMO_USUARIOS}
+        currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
+        tarea={editingTarea}
+        subtareas={editingTarea ? subtareas[editingTarea.id] || [] : []}
+        comentarios={editingTarea ? comentarios[editingTarea.id] || [] : []}
+        onSave={handleSaveTarea}
+        onDelete={handleDeleteTarea}
+      />
     </>
   )
 }
