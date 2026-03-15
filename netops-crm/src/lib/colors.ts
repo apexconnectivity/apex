@@ -122,7 +122,7 @@ export const CATEGORY_COLORS = {
     bg: 'bg-violet-500/15',
     label: 'Comercial',
   },
-  técnica: {
+  tecnica: {
     color: 'text-purple-400',
     bg: 'bg-purple-500/15',
     label: 'Técnica',
