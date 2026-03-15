@@ -526,7 +526,7 @@ export default function TareasPage() {
           {view === 'lista' && (
             <div className="space-y-2">
               {visibleTareas.map(tarea => (
-                <Card key={tarea.id} className="cursor-pointer hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5" onClick={() => setSelectedId(tarea.id)}>
+                <Card key={tarea.id} className="cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30" onClick={() => setSelectedId(tarea.id)}>
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <ChevronRight className="h-5 w-5 text-muted-foreground" />
