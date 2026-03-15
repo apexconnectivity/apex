@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
+import { useTareas } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -24,15 +25,6 @@ const DEMO_PROYECTOS: Proyecto[] = [
   { id: '2', empresa_id: '2', nombre: 'Migración Cloud Tech', fase_actual: 2, estado: 'activo', fecha_inicio: '2026-02-01', fecha_estimada_fin: '2026-06-01', moneda: 'USD', monto_estimado: 45000, probabilidad_cierre: 40, responsable_id: '2', responsable_nombre: 'Laura Pérez', contacto_tecnico_id: '4', tags: ['cloud'], requiere_compras: false, creado_en: '2026-02-01', cliente_nombre: 'Hospital Regional Norte' },
   { id: '3', empresa_id: '3', nombre: 'Auditoría Seguridad Tech', fase_actual: 5, estado: 'activo', fecha_inicio: '2026-01-01', fecha_estimada_fin: '2026-03-01', moneda: 'USD', monto_estimado: 12000, probabilidad_cierre: 100, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '5', tags: ['auditoría'], requiere_compras: false, creado_en: '2026-01-01', cliente_nombre: 'TechCorp International' },
   { id: '4', empresa_id: '4', nombre: 'Upgrade Switches Retail', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-03-01', fecha_estimada_fin: '2026-05-15', moneda: 'USD', monto_estimado: 35000, probabilidad_cierre: 90, responsable_id: '3', responsable_nombre: 'Juan Técnico', contacto_tecnico_id: '1', tags: ['infra'], requiere_compras: true, creado_en: '2026-03-01', cliente_nombre: 'RetailMax' },
-]
-
-const DEMO_TAREAS: Tarea[] = [
-  { id: '1', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Técnica', nombre: 'Configurar reglas de firewall', descripcion: 'Crear reglas de firewall para permitir tráfico HTTPS y SSH', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-03-01', fecha_vencimiento: '2026-03-10', prioridad: 'Alta', estado: 'En progreso', orden: 1, creado_por: '1' },
-  { id: '2', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Comercial', nombre: 'Revisar propuesta económica', descripcion: 'Verificar que los costos合匹配 el alcance', responsable_id: '2', responsable_nombre: 'Laura Pérez', asignado_a_cliente: false, fecha_creacion: '2026-03-02', fecha_vencimiento: '2026-03-08', prioridad: 'Media', estado: 'Pendiente', orden: 2, creado_por: '1' },
-  { id: '3', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', fase_origen: 2, fase_nombre: 'Diagnóstico', categoria: 'Técnica', nombre: 'Documentar infraestructura actual', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-03-01', prioridad: 'Baja', estado: 'Completada', orden: 3, creado_por: '2' },
-  { id: '4', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', fase_origen: 2, fase_nombre: 'Diagnóstico', categoria: 'Compras', nombre: 'Solicitar cotización de servidores', responsable_id: '4', responsable_nombre: 'María Compras', asignado_a_cliente: false, fecha_creacion: '2026-03-03', fecha_vencimiento: '2026-03-15', prioridad: 'Alta', estado: 'Bloqueada', orden: 4, dependencias: [{ tarea_id: '3', tipo: 'bloqueante' }], creado_por: '2' },
-  { id: '5', proyecto_id: '4', proyecto_nombre: 'Upgrade Switches Retail', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Administrativa', nombre: 'Programar ventana de mantenimiento', descripcion: 'Coordinar con el cliente el horario de mantenimiento', responsable_id: '1', responsable_nombre: 'Carlos Admin', asignado_a_cliente: true, contacto_cliente_id: '1', contacto_cliente_nombre: 'Roberto Manager', fecha_creacion: '2026-03-05', fecha_vencimiento: '2026-03-12', prioridad: 'Urgente', estado: 'Pendiente', orden: 5, creado_por: '3' },
-  { id: '6', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'General', nombre: 'Capacitación al cliente', descripcion: 'Sesión de capacitación sobre el panel de administración', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-03-06', prioridad: 'Baja', estado: 'Pendiente', orden: 6, creado_por: '1' },
 ]
 
 const DEMO_USUARIOS = [
@@ -158,7 +150,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
 
 export default function TareasPage() {
   const { user } = useAuth()
-  const [tareas, setTareas] = useState<Tarea[]>(DEMO_TAREAS)
+  const [tareas, setTareas] = useTareas()
   const [subtareas, setSubtareas] = useState<Record<string, Subtarea[]>>(DEMO_SUBTAREAS)
   const [comentarios, setComentarios] = useState<Record<string, Comentario[]>>(DEMO_COMENTARIOS)
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
