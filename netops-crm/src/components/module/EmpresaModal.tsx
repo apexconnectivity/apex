@@ -84,7 +84,7 @@ export function EmpresaModal({
 
   const handleSave = () => {
     setLocalErrors({})
-    
+
     if (!formData.nombre || formData.nombre.trim().length < 3) {
       setLocalErrors({ nombre: 'El nombre es obligatorio (mínimo 3 caracteres)' })
       return
@@ -125,8 +125,8 @@ export function EmpresaModal({
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar' : 'Nueva'} Empresa</DialogTitle>
         </DialogHeader>
-        
-        <DialogBody className="space-y-4">
+
+        <DialogBody className="p-6 space-y-6">
           {/* Sector */}
           <div className="space-y-2">
             <Label>Sector *</Label>
@@ -134,11 +134,10 @@ export function EmpresaModal({
               {(['cliente', 'proveedor', 'ambos'] as TipoEntidad[]).map((tipo) => (
                 <label
                   key={tipo}
-                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${
-                    formData.tipo_entidad === tipo
-                      ? 'border-cyan-500 bg-cyan-500/10'
-                      : 'border-slate-700'
-                  }`}
+                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${formData.tipo_entidad === tipo
+                    ? 'border-cyan-500 bg-cyan-500/10'
+                    : 'border-slate-700'
+                    }`}
                 >
                   <input
                     type="radio"
@@ -272,6 +271,22 @@ export function EmpresaModal({
                 {allErrors.rfc && <p className="text-red-500 text-sm">{allErrors.rfc}</p>}
               </div>
               <div className="space-y-2">
+                <Label>Dirección Fiscal</Label>
+                <Input
+                  value={formData.direccion_fiscal || ''}
+                  onChange={(e) => setFormData({ ...formData, direccion_fiscal: e.target.value })}
+                  placeholder="Dirección para facturación"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Régimen Fiscal</Label>
+                <Input
+                  value={formData.regimen_fiscal || ''}
+                  onChange={(e) => setFormData({ ...formData, regimen_fiscal: e.target.value })}
+                  placeholder="Ej: Persona Moral, Persona Física"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>Email Facturación</Label>
                 <Input
                   type="email"
@@ -279,6 +294,19 @@ export function EmpresaModal({
                   onChange={(e) => setFormData({ ...formData, email_facturacion: e.target.value })}
                   placeholder="facturacion@empresa.com"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Método de Pago</Label>
+                <select
+                  value={formData.metodo_pago || ''}
+                  onChange={(e) => setFormData({ ...formData, metodo_pago: e.target.value as any })}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Seleccionar método</option>
+                  {METODOS_PAGO.map((metodo) => (
+                    <option key={metodo} value={metodo}>{metodo}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <Label>Plazo de Pago (días)</Label>
