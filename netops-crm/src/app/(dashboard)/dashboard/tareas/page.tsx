@@ -75,6 +75,20 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
     return []
   }
 
+  // Get estado icon
+  const getEstadoIcon = (estado: EstadoTarea) => {
+    switch (estado) {
+      case 'Completada':
+        return <CheckCircle className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+      case 'En progreso':
+        return <Clock className="h-3.5 w-3.5 text-blue-400 flex-shrink-0 animate-pulse" />
+      case 'Bloqueada':
+        return <AlertCircle className="h-3.5 w-3.5 text-red-400 flex-shrink-0" />
+      default:
+        return <Clock className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
+    }
+  }
+
   return (
     <ModuleCard onClick={onClick} className="cursor-pointer group">
       <CardContent className="p-4 space-y-3">
@@ -113,7 +127,10 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
         )}
 
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <StatusBadge status={tarea.estado} type="estado" />
+          <div className="flex items-center gap-1.5">
+            {getEstadoIcon(tarea.estado)}
+            <StatusBadge status={tarea.estado} type="estado" />
+          </div>
           
           {isBlocked && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
