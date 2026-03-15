@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { useTareas } from '@/lib/data'
+import { useTareas, useProyectos } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,14 +18,6 @@ import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTa
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { Proyecto } from '@/types/proyectos'
-
-const DEMO_PROYECTOS: Proyecto[] = [
-  { id: '1', empresa_id: '1', nombre: 'Implementación Firewall Corp', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-01-15', fecha_estimada_fin: '2026-04-15', moneda: 'USD', monto_estimado: 25000, probabilidad_cierre: 90, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '1', contacto_tecnico_nombre: 'Juan Pérez', tags: ['seguridad'], requiere_compras: true, creado_en: '2026-01-15', cliente_nombre: 'Soluciones Tecnológicas SA' },
-  { id: '2', empresa_id: '2', nombre: 'Migración Cloud Tech', fase_actual: 2, estado: 'activo', fecha_inicio: '2026-02-01', fecha_estimada_fin: '2026-06-01', moneda: 'USD', monto_estimado: 45000, probabilidad_cierre: 40, responsable_id: '2', responsable_nombre: 'Laura Pérez', contacto_tecnico_id: '4', tags: ['cloud'], requiere_compras: false, creado_en: '2026-02-01', cliente_nombre: 'Hospital Regional Norte' },
-  { id: '3', empresa_id: '3', nombre: 'Auditoría Seguridad Tech', fase_actual: 5, estado: 'activo', fecha_inicio: '2026-01-01', fecha_estimada_fin: '2026-03-01', moneda: 'USD', monto_estimado: 12000, probabilidad_cierre: 100, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '5', tags: ['auditoría'], requiere_compras: false, creado_en: '2026-01-01', cliente_nombre: 'TechCorp International' },
-  { id: '4', empresa_id: '4', nombre: 'Upgrade Switches Retail', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-03-01', fecha_estimada_fin: '2026-05-15', moneda: 'USD', monto_estimado: 35000, probabilidad_cierre: 90, responsable_id: '3', responsable_nombre: 'Juan Técnico', contacto_tecnico_id: '1', tags: ['infra'], requiere_compras: true, creado_en: '2026-03-01', cliente_nombre: 'RetailMax' },
-]
 
 const DEMO_USUARIOS = [
   { id: '1', nombre: 'Carlos Admin', rol: 'admin' },
@@ -151,6 +143,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
 export default function TareasPage() {
   const { user } = useAuth()
   const [tareas, setTareas] = useTareas()
+  const [proyectos] = useProyectos()
   const [subtareas, setSubtareas] = useState<Record<string, Subtarea[]>>(DEMO_SUBTAREAS)
   const [comentarios, setComentarios] = useState<Record<string, Comentario[]>>(DEMO_COMENTARIOS)
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
@@ -381,7 +374,7 @@ export default function TareasPage() {
               isOpen={!!selected}
               onClose={() => setSelectedId(null)}
               tarea={selected}
-              proyectos={DEMO_PROYECTOS}
+              proyectos={proyectos}
               usuarios={DEMO_USUARIOS}
               subtareas={subtareas[selected.id] || []}
               comentarios={comentarios[selected.id] || []}
@@ -425,7 +418,7 @@ export default function TareasPage() {
                 <SelectTrigger className="w-32 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  {DEMO_PROYECTOS.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -560,7 +553,7 @@ export default function TareasPage() {
       <CreateTaskModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        proyectos={DEMO_PROYECTOS}
+        proyectos={proyectos}
         usuarios={DEMO_USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         onSave={handleSaveTarea}
@@ -569,7 +562,7 @@ export default function TareasPage() {
       <CreateTaskModal
         open={showEdit}
         onOpenChange={setShowEdit}
-        proyectos={DEMO_PROYECTOS}
+        proyectos={proyectos}
         usuarios={DEMO_USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         tarea={editingTarea}
