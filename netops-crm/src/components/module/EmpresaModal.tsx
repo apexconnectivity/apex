@@ -33,6 +33,7 @@ interface EmpresaModalProps {
   empresa?: Partial<Empresa> | null
   isSaving?: boolean
   errors?: Record<string, string>
+  userRoles?: string[]  // Agregar roles del usuario
 }
 
 const EMPRESA_VACIA: Partial<Empresa> = {
@@ -65,6 +66,7 @@ export function EmpresaModal({
   empresa,
   isSaving = false,
   errors = {},
+  userRoles = [],
 }: EmpresaModalProps) {
   const [formData, setFormData] = useState<Partial<Empresa>>(EMPRESA_VACIA)
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
@@ -131,26 +133,42 @@ export function EmpresaModal({
           <div className="space-y-2">
             <Label>Sector *</Label>
             <div className="flex gap-4">
-              {(['cliente', 'proveedor', 'ambos'] as TipoEntidad[]).map((tipo) => (
-                <label
-                  key={tipo}
-                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${formData.tipo_entidad === tipo
-                    ? 'border-cyan-500 bg-cyan-500/10'
-                    : 'border-slate-700'
-                    }`}
-                >
-                  <input
-                    type="radio"
-                    name="tipo"
-                    checked={formData.tipo_entidad === tipo}
-                    onChange={() => setFormData({ ...formData, tipo_entidad: tipo })}
-                    className="sr-only"
-                  />
-                  <span className="text-sm">
-                    {tipo === 'cliente' ? 'Cliente' : tipo === 'proveedor' ? 'Proveedor' : 'Ambos'}
-                  </span>
-                </label>
-              ))}
+              {(() => {
+                // Determinar tipos disponibles según rol
+                const isComercial = userRoles.includes('comercial')
+                const isCompras = userRoles.includes('compras')
+                const isAdmin = userRoles.includes('admin')
+
+                let tiposDisponibles: TipoEntidad[] = []
+                if (isAdmin || (!isComercial && !isCompras)) {
+                  tiposDisponibles = ['cliente', 'proveedor', 'ambos']
+                } else if (isComercial) {
+                  tiposDisponibles = ['cliente', 'ambos']
+                } else if (isCompras) {
+                  tiposDisponibles = ['proveedor', 'ambos']
+                }
+
+                return tiposDisponibles.map((tipo) => (
+                  <label
+                    key={tipo}
+                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${formData.tipo_entidad === tipo
+                      ? 'border-cyan-500 bg-cyan-500/10'
+                      : 'border-slate-700'
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="tipo"
+                      checked={formData.tipo_entidad === tipo}
+                      onChange={() => setFormData({ ...formData, tipo_entidad: tipo })}
+                      className="sr-only"
+                    />
+                    <span className="text-sm">
+                      {tipo === 'cliente' ? 'Cliente' : tipo === 'proveedor' ? 'Proveedor' : 'Ambos'}
+                    </span>
+                  </label>
+                ))
+              })()}
             </div>
             {allErrors.tipo_entidad && (
               <p className="text-red-500 text-sm">{allErrors.tipo_entidad}</p>

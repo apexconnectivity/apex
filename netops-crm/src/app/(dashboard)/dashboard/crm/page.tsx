@@ -707,6 +707,7 @@ export default function CRMPage() {
           empresa={editingEmpresa}
           isSaving={isSaving}
           errors={errors}
+          userRoles={user?.roles || []}
         />
 
         {/* Vista Detallada de Empresa */}
