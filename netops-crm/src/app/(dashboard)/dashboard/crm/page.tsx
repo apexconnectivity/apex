@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
+import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -67,93 +68,6 @@ import {
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Ticket, EstadoTicket } from '@/types/soporte'
 
-// Demo data
-const DEMO_EMPRESAS_INICIAL: Empresa[] = [
-  {
-    id: '1',
-    tipo_entidad: 'cliente',
-    nombre: 'Soluciones Tecnológicas SA',
-    industria: 'Tecnología',
-    tamaño: 'PYME',
-    origen: 'Referencia',
-    tipo_relacion: 'Cliente',
-    telefono_principal: '+54 9 11 4321-5678',
-    email_principal: 'contacto@solucionestec.com',
-    sitio_web: 'www.solucionestec.com',
-    direccion: 'Av. Corrientes 1234, CABA',
-    ciudad: 'Buenos Aires',
-    pais: 'Argentina',
-    razon_social: 'Soluciones Tecnológicas SA',
-    rfc: 'SAT123456789',
-    email_facturacion: 'facturas@solucionestec.com',
-    plazo_pago: 30,
-    moneda_preferida: 'USD',
-    creado_en: '2024-01-15',
-  },
-  {
-    id: '2',
-    tipo_entidad: 'proveedor',
-    nombre: 'Distribuidor Mayorista SA',
-    industria: 'Comercio',
-    tamaño: 'Gran empresa',
-    telefono_principal: '+54 9 11 5555-1234',
-    email_principal: 'ventas@distmayorista.com',
-    sitio_web: 'www.distmayorista.com',
-    direccion: 'Av. Independencia 456, CABA',
-    ciudad: 'Buenos Aires',
-    pais: 'Argentina',
-    razon_social: 'Distribuidor Mayorista SA',
-    rfc: 'DIST123456XYZ',
-    email_facturacion: 'cobros@distmayorista.com',
-    plazo_pago: 30,
-    moneda_preferida: 'USD',
-    creado_en: '2024-02-20',
-  },
-  {
-    id: '3',
-    tipo_entidad: 'cliente',
-    nombre: 'Hospital Regional Norte',
-    industria: 'Salud',
-    tamaño: 'Gran empresa',
-    origen: 'Llamada en frío',
-    tipo_relacion: 'Cliente',
-    telefono_principal: '+54 9 11 4789-1234',
-    email_principal: 'compras@hospitalnorte.com',
-    sitio_web: 'www.hospitalnorte.com',
-    direccion: 'Av. Rivadavia 10000, CABA',
-    ciudad: 'Buenos Aires',
-    pais: 'Argentina',
-    creado_en: '2024-03-10',
-  },
-]
-
-const DEMO_CONTACTOS_INICIAL: Contacto[] = [
-  { id: '1', empresa_id: '1', nombre: 'Juan Pérez', cargo: 'CTO', tipo_contacto: 'Técnico', email: 'juan@solucionestec.com', telefono: '+54 9 11 1234-5678', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-01-15' },
-  { id: '2', empresa_id: '1', nombre: 'María García', cargo: 'Gerente Comercial', tipo_contacto: 'Comercial', email: 'maria@solucionestec.com', telefono: '+54 9 11 2345-6789', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-01-15' },
-  { id: '3', empresa_id: '2', nombre: 'Carlos López', cargo: 'Vendedor', tipo_contacto: 'Comercial', email: 'carlos@distmayorista.com', telefono: '+54 9 11 3456-7890', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-02-20' },
-  { id: '4', empresa_id: '3', nombre: 'Dr. Roberto Silva', cargo: 'Director', tipo_contacto: 'Administrativo', email: 'director@hospitalnorte.com', telefono: '+54 9 11 4567-8901', es_principal: true, recibe_facturas: true, activo: true, creado_en: '2024-03-10' },
-  { id: '5', empresa_id: '1', nombre: 'Ex Contacto', cargo: 'gerente', tipo_contacto: 'Administrativo', email: 'ex@solucionestec.com', telefono: '+54 9 11 9999-9999', es_principal: false, recibe_facturas: false, activo: false, creado_en: '2023-06-15' },
-]
-
-const DEMO_DOCUMENTOS: Documento[] = [
-  { id: 'd1', empresa_id: '1', archivo_id: 'arch1', visibilidad: 'interno', descripcion: 'Contrato de servicios 2024', subido_por: 'Carlos Admin', fecha_subida: '2024-01-20', nombre_archivo: 'contrato_servicios_2024.pdf' },
-  { id: 'd2', empresa_id: '1', archivo_id: 'arch2', visibilidad: 'publico', descripcion: 'Brochure corporativo', subido_por: 'Carlos Admin', fecha_subida: '2024-02-15', nombre_archivo: 'brochure_corporativo.pdf' },
-  { id: 'd3', empresa_id: '1', archivo_id: 'arch3', visibilidad: 'interno', descripcion: 'Acuerdo de confidencialidad NDA', subido_por: 'Carlos Admin', fecha_subida: '2024-03-01', nombre_archivo: 'nda_soluciones.pdf' },
-  { id: 'd4', empresa_id: '2', archivo_id: 'arch4', visibilidad: 'interno', descripcion: 'Contrato de proveedor', subido_por: 'Carlos Admin', fecha_subida: '2024-02-25', nombre_archivo: 'contrato_proveedor.pdf' },
-]
-
-const DEMO_PROYECTOS: Partial<Proyecto>[] = [
-  { id: 'p1', empresa_id: '1', nombre: 'Migración a Cloud', descripcion: 'Migración de infraestructura local a AWS', fase_actual: 4, estado: 'activo', fecha_inicio: '2024-01-15', fecha_estimada_fin: '2024-06-30', moneda: 'USD', monto_estimado: 25000, probabilidad_cierre: 90, responsable_id: 'u1', contacto_tecnico_id: 'c1', requiere_compras: false, creado_en: '2024-01-15', creado_por: 'Carlos Admin' },
-  { id: 'p2', empresa_id: '1', nombre: 'Auditoría de Seguridad', descripcion: 'Auditoría completa de seguridad informática', fase_actual: 5, estado: 'cerrado', fecha_inicio: '2023-10-01', fecha_real_fin: '2023-12-15', moneda: 'USD', monto_estimado: 8000, probabilidad_cierre: 100, responsable_id: 'u1', contacto_tecnico_id: 'c1', requiere_compras: false, creado_en: '2023-10-01', creado_por: 'Carlos Admin' },
-  { id: 'p3', empresa_id: '3', nombre: 'Implementación VPN', descripcion: 'Red VPN corporativa', fase_actual: 2, estado: 'activo', fecha_inicio: '2024-03-01', fecha_estimada_fin: '2024-05-30', moneda: 'USD', monto_estimado: 12000, probabilidad_cierre: 70, responsable_id: 'u1', contacto_tecnico_id: 'c1', requiere_compras: false, creado_en: '2024-03-01', creado_por: 'Carlos Admin' },
-]
-
-const DEMO_TICKETS: Partial<Ticket>[] = [
-  { id: 't1', proyecto_id: 'p1', numero_ticket: 'TKT-001', titulo: 'No se puede acceder al servidor de producción', descripcion: 'El servidor PROD-01 no responde', estado: 'Abierto', prioridad: 'Urgente', categoria: 'Soporte técnico', tipo_origen: 'proyecto', creado_por: 'u1', creado_por_nombre: 'Juan Pérez', creado_por_cliente: true, fecha_apertura: '2024-03-10', tiempo_invertido_minutos: 0 },
-  { id: 't2', proyecto_id: 'p1', numero_ticket: 'TKT-002', titulo: 'Solicitud de nuevo usuario', descripcion: 'Agregar usuario para nuevo empleado', estado: 'En progreso', prioridad: 'Media', categoria: 'Soporte técnico', tipo_origen: 'proyecto', creado_por: 'u1', creado_por_nombre: 'María García', creado_por_cliente: true, fecha_apertura: '2024-03-08', tiempo_invertido_minutos: 30 },
-  { id: 't3', proyecto_id: 'p3', numero_ticket: 'TKT-003', titulo: 'Configuración de firewall', descripcion: 'Revisar reglas de firewall para VPN', estado: 'Abierto', prioridad: 'Alta', categoria: 'Soporte técnico', tipo_origen: 'proyecto', creado_por: 'u1', creado_por_nombre: 'Dr. Roberto Silva', creado_por_cliente: true, fecha_apertura: '2024-03-11', tiempo_invertido_minutos: 0 },
-]
-
 const getTipoBadge = (tipo: TipoEntidad) => {
   return { type: tipo }
 }
@@ -195,11 +109,11 @@ const CONTACTO_VACIO: Partial<Contacto> = {
 export default function CRMPage() {
   const { user } = useAuth()
 
-  const [empresas, setEmpresas] = useState<Empresa[]>(DEMO_EMPRESAS_INICIAL)
-  const [contactos, setContactos] = useState<Contacto[]>(DEMO_CONTACTOS_INICIAL)
-  const [documentos, setDocumentos] = useState<Documento[]>(DEMO_DOCUMENTOS)
-  const [proyectos, setProyectos] = useState<Proyecto[]>(DEMO_PROYECTOS as Proyecto[])
-  const [tickets, setTickets] = useState<Ticket[]>(DEMO_TICKETS as Ticket[])
+  const [empresas, setEmpresas] = useEmpresas()
+  const [contactos, setContactos] = useContactos()
+  const [documentos, setDocumentos] = useDocumentos()
+  const [proyectos, setProyectos] = useProyectos()
+  const [tickets, setTickets] = useTickets()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [tipoFilter, setTipoFilter] = useState<TipoEntidad | 'todos'>('todos')
@@ -534,7 +448,7 @@ export default function CRMPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] w-full px-6 py-6">
+    <div className="h-[calc(100vh-8rem)] w-full overflow-x-hidden px-6 py-6">
       <div className="h-full w-full overflow-y-auto space-y-6 rounded-xl bg-slate-900/50 p-6">
         {/* Header */}
         <div className="flex items-center justify-between">

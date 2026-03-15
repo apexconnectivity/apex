@@ -1,7 +1,7 @@
 'use client'
 
 import { useLocalStorage } from '@/lib/useLocalStorage'
-import type { Empresa, Contacto } from '@/types/crm'
+import type { Empresa, Contacto, Documento } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
 import type { Tarea } from '@/types/tareas'
 import type { Ticket, ContratoSoporte } from '@/types/soporte'
@@ -24,6 +24,7 @@ import {
   INITIAL_SOLICITUDES,
   INITIAL_PROYECTOS_ARCHIVADOS,
   INITIAL_CONFIG_ARCHIVADO,
+  INITIAL_DOCUMENTOS,
 } from './initial-data'
 
 // ============================================================================
@@ -87,6 +88,13 @@ export function useOrdenes() {
 // ============================================================================
 export function useArchivos() {
   return useLocalStorage<Archivo[]>('apex_archivos', INITIAL_ARCHIVOS)
+}
+
+// ============================================================================
+// DOCUMENTOS (CRM)
+// ============================================================================
+export function useDocumentos() {
+  return useLocalStorage<Documento[]>('apex_documentos', INITIAL_DOCUMENTOS)
 }
 
 // ============================================================================
@@ -195,4 +203,12 @@ export function useArchivosPorEntidad(entidadTipo: 'empresa' | 'proyecto' | 'tic
 export function useReunionesPorProyecto(proyectoId: string) {
   const [reuniones] = useReuniones()
   return reuniones.filter(r => r.proyecto_id === proyectoId)
+}
+
+// ============================================================================
+// HELPER: Obtener documentos por empresa
+// ============================================================================
+export function useDocumentosPorEmpresa(empresaId: string) {
+  const [documentos] = useDocumentos()
+  return documentos.filter(d => d.empresa_id === empresaId)
 }

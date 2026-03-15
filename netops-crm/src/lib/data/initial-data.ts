@@ -1,4 +1,4 @@
-import type { Empresa, Contacto } from '@/types/crm'
+import type { Empresa, Contacto, Documento } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
 import type { Tarea } from '@/types/tareas'
 import type { Ticket, ContratoSoporte } from '@/types/soporte'
@@ -826,6 +826,52 @@ export const INITIAL_PROYECTOS_ARCHIVADOS: ProyectoArchivado[] = [
     tickets_count: 8,
     reuniones_count: 15,
     archivos_count: 22,
+  },
+]
+
+// ============================================================================
+// DOCUMENTOS (CRM)
+// ============================================================================
+export const INITIAL_DOCUMENTOS: Documento[] = [
+  {
+    id: 'd1',
+    empresa_id: '1',
+    archivo_id: 'arch1',
+    visibilidad: 'interno',
+    descripcion: 'Contrato de servicios 2024',
+    subido_por: 'Carlos Admin',
+    fecha_subida: '2024-01-20',
+    nombre_archivo: 'contrato_servicios_2024.pdf',
+  },
+  {
+    id: 'd2',
+    empresa_id: '1',
+    archivo_id: 'arch2',
+    visibilidad: 'publico',
+    descripcion: 'Brochure corporativo',
+    subido_por: 'Carlos Admin',
+    fecha_subida: '2024-02-15',
+    nombre_archivo: 'brochure_corporativo.pdf',
+  },
+  {
+    id: 'd3',
+    empresa_id: '1',
+    archivo_id: 'arch3',
+    visibilidad: 'interno',
+    descripcion: 'Acuerdo de confidencialidad NDA',
+    subido_por: 'Carlos Admin',
+    fecha_subida: '2024-03-01',
+    nombre_archivo: 'nda_soluciones.pdf',
+  },
+  {
+    id: 'd4',
+    empresa_id: '2',
+    archivo_id: 'arch4',
+    visibilidad: 'interno',
+    descripcion: 'Contrato de proveedor',
+    subido_por: 'Carlos Admin',
+    fecha_subida: '2024-02-25',
+    nombre_archivo: 'contrato_proveedor.pdf',
   },
 ]
 
