@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
@@ -487,11 +488,9 @@ export default function TareasPage() {
             </div>
             
             <label className="flex items-center gap-1.5 cursor-pointer h-8">
-              <input 
-                type="checkbox" 
+              <Checkbox 
                 checked={filtroVencidas} 
-                onChange={(e) => setFiltroVencidas(e.target.checked)}
-                className="rounded border-border"
+                onCheckedChange={(checked) => setFiltroVencidas(checked as boolean)}
               />
               <span className="text-xs text-muted-foreground">Vencidas</span>
             </label>

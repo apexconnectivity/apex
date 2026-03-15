@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, X, Trash2, CheckSquare, MessageSquare } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
@@ -136,12 +137,10 @@ function TaskFormFields({
       </div>
 
       <div className="flex items-center gap-2">
-        <input 
-          type="checkbox" 
+        <Checkbox 
           id="asignado_cliente" 
           checked={tarea.asignado_a_cliente} 
-          onChange={(e) => setTarea({ ...tarea, asignado_a_cliente: e.target.checked })} 
-          className="rounded border-border"
+          onCheckedChange={(checked) => setTarea({ ...tarea, asignado_a_cliente: checked as boolean })} 
           disabled={disabled}
         />
         <Label htmlFor="asignado_cliente" className="text-sm">Asignar a cliente</Label>
@@ -216,11 +215,9 @@ function SubtasksSection({
           {subtareas.map((st, index) => (
             <div key={index} className="flex items-center gap-2 text-sm p-2 bg-muted/30 rounded">
               {onToggle && (
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={st.completada || false}
-                  onChange={() => onToggle(index)}
-                  className="rounded border-border"
+                  onCheckedChange={() => onToggle(index)}
                 />
               )}
               <span className={`flex-1 ${st.completada ? 'line-through text-muted-foreground' : ''}`}>

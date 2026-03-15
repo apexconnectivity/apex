@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
@@ -362,11 +363,9 @@ export function TaskDetailPanel({
                         className="flex items-center gap-2 text-sm p-2 bg-muted/20 rounded-lg hover:bg-muted/40 transition-colors cursor-pointer"
                         onClick={() => onToggleSubtarea(st.id)}
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={st.completada}
-                          onChange={() => onToggleSubtarea(st.id)}
-                          className="rounded border-border bg-muted"
+                          onCheckedChange={() => onToggleSubtarea(st.id)}
                         />
                         <span className={st.completada ? 'line-through text-muted-foreground' : 'text-foreground'}>
                           {st.nombre}
