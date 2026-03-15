@@ -228,10 +228,21 @@ export const CREATE_CONTRACT_MODAL = {
 } as const
 
 // ============================================
-// EXPORT AGRUPADO
-// ============================================
+ // STORAGE KEYS - localStorage
+ // ============================================
 
-export const SOPORTE_TEXTS = {
+ export const SOPORTE_STORAGE_KEYS = {
+   tickets: 'apex_soporte_datos',
+   contratos: 'apex_contratos_soporte',
+   comentarios: 'apex_soporte_comentarios',
+   vista: 'apex_soporte_vista',
+ } as const
+
+ // ============================================
+ // EXPORT AGRUPADO
+ // ============================================
+
+ export const SOPORTE_TEXTS = {
   titulos: SOPORTE_TITULOS,
   tabs: SOPORTE_TABS,
   stats: SOPORTE_STATS,

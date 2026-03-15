@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.3  
-**Fecha:** 2026-03-07  
-**Estado:** Migración a shadcn/ui completada
+**Versión:** 1.4  
+**Fecha:** 2026-03-15  
+**Estado:** En desarrollo - Módulo de soporte implementado con localStorage
 
 ---
 
@@ -37,15 +37,17 @@
 |------------|---------|-----------|
 | **Next.js** | 14.2.21 | Framework React estable |
 | **React** | 18.3.1 | UI Library |
-| **TypeScript** | 5.x | Tipado estático |
-| **Tailwind CSS** | 4.x | Estilos utility-first |
+| **TypeScript** | 5.7.2 | Tipado estático |
+| **Tailwind CSS** | 3.4.0 | Estilos utility-first |
 
-### Supabase
+### Supabase (pendiente de implementación)
 
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| **@supabase/ssr** | ^0.5.2 | Autenticación y cookies (Next.js) |
-| **@supabase/supabase-js** | ^2.45.4 | Client para browser |
+| **@supabase/ssr** | ^0.5.2 | Autenticación y cookies (Next.js) - Pendiente |
+| **@supabase/supabase-js** | ^2.45.4 | Client para browser - Pendiente |
+
+**Estado:** Paquetes instalados pero no configurados. Actualmente se usa localStorage para persistencia.
 
 ### UI Components
 
@@ -53,6 +55,7 @@
 |------------|---------|-----------|
 | **shadcn/ui** | 4.x | Componentes accesibles |
 | **@dnd-kit/core** | ^6.3.1 | Drag & Drop |
+| **@dnd-kit/sortable** | ^10.0.0 | Drag & Drop ordenable |
 | **lucide-react** | ^0.468.0 | Iconos |
 
 ### Desarrollo
@@ -69,32 +72,38 @@
 
 ### 3.1 Renderizado
 
-- **SSR (Server-Side Rendering):** Páginas que requieren datos dinámicos (dashboard, proyectos)
-- **CSR (Client-Side Rendering):** Componentes interactivos (drag & drop, formularios)
-- **ISR (Incremental Static Regeneration):** No utilizado por ahora
+- **SSR (Server-Side Rendering):** No implementado actualmente
+- **CSR (Client-Side Rendering):** Toda la aplicación usa `use client`
+- **ISR (Incremental Static Regeneration):** No utilizado
 
 ### 3.2 Estado
 
-- **Server Components:** Datos de Supabase directamente en componentes servidor
-- **Client Components:** Componentes interactivos con `use client`
-- **Cookies:** Sesión administrada vía @supabase/ssr
+- **localStorage:** Persistencia actual de datos (tickets, contratos, proyectos, tareas, empresas)
+- **Client Components:** Toda la aplicación con `use client`
+- **useState/useLocalStorage:** Gestión de estado local
 
 ### 3.3 Rutas
 
 ```
 /                         → Landing / Redirect
 /login                    → Login público
-/recuperar-acceso         → Recuperar contraseña
-/reset-password           → Token de recuperación
+/recuperar-password       → Recuperar contraseña
 
-/dashboard                → Dashboard principal (admin/técnico)
+/dashboard                → Dashboard principal
 /dashboard/crm            → CRM Empresas/Contactos
 /dashboard/proyectos      → Pipeline de proyectos
 /dashboard/tareas         → Mis tareas
+/dashboard/calendario     → Calendario
+/dashboard/compras       → Órdenes de compra
+/dashboard/soporte       → Tickets y contratos de soporte
+/dashboard/usuarios      → Gestión de usuarios
+/dashboard/archivos      → Archivos
+/dashboard/archivados    → Elementos archivados
+/dashboard/notificaciones → Notificaciones
+/dashboard/perfil        → Perfil de usuario
 
-/portal                   → Portal cliente (root redirect)
-/portal/tareas            → Tareas del cliente
-/portal/perfil            → Perfil del cliente
+/portal                   → Portal cliente (vista simplificada)
+/portal/proyectos         → Proyectos del cliente
 ```
 
 ---
@@ -113,37 +122,69 @@
 - Label ✅
 - Card ✅
 - Dialog ✅
-- Table ✅
 - Select ✅
 - Dropdown Menu ✅
-- Separator ✅
 - Badge ✅
 - Avatar ✅
 - Textarea ✅
 - Tabs ✅
-- Sheet ✅
+- Checkbox ✅
+- Tooltip ✅
 
-**Cómo agregar más:**
-```bash
-npx shadcn@latest add [componente]
-```
+**Componentes NO instalados:**
+- Table ⏳
+- Separator ⏳
+- Sheet ⏳
+
+**Componentes personalizados adicionales:**
+- Modal (custom)
+- Skeleton
+- StatCard
+- MiniStat
+- InfoCard
+- AccessDeniedCard
 
 ### 4.2 @dnd-kit
 
 **Instalado:** ✅ Sí  
-**Propósito:** Drag & Drop para pipeline de proyectos
+**Propósito:** Drag & Drop para pipeline
 
-**Uso previsto:**
-- Mover proyectos entre fases
-- Reordenar tareas dentro de fases
+**Uso implementado:**
+- Mover tickets entre estados (soporte)
+- Mover proyectos entre fases (proyectos)
+- Mover tareas entre estados (tareas)
 
 ---
 
-## 5. INTEGRACIONES EXTERNAS
+## 5. PERSISTENCIA DE DATOS
+
+### Sistema Actual (localStorage)
+
+| Entidad | Key localStorage | Estado |
+|---------|------------------|--------|
+| Empresas | `apex_crm_datos` | ✅ Implementado |
+| Proyectos | `apex_proyectos_datos` | ✅ Implementado |
+| Tareas | `apex_tareas_datos` | ✅ Implementado |
+| Tickets | `apex_soporte_datos` | ✅ Implementado |
+| Contratos Soporte | `apex_contratos_soporte` | ✅ Implementado |
+| Comentarios | `apex_soporte_comentarios` | ✅ Implementado |
+| Usuario sesión | `apex_user` | ✅ Implementado |
+
+### Pendiente: Supabase
+
+| Servicio | Estado |
+|----------|--------|
+| Auth | ⏳ Pendiente implementación |
+| Database | ⏳ Pendiente implementación |
+| Storage | ⏳ Pendiente implementación |
+
+---
+
+## 6. INTEGRACIONES EXTERNAS
 
 | Servicio | API | Estado |
 |----------|-----|--------|
-| **Supabase** | Auth, Database, Storage | ✅ Configurado |
+| **Supabase** | Auth, Database, Storage | ⏳ Pendiente implementación |
 | **Google Drive** | Drive API | ⏳ Pendiente |
 | **Google Calendar** | Calendar API | ⏳ Pendiente |
 | **Slack** | Webhooks | ⏳ Pendiente |
@@ -151,76 +192,166 @@ npx shadcn@latest add [componente]
 
 ---
 
-## 6. ESTRUCTURA DE CARPETAS
+## 7. ESTRUCTURA DE CARPETAS
 
 ```
 netops-crm/
 ├── src/
 │   ├── app/                    # Next.js App Router
-│   │   ├── login/
-│   │   ├── dashboard/
-│   │   ├── portal/
-│   │   ├── recuperar-acceso/
-│   │   ├── reset-password/
+│   │   ├── (auth)/            # Rutas autenticación
+│   │   │   ├── login/
+│   │   │   └── recuperar-password/
+│   │   ├── (dashboard)/       # Rutas dashboard
+│   │   │   └── dashboard/
+│   │   │       ├── crm/
+│   │   │       ├── proyectos/
+│   │   │       ├── tareas/
+│   │   │       ├── calendario/
+│   │   │       ├── compras/
+│   │   │       ├── soporte/
+│   │   │       ├── usuarios/
+│   │   │       ├── archivos/
+│   │   │       ├── archivados/
+│   │   │       ├── notificaciones/
+│   │   │       └── perfil/
+│   │   ├── portal/            # Portal cliente
 │   │   ├── layout.tsx         # Root layout
 │   │   ├── page.tsx           # Home
 │   │   └── globals.css
 │   │
 │   ├── components/            # Componentes React
-│   │   ├── ui/               # shadcn/ui components
-│   │   └── ...
+│   │   ├── ui/               # shadcn/ui + personalizados
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── ...
+│   │   │   ├── access-denied-card.tsx
+│   │   │   ├── info-card.tsx
+│   │   │   ├── mini-stat.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   └── stat-card.tsx
+│   │   │
+│   │   ├── module/           # Componentes de módulo
+│   │   │   ├── TicketDetailPanel.tsx
+│   │   │   ├── TaskDetailPanel.tsx
+│   │   │   ├── ProjectDetailPanel.tsx
+│   │   │   ├── CreateTicketModal.tsx
+│   │   │   ├── CreateContractModal.tsx
+│   │   │   ├── CreateTaskModal.tsx
+│   │   │   ├── StatusBadge.tsx
+│   │   │   ├── ModuleContainer.tsx
+│   │   │   ├── ModuleHeader.tsx
+│   │   │   ├── ModuleCard.tsx
+│   │   │   └── ...
+│   │   │
+│   │   ├── dashboard-stats.tsx
+│   │   ├── pipeline.tsx
+│   │   ├── welcome-header.tsx
+│   │   ├── sidebar.tsx
+│   │   ├── header.tsx
+│   │   └── auth-guard.tsx
+│   │
+│   ├── contexts/              # React Context
+│   │   ├── auth-context.tsx
+│   │   └── portal-auth-context.tsx
 │   │
 │   ├── lib/                   # Utilidades
-│   │   ├── supabase/         # Clientes Supabase
-│   │   │   ├── client.ts
-│   │   │   ├── server.ts
-│   │   │   └── middleware.ts
-│   │   └── utils.ts
+│   │   ├── utils.ts           # cn() helper
+│   │   ├── colors.ts          # Colores centralizados
+│   │   ├── date-utils.ts      # Utilidades de fecha
+│   │   ├── useLocalStorage.ts # Hook localStorage
+│   │   └── data/              # Datos iniciales
+│   │       ├── store.ts
+│   │       ├── initial-data.ts
+│   │       └── index.ts
 │   │
 │   ├── types/                 # TypeScript types
-│   │   └── database.ts
+│   │   ├── soporte.ts
+│   │   ├── proyectos.ts
+│   │   ├── tareas.ts
+│   │   ├── crm.ts
+│   │   ├── compras.ts
+│   │   ├── calendario.ts
+│   │   ├── portal.ts
+│   │   ├── auth.ts
+│   │   ├── archivado.ts
+│   │   ├── archivos.ts
+│   │   ├── notificaciones.ts
+│   │   └── compartidos.ts
 │   │
-│   └── middleware.ts          # Next.js middleware
-│
-├── supabase/
-│   └── migrations/           # SQL migrations
+│   └── constants/             # Constantes
+│       └── soporte.ts         # Textos y keys localStorage
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
-├── next.config.mjs           # Next.js config (debe ser .mjs)
+├── next.config.mjs           # Next.js config
 ├── tailwind.config.ts
 ├── tsconfig.json
-└── components.json            # shadcn config
+├── components.json            # shadcn config
+└── STACK.md                  # Este archivo
 ```
 
 ---
 
-## 7. VARIABLES DE ENTORNO
+## 8. VARIABLES DE ENTORNO
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx
-SUPABASE_SERVICE_ROLE_KEY=eyJxxx
-
-# Auth
+# Supabase - Pendiente configurar
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+**Estado:** Variables no configuradas. Proyecto funciona con datos demo y localStorage.
 
 ---
 
-## 8. SCRIPTS DISPONIBLES
+## 9. SCRIPTS DISPONIBLES
 
 | Comando | Descripción |
 |---------|-------------|
-| `npm run dev` | Iniciar servidor desarrollo |
+| `npm run dev` | Iniciar servidor desarrollo (localhost:3000) |
 | `npm run build` | Build producción |
 | `npm run start` | Iniciar producción |
 | `npm run lint` | Verificar código |
 
 ---
 
-## 9. CONTROL DE CAMBIOS
+## 10. CARACTERÍSTICAS IMPLEMENTADAS
+
+### Módulos del Dashboard
+
+| Módulo | Estado | Notas |
+|--------|--------|-------|
+| Dashboard principal | ✅ | Stats, actividad reciente, próximas tareas |
+| CRM | ✅ | Empresas, contactos, pipeline |
+| Proyectos | ✅ | Pipeline con drag & drop |
+| Tareas | ✅ | Kanban por estado |
+| Calendario | ✅ | Reuniones y solicitudes |
+| Compras | ✅ | Órdenes de compra, cotizaciones |
+| Soporte | ✅ | Tickets, contratos, pipeline |
+| Usuarios | ✅ | Gestión de usuarios |
+| Archivos | ✅ | Gestión documental |
+| Archivados | ✅ | Elementos eliminados |
+| Notificaciones | ✅ | Centro de notificaciones |
+| Perfil | ✅ | Perfil de usuario |
+
+### Portal del Cliente
+
+| Módulo | Estado | Notas |
+|--------|--------|-------|
+| Portal principal | ✅ | Vista simplificada |
+| Proyectos cliente | ✅ | Solo proyectos propios |
+| Tickets cliente | ✅ | Solo tickets propios |
+
+---
+
+## 11. CONTROL DE CAMBIOS
 
 | Versión | Fecha | Cambios |
 |---------|-------|---------|
@@ -228,31 +359,32 @@ NEXT_PUBLIC_SUPABASE_URL=
 | 1.1 | 2026-03-07 | Downgrade a Next.js 14.x por estabilidad |
 | 1.2 | 2026-03-07 | Instalado shadcn/ui + @dnd-kit. Rename next.config.ts → .mjs |
 | 1.3 | 2026-03-07 | Migración completa de UI a shadcn/ui |
+| 1.4 | 2026-03-15 | Módulo soporte implementado, localStorage, corrección de estilos |
 
 ---
 
-## 10. RECOMENDACIONES FUTURAS
+## 12. PRÓXIMOS PASOS
 
 ### Prioridad alta
-- [ ] Implementar React Query para estado compartido
+- [ ] Implementar Supabase (Auth, Database, Storage)
+- [ ] Migrar datos de localStorage a Supabase
 - [ ] Agregar testing (Vitest + React Testing Library)
 - [ ] Configurar CI/CD con GitHub Actions
 
 ### Prioridad media
-- [ ] Implementar optimistic updates para mejor UX
-- [ ] Agregar loading skeletons
+- [ ] Implementar Server Components donde sea posible
+- [ ] Agregar loading skeletons a todas las páginas
 - [ ] Implementar error boundaries
+- [ ] Agregar componentes faltantes de shadcn (Table, Sheet, Separator)
 
 ### Prioridad baja
-- [ ] Migrar a App Router completo
+- [ ] Implementar React Query para estado compartido
 - [ ] Agregar internacionalización (i18n)
 - [ ] Implementar PWA
+- [ ] Integraciones externas (Google Drive, Calendar, Slack, n8n)
 
 ---
 
 **Documento creado:** 2026-03-07  
-**Última actualización:** 2026-03-07  
+**Última actualización:** 2026-03-15  
 **Responsable:** Sistema
-```
-
----

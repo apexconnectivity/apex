@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +17,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalList
 import { CSS } from '@dnd-kit/utilities'
 import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
 import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
-import { SOPORTE_TEXTS, SOPORTE_TITULOS, SOPORTE_TABS, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_BOTONES, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
+import { SOPORTE_TEXTS, SOPORTE_TITULOS, SOPORTE_TABS, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_BOTONES, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_STORAGE_KEYS } from '@/constants/soporte'
 import { getStatusColor } from '@/lib/colors'
 import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTicketModal, CreateContractModal, type CreateTicketData, type CreateContractData } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
@@ -150,10 +151,10 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 
 export default function SoportePage() {
   const { user } = useAuth()
-  const [view, setView] = useState<'contratos' | 'tickets'>('tickets')
-  const [contratos, setContratos] = useState<ContratoSoporte[]>(DEMO_CONTRATOS)
-  const [tickets, setTickets] = useState<Ticket[]>(DEMO_TICKETS)
-  const [comentarios, setComentarios] = useState<Record<string, ComentarioTicket[]>>(DEMO_COMENTARIOS)
+  const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(SOPORTE_STORAGE_KEYS.vista, 'tickets')
+  const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(SOPORTE_STORAGE_KEYS.contratos, DEMO_CONTRATOS)
+  const [tickets, setTickets] = useLocalStorage<Ticket[]>(SOPORTE_STORAGE_KEYS.tickets, DEMO_TICKETS)
+  const [comentarios, setComentarios] = useLocalStorage<Record<string, ComentarioTicket[]>>(SOPORTE_STORAGE_KEYS.comentarios, DEMO_COMENTARIOS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tickets.find(t => t.id === selectedId) || null
   const [showCreateTicket, setShowCreateTicket] = useState(false)
