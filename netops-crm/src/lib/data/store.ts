@@ -9,6 +9,7 @@ import type { OrdenCompra, Proveedor } from '@/types/compras'
 import type { Archivo } from '@/types/archivos'
 import type { Reunion, SolicitudReunion } from '@/types/calendario'
 import type { ProyectoArchivado, ConfigArchivado } from '@/types/archivado'
+import type { HistorialProyecto } from '@/types/proyectos'
 
 import {
   INITIAL_EMPRESAS,
@@ -123,6 +124,13 @@ export function useProyectosArchivados() {
 // ============================================================================
 export function useConfigArchivado() {
   return useLocalStorage<ConfigArchivado>('apex_config_archivado', INITIAL_CONFIG_ARCHIVADO)
+}
+
+// ============================================================================
+// HISTORIAL DE PROYECTOS
+// ============================================================================
+export function useHistorialProyectos() {
+  return useLocalStorage<Record<string, HistorialProyecto[]>>('apex_historial_proyectos', {})
 }
 
 // ============================================================================

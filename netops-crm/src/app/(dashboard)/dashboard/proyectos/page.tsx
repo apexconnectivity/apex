@@ -31,8 +31,9 @@ import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from 
 import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE, Subtarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
 import { User } from '@/types/auth'
+import { useEmpresas, useContactos, useProyectos, useTareas, useHistorialProyectos } from '@/lib/data'
 
-// Usuarios internos demo (técnicos y admin)
+// Usuarios internos demo (no hay store para usuarios internos)
 const DEMO_USUARIOS: User[] = [
   { id: '1', email: 'carlos@apex.com', nombre: 'Carlos Admin', telefono: '+54 9 11 1234-5678', activo: true, creado_en: '2024-01-01', cambiar_password_proximo_login: false, roles: ['admin'] },
   { id: '2', email: 'laura@apex.com', nombre: 'Laura Pérez', telefono: '+54 9 11 2345-6789', activo: true, creado_en: '2024-02-15', cambiar_password_proximo_login: false, roles: ['tecnico'] },
@@ -40,44 +41,7 @@ const DEMO_USUARIOS: User[] = [
   { id: '4', email: 'marcos@apex.com', nombre: 'Marcos González', telefono: '+54 9 11 4567-8901', activo: true, creado_en: '2024-04-10', cambiar_password_proximo_login: false, roles: ['comercial'] },
 ]
 
-const DEMO_PROYECTOS: Proyecto[] = [
-  { id: '1', empresa_id: '1', nombre: 'Implementación Firewall Corp', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-01-15', fecha_estimada_fin: '2026-04-15', moneda: 'USD', monto_estimado: 25000, probabilidad_cierre: 90, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '1', contacto_tecnico_nombre: 'Juan Pérez', tags: ['seguridad'], requiere_compras: true, creado_en: '2026-01-15', cliente_nombre: 'Soluciones Tecnológicas SA' },
-  { id: '2', empresa_id: '2', nombre: 'Migración Cloud Tech', fase_actual: 2, estado: 'activo', fecha_inicio: '2026-02-01', fecha_estimada_fin: '2026-06-01', moneda: 'USD', monto_estimado: 45000, probabilidad_cierre: 40, responsable_id: '2', responsable_nombre: 'Laura Pérez', contacto_tecnico_id: '4', tags: ['cloud'], requiere_compras: false, creado_en: '2026-02-01', cliente_nombre: 'Hospital Regional Norte' },
-  { id: '3', empresa_id: '3', nombre: 'Auditoría Seguridad Tech', fase_actual: 5, estado: 'activo', fecha_inicio: '2026-01-01', fecha_estimada_fin: '2026-03-01', moneda: 'USD', monto_estimado: 12000, probabilidad_cierre: 100, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '5', tags: ['auditoría'], requiere_compras: false, creado_en: '2026-01-01', cliente_nombre: 'TechCorp International' },
-  { id: '4', empresa_id: '4', nombre: 'Upgrade Switches Retail', fase_actual: 4, estado: 'activo', fecha_inicio: '2026-03-01', fecha_estimada_fin: '2026-05-15', moneda: 'USD', monto_estimado: 35000, probabilidad_cierre: 90, responsable_id: '3', responsable_nombre: 'Juan Técnico', contacto_tecnico_id: '1', tags: ['infra'], requiere_compras: true, creado_en: '2026-03-01', cliente_nombre: 'RetailMax' },
-  { id: '5', empresa_id: '1', nombre: 'Proyecto Cancelado', fase_actual: 2, estado: 'cerrado', fecha_inicio: '2025-11-01', fecha_cierre: '2025-12-15', motivo_cierre: 'Cancelado', moneda: 'USD', monto_estimado: 15000, probabilidad_cierre: 0, responsable_id: '1', responsable_nombre: 'Carlos Admin', contacto_tecnico_id: '1', tags: [], requiere_compras: false, creado_en: '2025-11-01', cliente_nombre: 'Soluciones Tecnológicas SA' },
-]
-
-// Tareas de demo para los proyectos
-const DEMO_TAREAS: Tarea[] = [
-  { id: 't1', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Técnica', nombre: 'Configurar reglas de firewall', descripcion: 'Crear reglas de seguridad básicas', responsable_id: '1', responsable_nombre: 'Carlos Admin', asignado_a_cliente: false, fecha_creacion: '2026-01-15', fecha_vencimiento: '2026-02-15', prioridad: 'Alta', estado: 'Completada', orden: 1, creado_por: '1' },
-  { id: 't2', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Técnica', nombre: 'Instalar certificado SSL', descripcion: 'Obtener e instalar certificados', responsable_id: '1', responsable_nombre: 'Carlos Admin', asignado_a_cliente: false, fecha_creacion: '2026-01-20', fecha_vencimiento: '2026-02-28', prioridad: 'Media', estado: 'En progreso', orden: 2, creado_por: '1' },
-  { id: 't3', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Compras', nombre: 'Adquirir equipo de red', descripcion: 'Comprar switches adicionales', responsable_id: '2', responsable_nombre: 'Laura Pérez', asignado_a_cliente: false, fecha_creacion: '2026-01-25', fecha_vencimiento: '2026-03-15', prioridad: 'Alta', estado: 'Pendiente', orden: 3, creado_por: '1' },
-  { id: 't4', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Técnica', nombre: 'Pruebas de penetración', descripcion: 'Realizar pruebas de seguridad', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-02-01', fecha_vencimiento: '2026-04-01', prioridad: 'Urgente', estado: 'Bloqueada', orden: 4, dependencias: [{ tarea_id: 't1', tipo: 'bloqueante' }], creado_por: '1' },
-  { id: 't5', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', fase_origen: 2, fase_nombre: 'Diagnóstico', categoria: 'Técnica', nombre: 'Inventario de servicios', descripcion: 'Listar todos los servicios actuales', responsable_id: '2', responsable_nombre: 'Laura Pérez', asignado_a_cliente: false, fecha_creacion: '2026-02-01', prioridad: 'Alta', estado: 'Completada', orden: 1, creado_por: '2' },
-  { id: 't6', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', fase_origen: 2, fase_nombre: 'Diagnóstico', categoria: 'Técnica', nombre: 'Diseño de arquitectura', descripcion: 'Crear diseño de infraestructura cloud', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-02-05', prioridad: 'Alta', estado: 'En progreso', orden: 2, creado_por: '2' },
-  { id: 't7', proyecto_id: '3', proyecto_nombre: 'Auditoría Seguridad Tech', fase_origen: 5, fase_nombre: 'Cierre', categoria: 'Técnica', nombre: 'Entrega de informe final', descripcion: 'Documentar hallazgos y recomendaciones', responsable_id: '1', responsable_nombre: 'Carlos Admin', asignado_a_cliente: false, fecha_creacion: '2026-01-15', fecha_vencimiento: '2026-03-01', prioridad: 'Alta', estado: 'Completada', orden: 1, creado_por: '1' },
-  { id: 't8', proyecto_id: '4', proyecto_nombre: 'Upgrade Switches Retail', fase_origen: 4, fase_nombre: 'Implementación', categoria: 'Técnica', nombre: 'Reemplazar switches antiguos', descripcion: 'Instalar nuevos switches', responsable_id: '3', responsable_nombre: 'Juan Técnico', asignado_a_cliente: false, fecha_creacion: '2026-03-01', prioridad: 'Alta', estado: 'En progreso', orden: 1, creado_por: '3' },
-]
-
-// Empresas para selector
-const DEMO_EMPRESAS: Empresa[] = [
-  { id: '1', tipo_entidad: 'cliente', nombre: 'Soluciones Tecnológicas SA', industria: 'Tecnología', tamaño: 'PYME', origen: 'Referencia', tipo_relacion: 'Cliente', telefono_principal: '+54 9 11 4321-5678', email_principal: 'contacto@solucionestec.com', sitio_web: 'www.solucionestec.com', direccion: 'Av. Corrientes 1234, CABA', ciudad: 'Buenos Aires', pais: 'Argentina', razon_social: 'Soluciones Tecnológicas SA', rfc: 'SAT123456789', email_facturacion: 'facturas@solucionestec.com', plazo_pago: 30, moneda_preferida: 'USD', creado_en: '2024-01-15' },
-  { id: '2', tipo_entidad: 'cliente', nombre: 'Hospital Regional Norte', industria: 'Salud', tamaño: 'Gran empresa', origen: 'Llamada en frío', tipo_relacion: 'Cliente', telefono_principal: '+54 9 11 4789-1234', email_principal: 'compras@hospitalnorte.com', sitio_web: 'www.hospitalnorte.com', direccion: 'Av. Rivadavia 10000, CABA', ciudad: 'Buenos Aires', pais: 'Argentina', creado_en: '2024-03-10' },
-  { id: '3', tipo_entidad: 'cliente', nombre: 'TechCorp International', industria: 'Tecnología', tamaño: 'Gran empresa', origen: 'Web', tipo_relacion: 'Cliente', telefono_principal: '+1 555-123-4567', email_principal: 'info@techcorp.com', sitio_web: 'www.techcorp.com', ciudad: 'Miami', pais: 'EE.UU', creado_en: '2024-04-01' },
-  { id: '4', tipo_entidad: 'cliente', nombre: 'RetailMax', industria: 'Comercio', tamaño: 'Gran empresa', origen: 'Referencia', tipo_relacion: 'Cliente', telefono_principal: '+54 9 11 5555-9999', email_principal: 'contacto@retailmax.com', sitio_web: 'www.retailmax.com', ciudad: 'Córdoba', pais: 'Argentina', creado_en: '2024-05-15' },
-]
-
-// Contactos de las empresas demo
-const DEMO_CONTACTOS: Contacto[] = [
-  { id: 'c1', empresa_id: '1', nombre: 'Juan Pérez', cargo: 'Director de TI', tipo_contacto: 'Técnico', email: 'jperez@solucionestec.com', telefono: '+54 9 11 4321-5679', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-01-15' },
-  { id: 'c2', empresa_id: '1', nombre: 'María García', cargo: 'Gerente de Compras', tipo_contacto: 'Compras', email: 'mgarcia@solucionestec.com', telefono: '+54 9 11 4321-5680', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-01-15' },
-  { id: 'c3', empresa_id: '2', nombre: 'Dr. Roberto Silva', cargo: 'Jefe de Sistemas', tipo_contacto: 'Técnico', email: 'rsilva@hospitalnorte.com', telefono: '+54 9 11 4789-1235', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-03-10' },
-  { id: 'c4', empresa_id: '2', nombre: 'Lic. Ana López', cargo: 'Directora Administrativa', tipo_contacto: 'Administrativo', email: 'alopez@hospitalnorte.com', telefono: '+54 9 11 4789-1236', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-03-10' },
-  { id: 'c5', empresa_id: '3', nombre: 'Mike Johnson', cargo: 'IT Manager', tipo_contacto: 'Técnico', email: 'mjohnson@techcorp.com', telefono: '+1 555-123-4568', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-04-01' },
-  { id: 'c6', empresa_id: '4', nombre: 'Carlos Martínez', cargo: 'Jefe de Infraestructura', tipo_contacto: 'Técnico', email: 'cmartinez@retailmax.com', telefono: '+54 9 11 5555-9998', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-05-15' },
-]
-
+// Constante para formulario de nuevo proyecto
 const PROYECTO_VACIO: Partial<Proyecto> = {
   nombre: '',
   descripcion: '',
@@ -96,11 +60,16 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
 export default function ProyectosPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
-  const [proyectos, setProyectos] = useState<Proyecto[]>(DEMO_PROYECTOS)
-  const [tareas, setTareas] = useState<Tarea[]>(DEMO_TAREAS)
-  const [empresas, setEmpresas] = useState<Empresa[]>(DEMO_EMPRESAS)
+  
+  // Hooks del store centralizado
+  const [proyectos, setProyectos] = useProyectos()
+  const [tareas, setTareas] = useTareas()
+  const [empresas, setEmpresas] = useEmpresas()
+  const [contactos] = useContactos()
+  
+  // Usuarios se mantiene en memoria (no hay store para usuarios internos)
   const [usuarios, setUsuarios] = useState<User[]>(DEMO_USUARIOS)
-  const [contactos, setContactos] = useState<Contacto[]>(DEMO_CONTACTOS)
+  
   const [view, setView] = useState<'pipeline' | 'cerrados'>('pipeline')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -129,8 +98,8 @@ export default function ProyectosPage() {
   const [clasificacionArchivo, setClasificacionArchivo] = useState<'completado' | 'inconcluso'>('completado')
   const [isArchiving, setIsArchiving] = useState(false)
 
-  // Historial de proyectos
-  const [historialProyectos, setHistorialProyectos] = useState<Record<string, HistorialProyecto[]>>({})
+  // Historial de proyectos - persistido en localStorage
+  const [historialProyectos, setHistorialProyectos] = useHistorialProyectos()
 
   // Función para agregar evento al historial
   const agregarHistorial = (
