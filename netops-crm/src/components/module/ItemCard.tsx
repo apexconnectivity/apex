@@ -4,6 +4,7 @@ import { ModuleCard } from './ModuleCard'
 import { StatusBadge } from './StatusBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { formatDateShort } from '@/lib/date-utils'
 
 interface ItemMeta {
   label: string
@@ -121,11 +122,6 @@ function ProjectCard({
   className = '',
   children
 }: ProjectCardProps) {
-  const formatFecha = (fecha: string) => {
-    const d = new Date(fecha)
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`
-  }
-
   return (
     <ModuleCard onClick={onClick} className={`group ${className}`}>
       <div className="flex items-start justify-between mb-3">
@@ -159,7 +155,7 @@ function ProjectCard({
           </div>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -172,7 +168,7 @@ function ProjectCard({
             <StatusBadge
               key={idx}
               status={tag.label}
-              customColor={tag.color || 'bg-slate-500/20 text-slate-400'}
+              className="bg-slate-700/50 text-slate-300 text-xs hover:bg-slate-700/70"
             />
           ))}
         </div>
@@ -208,7 +204,7 @@ function ProjectCard({
           {tasksInfo.proximaVence && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              <span>Vence: {formatFecha(tasksInfo.proximaVence)}</span>
+              <span>Vence: {formatDateShort(tasksInfo.proximaVence)}</span>
             </div>
           )}
         </div>
@@ -228,9 +224,9 @@ function ProjectCard({
           )}
           {assignee && (
             <div className="flex items-center gap-2">
-              <Avatar className="h-7 w-7 border border-border">
+              <Avatar className="h-8 w-8 border border-border">
                 <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[9px]">
+                <AvatarFallback className="text-[10px]">
                   {assignee.name.split(' ').map((n) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings } from 'lucide-react'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import {
@@ -652,8 +652,8 @@ export default function ProyectosPage() {
                         title={p.nombre}
                         subtitle={p.cliente_nombre}
                         progress={infoTareasPorProyecto[p.id]?.progreso}
-                        progressLabel="Avance"
-                        value={`${p.moneda} ${p.monto_estimado?.toLocaleString()}`}
+                        progressLabel="Progreso"
+                        value={p.monto_estimado ? `${p.moneda} ${p.monto_estimado.toLocaleString()}` : undefined}
                         assignee={{ name: p.responsable_nombre || '' }}
                         tags={(p.tags || []).map(tag => ({ label: tag }))}
                         tasksInfo={infoTareasPorProyecto[p.id]}
@@ -662,10 +662,14 @@ export default function ProyectosPage() {
                         {canMovePhases && (
                           <div className="flex gap-1 mt-3 pt-2 border-t border-border/50">
                             {fase.id > 1 && (
-                              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id - 1) }}>←</Button>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-slate-700/50" onClick={(e) => { e.stopPropagation(); handleFase(p.id, (fase.id - 1)) }}>
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
                             )}
                             {fase.id < 5 && (
-                              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id + 1) }}>→</Button>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-slate-700/50" onClick={(e) => { e.stopPropagation(); handleFase(p.id, (fase.id + 1)) }}>
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
                             )}
                           </div>
                         )}

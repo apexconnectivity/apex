@@ -18,8 +18,7 @@ interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   // Estados activos/en progreso
   activo: { color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Activo' },
-  en_progreso: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'En Progreso' },
-  en_progreso_: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'En Progreso' },
+  en_progreso: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'En progreso' },
 
   // Estados de espera
   pendiente: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Pendiente' },
@@ -48,7 +47,6 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 
   // Estados de aprobación
   pendiente_aprobacion: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Pendiente de Aprobación' },
-  pendiente_aprobaci_n: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Pendiente de Aprobación' },
   aprobada: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'Aprobada' },
   enviada: { color: 'text-violet-400', bg: 'bg-violet-500/15', label: 'Enviada' },
 
@@ -60,9 +58,7 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 
   // Estados técnicos
   soporte_tecnico: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Soporte Técnico' },
-  soporte_t_cnico: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Soporte Técnico' },
   tecnica: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Técnica' },
-  t_cnica: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Técnica' },
 
   // Estados de prioridad
   urgente: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Urgente' },
@@ -75,14 +71,12 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
   administrativa: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Administrativa' },
   general: { color: 'text-slate-400', bg: 'bg-slate-500/15', label: 'General' },
   compras: { color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Compras' },
-  facturaci_n: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Facturación' },
   facturacion: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Facturación' },
   consulta_comercial: { color: 'text-violet-400', bg: 'bg-violet-500/15', label: 'Consulta Comercial' },
   consulta: { color: 'text-slate-400', bg: 'bg-slate-500/15', label: 'Consulta' },
   seguridad: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Seguridad' },
   cloud: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'Cloud' },
   infra: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Infraestructura' },
-  auditor_a: { color: 'text-violet-400', bg: 'bg-violet-500/15', label: 'Auditoría' },
   auditoria: { color: 'text-violet-400', bg: 'bg-violet-500/15', label: 'Auditoría' },
 
   // Tipos de entidad
@@ -91,7 +85,6 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
   prospecto: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Prospecto' },
   socio: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Socio' },
   premium: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Premium' },
-  b_sico: { color: 'text-slate-400', bg: 'bg-slate-500/15', label: 'Básico' },
   basico: { color: 'text-slate-400', bg: 'bg-slate-500/15', label: 'Básico' },
 
   // Tipos de soporte
@@ -104,8 +97,6 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 
   // Fases de proyecto
   descubrimiento: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Descubrimiento' },
-  descubrimiento_: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Descubrimiento' },
-  dise_o: { color: 'text-cyan-400', bg: 'bg-cyan-500/15', label: 'Diseño' },
   diseno: { color: 'text-cyan-400', bg: 'bg-cyan-500/15', label: 'Diseño' },
   desarrollo: { color: 'text-blue-400', bg: 'bg-blue-500/15', label: 'Desarrollo' },
   pruebas: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Pruebas' },

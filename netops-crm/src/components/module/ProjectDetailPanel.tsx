@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/module/StatusBadge'
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
 import { HistorialProyecto } from '@/types/proyectos'
+import { formatDateLong, formatDateShort } from '@/lib/date-utils'
 
 interface ProjectDetailPanelProps {
   isOpen: boolean
@@ -52,16 +53,6 @@ export function ProjectDetailPanel({
     return FASES.find(f => f.id === proyecto.fase_actual)
   }, [proyecto])
 
-  // Formatear fecha
-  const formatFecha = (fecha?: string) => {
-    if (!fecha) return 'No especificada'
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-  }
-
   // Renderizar icono según estado de tarea
   const renderEstadoIcono = (estado: EstadoTarea) => {
     switch (estado) {
@@ -76,17 +67,17 @@ export function ProjectDetailPanel({
     }
   }
 
-  // Obtener clase según estado para el texto
+  // Obtener clase según estado para el texto - unificado con StatusBadge
   const getEstadoClase = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
-        return 'line-through text-muted-foreground'
+        return 'text-emerald-400 line-through'
       case 'En progreso':
-        return 'text-blue-300'
+        return 'text-blue-400'
       case 'Bloqueada':
-        return 'text-red-300'
+        return 'text-orange-400'
       default:
-        return 'text-slate-300'
+        return 'text-amber-400' // Pendiente
     }
   }
 
@@ -176,7 +167,9 @@ export function ProjectDetailPanel({
                     <span className="text-xs">Monto</span>
                   </div>
                   <span className="text-sm font-medium text-white">
-                    {proyecto.moneda} {proyecto.monto_estimado?.toLocaleString() || '0'}
+                    {proyecto.monto_estimado 
+                      ? `${proyecto.moneda} ${proyecto.monto_estimado.toLocaleString()}` 
+                      : <span className="text-muted-foreground">Sin monto</span>}
                   </span>
                 </div>
 
@@ -198,7 +191,7 @@ export function ProjectDetailPanel({
                     <span className="text-xs">Inicio</span>
                   </div>
                   <span className="text-sm font-medium text-white">
-                    {formatFecha(proyecto.fecha_inicio)}
+                    {formatDateLong(proyecto.fecha_inicio)}
                   </span>
                 </div>
 
@@ -209,7 +202,7 @@ export function ProjectDetailPanel({
                     <span className="text-xs">Fin Estimada</span>
                   </div>
                   <span className="text-sm font-medium text-white">
-                    {formatFecha(proyecto.fecha_estimada_fin)}
+                    {formatDateLong(proyecto.fecha_estimada_fin)}
                   </span>
                 </div>
               </div>
@@ -289,7 +282,7 @@ export function ProjectDetailPanel({
                           </div>
                           {tarea.fecha_vencimiento && (
                             <p className="text-xs text-slate-500 mt-1">
-                              Vence: {formatFecha(tarea.fecha_vencimiento)}
+                              Vence: {formatDateShort(tarea.fecha_vencimiento)}
                             </p>
                           )}
                         </div>
