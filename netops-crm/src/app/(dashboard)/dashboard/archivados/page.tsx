@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat } from '@/components/ui/mini-stat'
 import { ProyectoArchivado, ProyectoCerrado, ConfigArchivado, Clasificacion, getClasificacionColor } from '@/types/archivado'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import {
   Archive, Settings, Folder, FolderOpen, Trash2, RotateCcw,
   Download, ExternalLink, Search, Filter, Calendar, Clock,
@@ -524,15 +525,10 @@ export default function ArchivadoPage() {
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <Archive className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold">Acceso Restringido</h2>
-            <p className="text-muted-foreground mt-2">Solo los administradores pueden acceder a este módulo.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard
+        icon={Archive}
+        description="Solo los administradores pueden acceder a este módulo."
+      />
     )
   }
 

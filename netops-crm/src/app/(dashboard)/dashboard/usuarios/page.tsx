@@ -24,6 +24,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS } from '@/types/auth'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
 // Demo users data
 const INITIAL_USERS = [
@@ -183,13 +184,10 @@ export default function UsersPage() {
 
   if (currentUser?.roles[0] !== 'admin') {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Shield className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Acceso Restringido</h2>
-          <p className="text-slate-400">Solo los administradores pueden gestionar usuarios.</p>
-        </div>
-      </div>
+      <AccessDeniedCard
+        icon={Shield}
+        description="Solo los administradores pueden gestionar usuarios."
+      />
     )
   }
 

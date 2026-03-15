@@ -15,6 +15,7 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive } from 'lucide-react'
 import { Archivo, CarpetaDrive, EntidadTipo, Visibilidad, formatBytes, getFileIcon, TAMAÑO_MAXIMO, TIPOS_ARCHIVO_PERMITIDOS } from '@/types/archivos'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
 const DEMO_EMPRESAS = [
   { id: '1', nombre: 'Soluciones Tecnológicas SA', tipo_entidad: 'cliente' },
@@ -338,15 +339,10 @@ export default function ArchivosPage() {
 
   if (!canUpload && !isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <Folder className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold">Acceso Restringido</h2>
-            <p className="text-muted-foreground mt-2">No tienes permiso para acceder a este módulo</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard
+        icon={Folder}
+        description="No tienes permiso para acceder a este módulo"
+      />
     )
   }
 

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { ClienteUsuario, ProyectoCliente, TareaCliente, TicketCliente, DocumentoCliente, ArchivoProyectoCliente, getPrioridadIcon, getEstadoColor } from '@/types/portal'
+import { ClienteUsuario, ProyectoCliente, TareaCliente, TicketCliente, DocumentoCliente, ArchivoProyectoCliente } from '@/types/portal'
+import { getPrioridadIcon, getTicketEstadoColor } from '@/lib/colors'
 import { PortalAuthProvider, usePortalAuth } from '@/contexts/portal-auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -390,7 +391,7 @@ function PortalClienteContent() {
                             </p>
                             <p className="text-sm truncate">{ticket.titulo}</p>
                           </div>
-                          <Badge className={getEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
+                          <Badge className={getTicketEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
                         </div>
                       </div>
                     ))}
@@ -463,7 +464,7 @@ function PortalClienteContent() {
                             <p className="font-medium text-sm">{ticket.numero_ticket} - {ticket.titulo}</p>
                             <p className="text-xs text-muted-foreground">{ticket.categoria}</p>
                           </div>
-                          <Badge className={getEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
+                          <Badge className={getTicketEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
                         </div>
                       </div>
                     ))}
@@ -552,12 +553,12 @@ function PortalClienteContent() {
                     <CardTitle className="text-xl">{selectedTicket.numero_ticket}</CardTitle>
                     <p className="text-lg font-medium">{selectedTicket.titulo}</p>
                   </div>
-                  <Badge className={getEstadoColor(selectedTicket.estado)}>{selectedTicket.estado}</Badge>
+                  <Badge className={getTicketEstadoColor(selectedTicket.estado)}>{selectedTicket.estado}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge className={getPrioridadIcon(selectedTicket.prioridad) ? '' : ''} variant="outline">{selectedTicket.prioridad}</Badge>
+                  <Badge variant="outline">{selectedTicket.prioridad}</Badge>
                   <Badge variant="outline">{selectedTicket.categoria}</Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">

@@ -16,8 +16,11 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalList
 import { CSS } from '@dnd-kit/utilities'
 import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
 import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
+import { SOPORTE_TEXTS, SOPORTE_TITULOS, SOPORTE_TABS, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_BOTONES, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
+import { getStatusColor } from '@/lib/colors'
 import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTicketModal, CreateContractModal, type CreateTicketData, type CreateContractData } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
 
@@ -80,14 +83,14 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-slate-700 rounded" onClick={(e) => e.stopPropagation()}>
+              <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded" onClick={(e) => e.stopPropagation()}>
                 <GripVertical className="h-3 w-3 text-muted-foreground" />
               </button>
               <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
             </div>
             <div className="flex items-center gap-1">
-              {isSlaBreached && <AlertCircle className="h-4 w-4 text-red-500" />}
-              {isSlaWarning && !isSlaBreached && <AlertCircle className="h-4 w-4 text-amber-500" />}
+              {isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('error').text}`} />}
+              {isSlaWarning && !isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('warning').text}`} />}
             </div>
           </div>
           <h4 className="font-semibold text-sm line-clamp-2">{ticket.titulo}</h4>
@@ -121,8 +124,8 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
       <CardContent className="p-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
-          {isSlaBreached && <AlertCircle className="h-4 w-4 text-red-500" />}
-          {isSlaWarning && <AlertCircle className="h-4 w-4 text-amber-500" />}
+          {isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('error').text}`} />}
+          {isSlaWarning && <AlertCircle className={`h-4 w-4 ${getStatusColor('warning').text}`} />}
         </div>
         <h4 className="font-semibold text-sm line-clamp-2">{ticket.titulo}</h4>
         <p className="text-xs text-muted-foreground truncate">{ticket.contrato_nombre}</p>
@@ -329,7 +332,7 @@ export default function SoportePage() {
   }
 
   if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion) {
-    return <div className="flex items-center justify-center min-h-[60vh]"><Card className="max-w-md"><CardContent className="p-8 text-center"><Headphones className="h-16 w-16 text-slate-600 mx-auto mb-4" /><h2 className="text-xl font-semibold">Acceso Restringido</h2></CardContent></Card></div>
+    return <AccessDeniedCard icon={Headphones} title={SOPORTE_TITULOS.accesoRestringido} />
   }
 
   return (
@@ -351,11 +354,11 @@ export default function SoportePage() {
         panelOpen={!!selectedId}
       >
         <ModuleHeader
-          title="Soporte"
-          description="Tickets y contratos de soporte"
+          title={SOPORTE_TITULOS.titulo}
+          description={SOPORTE_TITULOS.descripcion}
           tabs={[
-            { value: 'tickets', label: 'Tickets' },
-            { value: 'contratos', label: 'Contratos' }
+            { value: 'tickets', label: SOPORTE_TABS.tickets },
+            { value: 'contratos', label: SOPORTE_TABS.contratos }
           ]}
           activeTab={view}
           onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
@@ -364,21 +367,21 @@ export default function SoportePage() {
         {view === 'tickets' && (
           <>
             <StatGrid cols={6}>
-              <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
-              <MiniStat value={stats.abiertos} label="Abiertos" variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
-              <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
-              <MiniStat value={stats.resueltos} label="Resueltos" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
-              <MiniStat value={stats.cerrados} label="Cerrados" variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
-              <MiniStat value={stats.urgentes} label="Urgentes" variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
+              <MiniStat value={stats.total} label={SOPORTE_STATS.total} variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
+              <MiniStat value={stats.abiertos} label={SOPORTE_STATS.abiertos} variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
+              <MiniStat value={stats.enProgreso} label={SOPORTE_STATS.enProgreso} variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
+              <MiniStat value={stats.resueltos} label={SOPORTE_STATS.resueltos} variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
+              <MiniStat value={stats.cerrados} label={SOPORTE_STATS.cerrados} variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
+              <MiniStat value={stats.urgentes} label={SOPORTE_STATS.urgentes} variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
             </StatGrid>
 
             <div className="flex gap-4 items-center">
               <Filter className="h-4 w-4 text-muted-foreground" />
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">Cliente:</Label>
+                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.cliente}</Label>
                 <Select value={filtroCliente} onValueChange={setFiltroCliente}>
-                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     {DEMO_EMPRESAS.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
@@ -388,9 +391,9 @@ export default function SoportePage() {
 
               {isAdmin && (
                 <div className="flex items-center gap-1">
-                  <Label className="text-xs text-muted-foreground mr-1">Responsable:</Label>
+                  <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.responsable}</Label>
                   <Select value={filtroResponsable} onValueChange={setFiltroResponsable}>
-                    <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                    <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
                       {DEMO_USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
@@ -400,9 +403,9 @@ export default function SoportePage() {
               )}
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
+                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.estado}</Label>
                 <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
@@ -411,9 +414,9 @@ export default function SoportePage() {
               </div>
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
+                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.categoria}</Label>
                 <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todas} /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todas">Todas</SelectItem>
                     {CATEGORIAS_TICKET.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -422,9 +425,9 @@ export default function SoportePage() {
               </div>
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
+                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.prioridad}</Label>
                 <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todas} /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todas">Todas</SelectItem>
                     {PRIORIDADES_TICKET.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -433,7 +436,7 @@ export default function SoportePage() {
               </div>
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground">Desde:</Label>
+                <Label className="text-xs text-muted-foreground">{SOPORTE_FILTROS.desde}</Label>
                 <Input
                   type="date"
                   value={filtroFechaDesde}
@@ -443,7 +446,7 @@ export default function SoportePage() {
               </div>
 
               <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground">Hasta:</Label>
+                <Label className="text-xs text-muted-foreground">{SOPORTE_FILTROS.hasta}</Label>
                 <Input
                   type="date"
                   value={filtroFechaHasta}
@@ -466,10 +469,10 @@ export default function SoportePage() {
                 }}
                 className="h-8 text-xs text-muted-foreground hover:text-foreground"
               >
-                <X className="h-3 w-3 mr-1" /> Limpiar
+                <X className="h-3 w-3 mr-1" /> {SOPORTE_FILTROS.limpiar}
               </Button>
 
-              {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Ticket</Button>}
+              {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}</Button>}
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -487,7 +490,7 @@ export default function SoportePage() {
                             <SortableTicketCard key={ticket.id} ticket={ticket} onClick={() => setSelectedId(ticket.id)} />
                           ))}
                           {getTicketsByEstado(estado).length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground text-sm">No hay tickets</div>
+                            <div className="text-center py-8 text-muted-foreground text-sm">{SOPORTE_EMPTY.noHayTickets}</div>
                           )}
                         </div>
                       </SortableContext>
@@ -512,7 +515,7 @@ export default function SoportePage() {
         {view === 'contratos' && (
           <>
             <div className="flex justify-end">
-              {canCreate && <Button onClick={() => setShowCreateContract(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Contrato</Button>}
+              {canCreate && <Button onClick={() => setShowCreateContract(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoContrato}</Button>}
             </div>
 
             <div className="grid gap-4">
@@ -533,19 +536,19 @@ export default function SoportePage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
-                      <div><p className="text-muted-foreground">Inicio</p><p>{new Date(contrato.fecha_inicio).toLocaleDateString('es-ES')}</p></div>
-                      <div><p className="text-muted-foreground">Fin</p><p>{new Date(contrato.fecha_fin).toLocaleDateString('es-ES')}</p></div>
-                      <div><p className="text-muted-foreground">Técnico</p><p>{contrato.tecnico_asignado_nombre || 'Sin asignar'}</p></div>
-                      <div><p className="text-muted-foreground">Horas</p><p>{contrato.horas_consumidas_mes}/{contrato.horas_incluidas_mes}h</p></div>
+                      <div><p className="text-muted-foreground">{SOPORTE_CONTRATOS.inicio}</p><p>{new Date(contrato.fecha_inicio).toLocaleDateString('es-ES')}</p></div>
+                      <div><p className="text-muted-foreground">{SOPORTE_CONTRATOS.fin}</p><p>{new Date(contrato.fecha_fin).toLocaleDateString('es-ES')}</p></div>
+                      <div><p className="text-muted-foreground">{SOPORTE_CONTRATOS.tecnico}</p><p>{contrato.tecnico_asignado_nombre || SOPORTE_CONTRATOS.sinAsignar}</p></div>
+                      <div><p className="text-muted-foreground">{SOPORTE_CONTRATOS.horas}</p><p>{contrato.horas_consumidas_mes}/{contrato.horas_incluidas_mes}h</p></div>
                     </div>
-                    <div className="mt-4 bg-slate-800/50 rounded-lg p-3">
+                    <div className="mt-4 bg-card/50 rounded-lg p-3">
                       <div className="flex items-center justify-between text-sm">
-                        <span>Horas consumidas este mes</span>
+                        <span>{SOPORTE_CONTRATOS.horasConsumidasMes}</span>
                         <span className="font-medium">{Math.round(contrato.horas_consumidas_mes)}/{contrato.horas_incluidas_mes}h</span>
                       </div>
-                      <div className="w-full bg-slate-700 h-2 rounded-full mt-2">
+                      <div className="w-full bg-muted h-2 rounded-full mt-2">
                         <div
-                          className={`h-2 rounded-full ${contrato.horas_consumidas_mes > contrato.horas_incluidas_mes ? 'bg-red-500' : 'bg-cyan-500'}`}
+                          className={`h-2 rounded-full ${contrato.horas_consumidas_mes > contrato.horas_incluidas_mes ? getStatusColor('error').bg : getStatusColor('primary').bg}`}
                           style={{ width: `${Math.min((contrato.horas_consumidas_mes / contrato.horas_incluidas_mes) * 100, 100)}%` }}
                         />
                       </div>

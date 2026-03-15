@@ -18,6 +18,7 @@ import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTa
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
 const DEMO_USUARIOS = [
   { id: '1', nombre: 'Carlos Admin', rol: 'admin' },
@@ -343,7 +344,7 @@ export default function TareasPage() {
   }
 
   if (!isAdmin && !isComercial && !isTecnico && !isCompras) {
-    return <div className="flex items-center justify-center min-h-[60vh]"><Card className="max-w-md"><CardContent className="p-8 text-center"><CheckSquare className="h-16 w-16 text-slate-600 mx-auto mb-4" /><h2 className="text-xl font-semibold">Acceso Restringido</h2></CardContent></Card></div>
+    return <AccessDeniedCard icon={CheckSquare} />
   }
 
   return (

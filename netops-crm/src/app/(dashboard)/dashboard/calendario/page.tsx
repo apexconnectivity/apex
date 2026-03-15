@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogB
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, getEstadoColor, getTipoIcon, TIPOS_SOLICITUD } from '@/types/calendario'
+import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, TIPOS_SOLICITUD } from '@/types/calendario'
+import { getReunionEstadoColor, getTipoReunionIcon } from '@/lib/colors'
 import {
   Calendar, ChevronLeft, ChevronRight, Plus, Clock, MapPin,
   Users, Video, X, Check, Mail, Phone, User, Building2,
@@ -61,13 +62,13 @@ function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; titl
               <div key={reunion.id} className="p-3 border rounded-lg hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer" onClick={() => onVer(reunion)}>
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{getTipoIcon(reunion.tipo)}</span>
+                    <span className="text-lg">{getTipoReunionIcon(reunion.tipo)}</span>
                     <div>
                       <p className="font-medium text-sm">{reunion.titulo}</p>
                       <p className="text-xs text-muted-foreground">{reunion.proyecto_nombre}</p>
                     </div>
                   </div>
-                  <Badge className={getEstadoColor(reunion.estado)}>{reunion.estado}</Badge>
+                  <Badge className={getReunionEstadoColor(reunion.estado)}>{reunion.estado}</Badge>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(reunion.fecha_hora_inicio).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>
@@ -247,13 +248,13 @@ function DetalleReunionModal({ reunion, onClose, onCambiarEstado }: {
       <DialogContent size="md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{getTipoIcon(reunion.tipo)}</span>
+            <span className="text-2xl">{getTipoReunionIcon(reunion.tipo)}</span>
             {reunion.titulo}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Badge className={getEstadoColor(reunion.estado)}>{reunion.estado}</Badge>
+            <Badge className={getReunionEstadoColor(reunion.estado)}>{reunion.estado}</Badge>
             <Badge variant="outline">{reunion.tipo}</Badge>
           </div>
 
@@ -325,7 +326,7 @@ function GestionSolicitudes({ solicitudes, onAprobar, onRechazar }: {
                     </div>
                     <p className="text-sm text-muted-foreground">{sol.proyecto_nombre}</p>
                   </div>
-                  <Badge className={getEstadoColor(sol.estado)}>{sol.estado}</Badge>
+                  <Badge className={getReunionEstadoColor(sol.estado)}>{sol.estado}</Badge>
                 </div>
                 <div className="text-sm space-y-1 mb-3">
                   <p><strong>Solicitante:</strong> {sol.contacto_solicitante_nombre}</p>

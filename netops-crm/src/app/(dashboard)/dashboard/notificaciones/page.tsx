@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getCanalIcon, getEstadoNotificacionColor } from '@/types/notificaciones'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import {
   Bell, Settings, Slack, Mail, Clock, CheckCircle, XCircle,
   AlertCircle, Activity, Zap, Save, RefreshCw, Eye, EyeOff,
@@ -412,7 +413,10 @@ export default function NotificacionesPage() {
           {isAdmin ? (
             <ConfiguracionGlobalTab config={config} onUpdate={setConfig} />
           ) : (
-            <Card><CardContent className="p-8 text-center"><AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" /><h2 className="text-xl font-semibold">Acceso Restringido</h2><p className="text-muted-foreground">Solo los administradores pueden configurar las notificaciones globales.</p></CardContent></Card>
+            <AccessDeniedCard
+              icon={AlertCircle}
+              description="Solo los administradores pueden configurar las notificaciones globales."
+            />
           )}
         </TabsContent>
 

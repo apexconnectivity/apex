@@ -16,9 +16,10 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import {
   Dialog,
   DialogContent,
@@ -522,13 +523,7 @@ export default function ProyectosPage() {
 
   if (!isAdmin && !isComercial && !isTecnico) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold">Acceso Restringido</h2>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard icon={FolderKanban} />
     )
   }
 

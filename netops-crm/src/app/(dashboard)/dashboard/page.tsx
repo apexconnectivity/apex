@@ -6,6 +6,7 @@ import { DashboardStats, RecentActivity, UpcomingTasks } from "@/components/dash
 import { ProjectPipeline } from "@/components/pipeline"
 import { WelcomeHeader } from "@/components/welcome-header"
 import { Card, CardContent } from "@/components/ui/card"
+import { AccessDeniedCard } from "@/components/ui/access-denied-card"
 import { MiniStat } from "@/components/ui/mini-stat"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
 import Link from "next/link"
@@ -106,15 +107,10 @@ export default function DashboardPage() {
   // Si no es interno (algo extraño), mostrar mensaje
   if (!isInternalUser()) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <Shield className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Acceso Restringido</h2>
-            <p className="text-muted-foreground">No tienes permisos para acceder al dashboard.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard
+        icon={Shield}
+        description="No tienes permisos para acceder al dashboard."
+      />
     )
   }
 

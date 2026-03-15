@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Trash2, FileCheck, Building2 } from 'lucide-react'
 import { ContratoSoporte as ContratoType, TipoContrato, EstadoContrato, CONTRATOS_TIPOS, CONTRATOS_ESTADOS } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
+import { CREATE_CONTRACT_MODAL } from '@/constants/soporte'
 
 interface CreateContractModalProps {
   open: boolean
@@ -45,7 +46,7 @@ function ContractFormFields({
   return (
     <div className="space-y-4">
       <div>
-        <Label>Empresa *</Label>
+        <Label>{CREATE_CONTRACT_MODAL.labels.empresa}</Label>
         <Select value={contrato.empresa_id} onValueChange={(v) => {
           const empresa = empresas.find(e => e.id === v)
           setContrato({ 
@@ -54,7 +55,7 @@ function ContractFormFields({
             empresa_nombre: empresa?.nombre || '',
           })
         }} disabled={disabled}>
-          <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar empresa..." /></SelectTrigger>
+          <SelectTrigger className="bg-background"><SelectValue placeholder={CREATE_CONTRACT_MODAL.placeholders.seleccionarEmpresa} /></SelectTrigger>
           <SelectContent>
             {clientEmpresas.map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
           </SelectContent>
@@ -62,18 +63,18 @@ function ContractFormFields({
       </div>
 
       <div>
-        <Label>Nombre del contrato *</Label>
+        <Label>{CREATE_CONTRACT_MODAL.labels.nombre}</Label>
         <Input 
           value={contrato.nombre} 
           onChange={(e) => setContrato({ ...contrato, nombre: e.target.value })} 
-          placeholder="Ej: Soporte Premium 2026"
+          placeholder={CREATE_CONTRACT_MODAL.placeholders.ejemploNombre}
           disabled={disabled}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Tipo</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.tipo}</Label>
           <Select value={contrato.tipo} onValueChange={(v) => setContrato({ ...contrato, tipo: v as TipoContrato })} disabled={disabled}>
             <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -82,7 +83,7 @@ function ContractFormFields({
           </Select>
         </div>
         <div>
-          <Label>Estado</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.estado}</Label>
           <Select value={contrato.estado} onValueChange={(v) => setContrato({ ...contrato, estado: v as EstadoContrato })} disabled={disabled}>
             <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -94,7 +95,7 @@ function ContractFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Fecha inicio *</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.fechaInicio}</Label>
           <Input 
             type="date" 
             value={contrato.fecha_inicio} 
@@ -103,7 +104,7 @@ function ContractFormFields({
           />
         </div>
         <div>
-          <Label>Fecha fin *</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.fechaFin}</Label>
           <Input 
             type="date" 
             value={contrato.fecha_fin} 
@@ -115,7 +116,7 @@ function ContractFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Monto mensual</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.montoMensual}</Label>
           <Input 
             type="number" 
             value={contrato.monto_mensual} 
@@ -124,7 +125,7 @@ function ContractFormFields({
           />
         </div>
         <div>
-          <Label>Horas incluidas/mes</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.horasIncluidas}</Label>
           <Input 
             type="number" 
             value={contrato.horas_incluidas_mes} 
@@ -136,23 +137,23 @@ function ContractFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Moneda</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.moneda}</Label>
           <Select value={contrato.moneda} onValueChange={(v) => setContrato({ ...contrato, moneda: v as 'USD' | 'MXN' })} disabled={disabled}>
             <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="MXN">MXN</SelectItem>
+              <SelectItem value="USD">{CREATE_CONTRACT_MODAL.opciones.moneda.usd}</SelectItem>
+              <SelectItem value="MXN">{CREATE_CONTRACT_MODAL.opciones.moneda.mxn}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label>Técnico asignado</Label>
+          <Label>{CREATE_CONTRACT_MODAL.labels.tecnicoAsignado}</Label>
           <Select value={contrato.tecnico_asignado_id || ''} onValueChange={(v) => setContrato({ 
             ...contrato, 
             tecnico_asignado_id: v,
             tecnico_asignado_nombre: tecnicos.find(t => t.id === v)?.nombre
           })} disabled={disabled}>
-            <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar técnico..." /></SelectTrigger>
+            <SelectTrigger className="bg-background"><SelectValue placeholder={CREATE_CONTRACT_MODAL.placeholders.seleccionarTecnico} /></SelectTrigger>
             <SelectContent>
               {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nombre}</SelectItem>)}
             </SelectContent>
@@ -161,11 +162,11 @@ function ContractFormFields({
       </div>
 
       <div>
-        <Label>Notas</Label>
+        <Label>{CREATE_CONTRACT_MODAL.labels.notas}</Label>
         <Textarea 
           value={contrato.notas || ''} 
           onChange={(e) => setContrato({ ...contrato, notas: e.target.value })} 
-          placeholder="Notas adicionales"
+          placeholder={CREATE_CONTRACT_MODAL.placeholders.notasAdicionales}
           rows={2}
           disabled={disabled}
         />
@@ -180,7 +181,7 @@ function ContractFormFields({
           className="rounded"
           disabled={disabled}
         />
-        <Label htmlFor="renovacion" className="text-sm">Renovación automática</Label>
+        <Label htmlFor="renovacion" className="text-sm">{CREATE_CONTRACT_MODAL.labels.renovacionAutomatica}</Label>
       </div>
     </div>
   )
@@ -291,15 +292,15 @@ export function CreateContractModal({
             <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
               <FileCheck className="h-5 w-5 text-green-400" />
             </div>
-            <DialogTitle>{isEditMode ? 'Editar Contrato' : 'Nuevo Contrato de Soporte'}</DialogTitle>
+            <DialogTitle>{isEditMode ? CREATE_CONTRACT_MODAL.tituloEditar : CREATE_CONTRACT_MODAL.tituloCrear}</DialogTitle>
           </div>
         </DialogHeader>
 
         <DialogBody className="overflow-y-auto">
           {!hasEmpresas ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No hay empresas clientes disponibles.</p>
-              <p className="text-sm text-muted-foreground">Crea una empresa primero.</p>
+              <p className="text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.sinEmpresas}</p>
+              <p className="text-sm text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.crearEmpresaPrimero}</p>
             </div>
           ) : (
             <ContractFormFields
@@ -314,13 +315,13 @@ export function CreateContractModal({
         <DialogFooter>
           {isEditMode && onDelete && (
             <Button variant="destructive" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+              <Trash2 className="h-4 w-4 mr-2" /> {CREATE_CONTRACT_MODAL.botones.eliminar}
             </Button>
           )}
           <div className="flex-1" />
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{CREATE_CONTRACT_MODAL.botones.cancelar}</Button>
           <Button onClick={handleSave} disabled={!canSave}>
-            {isEditMode ? 'Guardar' : 'Crear'}
+            {isEditMode ? CREATE_CONTRACT_MODAL.botones.guardar : CREATE_CONTRACT_MODAL.botones.crear}
           </Button>
         </DialogFooter>
       </DialogContent>

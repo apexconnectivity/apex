@@ -63,7 +63,7 @@ export function ProjectDetailPanel({
       case 'Bloqueada':
         return <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
       default:
-        return <Circle className="h-5 w-5 text-slate-500 flex-shrink-0" />
+        return <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
     }
   }
 
@@ -86,13 +86,13 @@ export function ProjectDetailPanel({
       {/* Panel lateral */}
       <div className="h-full flex flex-col">
         {/* Header del panel */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <div
               className="h-3 w-3 rounded-full"
               style={{ backgroundColor: faseActual?.color || '#6b7280' }}
             />
-            <h2 className="font-semibold text-white truncate max-w-[280px]">
+            <h2 className="font-semibold text-foreground truncate max-w-[280px]">
               {proyecto?.nombre || 'Detalles del Proyecto'}
             </h2>
           </div>
@@ -100,7 +100,7 @@ export function ProjectDetailPanel({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+            className="h-8 w-8 hover:bg-muted text-muted-foreground hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -111,31 +111,31 @@ export function ProjectDetailPanel({
           {proyecto ? (
             <>
               {/* Información del cliente */}
-              <div className="flex items-center gap-2 text-slate-300">
-                <Building2 className="h-4 w-4 text-slate-500" />
+              <div className="flex items-center gap-2 text-foreground">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{proyecto.cliente_nombre}</span>
               </div>
 
               {/* Progreso del proyecto */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Progreso del Proyecto</span>
-                  <span className="text-white font-medium">{proyecto.probabilidad_cierre}%</span>
+                  <span className="text-muted-foreground">Progreso del Proyecto</span>
+                  <span className="text-foreground font-medium">{proyecto.probabilidad_cierre}%</span>
                 </div>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
                     style={{ width: `${proyecto.probabilidad_cierre}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-500">Probabilidad de cierre</p>
+                <p className="text-xs text-muted-foreground">Probabilidad de cierre</p>
               </div>
 
               {/* Grid de información */}
               <div className="grid grid-cols-2 gap-3">
                 {/* Fase */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Target className="h-3.5 w-3.5" />
                     <span className="text-xs">Fase</span>
                   </div>
@@ -144,13 +144,13 @@ export function ProjectDetailPanel({
                       className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: faseActual?.color }}
                     />
-                    <span className="text-sm font-medium text-white">{faseActual?.nombre}</span>
+                    <span className="text-sm font-medium text-foreground">{faseActual?.nombre}</span>
                   </div>
                 </div>
 
                 {/* Estado */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Clock className="h-3.5 w-3.5" />
                     <span className="text-xs">Estado</span>
                   </div>
@@ -161,12 +161,12 @@ export function ProjectDetailPanel({
                 </div>
 
                 {/* Monto */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <DollarSign className="h-3.5 w-3.5" />
                     <span className="text-xs">Monto</span>
                   </div>
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {proyecto.monto_estimado 
                       ? `${proyecto.moneda} ${proyecto.monto_estimado.toLocaleString()}` 
                       : <span className="text-muted-foreground">Sin monto</span>}
@@ -174,34 +174,34 @@ export function ProjectDetailPanel({
                 </div>
 
                 {/* Responsable */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <User className="h-3.5 w-3.5" />
                     <span className="text-xs">Responsable</span>
                   </div>
-                  <span className="text-sm font-medium text-white truncate block">
+                  <span className="text-sm font-medium text-foreground truncate block">
                     {proyecto.responsable_nombre || 'Sin asignar'}
                   </span>
                 </div>
 
                 {/* Fecha inicio */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Calendar className="h-3.5 w-3.5" />
                     <span className="text-xs">Inicio</span>
                   </div>
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {formatDateLong(proyecto.fecha_inicio)}
                   </span>
                 </div>
 
                 {/* Fecha fin estimada */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Calendar className="h-3.5 w-3.5" />
                     <span className="text-xs">Fin Estimada</span>
                   </div>
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {formatDateLong(proyecto.fecha_estimada_fin)}
                   </span>
                 </div>
@@ -214,7 +214,7 @@ export function ProjectDetailPanel({
                     <Badge
                       key={index}
                       variant="secondary"
-                      className="bg-slate-700/50 text-slate-300 text-xs hover:bg-slate-700/70"
+                      className="bg-muted/50 text-foreground text-xs hover:bg-muted/70"
                     >
                       {tag}
                     </Badge>
@@ -226,12 +226,12 @@ export function ProjectDetailPanel({
               <div className="space-y-3">
                 {/* Header de tareas con progreso */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Target className="h-4 w-4 text-slate-400" />
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <Target className="h-4 w-4 text-muted-foreground" />
                     Tareas del Proyecto
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-muted-foreground">
                       {tareasDelProyecto.filter(t => t.estado === 'Completada').length}/{tareasDelProyecto.length}
                     </span>
                     <span className="text-xs font-medium text-emerald-400">
@@ -241,7 +241,7 @@ export function ProjectDetailPanel({
                 </div>
 
                 {/* Barra de progreso de tareas */}
-                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                     style={{ width: `${progresoTareas}%` }}
@@ -251,7 +251,7 @@ export function ProjectDetailPanel({
                 {/* Lista de tareas */}
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                   {tareasDelProyecto.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">No hay tareas en esta fase</p>
                     </div>
@@ -259,7 +259,7 @@ export function ProjectDetailPanel({
                     tareasDelProyecto.map((tarea) => (
                       <div
                         key={tarea.id}
-                        className="flex items-start gap-3 p-3 bg-slate-700/20 rounded-lg hover:bg-slate-700/40 transition-colors group"
+                        className="flex items-start gap-3 p-3 bg-muted/20 rounded-lg hover:bg-muted/40 transition-colors group"
                       >
                         {renderEstadoIcono(tarea.estado)}
                         <div className="flex-1 min-w-0">
@@ -274,14 +274,14 @@ export function ProjectDetailPanel({
                             {tarea.categoria && (
                               <Badge
                                 variant="secondary"
-                                className="text-[10px] h-5 bg-slate-600/50 text-slate-300"
+                                className="text-[10px] h-5 bg-muted/50 text-foreground"
                               >
                                 {tarea.categoria}
                               </Badge>
                             )}
                           </div>
                           {tarea.fecha_vencimiento && (
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                               Vence: {formatDateShort(tarea.fecha_vencimiento)}
                             </p>
                           )}
@@ -294,30 +294,30 @@ export function ProjectDetailPanel({
 
               {/* Sección de Historial */}
               {historial.length > 0 && (
-                <div className="space-y-3 pt-4 border-t border-slate-700/50">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <History className="h-4 w-4 text-slate-400" />
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <History className="h-4 w-4 text-muted-foreground" />
                     Historial del Proyecto
                   </h3>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                     {historial.map((evento) => (
                       <div
                         key={evento.id}
-                        className="flex items-start gap-3 p-2 bg-slate-700/20 rounded-lg text-xs"
+                        className="flex items-start gap-3 p-2 bg-muted/20 rounded-lg text-xs"
                       >
                         <div className="mt-0.5">
                           {evento.tipo_evento === 'cambio_fase' && <Target className="h-3.5 w-3.5 text-blue-400" />}
                           {evento.tipo_evento === 'cierre' && <XCircle className="h-3.5 w-3.5 text-red-400" />}
                           {evento.tipo_evento === 'reapertura' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
                           {evento.tipo_evento === 'archivado' && <Archive className="h-3.5 w-3.5 text-amber-400" />}
-                          {evento.tipo_evento === 'creacion' && <Building2 className="h-3.5 w-3.5 text-slate-400" />}
-                          {evento.tipo_evento === 'edicion' && <Clock className="h-3.5 w-3.5 text-slate-400" />}
+                          {evento.tipo_evento === 'creacion' && <Building2 className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {evento.tipo_evento === 'edicion' && <Clock className="h-3.5 w-3.5 text-muted-foreground" />}
                           {evento.tipo_evento === 'asignacion_responsable' && <User className="h-3.5 w-3.5 text-purple-400" />}
                           {evento.tipo_evento === 'asignacion_contacto' && <User className="h-3.5 w-3.5 text-purple-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-slate-300">{evento.descripcion}</p>
-                          <p className="text-slate-500 mt-0.5">
+                          <p className="text-foreground">{evento.descripcion}</p>
+                          <p className="text-muted-foreground mt-0.5">
                             {new Date(evento.fecha).toLocaleString('es-ES', {
                               day: '2-digit',
                               month: 'short',
@@ -334,7 +334,7 @@ export function ProjectDetailPanel({
               )}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-sm">Selecciona un proyecto para ver detalles</p>
             </div>
@@ -342,7 +342,7 @@ export function ProjectDetailPanel({
 
           {/* Botón de cerrar proyecto - al final del panel */}
           {canClose && proyecto && proyecto.estado === 'activo' && (
-            <div className="pt-4 border-t border-slate-700/50">
+            <div className="pt-4 border-t border-border">
               <Button
                 variant="outline"
                 className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500"
@@ -356,7 +356,7 @@ export function ProjectDetailPanel({
 
           {/* Botón de archivar proyecto - solo para proyectos cerrados */}
           {canClose && proyecto && proyecto.estado === 'cerrado' && (
-            <div className="pt-4 border-t border-slate-700/50">
+            <div className="pt-4 border-t border-border">
               <Button
                 variant="outline"
                 className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500"

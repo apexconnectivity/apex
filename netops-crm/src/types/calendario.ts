@@ -56,28 +56,3 @@ export const TIPOS_REUNION: TipoReunion[] = ['Diagnóstico', 'Seguimiento', 'Pro
 export const ESTADOS_REUNION: EstadoReunion[] = ['Programada', 'Confirmada', 'Cancelada', 'Completada']
 
 export const TIPOS_SOLICITUD: EstadoSolicitud[] = ['Pendiente', 'Aprobada', 'Rechazada', 'Reprogramada']
-
-export const getEstadoColor = (estado: string): string => {
-  switch (estado) {
-    case 'Programada': return 'bg-blue-500/20 text-blue-400'
-    case 'Confirmada': return 'bg-green-500/20 text-green-400'
-    case 'Cancelada': return 'bg-red-500/20 text-red-400'
-    case 'Completada': return 'bg-slate-500/20 text-slate-400'
-    case 'Pendiente': return 'bg-amber-500/20 text-amber-400'
-    case 'Aprobada': return 'bg-green-500/20 text-green-400'
-    case 'Rechazada': return 'bg-red-500/20 text-red-400'
-    case 'Reprogramada': return 'bg-purple-500/20 text-purple-400'
-    default: return 'bg-slate-500/20 text-slate-400'
-  }
-}
-
-export const getTipoIcon = (tipo: TipoReunion): string => {
-  switch (tipo) {
-    case 'Diagnóstico': return '🔍'
-    case 'Seguimiento': return '📋'
-    case 'Propuesta': return '📝'
-    case 'Cierre': return '🎯'
-    case 'Soporte': return '🛠️'
-    default: return '📅'
-  }
-}

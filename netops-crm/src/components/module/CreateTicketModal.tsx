@@ -11,6 +11,7 @@ import { Trash2, Ticket, Building2, Briefcase, User, AlertCircle, Info, Calendar
 import { Ticket as TicketType, ContratoSoporte, CategoriaTicket, PrioridadTicket, EstadoTicket, CATEGORIAS_TICKET, PRIORIDADES_TICKET, ESTADOS_TICKET } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
+import { CREATE_TICKET_MODAL } from '@/constants/soporte'
 
 export type TicketModalMode = 'create' | 'edit' | 'cliente'
 
@@ -177,14 +178,14 @@ function TicketFormFields({
       {/* Selector de Cliente (solo interno) */}
       {!isClienteMode && (
         <div>
-          <Label>Cliente *</Label>
+          <Label>{CREATE_TICKET_MODAL.labels.cliente}</Label>
           <Select
             value={ticket.empresa_id || ''}
             onValueChange={handleEmpresaChange}
             disabled={disabled || isEditMode}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Seleccionar cliente..." />
+              <SelectValue placeholder={CREATE_TICKET_MODAL.placeholders.seleccionarCliente} />
             </SelectTrigger>
             <SelectContent>
               {clientEmpresas.map(e => (
@@ -199,7 +200,7 @@ function TicketFormFields({
       {!isClienteMode && (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Tipo de ticket</Label>
+            <Label>{CREATE_TICKET_MODAL.labels.tipoTicket}</Label>
             <Select
               value={ticket.tipo_origen}
               onValueChange={(v) => setTicket({ ...ticket, tipo_origen: v as 'soporte' | 'proyecto' })}
@@ -209,22 +210,22 @@ function TicketFormFields({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="soporte">Contrato de Soporte</SelectItem>
-                <SelectItem value="proyecto">Proyecto</SelectItem>
+                <SelectItem value="soporte">{CREATE_TICKET_MODAL.opciones.contratoSoporte}</SelectItem>
+                <SelectItem value="proyecto">{CREATE_TICKET_MODAL.opciones.proyecto}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {ticket.tipo_origen === 'soporte' ? (
             <div>
-              <Label>Contrato *</Label>
+              <Label>{CREATE_TICKET_MODAL.labels.contrato}</Label>
               <Select
                 value={ticket.contrato_id || ''}
                 onValueChange={handleContratoChange}
                 disabled={disabled || isEditMode || !ticket.empresa_id}
               >
                 <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Seleccionar contrato..." />
+                  <SelectValue placeholder={CREATE_TICKET_MODAL.placeholders.seleccionarContrato} />
                 </SelectTrigger>
                 <SelectContent>
                   {contratosFiltrados.map(c => (
@@ -235,14 +236,14 @@ function TicketFormFields({
             </div>
           ) : (
             <div>
-              <Label>Proyecto</Label>
+              <Label>{CREATE_TICKET_MODAL.labels.proyecto}</Label>
               <Select
                 value={ticket.proyecto_id || ''}
                 onValueChange={handleProyectoChange}
                 disabled={disabled || isEditMode}
               >
                 <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Seleccionar proyecto..." />
+                  <SelectValue placeholder={CREATE_TICKET_MODAL.placeholders.seleccionarProyecto} />
                 </SelectTrigger>
                 <SelectContent>
                   {proyectosActivos.map(p => (
@@ -258,7 +259,7 @@ function TicketFormFields({
       {/* En modo cliente: mostrar contratos disponibles */}
       {isClienteMode && (
         <div>
-          <Label>Contrato de Soporte *</Label>
+          <Label>{CREATE_TICKET_MODAL.opciones.contratoSoporte} *</Label>
           <Select
             value={ticket.contrato_id || ''}
             onValueChange={(v) => {
@@ -274,7 +275,7 @@ function TicketFormFields({
             disabled={disabled}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Seleccionar contrato..." />
+              <SelectValue placeholder={CREATE_TICKET_MODAL.placeholders.seleccionarContrato} />
             </SelectTrigger>
             <SelectContent>
               {activeContracts.map(c => (
@@ -289,7 +290,7 @@ function TicketFormFields({
 
       {/* Categoría */}
       <div>
-        <Label>Categoría *</Label>
+        <Label>{CREATE_TICKET_MODAL.labels.categoria}</Label>
         <Select
           value={ticket.categoria}
           onValueChange={(v) => handleCategoriaChange(v as CategoriaTicket)}
@@ -307,7 +308,7 @@ function TicketFormFields({
         {!isClienteMode && suggestedResponsable && (
           <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
             <Info className="h-3 w-3" />
-            <span>Se asignará automáticamente a: <strong>{suggestedResponsable.nombre}</strong></span>
+            <span>{CREATE_TICKET_MODAL.sugerencias.seAsignara} <strong>{suggestedResponsable.nombre}</strong></span>
           </div>
         )}
       </div>
@@ -315,7 +316,7 @@ function TicketFormFields({
       {/* Prioridad y Estado */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Prioridad</Label>
+          <Label>{CREATE_TICKET_MODAL.labels.prioridad}</Label>
           <Select
             value={ticket.prioridad}
             onValueChange={(v) => setTicket({ ...ticket, prioridad: v as PrioridadTicket })}
@@ -333,7 +334,7 @@ function TicketFormFields({
         {/* Estado: solo editable en modo edit e interno */}
         {!isClienteMode && (
           <div>
-            <Label>Estado</Label>
+            <Label>{CREATE_TICKET_MODAL.labels.estado}</Label>
             <Select
               value={ticket.estado}
               onValueChange={(v) => setTicket({ ...ticket, estado: v as EstadoTicket })}
@@ -355,7 +356,7 @@ function TicketFormFields({
         <div>
           <Label className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Fecha de ejecución programada
+            {CREATE_TICKET_MODAL.labels.fechaEjecucion}
           </Label>
           <Input
             type="datetime-local"
@@ -365,7 +366,7 @@ function TicketFormFields({
             className="bg-background"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Opcional. Define la ventana de trabajo para ejecutar el ticket.
+            {CREATE_TICKET_MODAL.ayuda.fechaEjecucion}
           </p>
         </div>
       )}
@@ -373,7 +374,7 @@ function TicketFormFields({
       {/* Responsable: solo en modo interno */}
       {!isClienteMode && (
         <div>
-          <Label>Responsable</Label>
+          <Label>{CREATE_TICKET_MODAL.labels.responsable}</Label>
           <Select
             value={ticket.responsable_id || ''}
             onValueChange={(v) => setTicket({
@@ -384,7 +385,7 @@ function TicketFormFields({
             disabled={disabled}
           >
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Seleccionar responsable..." />
+              <SelectValue placeholder={CREATE_TICKET_MODAL.placeholders.seleccionarResponsable} />
             </SelectTrigger>
             <SelectContent>
               {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
@@ -395,22 +396,22 @@ function TicketFormFields({
 
       {/* Título */}
       <div>
-        <Label>Título *</Label>
+        <Label>{CREATE_TICKET_MODAL.labels.titulo}</Label>
         <Input
           value={ticket.titulo}
           onChange={(e) => setTicket({ ...ticket, titulo: e.target.value })}
-          placeholder="Resumen del problema"
+          placeholder={CREATE_TICKET_MODAL.placeholders.resumenProblema}
           disabled={disabled}
         />
       </div>
 
       {/* Descripción */}
       <div>
-        <Label>Descripción *</Label>
+        <Label>{CREATE_TICKET_MODAL.labels.descripcion}</Label>
         <Textarea
           value={ticket.descripcion}
           onChange={(e) => setTicket({ ...ticket, descripcion: e.target.value })}
-          placeholder="Descripción detallada del problema"
+          placeholder={CREATE_TICKET_MODAL.placeholders.descripcionProblema}
           rows={4}
           disabled={disabled}
         />
@@ -422,7 +423,7 @@ function TicketFormFields({
           <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
             <AlertCircle className="h-4 w-4 text-amber-400" />
             <span className="text-sm text-amber-400">
-              El cliente no tiene contratos de soporte activos
+              {CREATE_TICKET_MODAL.alertas.sinContratosAlerta}
             </span>
           </div>
         )
@@ -560,9 +561,9 @@ export function CreateTicketModal({
 
   // Título del modal según modo
   const getModalTitle = () => {
-    if (isEditMode) return 'Editar Ticket'
-    if (isClienteMode) return 'Nuevo Ticket de Soporte'
-    return 'Nuevo Ticket'
+    if (isEditMode) return CREATE_TICKET_MODAL.tituloEditar
+    if (isClienteMode) return CREATE_TICKET_MODAL.tituloCliente
+    return CREATE_TICKET_MODAL.tituloCrear
   }
 
   return (
@@ -580,13 +581,13 @@ export function CreateTicketModal({
         <DialogBody className="overflow-y-auto">
           {!hasContratos && !isClienteMode ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No hay contratos de soporte activos.</p>
-              <p className="text-sm text-muted-foreground">Crea un contrato primero.</p>
+              <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinContratos}</p>
+              <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
             </div>
           ) : !hasEmpresas && !isClienteMode ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No hay empresas clientes disponibles.</p>
-              <p className="text-sm text-muted-foreground">Crea una empresa primero.</p>
+              <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinEmpresas}</p>
+              <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearEmpresaPrimero}</p>
             </div>
           ) : (
             <TicketFormFields
@@ -604,13 +605,13 @@ export function CreateTicketModal({
         <DialogFooter>
           {isEditMode && onDelete && (
             <Button variant="destructive" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+              <Trash2 className="h-4 w-4 mr-2" /> {CREATE_TICKET_MODAL.botones.eliminar}
             </Button>
           )}
           <div className="flex-1" />
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{CREATE_TICKET_MODAL.botones.cancelar}</Button>
           <Button onClick={handleSave} disabled={!canSave}>
-            {isEditMode ? 'Guardar' : isClienteMode ? 'Enviar' : 'Crear'}
+            {isEditMode ? CREATE_TICKET_MODAL.botones.guardar : isClienteMode ? CREATE_TICKET_MODAL.botones.enviar : CREATE_TICKET_MODAL.botones.crear}
           </Button>
         </DialogFooter>
       </DialogContent>

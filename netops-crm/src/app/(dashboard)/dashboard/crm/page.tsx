@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import {
   Select,
   SelectContent,
@@ -427,19 +428,14 @@ export default function CRMPage() {
 
   if (!canViewClientes && !canViewProveedores) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <Building2 className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Acceso Restringido</h2>
-            <p className="text-muted-foreground">
-              {isTecnico
-                ? 'No tienes empresas asignadas en tus proyectos.'
-                : 'No tienes permisos para acceder al CRM.'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard
+        icon={Building2}
+        description={
+          isTecnico
+            ? 'No tienes empresas asignadas en tus proyectos.'
+            : 'No tienes permisos para acceder al CRM.'
+        }
+      />
     )
   }
 

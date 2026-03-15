@@ -162,8 +162,8 @@ export function StatusBadge({
 
     // Fallback para estados no reconocidos
     return {
-      color: 'text-slate-400',
-      bg: 'bg-slate-500/15',
+      color: 'text-muted-foreground',
+      bg: 'bg-muted',
       label: status,
     }
   }

@@ -80,16 +80,3 @@ export interface Cotizacion {
 export const ESTADOS_ORDEN: EstadoOrden[] = ['Borrador', 'Pendiente aprobación', 'Aprobada', 'Enviada', 'Recibida parcial', 'Recibida completa', 'Cancelada']
 
 export const MONEDAS: Moneda[] = ['USD', 'MXN', 'EUR']
-
-export const getEstadoColor = (estado: string): string => {
-  switch (estado) {
-    case 'Borrador': return 'bg-slate-500/20 text-slate-400'
-    case 'Pendiente aprobación': return 'bg-amber-500/20 text-amber-400'
-    case 'Aprobada': return 'bg-blue-500/20 text-blue-400'
-    case 'Enviada': return 'bg-purple-500/20 text-purple-400'
-    case 'Recibida parcial': return 'bg-orange-500/20 text-orange-400'
-    case 'Recibida completa': return 'bg-green-500/20 text-green-400'
-    case 'Cancelada': return 'bg-red-500/20 text-red-400'
-    default: return 'bg-slate-500/20 text-slate-400'
-  }
-}

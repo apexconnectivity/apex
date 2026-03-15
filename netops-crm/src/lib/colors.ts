@@ -220,3 +220,85 @@ export function getCategoryColor(categoria: string): { color: string; bg: string
     label: categoria,
   }
 }
+
+// ==========================================
+// COLORES DE ESTADOS DE ÓRDENES DE COMPRA
+// Mapea estados específicos de órdenes de compra a clases de color
+// ==========================================
+
+export function getOrdenCompraColor(estado: string): string {
+  switch (estado) {
+    case 'Borrador': return 'bg-slate-500/20 text-slate-400'
+    case 'Pendiente aprobación': return 'bg-amber-500/20 text-amber-400'
+    case 'Aprobada': return 'bg-blue-500/20 text-blue-400'
+    case 'Enviada': return 'bg-purple-500/20 text-purple-400'
+    case 'Recibida parcial': return 'bg-orange-500/20 text-orange-400'
+    case 'Recibida completa': return 'bg-green-500/20 text-green-400'
+    case 'Cancelada': return 'bg-red-500/20 text-red-400'
+    default: return 'bg-slate-500/20 text-slate-400'
+  }
+}
+
+// ==========================================
+// COLORES DE ESTADOS DE REUNIONES
+// Mapea estados específicos de reuniones a clases de color
+// ==========================================
+
+export function getReunionEstadoColor(estado: string): string {
+  switch (estado) {
+    case 'Programada': return 'bg-blue-500/20 text-blue-400'
+    case 'Confirmada': return 'bg-green-500/20 text-green-400'
+    case 'Cancelada': return 'bg-red-500/20 text-red-400'
+    case 'Completada': return 'bg-slate-500/20 text-slate-400'
+    case 'Pendiente': return 'bg-amber-500/20 text-amber-400'
+    case 'Aprobada': return 'bg-green-500/20 text-green-400'
+    case 'Rechazada': return 'bg-red-500/20 text-red-400'
+    case 'Reprogramada': return 'bg-purple-500/20 text-purple-400'
+    default: return 'bg-slate-500/20 text-slate-400'
+  }
+}
+
+// ==========================================
+// COLORES DE ESTADOS DE TICKETS/PORTAL
+// Mapea estados específicos de tickets a clases de color
+// ==========================================
+
+export function getTicketEstadoColor(estado: string): string {
+  switch (estado) {
+    case 'Abierto': return 'bg-red-500/20 text-red-400'
+    case 'En progreso': return 'bg-blue-500/20 text-blue-400'
+    case 'Esperando cliente': return 'bg-amber-500/20 text-amber-400'
+    case 'Resuelto': return 'bg-green-500/20 text-green-400'
+    case 'Cerrado': return 'bg-slate-500/20 text-slate-400'
+    default: return 'bg-slate-500/20 text-slate-400'
+  }
+}
+
+// ==========================================
+// ICONOS DE PRIORIDAD
+// ==========================================
+
+export function getPrioridadIcon(prioridad: string): string {
+  switch (prioridad) {
+    case 'Urgente': return '🔴'
+    case 'Alta': return '🟡'
+    case 'Media': return '🟢'
+    case 'Baja': return '⚪'
+    default: return '⚪'
+  }
+}
+
+// ==========================================
+// ICONOS DE TIPO DE REUNIÓN
+// ==========================================
+
+export function getTipoReunionIcon(tipo: string): string {
+  switch (tipo) {
+    case 'Diagnóstico': return '🔍'
+    case 'Seguimiento': return '📋'
+    case 'Propuesta': return '📝'
+    case 'Cierre': return '🎯'
+    case 'Soporte': return '🛠️'
+    default: return '📅'
+  }
+}

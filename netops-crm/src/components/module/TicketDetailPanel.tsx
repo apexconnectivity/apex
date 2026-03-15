@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Ticket, ComentarioTicket, EstadoTicket } from '@/types/soporte'
+import { getStatusColor } from '@/lib/colors'
+import { TICKET_DETALLE, TICKET_ACCIONES, TICKET_COMENTARIOS, TICKET_PANEL_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
 
 interface TicketDetailPanelProps {
   isOpen: boolean
@@ -50,15 +52,15 @@ export function TicketDetailPanel({
       {/* Panel lateral */}
       <div className="h-full flex flex-col">
         {/* Header del panel */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-mono text-slate-400">{ticket?.numero_ticket || 'Detalles del Ticket'}</span>
+            <span className="text-sm font-mono text-muted-foreground">{ticket?.numero_ticket || TICKET_DETALLE.titulo}</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+            className="h-8 w-8 hover:bg-muted text-muted-foreground hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -76,11 +78,11 @@ export function TicketDetailPanel({
               </div>
 
               {/* Título */}
-              <h3 className="font-semibold text-white text-lg">{ticket.titulo}</h3>
+              <h3 className="font-semibold text-foreground text-lg">{ticket.titulo}</h3>
 
               {/* Descripción */}
               {ticket.descripcion && (
-                <p className="text-sm bg-slate-700/30 p-3 rounded-lg text-slate-300">
+                <p className="text-sm bg-muted/30 p-3 rounded-lg text-muted-foreground">
                   {ticket.descripcion}
                 </p>
               )}
@@ -88,69 +90,69 @@ export function TicketDetailPanel({
               {/* Grid de información */}
               <div className="grid grid-cols-2 gap-3">
                 {/* Contrato */}
-                <div className="bg-slate-700/30 rounded-lg p-3 col-span-2">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3 col-span-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Calendar className="h-3.5 w-3.5" />
-                    <span className="text-xs">Contrato</span>
+                    <span className="text-xs">{TICKET_DETALLE.contrato}</span>
                   </div>
-                  <span className="text-sm font-medium text-white truncate block">
+                  <span className="text-sm font-medium text-foreground truncate block">
                     {ticket.contrato_nombre}
                   </span>
                 </div>
 
                 {/* Abierto por */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <User className="h-3.5 w-3.5" />
-                    <span className="text-xs">Abierto por</span>
+                    <span className="text-xs">{TICKET_DETALLE.abiertoPor}</span>
                   </div>
-                  <span className="text-sm font-medium text-white truncate block">
+                  <span className="text-sm font-medium text-foreground truncate block">
                     {ticket.creado_por_nombre}
                     {ticket.creado_por_cliente && <Badge variant="outline" className="ml-1 text-xs">Cliente</Badge>}
                   </span>
                 </div>
 
                 {/* Responsable */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <User className="h-3.5 w-3.5" />
-                    <span className="text-xs">Responsable</span>
+                    <span className="text-xs">{TICKET_DETALLE.responsable}</span>
                   </div>
-                  <span className="text-sm font-medium text-white truncate block">
-                    {ticket.responsable_nombre || 'Sin asignar'}
+                  <span className="text-sm font-medium text-foreground truncate block">
+                    {ticket.responsable_nombre || SOPORTE_CONTRATOS.sinAsignar}
                   </span>
                 </div>
 
                 {/* Fecha apertura */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Clock className="h-3.5 w-3.5" />
-                    <span className="text-xs">Apertura</span>
+                    <span className="text-xs">{TICKET_DETALLE.apertura}</span>
                   </div>
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {formatFecha(ticket.fecha_apertura)}
                   </span>
                 </div>
 
                 {/* Tiempo invertido */}
-                <div className="bg-slate-700/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                     <Clock className="h-3.5 w-3.5" />
-                    <span className="text-xs">Tiempo</span>
+                    <span className="text-xs">{TICKET_DETALLE.tiempo}</span>
                   </div>
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {Math.floor(ticket.tiempo_invertido_minutos / 60)}h {ticket.tiempo_invertido_minutos % 60}m
                   </span>
                 </div>
 
                 {/* Fecha cierre */}
                 {ticket.fecha_cierre && (
-                  <div className="bg-slate-700/30 rounded-lg p-3">
-                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                       <CheckCircle className="h-3.5 w-3.5" />
-                      <span className="text-xs">Cerrado</span>
+                      <span className="text-xs">{TICKET_DETALLE.cerrado}</span>
                     </div>
-                    <span className="text-sm font-medium text-emerald-400">
+                    <span className={`text-sm font-medium ${getStatusColor('success').text}`}>
                       {formatFecha(ticket.fecha_cierre)}
                     </span>
                   </div>
@@ -159,49 +161,49 @@ export function TicketDetailPanel({
 
               {/* Alerta SLA */}
               {isSlaBreached && (
-                <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-400" />
-                  <span className="text-sm text-red-400 font-medium">SLA de respuesta INCUMPLIDO</span>
+                <div className={`${getStatusColor('error').bg} border ${getStatusColor('error').bg.replace('bg-', 'border-').replace('/15', '/30')} p-3 rounded-lg flex items-center gap-2`}>
+                  <AlertCircle className={`h-5 w-5 ${getStatusColor('error').text}`} />
+                  <span className={`text-sm ${getStatusColor('error').text} font-medium`}>{TICKET_DETALLE.slaIncumplido}</span>
                 </div>
               )}
 
               {/* Botones de acción */}
               {ticket.estado !== 'Cerrado' && (
-                <div className="border-t border-slate-700/50 pt-4 flex flex-wrap gap-2">
+                <div className="border-t border-border pt-4 flex flex-wrap gap-2">
                   {ticket.estado === 'Abierto' && (
                     <Button onClick={() => onChangeState('En progreso')} className="flex-1">
-                      <Clock className="h-4 w-4 mr-2" />Iniciar trabajo
+                      <Clock className="h-4 w-4 mr-2" />{TICKET_ACCIONES.iniciarTrabajo}
                     </Button>
                   )}
                   {ticket.estado === 'En progreso' && (
                     <>
                       <Button onClick={() => onChangeState('Esperando cliente')} className="flex-1">
-                        Esperar cliente
+                        {TICKET_ACCIONES.esperarCliente}
                       </Button>
                       <Button onClick={() => onChangeState('Resuelto')} variant="outline" className="flex-1">
-                        <CheckCircle className="h-4 w-4 mr-2" />Marcar resuelto
+                        <CheckCircle className="h-4 w-4 mr-2" />{TICKET_ACCIONES.marcarResuelto}
                       </Button>
                     </>
                   )}
                   {ticket.estado === 'Esperando cliente' && (
                     <Button onClick={() => onChangeState('Resuelto')} className="flex-1">
-                      <CheckCircle className="h-4 w-4 mr-2" />Marcar resuelto
+                      <CheckCircle className="h-4 w-4 mr-2" />{TICKET_ACCIONES.marcarResuelto}
                     </Button>
                   )}
                   {ticket.estado === 'Resuelto' && (
                     <Button onClick={() => onChangeState('Cerrado')} className="flex-1">
-                      <X className="h-4 w-4 mr-2" />Cerrar ticket
+                      <X className="h-4 w-4 mr-2" />{TICKET_ACCIONES.cerrarTicket}
                     </Button>
                   )}
                 </div>
               )}
 
               {/* Comentarios */}
-              <div className="space-y-3 border-t border-slate-700/50 pt-4">
+              <div className="space-y-3 border-t border-border pt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-slate-400" />
-                    Comentarios
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    {TICKET_COMENTARIOS.titulo}
                   </h3>
                   <Badge variant="secondary" className="text-xs">{comentarios.length}</Badge>
                 </div>
@@ -209,20 +211,20 @@ export function TicketDetailPanel({
                 {/* Lista de comentarios */}
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {comentarios.length === 0 ? (
-                    <div className="text-center py-4 text-slate-500 text-sm">
-                      No hay comentarios aún
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      {TICKET_COMENTARIOS.noHayComentarios}
                     </div>
                   ) : (
                     comentarios.map(c => (
-                      <div key={c.id} className={`rounded-lg p-3 ${c.es_interno ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-slate-700/30'}`}>
+                      <div key={c.id} className={`rounded-lg p-3 ${c.es_interno ? `${getStatusColor('warning').bg} border ${getStatusColor('warning').bg.replace('bg-', 'border-').replace('/15', '/30')}` : 'bg-muted/30'}`}>
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="font-medium text-slate-300 flex items-center gap-1">
+                          <span className="font-medium text-muted-foreground flex items-center gap-1">
                             {c.usuario_nombre}
                             {c.es_interno && <Badge variant="outline" className="ml-1 text-[10px] h-4">Interno</Badge>}
                           </span>
-                          <span className="text-slate-500">{new Date(c.fecha).toLocaleString('es-ES')}</span>
+                          <span className="text-muted-foreground">{new Date(c.fecha).toLocaleString('es-ES')}</span>
                         </div>
-                        <p className="text-sm text-slate-200">{c.comentario}</p>
+                        <p className="text-sm text-foreground">{c.comentario}</p>
                       </div>
                     ))
                   )}
@@ -231,10 +233,10 @@ export function TicketDetailPanel({
                 {/* Agregar comentario */}
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Escribir comentario..."
+                    placeholder={TICKET_COMENTARIOS.placeholder}
                     value={newComentario}
                     onChange={(e) => setNewComentario(e.target.value)}
-                    className="bg-slate-700/50 border-slate-600 text-white text-sm"
+                    className="bg-muted/50 border-input text-foreground text-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && newComentario) {
                         onAddComentario(newComentario, esInterno)
@@ -250,7 +252,7 @@ export function TicketDetailPanel({
                         setNewComentario('')
                       }
                     }}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -263,14 +265,14 @@ export function TicketDetailPanel({
                     onChange={(e) => setEsInterno(e.target.checked)}
                     className="rounded"
                   />
-                  <Label htmlFor="interno-ticket" className="text-sm text-slate-400">Comentario interno</Label>
+                  <Label htmlFor="interno-ticket" className="text-sm text-muted-foreground">{TICKET_COMENTARIOS.interno}</Label>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <MessageSquare className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-sm">Selecciona un ticket para ver detalles</p>
+              <p className="text-sm">{TICKET_PANEL_EMPTY.seleccionarTicket}</p>
             </div>
           )}
         </div>

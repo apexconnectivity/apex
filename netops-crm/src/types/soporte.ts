@@ -96,38 +96,6 @@ export const ESTADOS_TICKET: EstadoTicket[] = ['Abierto', 'En progreso', 'Espera
 
 export const PRIORIDADES_TICKET: PrioridadTicket[] = ['Baja', 'Media', 'Alta', 'Urgente']
 
-export const getPrioridadColor = (prioridad: PrioridadTicket) => {
-  const colors: Record<PrioridadTicket, string> = {
-    Baja: 'bg-slate-500/20 text-slate-400',
-    Media: 'bg-blue-500/20 text-blue-400',
-    Alta: 'bg-amber-500/20 text-amber-400',
-    Urgente: 'bg-red-500/20 text-red-400',
-  }
-  return colors[prioridad]
-}
-
-export const getCategoriaColor = (categoria: CategoriaTicket) => {
-  const colors: Record<CategoriaTicket, string> = {
-    'Soporte técnico': 'bg-green-500/20 text-green-400',
-    'Consulta comercial': 'bg-purple-500/20 text-purple-400',
-    'Facturación': 'bg-cyan-500/20 text-cyan-400',
-    'Compras': 'bg-amber-500/20 text-amber-400',
-    'Otro': 'bg-slate-500/20 text-slate-400',
-  }
-  return colors[categoria]
-}
-
-export const getEstadoColor = (estado: EstadoTicket) => {
-  const colors: Record<EstadoTicket, string> = {
-    'Abierto': 'bg-red-500/20 text-red-400',
-    'En progreso': 'bg-blue-500/20 text-blue-400',
-    'Esperando cliente': 'bg-amber-500/20 text-amber-400',
-    'Resuelto': 'bg-green-500/20 text-green-400',
-    'Cerrado': 'bg-slate-500/20 text-slate-400',
-  }
-  return colors[estado]
-}
-
 export const DEFAULT_SLA: ReglaSLA[] = [
   { id: '1', prioridad: 'Baja', tiempo_respuesta_horas: 48, tiempo_resolucion_horas: 120, activo: true },
   { id: '2', prioridad: 'Media', tiempo_respuesta_horas: 24, tiempo_resolucion_horas: 72, activo: true },

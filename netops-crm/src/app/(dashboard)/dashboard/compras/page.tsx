@@ -13,7 +13,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, getEstadoColor, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
+import { getOrdenCompraColor } from '@/lib/colors'
 import {
   ShoppingCart, Plus, Package, FileText, Truck, CheckCircle, XCircle,
   Clock, AlertTriangle, Search, Filter, DollarSign, Calendar,
@@ -277,7 +279,7 @@ function DetalleOrdenModal({ orden, onClose, onCambiarEstado }: {
         </DialogHeader>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <Badge className={getEstadoColor(orden.estado)}>{orden.estado}</Badge>
+            <Badge className={getOrdenCompraColor(orden.estado)}>{orden.estado}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -371,15 +373,10 @@ export default function ComprasPage() {
 
   if (!canCreate && !isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <ShoppingCart className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold">Acceso Restringido</h2>
-            <p className="text-muted-foreground mt-2">No tienes permiso para acceder a este módulo.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AccessDeniedCard
+        icon={ShoppingCart}
+        description="No tienes permiso para acceder a este módulo."
+      />
     )
   }
 
@@ -485,7 +482,7 @@ export default function ComprasPage() {
                           <p className="font-bold">{orden.moneda} {orden.total.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">{orden.proyecto_nombre}</p>
                         </div>
-                        <Badge className={getEstadoColor(orden.estado)}>{orden.estado}</Badge>
+                        <Badge className={getOrdenCompraColor(orden.estado)}>{orden.estado}</Badge>
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>

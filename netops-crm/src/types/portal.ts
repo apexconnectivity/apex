@@ -72,24 +72,3 @@ export interface ArchivoProyectoCliente {
   fecha_subida: string
   subido_por_nombre: string
 }
-
-export const getPrioridadIcon = (prioridad: string): string => {
-  switch (prioridad) {
-    case 'Urgente': return '🔴'
-    case 'Alta': return '🟡'
-    case 'Media': return '🟢'
-    case 'Baja': return '⚪'
-    default: return '⚪'
-  }
-}
-
-export const getEstadoColor = (estado: string): string => {
-  switch (estado) {
-    case 'Abierto': return 'bg-red-500/20 text-red-400'
-    case 'En progreso': return 'bg-blue-500/20 text-blue-400'
-    case 'Esperando cliente': return 'bg-amber-500/20 text-amber-400'
-    case 'Resuelto': return 'bg-green-500/20 text-green-400'
-    case 'Cerrado': return 'bg-slate-500/20 text-slate-400'
-    default: return 'bg-slate-500/20 text-slate-400'
-  }
-}
