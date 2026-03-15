@@ -3,7 +3,7 @@
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import type { Empresa, Contacto, Documento } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
-import type { Tarea } from '@/types/tareas'
+import type { Tarea, Subtarea } from '@/types/tareas'
 import type { Ticket, ContratoSoporte } from '@/types/soporte'
 import type { OrdenCompra, Proveedor } from '@/types/compras'
 import type { Archivo } from '@/types/archivos'
@@ -54,6 +54,13 @@ export function useProyectos() {
 // ============================================================================
 export function useTareas() {
   return useLocalStorage<Tarea[]>('apex_tareas', INITIAL_TAREAS)
+}
+
+// ============================================================================
+// SUBTAREAS
+// ============================================================================
+export function useSubtareas() {
+  return useLocalStorage<Record<string, Subtarea[]>>('apex_subtareas', {})
 }
 
 // ============================================================================
