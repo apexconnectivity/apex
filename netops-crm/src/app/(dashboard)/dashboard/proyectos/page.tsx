@@ -28,7 +28,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from '@/types/proyectos'
-import { Tarea, EstadoTarea } from '@/types/tareas'
+import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE, Subtarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
 import { User } from '@/types/auth'
 
@@ -252,6 +252,50 @@ export default function ProyectosPage() {
         { fase_actual: fase }
       )
     }
+
+    // Crear tareas desde plantilla al entrar a una nueva fase
+    if (proyecto && fase > (faseAnterior || 0)) {
+      const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
+      if (plantillas.length > 0) {
+        // Primero,收集 todas las tareas nuevas para obtener sus IDs
+        const tareasCreadas: Tarea[] = []
+
+        plantillas.forEach((plantilla, index) => {
+          const fechaVencimiento = new Date()
+          fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
+
+          // Crear la tarea
+          const tareaId = crypto.randomUUID()
+          const nuevaTarea: Tarea = {
+            id: tareaId,
+            proyecto_id: proyecto.id,
+            proyecto_nombre: proyecto.nombre,
+            fase_origen: fase,
+            fase_nombre: faseNuevaNombre || `Fase ${fase}`,
+            categoria: plantilla.categoria,
+            nombre: plantilla.nombre,
+            descripcion: plantilla.descripcion,
+            prioridad: plantilla.prioridad,
+            estado: 'Pendiente' as EstadoTarea,
+            fecha_creacion: new Date().toISOString().split('T')[0],
+            fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
+            orden: index + 1,
+            creado_por: 'Sistema',
+            asignado_a_cliente: plantilla.requiere_cliente,
+            subtareas: plantilla.subtareas.map((sub, subIndex) => ({
+              id: crypto.randomUUID(),
+              tarea_id: tareaId,
+              nombre: sub.nombre,
+              completada: false,
+              orden: subIndex + 1,
+            })),
+          }
+          tareasCreadas.push(nuevaTarea)
+        })
+
+        setTareas(prev => [...prev, ...tareasCreadas])
+      }
+    }
   }
 
   const handleCerrar = (proyecto: Proyecto) => {
@@ -404,6 +448,45 @@ export default function ProyectosPage() {
       contacto_tecnico_nombre: contactoTecnico?.nombre,
       creado_en: now,
     } as Proyecto])
+
+    // Crear tareas desde plantilla para la fase inicial del proyecto
+    const faseInicial = nuevoProyecto.fase_actual || 1
+    const faseNombre = fasesEditando.find(f => f.id === faseInicial)?.nombre || `Fase ${faseInicial}`
+    const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === faseInicial)
+
+    if (plantillas.length > 0) {
+      const nuevasTareas: Tarea[] = plantillas.map((plantilla, index) => {
+        const fechaVencimiento = new Date()
+        fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
+
+        const tareaId = crypto.randomUUID()
+        return {
+          id: tareaId,
+          proyecto_id: String(Date.now()),
+          proyecto_nombre: nuevoProyecto.nombre || 'Nuevo Proyecto',
+          fase_origen: faseInicial,
+          fase_nombre: faseNombre,
+          categoria: plantilla.categoria,
+          nombre: plantilla.nombre,
+          descripcion: plantilla.descripcion,
+          prioridad: plantilla.prioridad,
+          estado: 'Pendiente' as EstadoTarea,
+          fecha_creacion: now,
+          fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
+          orden: index + 1,
+          creado_por: 'Sistema',
+          asignado_a_cliente: plantilla.requiere_cliente,
+          subtareas: plantilla.subtareas.map((sub, subIndex) => ({
+            id: crypto.randomUUID(),
+            tarea_id: tareaId,
+            nombre: sub.nombre,
+            completada: false,
+            orden: subIndex + 1,
+          })),
+        }
+      })
+      setTareas(prev => [...prev, ...nuevasTareas])
+    }
 
     setIsSaving(false)
     setIsModalNuevo(false)
