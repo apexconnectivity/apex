@@ -38,12 +38,21 @@ export function useLocalStorage<T>(
     }
   }, [key, initialValue])
 
-  // Efecto para cargar el valor inicial
+  // Efecto para cargar el valor inicial - solo se ejecuta una vez al montar
   useEffect(() => {
-    const value = getInitialValue()
-    setStoredValue(value)
-    setIsLoaded(true)
-  }, [getInitialValue])
+    try {
+      if (typeof window === 'undefined') return
+
+      const item = window.localStorage.getItem(key)
+      const value = item ? JSON.parse(item) as T : initialValue
+      setStoredValue(value)
+    } catch (error) {
+      console.warn(`Error reading localStorage key "${key}":`, error)
+      setStoredValue(initialValue)
+    } finally {
+      setIsLoaded(true)
+    }
+  }, [])
 
   // Función para actualizar el valor
   const setValue = useCallback(
