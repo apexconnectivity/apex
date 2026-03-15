@@ -68,10 +68,6 @@ import {
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Ticket, EstadoTicket } from '@/types/soporte'
 
-const getTipoBadge = (tipo: TipoEntidad) => {
-  return { type: tipo }
-}
-
 const EMPRESAS_VACIA: Partial<Empresa> = {
   tipo_entidad: 'cliente',
   nombre: '',
