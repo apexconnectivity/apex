@@ -141,7 +141,7 @@ function TaskFormFields({
           id="asignado_cliente" 
           checked={tarea.asignado_a_cliente} 
           onChange={(e) => setTarea({ ...tarea, asignado_a_cliente: e.target.checked })} 
-          className="rounded"
+          className="rounded border-border"
           disabled={disabled}
         />
         <Label htmlFor="asignado_cliente" className="text-sm">Asignar a cliente</Label>
@@ -220,7 +220,7 @@ function SubtasksSection({
                   type="checkbox"
                   checked={st.completada || false}
                   onChange={() => onToggle(index)}
-                  className="rounded"
+                  className="rounded border-border"
                 />
               )}
               <span className={`flex-1 ${st.completada ? 'line-through text-muted-foreground' : ''}`}>

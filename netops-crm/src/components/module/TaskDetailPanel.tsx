@@ -78,7 +78,7 @@ export function TaskDetailPanel({
       case 'Alta': return 'text-orange-400'
       case 'Media': return 'text-amber-400'
       case 'Baja': return 'text-blue-400'
-      default: return 'text-slate-400'
+      default: return 'text-muted-foreground'
     }
   }
 
@@ -115,10 +115,10 @@ export function TaskDetailPanel({
       {/* Panel lateral */}
       <div className="h-full flex flex-col">
         {/* Header del panel */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/80 backdrop-blur-sm">
+        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border/50 bg-card/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {tarea && getEstadoIcon(tarea.estado)}
-            <h2 className="font-semibold text-white truncate max-w-[200px]">
+            <h2 className="font-semibold text-foreground truncate max-w-[200px]">
               {tarea?.nombre || 'Detalles de la Tarea'}
             </h2>
           </div>
@@ -128,7 +128,7 @@ export function TaskDetailPanel({
                 variant="ghost"
                 size="icon"
                 onClick={onEdit}
-                className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+                className="h-8 w-8 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                 title="Editar tarea"
               >
                 <Pencil className="h-4 w-4" />
@@ -138,7 +138,7 @@ export function TaskDetailPanel({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-8 w-8 hover:bg-slate-700/50 text-slate-400 hover:text-white"
+              className="h-8 w-8 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -158,7 +158,7 @@ export function TaskDetailPanel({
 
               {/* Descripción */}
               {tarea.descripcion && (
-                <p className="text-sm bg-slate-700/30 p-3 rounded-lg text-slate-300">
+                <p className="text-sm bg-muted/30 p-3 rounded-lg text-foreground">
                   {tarea.descripcion}
                 </p>
               )}
@@ -167,7 +167,7 @@ export function TaskDetailPanel({
               {editMode && editedTarea ? (
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-slate-400 text-xs">Nombre</Label>
+                    <Label className="text-muted-foreground text-xs">Nombre</Label>
                     <Input
                       className="bg-input border-border text-foreground"
                       value={editedTarea.nombre}
@@ -175,7 +175,7 @@ export function TaskDetailPanel({
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-xs">Descripción</Label>
+                    <Label className="text-muted-foreground text-xs">Descripción</Label>
                     <Textarea
                       className="bg-input border-border text-foreground"
                       value={editedTarea.descripcion || ''}
@@ -185,7 +185,7 @@ export function TaskDetailPanel({
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-slate-400 text-xs">Categoría</Label>
+                      <Label className="text-muted-foreground text-xs">Categoría</Label>
                       <Select value={editedTarea.categoria} onValueChange={(v) => setEditedTarea({ ...editedTarea, categoria: v as CategoriaTarea })}>
                         <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -194,7 +194,7 @@ export function TaskDetailPanel({
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-400 text-xs">Prioridad</Label>
+                      <Label className="text-muted-foreground text-xs">Prioridad</Label>
                       <Select value={editedTarea.prioridad} onValueChange={(v) => setEditedTarea({ ...editedTarea, prioridad: v as PrioridadTarea })}>
                         <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -203,7 +203,7 @@ export function TaskDetailPanel({
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-400 text-xs">Estado</Label>
+                      <Label className="text-muted-foreground text-xs">Estado</Label>
                       <Select value={editedTarea.estado} onValueChange={(v) => setEditedTarea({ ...editedTarea, estado: v as EstadoTarea })}>
                         <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -212,7 +212,7 @@ export function TaskDetailPanel({
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-400 text-xs">Responsable</Label>
+                      <Label className="text-muted-foreground text-xs">Responsable</Label>
                       <Select value={editedTarea.responsable_id || ''} onValueChange={(v) => setEditedTarea({ ...editedTarea, responsable_id: v, responsable_nombre: usuarios.find(u => u.id === v)?.nombre })}>
                         <SelectTrigger className="bg-input border-border text-foreground"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                         <SelectContent>
@@ -221,7 +221,7 @@ export function TaskDetailPanel({
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-400 text-xs">Fecha Vencimiento</Label>
+                      <Label className="text-muted-foreground text-xs">Fecha Vencimiento</Label>
                       <Input
                         type="date"
                         className="bg-input border-border text-foreground"
@@ -230,7 +230,7 @@ export function TaskDetailPanel({
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-400 text-xs">Proyecto</Label>
+                      <Label className="text-muted-foreground text-xs">Proyecto</Label>
                       <Select value={editedTarea.proyecto_id} onValueChange={(v) => {
                         const p = proyectos.find(pr => pr.id === v)
                         setEditedTarea({ ...editedTarea, proyecto_id: v, proyecto_nombre: p?.nombre || '' })
@@ -244,7 +244,7 @@ export function TaskDetailPanel({
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={handleSave} className="flex-1">Guardar</Button>
-                    <Button variant="outline" onClick={() => setEditMode(false)} className="border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</Button>
+                    <Button variant="outline" onClick={() => setEditMode(false)} className="border-border text-foreground hover:bg-muted">Cancelar</Button>
                   </div>
                 </div>
               ) : (
@@ -252,63 +252,63 @@ export function TaskDetailPanel({
                   {/* Grid de información */}
                   <div className="grid grid-cols-2 gap-3">
                     {/* Proyecto */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Target className="h-3.5 w-3.5" />
                         <span className="text-xs">Proyecto</span>
                       </div>
-                      <span className="text-sm font-medium text-white truncate block">
+                      <span className="text-sm font-medium text-foreground truncate block">
                         {tarea.proyecto_nombre}
                       </span>
                     </div>
 
                     {/* Fase */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <CheckSquare className="h-3.5 w-3.5" />
                         <span className="text-xs">Fase</span>
                       </div>
-                      <span className="text-sm font-medium text-white">
+                      <span className="text-sm font-medium text-foreground">
                         {tarea.fase_nombre}
                       </span>
                     </div>
 
                     {/* Responsable */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <User className="h-3.5 w-3.5" />
                         <span className="text-xs">Responsable</span>
                       </div>
-                      <span className="text-sm font-medium text-white truncate block">
+                      <span className="text-sm font-medium text-foreground truncate block">
                         {tarea.responsable_nombre || 'Sin asignar'}
                       </span>
                     </div>
 
                     {/* Fecha Vencimiento */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Calendar className="h-3.5 w-3.5" />
                         <span className="text-xs">Vencimiento</span>
                       </div>
-                      <span className={`text-sm font-medium ${tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada' ? 'text-red-400' : 'text-white'}`}>
+                      <span className={`text-sm font-medium ${tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada' ? 'text-[hsl(var(--error))]' : 'text-foreground'}`}>
                         {formatFecha(tarea.fecha_vencimiento)}
                       </span>
                     </div>
 
                     {/* Fecha Creación */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Clock className="h-3.5 w-3.5" />
                         <span className="text-xs">Creado</span>
                       </div>
-                      <span className="text-sm font-medium text-white">
+                      <span className="text-sm font-medium text-foreground">
                         {formatFecha(tarea.fecha_creacion)}
                       </span>
                     </div>
 
                     {/* Prioridad */}
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <AlertCircle className="h-3.5 w-3.5" />
                         <span className="text-xs">Prioridad</span>
                       </div>
@@ -322,7 +322,7 @@ export function TaskDetailPanel({
                   <Button
                     variant="outline"
                     onClick={() => setEditMode(true)}
-                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="w-full border-border text-foreground hover:bg-muted"
                   >
                     Editar Tarea
                   </Button>
@@ -330,19 +330,19 @@ export function TaskDetailPanel({
               )}
 
               {/* Subtareas */}
-              <div className="space-y-3 border-t border-slate-700/50 pt-4">
+              <div className="space-y-3 border-t border-border/50 pt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <CheckSquare className="h-4 w-4 text-slate-400" />
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <CheckSquare className="h-4 w-4 text-muted-foreground" />
                     Subtareas
                   </h3>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-muted-foreground">
                     {completedSubtareas}/{subtareas.length}
                   </span>
                 </div>
 
                 {/* Barra de progreso */}
-                <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                     style={{ width: `${subtareas.length > 0 ? (completedSubtareas / subtareas.length) * 100 : 0}%` }}
@@ -352,23 +352,23 @@ export function TaskDetailPanel({
                 {/* Lista de subtareas */}
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {subtareas.length === 0 ? (
-                    <div className="text-center py-4 text-slate-500 text-sm">
+                    <div className="text-center py-4 text-muted-foreground text-sm">
                       No hay subtareas
                     </div>
                   ) : (
                     subtareas.map(st => (
                       <div
                         key={st.id}
-                        className="flex items-center gap-2 text-sm p-2 bg-slate-700/20 rounded-lg hover:bg-slate-700/40 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 text-sm p-2 bg-muted/20 rounded-lg hover:bg-muted/40 transition-colors cursor-pointer"
                         onClick={() => onToggleSubtarea(st.id)}
                       >
                         <input
                           type="checkbox"
                           checked={st.completada}
                           onChange={() => onToggleSubtarea(st.id)}
-                          className="rounded border-slate-600 bg-slate-700"
+                          className="rounded border-border bg-muted"
                         />
-                        <span className={st.completada ? 'line-through text-muted-foreground' : 'text-slate-200'}>
+                        <span className={st.completada ? 'line-through text-muted-foreground' : 'text-foreground'}>
                           {st.nombre}
                         </span>
                       </div>
@@ -406,26 +406,26 @@ export function TaskDetailPanel({
               </div>
 
               {/* Comentarios */}
-              <div className="space-y-3 border-t border-slate-700/50 pt-4">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-slate-400" />
+              <div className="space-y-3 border-t border-border/50 pt-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   Comentarios
                 </h3>
 
                 {/* Lista de comentarios */}
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {comentarios.length === 0 ? (
-                    <div className="text-center py-4 text-slate-500 text-sm">
+                    <div className="text-center py-4 text-muted-foreground text-sm">
                       No hay comentarios
                     </div>
                   ) : (
                     comentarios.map(c => (
-                      <div key={c.id} className="bg-slate-700/30 rounded-lg p-3">
+                      <div key={c.id} className="bg-muted/30 rounded-lg p-3">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="font-medium text-slate-300">{c.usuario_nombre}</span>
-                          <span className="text-slate-500">{new Date(c.fecha).toLocaleString('es-ES')}</span>
+                          <span className="font-medium text-foreground">{c.usuario_nombre}</span>
+                          <span className="text-muted-foreground">{new Date(c.fecha).toLocaleString('es-ES')}</span>
                         </div>
-                        <p className="text-sm text-slate-200">{c.comentario}</p>
+                        <p className="text-sm text-foreground">{c.comentario}</p>
                       </div>
                     ))
                   )}
@@ -461,7 +461,7 @@ export function TaskDetailPanel({
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
               <p className="text-sm">Selecciona una tarea para ver detalles</p>
             </div>

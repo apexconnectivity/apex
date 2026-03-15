@@ -82,7 +82,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
             <h4 className="font-semibold text-sm truncate">{tarea.nombre}</h4>
             <p className="text-xs text-muted-foreground truncate">{tarea.proyecto_nombre}</p>
           </div>
-          <GripVertical className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         </div>
 
         <div className="flex flex-wrap gap-1.5">
@@ -91,7 +91,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
         </div>
 
         {tarea.fecha_vencimiento && (
-          <div className={`flex items-center gap-1 text-xs ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
+          <div className={`flex items-center gap-1 text-xs ${isOverdue ? 'text-[hsl(var(--error))]' : 'text-muted-foreground'}`}>
             <Calendar className="h-3 w-3" />
             <span>{new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES')}</span>
           </div>
@@ -111,7 +111,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <StatusBadge status={tarea.estado} type="estado" />
           
           {isBlocked && (
@@ -491,7 +491,7 @@ export default function TareasPage() {
                 type="checkbox" 
                 checked={filtroVencidas} 
                 onChange={(e) => setFiltroVencidas(e.target.checked)}
-                className="rounded border-slate-600"
+                className="rounded border-border"
               />
               <span className="text-xs text-muted-foreground">Vencidas</span>
             </label>
