@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { useTareas, useProyectos } from '@/lib/data'
+import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,25 +28,6 @@ const DEMO_USUARIOS = [
 ]
 
 const USUARIOS: { id: string; nombre: string; rol: string }[] = DEMO_USUARIOS
-
-const DEMO_SUBTAREAS: Record<string, Subtarea[]> = {
-  '1': [
-    { id: 's1', tarea_id: '1', nombre: 'Crear regla para puerto 443', completada: true, orden: 1 },
-    { id: 's2', tarea_id: '1', nombre: 'Crear regla para puerto 22', completada: true, orden: 2 },
-    { id: 's3', tarea_id: '1', nombre: 'Configurar NAT', completada: false, orden: 3 },
-    { id: 's4', tarea_id: '1', nombre: 'Verificar conectividad', completada: false, orden: 4 },
-  ],
-}
-
-const DEMO_COMENTARIOS: Record<string, Comentario[]> = {
-  '1': [
-    { id: 'c1', tarea_id: '1', usuario_id: '3', usuario_nombre: 'Juan Técnico', es_cliente: false, comentario: 'Rules created and tested. Ready for next step.', fecha: '2026-03-07T10:30:00' },
-    { id: 'c2', tarea_id: '1', usuario_id: '1', usuario_nombre: 'Carlos Admin', es_cliente: false, comentario: 'Excelente progreso. Continúa con el NAT.', fecha: '2026-03-07T14:15:00' },
-  ],
-  '4': [
-    { id: 'c3', tarea_id: '4', usuario_id: '2', usuario_nombre: 'Laura Pérez', es_cliente: false, comentario: 'Esperando documentación para proceder con cotización.', fecha: '2026-03-08T09:00:00' },
-  ],
-}
 
 function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
@@ -144,8 +125,8 @@ export default function TareasPage() {
   const { user } = useAuth()
   const [tareas, setTareas] = useTareas()
   const [proyectos] = useProyectos()
-  const [subtareas, setSubtareas] = useState<Record<string, Subtarea[]>>(DEMO_SUBTAREAS)
-  const [comentarios, setComentarios] = useState<Record<string, Comentario[]>>(DEMO_COMENTARIOS)
+  const [subtareas, setSubtareas] = useSubtareas()
+  const [comentarios, setComentarios] = useComentarios()
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
   const [filtroPersona, setFiltroPersona] = useState<string>('todos')
