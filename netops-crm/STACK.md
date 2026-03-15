@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.6  
+**Versión:** 1.7  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo compras optimizado con localStorage y constantes centralizadas
+**Estado:** En desarrollo - Módulo notificaciones refactorizado con localStorage y constantes centralizadas
 
 ---
 
@@ -173,6 +173,10 @@
 | Proveedores | `apex_proveedores_datos` | ✅ Implementado |
 | Cotizaciones | `apex_cotizaciones_datos` | ✅ Implementado |
 | Vista Compras | `apex_compras_vista` | ✅ Implementado |
+| Config Notificaciones | `apex_notificaciones_config` | ✅ Implementado |
+| Preferencia Notificaciones | `apex_notificaciones_preferencia` | ✅ Implementado |
+| Eventos Notificaciones | `apex_notificaciones_eventos` | ✅ Implementado |
+| Vista Notificaciones | `apex_notificaciones_vista` | ✅ Implementado |
 | Usuario sesión | `apex_user` | ✅ Implementado |
 
 **Constantes centralizadas:** Todas las keys están definidas en `src/constants/storage.ts`
@@ -298,7 +302,8 @@ netops-crm/
 │       ├── soporte.ts         # Textos y keys localStorage (módulo soporte)
 │       ├── storage.ts         # Keys y valores iniciales centralizados (localStorage)
 │       ├── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
-│       └── compras.ts         # Textos, labels, impuestos (módulo compras)
+│       ├── compras.ts         # Textos, labels, impuestos (módulo compras)
+│       └── notificaciones.ts  # Textos, labels y configuraciones (módulo notificaciones)
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
@@ -375,6 +380,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.4 | 2026-03-15 | Módulo soporte implementado, localStorage, corrección de estilos |
 | 1.5 | 2026-03-15 | Constantes centralizadas para archivos y storage, mejoras de consistencia UI |
 | 1.6 | 2026-03-15 | Módulo compras: localStorage, constantes centralizadas, estilos consistentes, datos demo extraídos |
+| 1.7 | 2026-03-15 | Módulo notificaciones: localStorage, constantes centralizadas, ModuleContainer corregido, StatCards consistentes |
 
 ---
 

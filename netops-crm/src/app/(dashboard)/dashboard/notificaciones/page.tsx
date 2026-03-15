@@ -2,80 +2,66 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getCanalIcon, getEstadoNotificacionColor } from '@/types/notificaciones'
+import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getEstadoNotificacionColor } from '@/types/notificaciones'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import {
   Bell, Settings, Slack, Mail, Clock, CheckCircle, XCircle,
   AlertCircle, Activity, Zap, Save, RefreshCw, Eye, EyeOff,
   MessageSquare, Calendar, FileText, Building2, Ticket, User, Send, AlertTriangle
 } from 'lucide-react'
+import { NOTIFICACIONES_TEXTS, NOTIFICACIONES_STORAGE_KEYS, CONFIG_INICIAL, PREFERENCIA_INICIAL } from '@/constants/notificaciones'
 
-const DEMO_CONFIG: ConfiguracionGlobal = {
-  slack_activo: true,
-  email_clientes_activo: true,
-  email_internos_activo: true,
-  umbral_sla_urgente: 1,
-  umbral_sla_alta: 2,
-  umbral_sla_media: 4,
-  umbral_sla_baja: 8,
-  resumen_diario_activo: true,
-  resumen_diario_hora: '09:00',
-  n8n_webhook_url: 'https://n8n.apexconnectivity.com/webhook',
+// Función para obtener el icono del canal
+function getCanalIconComponent(canal: string) {
+  switch (canal) {
+    case 'slack': return <Slack className="h-4 w-4" />
+    case 'email': return <Mail className="h-4 w-4" />
+    default: return <MessageSquare className="h-4 w-4" />
+  }
 }
 
-const DEMO_LOGS: LogNotificacion[] = [
-  { id: '1', evento_id: 'tarea_asignada', evento_tipo: 'Tarea asignada', destinatario: 'carlos@apex.com', canal: 'email', estado: 'enviado', fecha_envio: '2026-03-15T10:30:00', intentos: 1 },
-  { id: '2', evento_id: 'ticket_nuevo', evento_tipo: 'Ticket nuevo', destinatario: '#soporte', canal: 'slack', estado: 'enviado', fecha_envio: '2026-03-15T09:15:00', intentos: 1 },
-  { id: '3', evento_id: 'tarea_vencida', evento_tipo: 'Tarea vencida', destinatario: 'juan@apex.com', canal: 'slack', estado: 'fallido', intentos: 3, error: 'Usuario no encontrado en Slack' },
-  { id: '4', evento_id: 'reunion_recordatorio', evento_tipo: 'Recordatorio', destinatario: 'juan@soltec.com', canal: 'email', estado: 'enviado', fecha_envio: '2026-03-15T08:00:00', intentos: 1 },
-  { id: '5', evento_id: 'proyecto_fase', evento_tipo: 'Cambio de fase', destinatario: '#proyectos', canal: 'slack', estado: 'pendiente', intentos: 1 },
-]
-
-const DEMO_PREFERENCIA: PreferenciaNotificacion = {
-  id: 'p1',
-  usuario_id: '1',
-  canal_preferido: 'ambos',
-  notificaciones_tareas: true,
-  notificaciones_tickets: true,
-  notificaciones_proyectos: true,
-  notificaciones_reuniones: true,
-  notificaciones_sla: true,
-  notificaciones_resumen_diario: true,
-  resumen_diario_hora: '09:00',
+// Función para obtener el color del icono según el tipo de canal
+function getCanalBgColor(canal: string): string {
+  switch (canal) {
+    case 'slack': return 'bg-primary' // Usando token del theme
+    case 'email': return 'bg-blue-500' // Token de color estándar de Tailwind
+    default: return 'bg-muted'
+  }
 }
 
 function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlobal; onUpdate: (c: ConfiguracionGlobal) => void }) {
   const [local, setLocal] = useState(config)
+  const { titulos, canales, sla, resumen, webhook, botones } = NOTIFICACIONES_TEXTS.configGlobal
+  const { canalesActivos, umbralesSLA, umbralSLADesc, resumenDiario, integracionN8N } = titulos
 
   return (
     <div className="space-y-6">
-      <Card>
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Canales Activos
+            {canalesActivos}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Slack */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-[#4A154B] rounded-lg flex items-center justify-center">
-                <Slack className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 bg-primary rounded-lg flex items-center justify-center">
+                <Slack className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <p className="font-medium">Slack</p>
-                <p className="text-sm text-muted-foreground">Notificaciones a canales y DMs</p>
+                <p className="font-medium">{canales.slack.titulo}</p>
+                <p className="text-sm text-muted-foreground">{canales.slack.descripcion}</p>
               </div>
             </div>
             <Button variant={local.slack_activo ? 'default' : 'outline'} size="sm" onClick={() => setLocal({ ...local, slack_activo: !local.slack_activo })}>
@@ -83,14 +69,16 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
               {local.slack_activo ? 'Activo' : 'Inactivo'}
             </Button>
           </div>
+          
+          {/* Email Clientes */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Mail className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="font-medium">Email a Clientes</p>
-                <p className="text-sm text-muted-foreground">Notificaciones hacia clientes</p>
+                <p className="font-medium">{canales.emailClientes.titulo}</p>
+                <p className="text-sm text-muted-foreground">{canales.emailClientes.descripcion}</p>
               </div>
             </div>
             <Button variant={local.email_clientes_activo ? 'default' : 'outline'} size="sm" onClick={() => setLocal({ ...local, email_clientes_activo: !local.email_clientes_activo })}>
@@ -98,14 +86,16 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
               {local.email_clientes_activo ? 'Activo' : 'Inactivo'}
             </Button>
           </div>
+          
+          {/* Email Internos */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-green-500 rounded-lg flex items-center justify-center">
                 <Mail className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="font-medium">Email a Internos</p>
-                <p className="text-sm text-muted-foreground">Notificaciones hacia el equipo</p>
+                <p className="font-medium">{canales.emailInternos.titulo}</p>
+                <p className="text-sm text-muted-foreground">{canales.emailInternos.descripcion}</p>
               </div>
             </div>
             <Button variant={local.email_internos_activo ? 'default' : 'outline'} size="sm" onClick={() => setLocal({ ...local, email_internos_activo: !local.email_internos_activo })}>
@@ -120,38 +110,38 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Umbrales de SLA
+            {umbralesSLA}
           </CardTitle>
-          <CardDescription>Tiempo antes del vencimiento para enviar alertas</CardDescription>
+          <CardDescription>{umbralSLADesc}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label className="text-red-400">Urgente</Label>
+              <Label className="text-destructive">{sla.urgente}</Label>
               <div className="flex items-center gap-2 mt-1">
-                <Input type="number" value={local.umbral_sla_urgente} onChange={(e) => setLocal({ ...local, umbral_sla_urgente: parseInt(e.target.value) })} className="bg-background w-20" />
-                <span className="text-sm">horas</span>
+                <Input type="number" value={local.umbral_sla_urgente} onChange={(e) => setLocal({ ...local, umbral_sla_urgente: parseInt(e.target.value) || 0 })} className="bg-background w-20" />
+                <span className="text-sm text-muted-foreground">{sla.horas}</span>
               </div>
             </div>
             <div>
-              <Label className="text-amber-400">Alta</Label>
+              <Label className="text-orange-500">{sla.alta}</Label>
               <div className="flex items-center gap-2 mt-1">
-                <Input type="number" value={local.umbral_sla_alta} onChange={(e) => setLocal({ ...local, umbral_sla_alta: parseInt(e.target.value) })} className="bg-background w-20" />
-                <span className="text-sm">horas</span>
+                <Input type="number" value={local.umbral_sla_alta} onChange={(e) => setLocal({ ...local, umbral_sla_alta: parseInt(e.target.value) || 0 })} className="bg-background w-20" />
+                <span className="text-sm text-muted-foreground">{sla.horas}</span>
               </div>
             </div>
             <div>
-              <Label className="text-blue-400">Media</Label>
+              <Label className="text-blue-500">{sla.media}</Label>
               <div className="flex items-center gap-2 mt-1">
-                <Input type="number" value={local.umbral_sla_media} onChange={(e) => setLocal({ ...local, umbral_sla_media: parseInt(e.target.value) })} className="bg-background w-20" />
-                <span className="text-sm">horas</span>
+                <Input type="number" value={local.umbral_sla_media} onChange={(e) => setLocal({ ...local, umbral_sla_media: parseInt(e.target.value) || 0 })} className="bg-background w-20" />
+                <span className="text-sm text-muted-foreground">{sla.horas}</span>
               </div>
             </div>
             <div>
-              <Label className="text-slate-400">Baja</Label>
+              <Label className="text-muted-foreground">{sla.baja}</Label>
               <div className="flex items-center gap-2 mt-1">
-                <Input type="number" value={local.umbral_sla_baja} onChange={(e) => setLocal({ ...local, umbral_sla_baja: parseInt(e.target.value) })} className="bg-background w-20" />
-                <span className="text-sm">horas</span>
+                <Input type="number" value={local.umbral_sla_baja} onChange={(e) => setLocal({ ...local, umbral_sla_baja: parseInt(e.target.value) || 0 })} className="bg-background w-20" />
+                <span className="text-sm text-muted-foreground">{sla.horas}</span>
               </div>
             </div>
           </div>
@@ -162,14 +152,14 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Resumen Diario
+            {resumenDiario}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Activar resumen diario</p>
-              <p className="text-sm text-muted-foreground">Enviar resumen matutino de actividades</p>
+              <p className="font-medium">{resumen.activar}</p>
+              <p className="text-sm text-muted-foreground">{resumen.activarDesc}</p>
             </div>
             <Button variant={local.resumen_diario_activo ? 'default' : 'outline'} size="sm" onClick={() => setLocal({ ...local, resumen_diario_activo: !local.resumen_diario_activo })}>
               {local.resumen_diario_activo ? 'Activo' : 'Inactivo'}
@@ -177,7 +167,7 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
           </div>
           {local.resumen_diario_activo && (
             <div>
-              <Label>Hora de envío</Label>
+              <Label>{resumen.horaEnvio}</Label>
               <Input type="time" value={local.resumen_diario_hora} onChange={(e) => setLocal({ ...local, resumen_diario_hora: e.target.value })} className="bg-background w-32 mt-1" />
             </div>
           )}
@@ -188,24 +178,24 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Integración n8n
+            {integracionN8N}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Webhook URL</Label>
+            <Label>{webhook.label}</Label>
             <div className="flex gap-2 mt-1">
-              <Input value={local.n8n_webhook_url} onChange={(e) => setLocal({ ...local, n8n_webhook_url: e.target.value })} placeholder="https://n8n.example.com/webhook" className="bg-background" />
+              <Input value={local.n8n_webhook_url} onChange={(e) => setLocal({ ...local, n8n_webhook_url: e.target.value })} placeholder={webhook.placeholder} className="bg-background" />
               <Button variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">URL del webhook de n8n para recibir eventos</p>
+            <p className="text-xs text-muted-foreground mt-1">{webhook.help}</p>
           </div>
         </CardContent>
       </Card>
 
       <Button onClick={() => onUpdate(local)} className="w-full">
         <Save className="h-4 w-4 mr-2" />
-        Guardar Configuración
+        {botones.guardar}
       </Button>
     </div>
   )
@@ -238,6 +228,8 @@ function EventosTab({ eventos }: { eventos: EventoNotificacion[] }) {
     return g
   }, [localEventos])
 
+  const { eventosGrupos } = NOTIFICACIONES_TEXTS
+
   return (
     <div className="space-y-6">
       {Object.entries(grupos).map(([tipo, evs]) => (
@@ -245,7 +237,7 @@ function EventosTab({ eventos }: { eventos: EventoNotificacion[] }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 capitalize">
               {getIcon(tipo)}
-              {tipo}s
+              {eventosGrupos[tipo as keyof typeof eventosGrupos] || `${tipo}s`}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -256,7 +248,10 @@ function EventosTab({ eventos }: { eventos: EventoNotificacion[] }) {
                     <p className="font-medium">{evento.nombre}</p>
                     <p className="text-sm text-muted-foreground">{evento.descripcion}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">{getCanalIcon(evento.canal_default)} {evento.canal_default}</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {getCanalIconComponent(evento.canal_default)}
+                        <span className="ml-1">{evento.canal_default}</span>
+                      </Badge>
                     </div>
                   </div>
                   <Button variant={evento.activo ? 'default' : 'outline'} size="sm" onClick={() => toggleEvento(evento.id)}>
@@ -278,7 +273,7 @@ function LogsTab({ logs }: { logs: LogNotificacion[] }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5" />
-          Historial de Notificaciones
+          {NOTIFICACIONES_TEXTS.logs}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -295,7 +290,7 @@ function LogsTab({ logs }: { logs: LogNotificacion[] }) {
               </div>
               <div className="text-right">
                 <Badge className={getEstadoNotificacionColor(log.estado)}>{log.estado}</Badge>
-                {log.error && <p className="text-xs text-red-400 mt-1">{log.error}</p>}
+                {log.error && <p className="text-xs text-destructive mt-1">{log.error}</p>}
               </div>
             </div>
           ))}
@@ -307,59 +302,86 @@ function LogsTab({ logs }: { logs: LogNotificacion[] }) {
 
 function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: PreferenciaNotificacion; onUpdate: (p: PreferenciaNotificacion) => void }) {
   const [local, setLocal] = useState(preferencia)
+  const { titulos, botones } = NOTIFICACIONES_TEXTS.preferencias
+
+  // Función para obtener el icono según el canal
+  const getCanalIcon = (value: string) => {
+    switch (value) {
+      case 'email': return Mail
+      case 'slack': return MessageSquare
+      case 'ninguno': return AlertCircle
+      default: return Bell
+    }
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Canales Preferidos</CardTitle>
+          <CardTitle>{titulos.canalesPreferidos}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            {[
-              { value: 'email', label: 'Solo Email', icon: Mail },
-              { value: 'slack', label: 'Solo Slack', icon: MessageSquare },
-              { value: 'ambos', label: 'Ambos', icon: Bell },
-              { value: 'ninguno', label: 'Solo urgentes', icon: AlertCircle },
-            ].map(opcion => (
-              <Button key={opcion.value} variant={local.canal_preferido === opcion.value ? 'default' : 'outline'} onClick={() => setLocal({ ...local, canal_preferido: opcion.value as any })} className="flex-1">
-                <opcion.icon className="h-4 w-4 mr-2" />
-                {opcion.label}
-              </Button>
-            ))}
+            {NOTIFICACIONES_TEXTS.canalesPreferencia.map(opcion => {
+              const IconComponent = getCanalIcon(opcion.value)
+              return (
+                <Button 
+                  key={opcion.value} 
+                  variant={local.canal_preferido === opcion.value ? 'default' : 'outline'} 
+                  onClick={() => setLocal({ ...local, canal_preferido: opcion.value as any })} 
+                  className="flex-1"
+                >
+                  <IconComponent className="h-4 w-4 mr-2" />
+                  {opcion.label}
+                </Button>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Eventos a Notificar</CardTitle>
+          <CardTitle>{titulos.eventosNotificar}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[
-            { key: 'notificaciones_tareas', label: 'Tareas asignadas', icon: CheckCircle },
-            { key: 'notificaciones_tickets', label: 'Tickets nuevos y comentarios', icon: Ticket },
-            { key: 'notificaciones_proyectos', label: 'Cambios en proyectos', icon: Building2 },
-            { key: 'notificaciones_reuniones', label: 'Reuniones y recordatorios', icon: Calendar },
-            { key: 'notificaciones_sla', label: 'Alertas de SLA', icon: AlertCircle },
-            { key: 'notificaciones_resumen_diario', label: 'Resumen diario', icon: Activity },
-          ].map(opcion => (
-            <div key={opcion.key} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <opcion.icon className="h-4 w-4 text-muted-foreground" />
-                <span>{opcion.label}</span>
+          {NOTIFICACIONES_TEXTS.eventosNotificar.map(opcion => {
+            // Obtener el icono según la clave
+            const getEventIcon = (key: string) => {
+              switch (key) {
+                case 'notificaciones_tareas': return CheckCircle
+                case 'notificaciones_tickets': return Ticket
+                case 'notificaciones_proyectos': return Building2
+                case 'notificaciones_reuniones': return Calendar
+                case 'notificaciones_sla': return AlertCircle
+                case 'notificaciones_resumen_diario': return Activity
+                default: return Bell
+              }
+            }
+            const IconComponent = getEventIcon(opcion.key)
+            
+            return (
+              <div key={opcion.key} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <IconComponent className="h-4 w-4 text-muted-foreground" />
+                  <span>{opcion.label}</span>
+                </div>
+                <Button 
+                  variant={local[opcion.key as keyof PreferenciaNotificacion] ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={() => setLocal({ ...local, [opcion.key]: !local[opcion.key as keyof PreferenciaNotificacion] })}
+                >
+                  {local[opcion.key as keyof PreferenciaNotificacion] ? 'Activado' : 'Desactivado'}
+                </Button>
               </div>
-              <Button variant={local[opcion.key as keyof PreferenciaNotificacion] ? 'default' : 'outline'} size="sm" onClick={() => setLocal({ ...local, [opcion.key]: !local[opcion.key as keyof PreferenciaNotificacion] })}>
-                {local[opcion.key as keyof PreferenciaNotificacion] ? 'Activado' : 'Desactivado'}
-              </Button>
-            </div>
-          ))}
+            )
+          })}
         </CardContent>
       </Card>
 
       <Button onClick={() => onUpdate(local)} className="w-full">
         <Save className="h-4 w-4 mr-2" />
-        Guardar Preferencias
+        {botones.guardar}
       </Button>
     </div>
   )
@@ -367,46 +389,76 @@ function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: Preferenci
 
 export default function NotificacionesPage() {
   const { user } = useAuth()
-  const [config, setConfig] = useState<ConfiguracionGlobal>(DEMO_CONFIG)
-  const [eventos, setEventos] = useState<EventoNotificacion[]>(EVENTOS_NOTIFICACION)
-  const [logs] = useState<LogNotificacion[]>(DEMO_LOGS)
-  const [preferencia, setPreferencia] = useState<PreferenciaNotificacion>(DEMO_PREFERENCIA)
-  const [vista, setVista] = useState<'config' | 'eventos' | 'logs' | 'mispreferencias'>('config')
+  
+  // Usar localStorage para persistir los datos
+  const [config, setConfig] = useLocalStorage<ConfiguracionGlobal>(NOTIFICACIONES_STORAGE_KEYS.config, CONFIG_INICIAL)
+  const [eventos, setEventos] = useLocalStorage<EventoNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.eventos, EVENTOS_NOTIFICACION)
+  const [logs, setLogs] = useLocalStorage<LogNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.config, [])
+  const [preferencia, setPreferencia] = useLocalStorage<PreferenciaNotificacion>(NOTIFICACIONES_STORAGE_KEYS.preferencia, PREFERENCIA_INICIAL)
+  const [vista, setVista] = useLocalStorage<'config' | 'eventos' | 'logs' | 'mispreferencias'>(NOTIFICACIONES_STORAGE_KEYS.vista, 'config')
 
   const isAdmin = user?.roles.includes('admin')
+  
+  // Agregar un log de prueba para demostrar funcionalidad
+  const handleAddLog = () => {
+    const nuevosLogs: LogNotificacion[] = [
+      ...logs,
+      {
+        id: Date.now().toString(),
+        evento_id: 'test',
+        evento_tipo: 'Notificación de prueba',
+        destinatario: 'test@apex.com',
+        canal: 'email',
+        estado: 'enviado',
+        fecha_envio: new Date().toISOString(),
+        intentos: 1
+      }
+    ]
+    setLogs(nuevosLogs)
+  }
 
   const stats = useMemo(() => ({
-    total: logs.length,
+    total: logs.length || 0,
     enviados: logs.filter(l => l.estado === 'enviado').length,
     fallidos: logs.filter(l => l.estado === 'fallido').length,
     pendientes: logs.filter(l => l.estado === 'pendiente').length,
   }), [logs])
 
+  const { titulos, tabs, stats: statsLabels, accesoDenegado } = NOTIFICACIONES_TEXTS
+
   return (
     <ModuleContainer>
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Bell className="h-8 w-8" />
-            Notificaciones
+            {titulos.titulo}
           </h1>
-          <p className="text-muted-foreground">Configuración de notificaciones y automatizaciones</p>
+          <p className="text-muted-foreground">{titulos.descripcion}</p>
         </div>
+        {logs.length === 0 && (
+          <Button variant="outline" onClick={handleAddLog}>
+            <Activity className="h-4 w-4 mr-2" />
+            Generar Log de Prueba
+          </Button>
+        )}
       </div>
 
+      {/* Stats */}
       <StatGrid cols={4}>
-        <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<Bell className="h-5 w-5" />} />
-        <MiniStat value={stats.enviados} label="Enviados" variant="success" showBorder accentColor="#10b981" icon={<Send className="h-5 w-5" />} />
-        <MiniStat value={stats.fallidos} label="Fallidos" variant="danger" showBorder accentColor="#ef4444" icon={<AlertTriangle className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label={statsLabels.total} variant="primary" showBorder accentColor="#06b6d4" icon={<Bell className="h-5 w-5" />} />
+        <MiniStat value={stats.enviados} label={statsLabels.enviados} variant="success" showBorder accentColor="#10b981" icon={<Send className="h-5 w-5" />} />
+        <MiniStat value={stats.fallidos} label={statsLabels.fallidos} variant="danger" showBorder accentColor="#ef4444" icon={<AlertTriangle className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label={statsLabels.pendientes} variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
       </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
         <TabsList>
-          <TabsTrigger value="config"><Settings className="h-4 w-4 mr-2" />Configuración</TabsTrigger>
-          <TabsTrigger value="eventos"><Bell className="h-4 w-4 mr-2" />Eventos</TabsTrigger>
-          <TabsTrigger value="logs"><Activity className="h-4 w-4 mr-2" />Logs</TabsTrigger>
-          <TabsTrigger value="mispreferencias"><User className="h-4 w-4 mr-2" />Mis Preferencias</TabsTrigger>
+          <TabsTrigger value="config"><Settings className="h-4 w-4 mr-2" />{tabs.configuracion}</TabsTrigger>
+          <TabsTrigger value="eventos"><Bell className="h-4 w-4 mr-2" />{tabs.eventos}</TabsTrigger>
+          <TabsTrigger value="logs"><Activity className="h-4 w-4 mr-2" />{tabs.logs}</TabsTrigger>
+          <TabsTrigger value="mispreferencias"><User className="h-4 w-4 mr-2" />{tabs.misPreferencias}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="config">
@@ -415,7 +467,7 @@ export default function NotificacionesPage() {
           ) : (
             <AccessDeniedCard
               icon={AlertCircle}
-              description="Solo los administradores pueden configurar las notificaciones globales."
+              description={accesoDenegado.descripcion}
             />
           )}
         </TabsContent>

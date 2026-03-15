@@ -33,6 +33,12 @@ export const STORAGE_KEYS = {
   proveedores: 'apex_proveedores_datos',
   cotizaciones: 'apex_cotizaciones_datos',
   comprasVista: 'apex_compras_vista',
+  
+  // Notificaciones
+  notificacionesConfig: 'apex_notificaciones_config',
+  notificacionesPreferencia: 'apex_notificaciones_preferencia',
+  notificacionesEventos: 'apex_notificaciones_eventos',
+  notificacionesVista: 'apex_notificaciones_vista',
 } as const
 
 // ============================================

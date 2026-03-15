@@ -7,8 +7,10 @@ interface ModuleContainerProps {
 
 export function ModuleContainer({ children, className }: ModuleContainerProps) {
   return (
-    <div className={cn("space-y-6 w-full px-6 py-6 rounded-xl bg-slate-900/50", className)}>
-      {children}
+    <div className="h-[calc(100vh-8rem)] w-full overflow-x-hidden px-6 py-6">
+      <div className={cn("h-full w-full overflow-y-auto space-y-6 rounded-xl bg-slate-900/50 p-6", className)}>
+        {children}
+      </div>
     </div>
   )
 }
