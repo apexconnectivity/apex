@@ -194,9 +194,26 @@ export default function ProyectosPage() {
 
   const proyectosPorFase = useMemo(() => {
     const r: Record<FaseProyecto, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
-    proyectos.filter(p => p.estado === 'activo').forEach(p => { if (r[p.fase_actual]) r[p.fase_actual].push(p) })
+
+    // Filtrar proyectos según el rol del usuario
+    const proyectosFiltrados = proyectos.filter(p => {
+      if (p.estado !== 'activo') return false
+
+      // Admin ve todos los proyectos
+      if (isAdmin) return true
+
+      // Comercial solo ve fases 1-3
+      if (isComercial) return p.fase_actual <= 3
+
+      // Técnico solo ve fases 4-5
+      if (isTecnico) return p.fase_actual >= 4
+
+      return true
+    })
+
+    proyectosFiltrados.forEach(p => { if (r[p.fase_actual]) r[p.fase_actual].push(p) })
     return r
-  }, [proyectos])
+  }, [proyectos, isAdmin, isComercial, isTecnico])
 
   const proyectosCerrados = useMemo(() => proyectos.filter(p => p.estado === 'cerrado'), [proyectos])
 
@@ -236,6 +253,18 @@ export default function ProyectosPage() {
 
   const handleFase = (id: string, fase: number) => {
     const proyecto = proyectos.find(p => p.id === id)
+    if (!proyecto) return
+
+    // Verificar permisos de movimiento de fases según rol
+    if (isComercial && fase > 3) {
+      alert('Como comercial solo puedes mover proyectos hasta la fase 3 (Propuesta)')
+      return
+    }
+    if (isTecnico && fase < 4) {
+      alert('Como técnico solo puedes mover proyectos a partir de la fase 4 (Implementación)')
+      return
+    }
+
     const faseAnterior = proyecto?.fase_actual
     const faseAnteriorNombre = fasesEditando.find(f => f.id === faseAnterior)?.nombre
     const faseNuevaNombre = fasesEditando.find(f => f.id === fase)?.nombre
