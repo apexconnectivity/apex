@@ -1,4 +1,5 @@
 import { Badge, BadgeProps } from '@/components/ui/badge'
+import { normalizeKey, getTaskStatusColor, getPriorityColor, getCategoryColor } from '@/lib/colors'
 
 type StatusType =
   | 'estado'
@@ -61,10 +62,10 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
   tecnica: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Técnica' },
 
   // Estados de prioridad
-  urgente: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Urgente' },
-  alta: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Alta Prioridad' },
-  media: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Media Prioridad' },
-  baja: { color: 'text-green-400', bg: 'bg-green-500/15', label: 'Baja Prioridad' },
+  urgente: { color: 'text-[hsl(var(--error))]', bg: 'bg-[hsl(var(--error))/0.15]', label: 'Urgente' },
+  alta: { color: 'text-orange-400', bg: 'bg-orange-500/15', label: 'Alta Prioridad' },
+  media: { color: 'text-[hsl(var(--warning))]', bg: 'bg-[hsl(var(--warning))/0.15]', label: 'Media Prioridad' },
+  baja: { color: 'text-[hsl(var(--info))]', bg: 'bg-[hsl(var(--info))/0.15]', label: 'Baja Prioridad' },
 
   // Categorías
   comercial: { color: 'text-violet-400', bg: 'bg-violet-500/15', label: 'Comercial' },
@@ -112,63 +113,6 @@ const normalizeStatus = (status: string): string => {
     .replace(/\s+/g, '_')
 }
 
-// Colores legacy para backwards compatibility
-const LEGACY_COLORS: Record<string, string> = {
-  'Activo': 'bg-emerald-500/15 text-emerald-400',
-  'Inactivo': 'bg-slate-500/15 text-slate-400',
-  'Pendiente': 'bg-amber-500/15 text-amber-400',
-  'En progreso': 'bg-blue-500/15 text-blue-400',
-  'Completado': 'bg-emerald-500/15 text-emerald-400',
-  'Completada': 'bg-emerald-500/15 text-emerald-400',
-  'Resuelto': 'bg-emerald-500/15 text-emerald-400',
-  'Cerrado': 'bg-slate-500/15 text-slate-400',
-  'Cancelado': 'bg-red-500/15 text-red-400',
-  'Cancelada': 'bg-red-500/15 text-red-400',
-  'Abierto': 'bg-cyan-500/15 text-cyan-400',
-  'Bloqueada': 'bg-[hsl(var(--error))/0.15] text-[hsl(var(--error))]',
-  'Esperando cliente': 'bg-amber-500/15 text-amber-400',
-  'Borrador': 'bg-slate-500/15 text-slate-400',
-  'Pendiente aprobación': 'bg-amber-500/15 text-amber-400',
-  'Pendiente de aprobación': 'bg-amber-500/15 text-amber-400',
-  'Aprobada': 'bg-blue-500/15 text-blue-400',
-  'Enviada': 'bg-violet-500/15 text-violet-400',
-  'Recibida parcial': 'bg-orange-500/15 text-orange-400',
-  'Recibida completa': 'bg-emerald-500/15 text-emerald-400',
-  'Confirmada': 'bg-emerald-500/15 text-emerald-400',
-  'Tentativa': 'bg-amber-500/15 text-amber-400',
-  // Prioridades legacy
-  'Urgente': 'bg-red-500/15 text-red-400',
-  'Alta': 'bg-red-500/15 text-red-400',
-  'Media': 'bg-amber-500/15 text-amber-400',
-  'Baja': 'bg-green-500/15 text-green-400',
-  // Categorías legacy
-  'Técnica': 'bg-purple-500/15 text-purple-400',
-  'Comercial': 'bg-violet-500/15 text-violet-400',
-  'Administrativa': 'bg-amber-500/15 text-amber-400',
-  'General': 'bg-slate-500/15 text-slate-400',
-  'Compras': 'bg-emerald-500/15 text-emerald-400',
-  'Soporte técnico': 'bg-purple-500/15 text-purple-400',
-  'Facturación': 'bg-amber-500/15 text-amber-400',
-  'Consulta comercial': 'bg-violet-500/15 text-violet-400',
-  'Consulta': 'bg-slate-500/15 text-slate-400',
-  'seguridad': 'bg-red-500/15 text-red-400',
-  'cloud': 'bg-blue-500/15 text-blue-400',
-  'infra': 'bg-amber-500/15 text-amber-400',
-  'auditoría': 'bg-violet-500/15 text-violet-400',
-  // Tipos legacy
-  'Cliente': 'bg-green-500/15 text-green-400',
-  'Proveedor': 'bg-blue-500/15 text-blue-400',
-  'Prospecto': 'bg-amber-500/15 text-amber-400',
-  'Socio': 'bg-purple-500/15 text-purple-400',
-  'Premium': 'bg-amber-500/15 text-amber-400',
-  'Básico': 'bg-slate-500/15 text-slate-400',
-  '24x7': 'bg-red-500/15 text-red-400',
-  'soporte': 'bg-cyan-500/15 text-cyan-400',
-  'portal': 'bg-violet-500/15 text-violet-400',
-  'email': 'bg-blue-500/15 text-blue-400',
-  'telefono': 'bg-emerald-500/15 text-emerald-400',
-}
-
 export function StatusBadge({
   status,
   type = 'estado',
@@ -177,33 +121,43 @@ export function StatusBadge({
   ...props
 }: StatusBadgeProps) {
 
-  const getColorConfig = (): { color: string; bg: string; label: string; useOriginal: boolean } => {
+  const getColorConfig = (): { color: string; bg: string; label: string } => {
     if (customColor) {
       return {
         color: customColor.replace('bg-', 'text-'),
         bg: customColor,
         label: status,
-        useOriginal: true
       }
     }
 
-    // Primero intentar con el status normalizado
+    // Usar funciones centralizadas para tipos específicos de tareas
+    if (type === 'estado') {
+      const taskColor = getTaskStatusColor(status)
+      if (taskColor.color !== 'text-slate-400') {
+        return taskColor
+      }
+    }
+
+    if (type === 'prioridad') {
+      const priorityColor = getPriorityColor(status)
+      if (priorityColor.color !== 'text-slate-400') {
+        return priorityColor
+      }
+    }
+
+    if (type === 'categoria') {
+      const categoryColor = getCategoryColor(status)
+      if (categoryColor.color !== 'text-slate-400') {
+        return categoryColor
+      }
+    }
+
+    // Buscar en el config existente
     const normalizedKey = normalizeStatus(status)
     const config = statusConfig[normalizedKey]
 
     if (config) {
-      return { ...config, useOriginal: false }
-    }
-
-    // Backwards compatibility: buscar en colores legacy
-    const legacyColor = LEGACY_COLORS[status]
-    if (legacyColor) {
-      return {
-        color: legacyColor.split(' ')[1],
-        bg: legacyColor.split(' ')[0],
-        label: status,
-        useOriginal: true
-      }
+      return config
     }
 
     // Fallback para estados no reconocidos
@@ -211,7 +165,6 @@ export function StatusBadge({
       color: 'text-slate-400',
       bg: 'bg-slate-500/15',
       label: status,
-      useOriginal: true
     }
   }
 

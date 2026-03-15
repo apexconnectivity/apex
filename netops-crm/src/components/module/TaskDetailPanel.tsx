@@ -72,17 +72,6 @@ export function TaskDetailPanel({
     })
   }
 
-  // Get priority color
-  const getPrioridadColor = (prioridad: PrioridadTarea) => {
-    switch (prioridad) {
-      case 'Urgente': return 'text-red-400'
-      case 'Alta': return 'text-orange-400'
-      case 'Media': return 'text-amber-400'
-      case 'Baja': return 'text-blue-400'
-      default: return 'text-muted-foreground'
-    }
-  }
-
   // Get estado icon
   const getEstadoIcon = (estado: EstadoTarea) => {
     switch (estado) {
@@ -313,9 +302,7 @@ export function TaskDetailPanel({
                         <AlertCircle className="h-3.5 w-3.5" />
                         <span className="text-xs">Prioridad</span>
                       </div>
-                      <span className={`text-sm font-medium ${getPrioridadColor(tarea.prioridad)}`}>
-                        {tarea.prioridad}
-                      </span>
+                      <StatusBadge status={tarea.prioridad} type="prioridad" />
                     </div>
                   </div>
 
