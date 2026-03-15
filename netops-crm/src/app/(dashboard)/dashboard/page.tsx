@@ -1,6 +1,7 @@
 "use client"
 
 import { useAuth } from '@/contexts/auth-context'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 import { DashboardStats, RecentActivity, UpcomingTasks } from "@/components/dashboard-stats"
 import { ProjectPipeline } from "@/components/pipeline"
 import { WelcomeHeader } from "@/components/welcome-header"
@@ -8,9 +9,33 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MiniStat } from "@/components/ui/mini-stat"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
 import Link from "next/link"
+import type { Empresa } from "@/types/crm"
+import type { Proyecto } from "@/types/proyectos"
+import type { Tarea } from "@/types/tareas"
+import type { Ticket } from "@/types/soporte"
+
+// Keys de localStorage
+const STORAGE_KEYS = {
+  empresas: 'apex_crm_datos',
+  proyectos: 'apex_proyectos_datos',
+  tareas: 'apex_tareas_datos',
+  tickets: 'apex_soporte_datos',
+} as const
+
+// Valores iniciales vacíos
+const inicialEmpresas: Empresa[] = []
+const inicialProyectos: Proyecto[] = []
+const inicialTareas: Tarea[] = []
+const inicialTickets: Ticket[] = []
 
 export default function DashboardPage() {
   const { user, canAccessModule, isInternalUser } = useAuth()
+
+  // Cargar datos desde localStorage
+  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, inicialEmpresas)
+  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, inicialProyectos)
+  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, inicialTareas)
+  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, inicialTickets)
 
   // Determinar qué mostrar según el rol
   const isAdmin = user?.roles.includes('admin')
@@ -28,8 +53,8 @@ export default function DashboardPage() {
 
         {/* Portal del Cliente - Vista simplificada */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-          <MiniStat 
-            value={1} 
+          <MiniStat
+            value={1}
             label="Proyecto Activo"
             valueColor="text-cyan-400"
             icon={<FolderKanban className="h-6 w-6 text-cyan-400" />}
@@ -37,24 +62,24 @@ export default function DashboardPage() {
             size="md"
           />
 
-          <MiniStat 
-            value={3} 
+          <MiniStat
+            value={3}
             label="Tareas Pendientes"
             valueColor="text-emerald-400"
             icon={<CheckSquare className="h-6 w-6 text-emerald-400" />}
             size="md"
           />
 
-          <MiniStat 
-            value={2} 
+          <MiniStat
+            value={2}
             label="Tickets Abiertos"
             valueColor="text-amber-400"
             icon={<Headphones className="h-6 w-6 text-amber-400" />}
             size="md"
           />
 
-          <MiniStat 
-            value={5} 
+          <MiniStat
+            value={5}
             label="Documentos"
             valueColor="text-violet-400"
             icon={<Building2 className="h-6 w-6 text-violet-400" />}
@@ -63,8 +88,16 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentActivity />
-          <UpcomingTasks />
+          <RecentActivity
+            empresas={empresas}
+            proyectos={proyectos}
+            tareas={tareas}
+            tickets={tickets}
+          />
+          <UpcomingTasks
+            tareas={tareas}
+            proyectos={proyectos}
+          />
         </div>
       </div>
     )
@@ -132,8 +165,18 @@ export default function DashboardPage() {
 
       {/* Bottom section - filtered by role */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivity />
-        {(isAdmin || isTecnico) && <UpcomingTasks />}
+        <RecentActivity
+          empresas={empresas}
+          proyectos={proyectos}
+          tareas={tareas}
+          tickets={tickets}
+        />
+        {(isAdmin || isTecnico) && (
+          <UpcomingTasks
+            tareas={tareas}
+            proyectos={proyectos}
+          />
+        )}
       </div>
     </div>
   )

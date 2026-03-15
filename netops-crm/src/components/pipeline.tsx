@@ -2,10 +2,13 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { useLocalStorage } from "@/lib/useLocalStorage"
+import type { Proyecto } from "@/types/proyectos"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   FolderKanban,
   MoreHorizontal,
@@ -16,6 +19,7 @@ import {
   GripVertical,
 } from "lucide-react"
 
+// Tipos locales para el componente
 interface Project {
   id: string
   name: string
@@ -38,109 +42,64 @@ interface Phase {
   projects: Project[]
 }
 
-const phases: Phase[] = [
-  {
-    id: 1,
-    name: "Prospecto",
-    color: "#6b7280",
-    projects: [
-      {
-        id: "1",
-        name: "Evaluación Redes Hospital Central",
-        client: "Hospital Central",
-        phase: 1,
-        progress: 20,
-        dueDate: "15/04/2026",
-        value: "$8,500",
-        assignee: { name: "Juan Pérez", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" },
-        tags: ["Nuevo", "Urgente"],
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Diagnóstico",
-    color: "#3b82f6",
-    projects: [
-      {
-        id: "2",
-        name: "Migración Cloud Tech",
-        client: "Cloud Tech Solutions",
-        phase: 2,
-        progress: 45,
-        dueDate: "20/04/2026",
-        value: "$15,000",
-        assignee: { name: "María García", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-        tags: ["En revisión"],
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Propuesta",
-    color: "#eab308",
-    projects: [
-      {
-        id: "3",
-        name: "Implementación Firewall Corp",
-        client: "Corporativo Norte",
-        phase: 3,
-        progress: 70,
-        dueDate: "25/04/2026",
-        value: "$22,000",
-        assignee: { name: "Carlos Rodríguez", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" },
-        tags: ["Pendiente firma"],
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: "Implementación",
-    color: "#10b981",
-    projects: [
-      {
-        id: "4",
-        name: "Upgrade Switches Retail",
-        client: "RetailMax",
-        phase: 4,
-        progress: 55,
-        dueDate: "10/05/2026",
-        value: "$12,500",
-        assignee: { name: "Laura Martínez", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" },
-        tags: ["En curso"],
-      },
-      {
-        id: "5",
-        name: "Configuración VPN Filial",
-        client: "Grupo Industrial",
-        phase: 4,
-        progress: 30,
-        dueDate: "15/05/2026",
-        value: "$6,800",
-        assignee: { name: "Juan Pérez", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" },
-        tags: [],
-      },
-    ],
-  },
-  {
-    id: 5,
-    name: "Cierre",
-    color: "#8b5cf6",
-    projects: [
-      {
-        id: "6",
-        name: "Auditoría Seguridad Tech",
-        client: "TechCorp",
-        phase: 5,
-        progress: 90,
-        dueDate: "05/04/2026",
-        value: "$9,200",
-        assignee: { name: "Carlos Rodríguez", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" },
-        tags: ["Por entregar"],
-      },
-    ],
-  },
-]
+// Funciones helper para las fases
+function getFaseName(faseId: number): string {
+  const faseNames: Record<number, string> = {
+    1: "Prospecto",
+    2: "Diagnóstico",
+    3: "Propuesta",
+    4: "Implementación",
+    5: "Cierre",
+  }
+  return faseNames[faseId] || "Desconocido"
+}
+
+function getFaseColor(faseId: number): string {
+  const faseColors: Record<number, string> = {
+    1: "#6b7280",
+    2: "#3b82f6",
+    3: "#eab308",
+    4: "#10b981",
+    5: "#8b5cf6",
+  }
+  return faseColors[faseId] || "#6b7280"
+}
+
+// Función para convertir Proyecto a Project (formato interno del componente)
+function mapProyectoToProject(proyecto: Proyecto): Project {
+  // Formatear fecha
+  const fechaFormateada = proyecto.fecha_estimada_fin
+    ? new Date(proyecto.fecha_estimada_fin).toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    })
+    : "Sin fecha"
+
+  // Formatear monto
+  const montoFormateado = proyecto.monto_estimado
+    ? new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: proyecto.moneda || "MXN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(proyecto.monto_estimado)
+    : "Sin monto"
+
+  return {
+    id: proyecto.id,
+    name: proyecto.nombre,
+    client: proyecto.cliente_nombre || "Sin cliente",
+    phase: proyecto.fase_actual,
+    progress: proyecto.probabilidad_cierre || 0,
+    dueDate: fechaFormateada,
+    value: montoFormateado,
+    assignee: {
+      name: proyecto.responsable_nombre || "Sin asignar",
+    },
+    tags: proyecto.tags || [],
+  }
+}
 
 function ProjectCard({ project }: { project: Project }) {
   return (
@@ -222,20 +181,41 @@ interface ProjectPipelineProps {
   showAssignedOnly?: boolean
 }
 
-export function ProjectPipeline({ 
-  showAllPhases = true, 
-  showCommercialPhases = false, 
-  showAssignedOnly = false 
+export function ProjectPipeline({
+  showAllPhases = true,
+  showCommercialPhases = false,
+  showAssignedOnly = false
 }: ProjectPipelineProps) {
+  // Usar localStorage para obtener los proyectos
+  const [proyectos, setProyectos, isLoaded] = useLocalStorage<Proyecto[]>(
+    "apex_proyectos_datos",
+    []
+  )
+
+  // Mapear proyectos al formato interno
+  const mappedProjects: Project[] = React.useMemo(() => {
+    return proyectos.map(mapProyectoToProject)
+  }, [proyectos])
+
+  // Crear estructura de fases basada en los proyectos
+  const phases: Phase[] = React.useMemo(() => {
+    return [1, 2, 3, 4, 5].map(faseId => ({
+      id: faseId,
+      name: getFaseName(faseId),
+      color: getFaseColor(faseId),
+      projects: mappedProjects.filter(p => p.phase === faseId)
+    }))
+  }, [mappedProjects])
+
   // Filtrar fases según permisos
   const getVisiblePhases = () => {
     if (showAllPhases) return phases
-    
+
     if (showCommercialPhases) {
       // Solo fases 1-3 para comerciales
       return phases.filter(p => p.id <= 3)
     }
-    
+
     // Para técnicos: solo fases 4-5 y solo proyectos asignados
     return phases.filter(p => p.id >= 4)
   }
@@ -248,15 +228,47 @@ export function ProjectPipeline({
     return "Proyectos"
   }
 
+  // Estado de carga
+  if (!isLoaded) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          {showAllPhases && <Skeleton className="h-10 w-40" />}
+        </div>
+
+        <div className="grid gap-4 overflow-x-auto pb-4">
+          {[1, 2, 3, 4, 5].map((faseId) => (
+            <div key={faseId} className="min-w-[280px]">
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <Skeleton className="h-3 w-3 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-8 ml-auto" />
+              </div>
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <Skeleton key={i} className="h-40 w-full" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{getTitle()}</h2>
           <p className="text-muted-foreground">
-            {showAssignedOnly 
-              ? "Proyectos donde participas" 
-              : showCommercialPhases 
+            {showAssignedOnly
+              ? "Proyectos donde participas"
+              : showCommercialPhases
                 ? "Fases comerciales (Prospecto - Propuesta)"
                 : "Pipeline de proyectos en las 5 fases"
             }
@@ -270,9 +282,8 @@ export function ProjectPipeline({
         )}
       </div>
 
-      <div className={`grid gap-4 overflow-x-auto pb-4 ${
-        showCommercialPhases || showAssignedOnly ? 'grid-cols-3' : 'grid-cols-5'
-      }`}>
+      <div className={`grid gap-4 overflow-x-auto pb-4 ${showCommercialPhases || showAssignedOnly ? 'grid-cols-3' : 'grid-cols-5'
+        }`}>
         {visiblePhases.map((phase) => (
           <div key={phase.id} className="min-w-[280px]">
             {/* Phase header */}
