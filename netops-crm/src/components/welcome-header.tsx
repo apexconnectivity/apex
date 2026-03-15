@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/auth-context"
 import { useLocalStorage } from "@/lib/useLocalStorage"
+import { STORAGE_KEYS, INITIAL_DATA } from "@/constants/storage"
 import { MiniStat } from "@/components/ui/mini-stat"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FolderKanban, CheckSquare, Headphones } from "lucide-react"
@@ -12,10 +13,10 @@ import type { Ticket } from "@/types/soporte"
 export function WelcomeHeader() {
   const { user } = useAuth()
 
-  // Keys de localStorage
-  const [proyectosData] = useLocalStorage<Proyecto[]>('apex_proyectos_datos', [])
-  const [tareasData] = useLocalStorage<Tarea[]>('apex_tareas_datos', [])
-  const [soporteData] = useLocalStorage<Ticket[]>('apex_soporte_datos', [])
+  // Cargar datos desde localStorage
+  const [proyectosData] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, INITIAL_DATA.proyectos)
+  const [tareasData] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, INITIAL_DATA.tareas)
+  const [soporteData] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, INITIAL_DATA.tickets)
 
   // Contar proyectos activos (estado === 'activo')
   const proyectosActivos = proyectosData.filter(p => p.estado === 'activo').length

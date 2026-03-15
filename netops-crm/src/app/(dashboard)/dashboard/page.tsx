@@ -10,33 +10,20 @@ import { AccessDeniedCard } from "@/components/ui/access-denied-card"
 import { MiniStat } from "@/components/ui/mini-stat"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
 import Link from "next/link"
+import { STORAGE_KEYS, INITIAL_DATA } from '@/constants/storage'
 import type { Empresa } from "@/types/crm"
 import type { Proyecto } from "@/types/proyectos"
 import type { Tarea } from "@/types/tareas"
 import type { Ticket } from "@/types/soporte"
 
-// Keys de localStorage
-const STORAGE_KEYS = {
-  empresas: 'apex_crm_datos',
-  proyectos: 'apex_proyectos_datos',
-  tareas: 'apex_tareas_datos',
-  tickets: 'apex_soporte_datos',
-} as const
-
-// Valores iniciales vacíos
-const inicialEmpresas: Empresa[] = []
-const inicialProyectos: Proyecto[] = []
-const inicialTareas: Tarea[] = []
-const inicialTickets: Ticket[] = []
-
 export default function DashboardPage() {
   const { user, canAccessModule, isInternalUser } = useAuth()
 
   // Cargar datos desde localStorage
-  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, inicialEmpresas)
-  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, inicialProyectos)
-  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, inicialTareas)
-  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, inicialTickets)
+  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, INITIAL_DATA.empresas)
+  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, INITIAL_DATA.proyectos)
+  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, INITIAL_DATA.tareas)
+  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, INITIAL_DATA.tickets)
 
   // Determinar qué mostrar según el rol
   const isAdmin = user?.roles.includes('admin')

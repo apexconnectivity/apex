@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { useLocalStorage } from "@/lib/useLocalStorage"
+import { STORAGE_KEYS, INITIAL_DATA } from "@/constants/storage"
 import type { Proyecto } from "@/types/proyectos"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -188,8 +189,8 @@ export function ProjectPipeline({
 }: ProjectPipelineProps) {
   // Usar localStorage para obtener los proyectos
   const [proyectos, setProyectos, isLoaded] = useLocalStorage<Proyecto[]>(
-    "apex_proyectos_datos",
-    []
+    STORAGE_KEYS.proyectos,
+    INITIAL_DATA.proyectos
   )
 
   // Mapear proyectos al formato interno

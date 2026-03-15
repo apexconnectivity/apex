@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.4  
+**Versión:** 1.5  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo de soporte implementado con localStorage
+**Estado:** En desarrollo - Módulos optimizados con constantes centralizadas
 
 ---
 
@@ -168,7 +168,10 @@
 | Tickets | `apex_soporte_datos` | ✅ Implementado |
 | Contratos Soporte | `apex_contratos_soporte` | ✅ Implementado |
 | Comentarios | `apex_soporte_comentarios` | ✅ Implementado |
+| Vista Soporte | `apex_soporte_vista` | ✅ Implementado |
 | Usuario sesión | `apex_user` | ✅ Implementado |
+
+**Constantes centralizadas:** Todas las keys están definidas en `src/constants/storage.ts`
 
 ### Pendiente: Supabase
 
@@ -280,12 +283,14 @@ netops-crm/
 │   │   ├── portal.ts
 │   │   ├── auth.ts
 │   │   ├── archivado.ts
-│   │   ├── archivos.ts
+│   │   ├── archivos.tsx      # Tipos y funciones para archivos (soporta JSX)
 │   │   ├── notificaciones.ts
 │   │   └── compartidos.ts
 │   │
 │   └── constants/             # Constantes
-│       └── soporte.ts         # Textos y keys localStorage
+│       ├── soporte.ts         # Textos y keys localStorage (módulo soporte)
+│       ├── storage.ts         # Keys y valores iniciales centralizados (localStorage)
+│       └── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
@@ -360,6 +365,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.2 | 2026-03-07 | Instalado shadcn/ui + @dnd-kit. Rename next.config.ts → .mjs |
 | 1.3 | 2026-03-07 | Migración completa de UI a shadcn/ui |
 | 1.4 | 2026-03-15 | Módulo soporte implementado, localStorage, corrección de estilos |
+| 1.5 | 2026-03-15 | Constantes centralizadas para archivos y storage, mejoras de consistencia UI |
 
 ---
 

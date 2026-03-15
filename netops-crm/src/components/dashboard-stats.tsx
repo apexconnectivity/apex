@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { StatCard } from "@/components/ui/stat-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLocalStorage } from "@/lib/useLocalStorage"
+import { STORAGE_KEYS, INITIAL_DATA } from "@/constants/storage"
 import type { Empresa } from "@/types/crm"
 import type { Proyecto } from "@/types/proyectos"
 import type { Tarea } from "@/types/tareas"
@@ -16,20 +17,6 @@ import {
   CheckSquare,
   Headphones,
 } from "lucide-react"
-
-// Keys de localStorage
-const STORAGE_KEYS = {
-  empresas: 'apex_crm_datos',
-  proyectos: 'apex_proyectos_datos',
-  tareas: 'apex_tareas_datos',
-  tickets: 'apex_soporte_datos',
-} as const
-
-// Valores iniciales vacíos para cada tipo
-const inicialEmpresas: Empresa[] = []
-const inicialProyectos: Proyecto[] = []
-const inicialTareas: Tarea[] = []
-const inicialTickets: Ticket[] = []
 
 function StatsSkeleton() {
   return (
@@ -50,10 +37,10 @@ function StatsSkeleton() {
 
 export function DashboardStats() {
   // Cargar datos desde localStorage
-  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, inicialEmpresas)
-  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, inicialProyectos)
-  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, inicialTareas)
-  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, inicialTickets)
+  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, INITIAL_DATA.empresas)
+  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, INITIAL_DATA.proyectos)
+  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, INITIAL_DATA.tareas)
+  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, INITIAL_DATA.tickets)
 
   // Contar clientes activos: empresas donde tipo_entidad === 'cliente'
   const clientesActivos = React.useMemo(() => {
