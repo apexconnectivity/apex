@@ -38,7 +38,7 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 
   // Estados de tickets
   abierto: { color: 'text-cyan-400', bg: 'bg-cyan-500/15', label: 'Abierto' },
-  bloqueada: { color: 'text-orange-400', bg: 'bg-orange-500/15', label: 'Bloqueada' },
+  bloqueada: { color: 'text-[hsl(var(--error))]', bg: 'bg-[hsl(var(--error))/0.15]', label: 'Bloqueada' },
   nuevo: { color: 'text-cyan-400', bg: 'bg-cyan-500/15', label: 'Nuevo' },
 
   // Estados inactivos
@@ -125,7 +125,7 @@ const LEGACY_COLORS: Record<string, string> = {
   'Cancelado': 'bg-red-500/15 text-red-400',
   'Cancelada': 'bg-red-500/15 text-red-400',
   'Abierto': 'bg-cyan-500/15 text-cyan-400',
-  'Bloqueada': 'bg-orange-500/15 text-orange-400',
+  'Bloqueada': 'bg-[hsl(var(--error))/0.15] text-[hsl(var(--error))]',
   'Esperando cliente': 'bg-amber-500/15 text-amber-400',
   'Borrador': 'bg-slate-500/15 text-slate-400',
   'Pendiente aprobación': 'bg-amber-500/15 text-amber-400',

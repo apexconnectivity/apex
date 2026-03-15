@@ -86,13 +86,13 @@ export function TaskDetailPanel({
   const getEstadoIcon = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+        return <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))] flex-shrink-0" />
       case 'En progreso':
-        return <Clock className="h-5 w-5 text-blue-400 flex-shrink-0 animate-pulse" />
+        return <Clock className="h-5 w-5 text-[hsl(var(--info))] flex-shrink-0 animate-pulse" />
       case 'Bloqueada':
-        return <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+        return <AlertCircle className="h-5 w-5 text-[hsl(var(--error))] flex-shrink-0" />
       default:
-        return <Circle className="h-5 w-5 text-slate-500 flex-shrink-0" />
+        return <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
     }
   }
 
@@ -102,11 +102,11 @@ export function TaskDetailPanel({
       case 'Completada':
         return 'line-through text-muted-foreground'
       case 'En progreso':
-        return 'text-blue-300'
+        return 'text-[hsl(var(--info))]'
       case 'Bloqueada':
-        return 'text-red-300'
+        return 'text-[hsl(var(--error))]'
       default:
-        return 'text-slate-300'
+        return 'text-muted-foreground'
     }
   }
 
@@ -169,7 +169,7 @@ export function TaskDetailPanel({
                   <div>
                     <Label className="text-slate-400 text-xs">Nombre</Label>
                     <Input
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-input border-border text-foreground"
                       value={editedTarea.nombre}
                       onChange={(e) => setEditedTarea({ ...editedTarea, nombre: e.target.value })}
                     />
@@ -177,7 +177,7 @@ export function TaskDetailPanel({
                   <div>
                     <Label className="text-slate-400 text-xs">Descripción</Label>
                     <Textarea
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-input border-border text-foreground"
                       value={editedTarea.descripcion || ''}
                       onChange={(e) => setEditedTarea({ ...editedTarea, descripcion: e.target.value })}
                       rows={3}
@@ -187,7 +187,7 @@ export function TaskDetailPanel({
                     <div>
                       <Label className="text-slate-400 text-xs">Categoría</Label>
                       <Select value={editedTarea.categoria} onValueChange={(v) => setEditedTarea({ ...editedTarea, categoria: v as CategoriaTarea })}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
@@ -196,7 +196,7 @@ export function TaskDetailPanel({
                     <div>
                       <Label className="text-slate-400 text-xs">Prioridad</Label>
                       <Select value={editedTarea.prioridad} onValueChange={(v) => setEditedTarea({ ...editedTarea, prioridad: v as PrioridadTarea })}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -205,7 +205,7 @@ export function TaskDetailPanel({
                     <div>
                       <Label className="text-slate-400 text-xs">Estado</Label>
                       <Select value={editedTarea.estado} onValueChange={(v) => setEditedTarea({ ...editedTarea, estado: v as EstadoTarea })}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                         </SelectContent>
@@ -214,7 +214,7 @@ export function TaskDetailPanel({
                     <div>
                       <Label className="text-slate-400 text-xs">Responsable</Label>
                       <Select value={editedTarea.responsable_id || ''} onValueChange={(v) => setEditedTarea({ ...editedTarea, responsable_id: v, responsable_nombre: usuarios.find(u => u.id === v)?.nombre })}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                        <SelectTrigger className="bg-input border-border text-foreground"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                         <SelectContent>
                           {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
                         </SelectContent>
@@ -224,7 +224,7 @@ export function TaskDetailPanel({
                       <Label className="text-slate-400 text-xs">Fecha Vencimiento</Label>
                       <Input
                         type="date"
-                        className="bg-slate-700/50 border-slate-600 text-white"
+                        className="bg-input border-border text-foreground"
                         value={editedTarea.fecha_vencimiento || ''}
                         onChange={(e) => setEditedTarea({ ...editedTarea, fecha_vencimiento: e.target.value })}
                       />
@@ -235,7 +235,7 @@ export function TaskDetailPanel({
                         const p = proyectos.find(pr => pr.id === v)
                         setEditedTarea({ ...editedTarea, proyecto_id: v, proyecto_nombre: p?.nombre || '' })
                       }}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
                         </SelectContent>
@@ -388,7 +388,7 @@ export function TaskDetailPanel({
                         setNewSubtarea('')
                       }
                     }}
-                    className="bg-slate-700/50 border-slate-600 text-white text-sm"
+                    className="bg-input border-border text-foreground text-sm"
                   />
                   <Button
                     size="icon"
@@ -443,7 +443,7 @@ export function TaskDetailPanel({
                         setNewComentario('')
                       }
                     }}
-                    className="bg-slate-700/50 border-slate-600 text-white text-sm"
+                    className="bg-input border-border text-foreground text-sm"
                   />
                   <Button
                     size="icon"

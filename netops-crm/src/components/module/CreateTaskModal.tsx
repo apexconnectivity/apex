@@ -58,7 +58,7 @@ function TaskFormFields({
             fase_nombre: proyecto ? ['Prospecto', 'Diagnóstico', 'Propuesta', 'Implementación', 'Cierre'][proyecto.fase_actual - 1] : 'Prospecto' 
           })
         }} disabled={disabled}>
-          <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proyecto..." /></SelectTrigger>
+          <SelectTrigger className="bg-input border-border"><SelectValue placeholder="Seleccionar proyecto..." /></SelectTrigger>
           <SelectContent>
             {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
           </SelectContent>
@@ -90,7 +90,7 @@ function TaskFormFields({
         <div>
           <Label>Categoría</Label>
           <Select value={tarea.categoria} onValueChange={(v) => setTarea({ ...tarea, categoria: v as CategoriaTarea })} disabled={disabled}>
-            <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
               {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
@@ -99,7 +99,7 @@ function TaskFormFields({
         <div>
           <Label>Prioridad</Label>
           <Select value={tarea.prioridad} onValueChange={(v) => setTarea({ ...tarea, prioridad: v as PrioridadTarea })} disabled={disabled}>
-            <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent>
@@ -108,7 +108,7 @@ function TaskFormFields({
         <div>
           <Label>Estado</Label>
           <Select value={tarea.estado} onValueChange={(v) => setTarea({ ...tarea, estado: v as EstadoTarea })} disabled={disabled}>
-            <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
               {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
             </SelectContent>
@@ -117,7 +117,7 @@ function TaskFormFields({
         <div>
           <Label>Responsable</Label>
           <Select value={tarea.responsable_id || ''} onValueChange={(v) => setTarea({ ...tarea, responsable_id: v, responsable_nombre: usuarios.find(u => u.id === v)?.nombre })} disabled={disabled}>
-            <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+            <SelectTrigger className="bg-input border-border"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
             <SelectContent>
               {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
             </SelectContent>

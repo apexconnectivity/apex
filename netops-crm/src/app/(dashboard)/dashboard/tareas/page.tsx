@@ -117,7 +117,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
           {isBlocked && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
               <Select value="" onValueChange={(v) => onStatusChange(tarea.id, v as EstadoTarea)}>
-                <SelectTrigger className="h-6 w-28 bg-background text-xs">
+                <SelectTrigger className="h-6 w-28 bg-input border-border text-xs">
                   <SelectValue placeholder="Cambiar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -412,7 +412,7 @@ export default function TareasPage() {
             <div className="flex items-center gap-1">
               <Label className="text-xs text-muted-foreground mr-1">Proyecto:</Label>
               <Select value={filtroProyecto} onValueChange={setFiltroProyecto}>
-                <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                <SelectTrigger className="w-32 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   {DEMO_PROYECTOS.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
@@ -424,7 +424,7 @@ export default function TareasPage() {
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground mr-1">Persona:</Label>
                 <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-                  <SelectTrigger className="w-28 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todas</SelectItem>
                     {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
@@ -436,7 +436,7 @@ export default function TareasPage() {
             <div className="flex items-center gap-1">
               <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
               <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                <SelectTrigger className="w-28 h-8 bg-background"><SelectValue placeholder="Todos" /></SelectTrigger>
+                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
@@ -447,7 +447,7 @@ export default function TareasPage() {
             <div className="flex items-center gap-1">
               <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
               <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                <SelectTrigger className="w-28 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -458,7 +458,7 @@ export default function TareasPage() {
             <div className="flex items-center gap-1">
               <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
               <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-                <SelectTrigger className="w-24 h-8 bg-background"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectTrigger className="w-24 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -472,7 +472,7 @@ export default function TareasPage() {
                 type="date" 
                 value={filtroFechaDesde} 
                 onChange={(e) => setFiltroFechaDesde(e.target.value)} 
-                className="w-28 h-8 bg-background"
+                className="w-28 h-8 bg-input border-border"
               />
             </div>
             
@@ -482,7 +482,7 @@ export default function TareasPage() {
                 type="date" 
                 value={filtroFechaHasta} 
                 onChange={(e) => setFiltroFechaHasta(e.target.value)} 
-                className="w-28 h-8 bg-background"
+                className="w-28 h-8 bg-input border-border"
               />
             </div>
             
