@@ -10,11 +10,17 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive } from 'lucide-react'
 import { Archivo, CarpetaDrive, EntidadTipo, Visibilidad, formatBytes, getFileIcon, TAMAÑO_MAXIMO, TIPOS_ARCHIVO_PERMITIDOS } from '@/types/archivos'
+import { 
+  PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS, 
+  FILTER_LABELS, EMPTY_MESSAGES, SECTION_TITLES, UPLOAD_MODAL, 
+  VISIBILITY_OPTIONS, FILE_PLACEHOLDER, BADGE_LABELS, ERROR_MESSAGES, ACCESS_DENIED,
+  STAT_COLORS, FILE_TYPES
+} from '@/lib/constants/archivos'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
 const DEMO_EMPRESAS = [
@@ -46,7 +52,7 @@ function ArchivoCard({ archivo, onVer, onEliminar }: { archivo: Archivo; onVer: 
     <Card className="card-hover-scale-glow">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="text-2xl">{getFileIcon(archivo.mime_type)}</div>
+          <div className="text-muted-foreground">{getFileIcon(archivo.mime_type)}</div>
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">{archivo.nombre_original}</h4>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -58,10 +64,10 @@ function ArchivoCard({ archivo, onVer, onEliminar }: { archivo: Archivo; onVer: 
             </div>
             <div className="flex items-center gap-1 mt-2">
               {archivo.visibilidad === 'publico' && (
-                <Badge variant="outline" className="text-xs"><Globe className="h-3 w-3 mr-1" />Público</Badge>
+                <Badge variant="outline" className="text-xs"><Globe className="h-3 w-3 mr-1" />{BADGE_LABELS.publico}</Badge>
               )}
               {archivo.visibilidad === 'interno' && (
-                <Badge variant="outline" className="text-xs"><Lock className="h-3 w-3 mr-1" />Interno</Badge>
+                <Badge variant="outline" className="text-xs"><Lock className="h-3 w-3 mr-1" />{BADGE_LABELS.interno}</Badge>
               )}
             </div>
           </div>
@@ -115,7 +121,7 @@ function FolderSection({ titulo, icon: Icon, archivos, onVer, onEliminar, defaul
               />
             ))
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">No hay archivos en esta carpeta</p>
+            <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noArchivosCarpeta}</p>
           )}
         </div>
       )}
@@ -135,6 +141,8 @@ function UploadModal({ isOpen, onClose, onUpload }: {
     entidad_tipo: '' as EntidadTipo | '',
     entidad_id: '',
     visibilidad: 'interno' as Visibilidad,
+    descripcion: '',
+    tipo: '',
   })
   const [file, setFile] = useState<File | null>(null)
 
@@ -142,21 +150,26 @@ function UploadModal({ isOpen, onClose, onUpload }: {
     const f = e.target.files?.[0]
     if (f) {
       setFile(f)
+      // Extraer extensión del archivo original
+      const ext = f.name.split('.').pop() || ''
       setArchivo({ ...archivo, nombre_original: f.name, mime_type: f.type, tamaño_bytes: f.size })
     }
   }
 
   const handleUpload = () => {
     if (!file || !archivo.entidad_tipo || !archivo.entidad_id) return
+    // Usar el nombre personalizado o el original
+    const nombreFinal = archivo.descripcion.trim() || file.name
     onUpload({
       ...archivo,
+      nombre_original: nombreFinal,
       entidad_tipo: archivo.entidad_tipo as EntidadTipo,
       subido_por: '1',
       subido_por_nombre: 'Carlos Admin',
     })
     onClose()
     setFile(null)
-    setArchivo({ nombre_original: '', mime_type: '', tamaño_bytes: 0, entidad_tipo: '', entidad_id: '', visibilidad: 'interno' })
+    setArchivo({ nombre_original: '', mime_type: '', tamaño_bytes: 0, entidad_tipo: '', entidad_id: '', visibilidad: 'interno', descripcion: '', tipo: '' })
   }
 
   if (!isOpen) return null
@@ -165,84 +178,117 @@ function UploadModal({ isOpen, onClose, onUpload }: {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent size="md">
         <DialogHeader>
-          <DialogTitle>Subir Archivo</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            {UPLOAD_MODAL.titulo}
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label>Destino</Label>
-            <Select value={archivo.entidad_tipo} onValueChange={(v) => setArchivo({ ...archivo, entidad_tipo: v as EntidadTipo, entidad_id: '' })}>
-              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar tipo..." /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="empresa">Empresa</SelectItem>
-                <SelectItem value="proyecto">Proyecto</SelectItem>
-                <SelectItem value="ticket">Ticket</SelectItem>
-                <SelectItem value="tarea">Tarea</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <DialogBody>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{UPLOAD_MODAL.destino}</Label>
+                <Select value={archivo.entidad_tipo} onValueChange={(v) => setArchivo({ ...archivo, entidad_tipo: v as EntidadTipo, entidad_id: '' })}>
+                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="empresa">Empresa</SelectItem>
+                    <SelectItem value="proyecto">Proyecto</SelectItem>
+                    <SelectItem value="ticket">Ticket</SelectItem>
+                    <SelectItem value="tarea">Tarea</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {archivo.entidad_tipo === 'empresa' && (
-            <div>
-              <Label>Empresa</Label>
-              <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                <SelectContent>
-                  {DEMO_EMPRESAS.map(e => (
-                    <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <Label>{UPLOAD_MODAL.tipo}</Label>
+                <Select value={archivo.tipo} onValueChange={(v) => setArchivo({ ...archivo, tipo: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contrato">{FILE_TYPES.contrato}</SelectItem>
+                    <SelectItem value="factura">{FILE_TYPES.factura}</SelectItem>
+                    <SelectItem value="presupuesto">{FILE_TYPES.presupuesto}</SelectItem>
+                    <SelectItem value="documentoTecnico">{FILE_TYPES.documentoTecnico}</SelectItem>
+                    <SelectItem value="entregable">{FILE_TYPES.entregable}</SelectItem>
+                    <SelectItem value="manual">{FILE_TYPES.manual}</SelectItem>
+                    <SelectItem value="otro">{FILE_TYPES.otro}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
 
-          {archivo.entidad_tipo === 'proyecto' && (
-            <div>
-              <Label>Proyecto</Label>
-              <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                <SelectContent>
-                  {DEMO_PROYECTOS.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {archivo.entidad_tipo === 'empresa' && (
-            <div>
-              <Label>Visibilidad</Label>
-              <Select value={archivo.visibilidad} onValueChange={(v) => setArchivo({ ...archivo, visibilidad: v as Visibilidad })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="interno">Interno (solo equipo)</SelectItem>
-                  <SelectItem value="publico">Público (visible para cliente)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div>
-            <Label>Archivo</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  {file ? file.name : 'Click para seleccionar archivo'}
-                </p>
-                {file && <p className="text-xs text-muted-foreground mt-1">{formatBytes(file.size)}</p>}
-              </label>
-            </div>
-            {file && file.size > TAMAÑO_MAXIMO && (
-              <p className="text-sm text-destructive mt-1">El archivo excede el tamaño máximo de 25 MB</p>
+            {archivo.entidad_tipo === 'empresa' && (
+              <div>
+                <Label>{UPLOAD_MODAL.empresa}</Label>
+                <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                  <SelectContent>
+                    {DEMO_EMPRESAS.map(e => (
+                      <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
+
+            {archivo.entidad_tipo === 'proyecto' && (
+              <div>
+                <Label>{UPLOAD_MODAL.proyecto}</Label>
+                <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                  <SelectContent>
+                    {DEMO_PROYECTOS.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {archivo.entidad_tipo === 'empresa' && (
+              <div>
+                <Label>{UPLOAD_MODAL.visibilidad}</Label>
+                <Select value={archivo.visibilidad} onValueChange={(v) => setArchivo({ ...archivo, visibilidad: v as Visibilidad })}>
+                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="interno">{VISIBILITY_OPTIONS.interno}</SelectItem>
+                    <SelectItem value="publico">{VISIBILITY_OPTIONS.publico}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label>{UPLOAD_MODAL.descripcion}</Label>
+              <Input 
+                placeholder="Nombre o descripción del archivo..." 
+                value={archivo.descripcion}
+                onChange={(e) => setArchivo({ ...archivo, descripcion: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Este nombre se usará para guardar el archivo en Drive</p>
+            </div>
+
+            <div>
+              <Label>{UPLOAD_MODAL.archivo}</Label>
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/30 transition-colors">
+                <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {file ? file.name : FILE_PLACEHOLDER}
+                  </p>
+                  {file && <p className="text-xs text-muted-foreground mt-1">{formatBytes(file.size)}</p>}
+                </label>
+              </div>
+              {file && file.size > TAMAÑO_MAXIMO && (
+                <p className="text-sm text-destructive mt-1">{ERROR_MESSAGES.tamanoMaximo(25)}</p>
+              )}
+            </div>
           </div>
-        </div>
+        </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="outline" onClick={onClose}>{BUTTON_LABELS.cancelar}</Button>
           <Button onClick={handleUpload} disabled={!file || !archivo.entidad_tipo || !archivo.entidad_id || file.size > TAMAÑO_MAXIMO}>
-            <Upload className="h-4 w-4 mr-2" />Subir
+            <Upload className="h-4 w-4 mr-2" />{BUTTON_LABELS.subir}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -256,6 +302,7 @@ export default function ArchivosPage() {
   const [view, setView] = useState<'todos' | 'empresas' | 'proyectos'>('todos')
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('todas')
   const [showUpload, setShowUpload] = useState(false)
+  const [archivoAEliminar, setArchivoAEliminar] = useState<Archivo | null>(null)
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['corporativo', 'entregables', 'internos', 'facturas'])
 
   const isAdmin = user?.roles.includes('admin')
@@ -326,8 +373,13 @@ export default function ArchivosPage() {
   }
 
   const handleEliminar = (archivo: Archivo) => {
-    if (confirm('¿Estás seguro de eliminar este archivo?')) {
-      setArchivos(prev => prev.filter(a => a.id !== archivo.id))
+    setArchivoAEliminar(archivo)
+  }
+
+  const confirmarEliminar = () => {
+    if (archivoAEliminar) {
+      setArchivos(prev => prev.filter(a => a.id !== archivoAEliminar.id))
+      setArchivoAEliminar(null)
     }
   }
 
@@ -341,7 +393,7 @@ export default function ArchivosPage() {
     return (
       <AccessDeniedCard
         icon={Folder}
-        description="No tienes permiso para acceder a este módulo"
+        description={ACCESS_DENIED}
       />
     )
   }
@@ -352,41 +404,41 @@ export default function ArchivosPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Folder className="h-8 w-8" />
-            Archivos
+            {PAGE_TITLE}
           </h1>
-          <p className="text-muted-foreground">Gestión de archivos en Google Drive</p>
+          <p className="text-muted-foreground">{PAGE_DESCRIPTION}</p>
         </div>
         <div className="flex gap-2">
           <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
             <TabsList>
-              <TabsTrigger value="todos">Todos</TabsTrigger>
-              <TabsTrigger value="empresas">Empresas</TabsTrigger>
-              <TabsTrigger value="proyectos">Proyectos</TabsTrigger>
+              <TabsTrigger value="todos">{TABS_LABELS.todos}</TabsTrigger>
+              <TabsTrigger value="empresas">{TABS_LABELS.empresas}</TabsTrigger>
+              <TabsTrigger value="proyectos">{TABS_LABELS.proyectos}</TabsTrigger>
             </TabsList>
           </Tabs>
           {canUpload && (
             <Button onClick={() => setShowUpload(true)}>
               <Upload className="h-4 w-4 mr-2" />
-              Subir
+              {BUTTON_LABELS.subir}
             </Button>
           )}
         </div>
       </div>
 
       <StatGrid cols={5}>
-        <MiniStat value={stats.total} label="Total archivos" variant="primary" showBorder accentColor="#06b6d4" icon={<Files className="h-5 w-5" />} />
-        <MiniStat value={stats.empresas} label="Empresas" variant="info" showBorder accentColor="#3b82f6" icon={<Building2 className="h-5 w-5" />} />
-        <MiniStat value={stats.proyectos} label="Proyectos" variant="warning" showBorder accentColor="#f59e0b" icon={<Briefcase className="h-5 w-5" />} />
-        <MiniStat value={stats.tickets} label="Tickets" variant="success" showBorder accentColor="#10b981" icon={<Ticket className="h-5 w-5" />} />
-        <MiniStat value={formatBytes(stats.tamañoTotal)} label="Espacio usado" variant="default" showBorder accentColor="#64748b" icon={<HardDrive className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label={STATS_LABELS.totalArchivos} variant="primary" showBorder accentColor={STAT_COLORS.total} icon={<Files className="h-5 w-5" />} />
+        <MiniStat value={stats.empresas} label={STATS_LABELS.empresas} variant="info" showBorder accentColor={STAT_COLORS.empresas} icon={<Building2 className="h-5 w-5" />} />
+        <MiniStat value={stats.proyectos} label={STATS_LABELS.proyectos} variant="warning" showBorder accentColor={STAT_COLORS.proyectos} icon={<Briefcase className="h-5 w-5" />} />
+        <MiniStat value={stats.tickets} label={STATS_LABELS.tickets} variant="success" showBorder accentColor={STAT_COLORS.tickets} icon={<Ticket className="h-5 w-5" />} />
+        <MiniStat value={formatBytes(stats.tamañoTotal)} label={STATS_LABELS.espacioUsado} variant="default" showBorder accentColor={STAT_COLORS.espacio} icon={<HardDrive className="h-5 w-5" />} />
       </StatGrid>
 
       {view === 'empresas' && (
         <div className="flex gap-4">
           <Select value={selectedEmpresa} onValueChange={setSelectedEmpresa}>
-            <SelectTrigger className="w-64 bg-background"><SelectValue placeholder="Filtrar por empresa" /></SelectTrigger>
+            <SelectTrigger className="w-64 bg-background"><SelectValue placeholder={FILTER_LABELS.filtrarPorEmpresa} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="todas">Todas las empresas</SelectItem>
+              <SelectItem value="todas">{FILTER_LABELS.todasLasEmpresas}</SelectItem>
               {DEMO_EMPRESAS.map(e => (
                 <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
               ))}
@@ -404,7 +456,7 @@ export default function ArchivosPage() {
                 onClick={() => toggleFolder('empresas')}
               >
                 <Building2 className="h-5 w-5" />
-                <span className="font-semibold flex-1 text-left">Documentos de Empresas</span>
+                <span className="font-semibold flex-1 text-left">{SECTION_TITLES.documentosEmpresas}</span>
                 <Badge variant="secondary">{archivosPorCarpeta['Empresas'].length}</Badge>
               </button>
               {expandedFolders.includes('empresas') && (
@@ -419,7 +471,7 @@ export default function ArchivosPage() {
                       />
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No hay documentos de empresas</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noDocumentosEmpresas}</p>
                   )}
                 </div>
               )}
@@ -431,7 +483,7 @@ export default function ArchivosPage() {
                 onClick={() => toggleFolder('proyectos')}
               >
                 <Briefcase className="h-5 w-5" />
-                <span className="font-semibold flex-1 text-left">Archivos de Proyectos</span>
+                <span className="font-semibold flex-1 text-left">{SECTION_TITLES.archivosProyectos}</span>
                 <Badge variant="secondary">{archivosPorCarpeta['Proyectos'].length}</Badge>
               </button>
               {expandedFolders.includes('proyectos') && (
@@ -446,7 +498,7 @@ export default function ArchivosPage() {
                       />
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No hay archivos de proyectos</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noArchivosProyectos}</p>
                   )}
                 </div>
               )}
@@ -472,6 +524,27 @@ export default function ArchivosPage() {
           />
         ))}
       </div>
+
+      <Dialog open={!!archivoAEliminar} onOpenChange={() => setArchivoAEliminar(null)}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Confirmar eliminación
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <p className="text-muted-foreground">{ERROR_MESSAGES.confirmEliminacion}</p>
+            {archivoAEliminar && (
+              <p className="mt-2 font-medium text-foreground">{archivoAEliminar.nombre_original}</p>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setArchivoAEliminar(null)}>{BUTTON_LABELS.cancelar}</Button>
+            <Button variant="destructive" onClick={confirmarEliminar}>{BUTTON_LABELS.eliminar}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <UploadModal
         isOpen={showUpload}
