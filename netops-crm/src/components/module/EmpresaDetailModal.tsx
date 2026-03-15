@@ -44,6 +44,7 @@ interface EmpresaDetailModalProps {
   onEdit: () => void
   onDelete: () => void
   onNewContacto: () => void
+  onEditContacto?: (contacto: Contacto) => void  // Agregar esta línea
   onDeleteContacto: (id: string) => void
   onNewDocumento: () => void
   onDeleteDocumento: (id: string) => void
@@ -68,6 +69,7 @@ export function EmpresaDetailModal({
   onEdit,
   onDelete,
   onNewContacto,
+  onEditContacto,
   onDeleteContacto,
   onNewDocumento,
   onDeleteDocumento,
@@ -226,6 +228,11 @@ export function EmpresaDetailModal({
                                   Principal
                                 </Badge>
                               )}
+                              {contacto.activo === false && (
+                                <Badge variant="destructive" className="text-xs bg-red-500/20 text-red-400 border-red-500/30">
+                                  Inactivo
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground">
                               {contacto.cargo} • {contacto.tipo_contacto}
@@ -237,16 +244,28 @@ export function EmpresaDetailModal({
                             {contacto.email}
                           </p>
                           {canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onDeleteContacto(contacto.id)
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onEditContacto?.(contacto)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onDeleteContacto(contacto.id)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -279,8 +298,8 @@ export function EmpresaDetailModal({
                               proyecto.estado === 'activo'
                                 ? 'active'
                                 : proyecto.estado === 'cerrado'
-                                ? 'completed'
-                                : 'pending'
+                                  ? 'completed'
+                                  : 'pending'
                             }
                           />
                         </div>

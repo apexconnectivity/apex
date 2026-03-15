@@ -132,6 +132,7 @@ const DEMO_CONTACTOS_INICIAL: Contacto[] = [
   { id: '2', empresa_id: '1', nombre: 'María García', cargo: 'Gerente Comercial', tipo_contacto: 'Comercial', email: 'maria@solucionestec.com', telefono: '+54 9 11 2345-6789', es_principal: false, recibe_facturas: true, activo: true, creado_en: '2024-01-15' },
   { id: '3', empresa_id: '2', nombre: 'Carlos López', cargo: 'Vendedor', tipo_contacto: 'Comercial', email: 'carlos@distmayorista.com', telefono: '+54 9 11 3456-7890', es_principal: true, recibe_facturas: false, activo: true, creado_en: '2024-02-20' },
   { id: '4', empresa_id: '3', nombre: 'Dr. Roberto Silva', cargo: 'Director', tipo_contacto: 'Administrativo', email: 'director@hospitalnorte.com', telefono: '+54 9 11 4567-8901', es_principal: true, recibe_facturas: true, activo: true, creado_en: '2024-03-10' },
+  { id: '5', empresa_id: '1', nombre: 'Ex Contacto', cargo: 'gerente', tipo_contacto: 'Administrativo', email: 'ex@solucionestec.com', telefono: '+54 9 11 9999-9999', es_principal: false, recibe_facturas: false, activo: false, creado_en: '2023-06-15' },
 ]
 
 const DEMO_DOCUMENTOS: Documento[] = [
@@ -323,6 +324,14 @@ export default function CRMPage() {
     setEditingContacto({ ...CONTACTO_VACIO, id: String(Date.now()), empresa_id: empresa.id })
     setErrors({})
     setSelectedEmpresa(null) // Cerrar modal de empresa
+    setIsModalContacto(true)
+  }
+
+  // Editar contacto existente
+  const handleEditContacto = (contacto: Contacto) => {
+    setEditingContacto({ ...contacto })
+    setEmpresaForContacto(empresas.find(e => e.id === contacto.empresa_id) || null)
+    setErrors({})
     setIsModalContacto(true)
   }
 
@@ -713,6 +722,7 @@ export default function CRMPage() {
           onEdit={() => selectedEmpresa && handleEditEmpresa(selectedEmpresa)}
           onDelete={() => selectedEmpresa && handleDeleteEmpresa(selectedEmpresa.id)}
           onNewContacto={() => selectedEmpresa && handleNewContacto(selectedEmpresa)}
+          onEditContacto={handleEditContacto}
           onDeleteContacto={handleDeleteContacto}
           onNewDocumento={() => selectedEmpresa && handleNewDocumento(selectedEmpresa)}
           onDeleteDocumento={handleDeleteDocumento}
@@ -726,11 +736,11 @@ export default function CRMPage() {
 
         {/* Modal de Contacto */}
         <Dialog open={isModalContacto} onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}>
-          <DialogContent>
+          <DialogContent size="lg">
             <DialogHeader>
               <DialogTitle>{editingContacto?.id ? 'Editar' : 'Nuevo'} Contacto</DialogTitle>
             </DialogHeader>
-            <DialogBody className="space-y-4">
+            <DialogBody className="p-6 space-y-4">
               <div className="space-y-2">
                 <Label>Nombre *</Label>
                 <Input
@@ -797,6 +807,14 @@ export default function CRMPage() {
                   onChange={(e) => setEditingContacto({ ...editingContacto, recibe_facturas: e.target.checked })}
                 />
                 <span className="text-sm">Recibe facturas</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={editingContacto?.activo !== false}
+                  onChange={(e) => setEditingContacto({ ...editingContacto, activo: e.target.checked })}
+                />
+                <span className="text-sm">Contacto activo</span>
               </label>
             </DialogBody>
             <DialogFooter>
