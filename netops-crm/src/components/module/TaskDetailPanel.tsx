@@ -378,13 +378,13 @@ export function TaskDetailPanel({
                   />
                   <Button
                     size="icon"
+                    variant="outline"
                     onClick={() => {
                       if (newSubtarea) {
                         onAddSubtarea(newSubtarea)
                         setNewSubtarea('')
                       }
                     }}
-                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -433,13 +433,13 @@ export function TaskDetailPanel({
                   />
                   <Button
                     size="icon"
+                    variant="outline"
                     onClick={() => {
                       if (newComentario) {
                         onAddComentario(newComentario)
                         setNewComentario('')
                       }
                     }}
-                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
