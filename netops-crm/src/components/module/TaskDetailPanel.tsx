@@ -242,7 +242,7 @@ export function TaskDetailPanel({
                   {/* Grid de información */}
                   <div className="grid grid-cols-2 gap-3">
                     {/* Proyecto */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Target className="h-3.5 w-3.5" />
                         <span className="text-xs">Proyecto</span>
@@ -253,7 +253,7 @@ export function TaskDetailPanel({
                     </div>
 
                     {/* Fase */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <CheckSquare className="h-3.5 w-3.5" />
                         <span className="text-xs">Fase</span>
@@ -264,7 +264,7 @@ export function TaskDetailPanel({
                     </div>
 
                     {/* Responsable */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <User className="h-3.5 w-3.5" />
                         <span className="text-xs">Responsable</span>
@@ -275,7 +275,7 @@ export function TaskDetailPanel({
                     </div>
 
                     {/* Fecha Vencimiento */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Calendar className="h-3.5 w-3.5" />
                         <span className="text-xs">Vencimiento</span>
@@ -286,7 +286,7 @@ export function TaskDetailPanel({
                     </div>
 
                     {/* Fecha Creación */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <Clock className="h-3.5 w-3.5" />
                         <span className="text-xs">Creado</span>
@@ -297,7 +297,7 @@ export function TaskDetailPanel({
                     </div>
 
                     {/* Prioridad */}
-                    <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="bg-muted/40 border border-border/30 rounded-lg p-3">
                       <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                         <AlertCircle className="h-3.5 w-3.5" />
                         <span className="text-xs">Prioridad</span>
@@ -406,7 +406,7 @@ export function TaskDetailPanel({
                     </div>
                   ) : (
                     comentarios.map(c => (
-                      <div key={c.id} className="bg-muted/30 rounded-lg p-3">
+                      <div key={c.id} className="bg-muted/40 border border-border/30 rounded-lg p-3">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span className="font-medium text-foreground">{c.usuario_nombre}</span>
                           <span className="text-muted-foreground">{new Date(c.fecha).toLocaleString('es-ES')}</span>
