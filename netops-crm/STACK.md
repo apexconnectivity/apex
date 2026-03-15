@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.5  
+**Versión:** 1.6  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulos optimizados con constantes centralizadas
+**Estado:** En desarrollo - Módulo compras optimizado con localStorage y constantes centralizadas
 
 ---
 
@@ -169,6 +169,10 @@
 | Contratos Soporte | `apex_contratos_soporte` | ✅ Implementado |
 | Comentarios | `apex_soporte_comentarios` | ✅ Implementado |
 | Vista Soporte | `apex_soporte_vista` | ✅ Implementado |
+| Órdenes Compra | `apex_compras_datos` | ✅ Implementado |
+| Proveedores | `apex_proveedores_datos` | ✅ Implementado |
+| Cotizaciones | `apex_cotizaciones_datos` | ✅ Implementado |
+| Vista Compras | `apex_compras_vista` | ✅ Implementado |
 | Usuario sesión | `apex_user` | ✅ Implementado |
 
 **Constantes centralizadas:** Todas las keys están definidas en `src/constants/storage.ts`
@@ -264,7 +268,7 @@ netops-crm/
 │   │   └── portal-auth-context.tsx
 │   │
 │   ├── lib/                   # Utilidades
-│   │   ├── utils.ts           # cn() helper
+│   │   ├── utils.ts           # cn() y cnHoverLift helpers
 │   │   ├── colors.ts          # Colores centralizados
 │   │   ├── date-utils.ts      # Utilidades de fecha
 │   │   ├── useLocalStorage.ts # Hook localStorage
@@ -272,6 +276,9 @@ netops-crm/
 │   │       ├── store.ts
 │   │       ├── initial-data.ts
 │   │       └── index.ts
+│   │
+│   ├── data/                   # Datos demo separados por módulo
+│   │   └── compras-demo.ts    # Datos demo compras
 │   │
 │   ├── types/                 # TypeScript types
 │   │   ├── soporte.ts
@@ -290,7 +297,8 @@ netops-crm/
 │   └── constants/             # Constantes
 │       ├── soporte.ts         # Textos y keys localStorage (módulo soporte)
 │       ├── storage.ts         # Keys y valores iniciales centralizados (localStorage)
-│       └── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
+│       ├── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
+│       └── compras.ts         # Textos, labels, impuestos (módulo compras)
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
@@ -366,6 +374,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.3 | 2026-03-07 | Migración completa de UI a shadcn/ui |
 | 1.4 | 2026-03-15 | Módulo soporte implementado, localStorage, corrección de estilos |
 | 1.5 | 2026-03-15 | Constantes centralizadas para archivos y storage, mejoras de consistencia UI |
+| 1.6 | 2026-03-15 | Módulo compras: localStorage, constantes centralizadas, estilos consistentes, datos demo extraídos |
 
 ---
 

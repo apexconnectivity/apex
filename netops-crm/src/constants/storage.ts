@@ -6,6 +6,7 @@ import type { Empresa } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
 import type { Tarea } from '@/types/tareas'
 import type { Ticket, ContratoSoporte, ComentarioTicket } from '@/types/soporte'
+import type { OrdenCompra, Proveedor, Cotizacion } from '@/types/compras'
 
 // ============================================
 // STORAGE KEYS - Claves para localStorage
@@ -26,6 +27,12 @@ export const STORAGE_KEYS = {
   contratos: 'apex_contratos_soporte',
   comentarios: 'apex_soporte_comentarios',
   soporteVista: 'apex_soporte_vista',
+  
+  // Compras
+  compras: 'apex_compras_datos',
+  proveedores: 'apex_proveedores_datos',
+  cotizaciones: 'apex_cotizaciones_datos',
+  comprasVista: 'apex_compras_vista',
 } as const
 
 // ============================================
@@ -40,6 +47,10 @@ export const INITIAL_DATA = {
   tickets: [] as Ticket[],
   contratos: [] as ContratoSoporte[],
   comentarios: {} as Record<string, ComentarioTicket[]>,
+  // Compras
+  compras: [] as OrdenCompra[],
+  proveedores: [] as Proveedor[],
+  cotizaciones: [] as Cotizacion[],
 } as const
 
 // ============================================
