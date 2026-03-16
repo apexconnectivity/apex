@@ -275,6 +275,78 @@ export function getTicketEstadoColor(estado: string): string {
 }
 
 // ==========================================
+// COLORES DE ROLES DE USUARIO
+// Sistema de colores para badges de roles
+// ==========================================
+
+export const ROLE_COLORS = {
+  admin: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/20',
+    border: 'border-red-500/30',
+    label: 'Administrador',
+  },
+  comercial: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/20',
+    border: 'border-blue-500/30',
+    label: 'Comercial',
+  },
+  tecnico: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/20',
+    border: 'border-emerald-500/30',
+    label: 'Técnico',
+  },
+  compras: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/20',
+    border: 'border-amber-500/30',
+    label: 'Compras',
+  },
+  facturacion: {
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/20',
+    border: 'border-purple-500/30',
+    label: 'Facturación',
+  },
+  marketing: {
+    color: 'text-pink-400',
+    bg: 'bg-pink-500/20',
+    border: 'border-pink-500/30',
+    label: 'Marketing',
+  },
+  cliente: {
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/20',
+    border: 'border-cyan-500/30',
+    label: 'Cliente',
+  },
+} as const
+
+export type RoleColorKey = keyof typeof ROLE_COLORS
+
+/**
+ * Obtiene la configuración de color para un rol de usuario
+ */
+export function getRoleColor(role: string): { color: string; bg: string; border: string; label: string } {
+  const normalizedKey = normalizeKey(role) as RoleColorKey
+  const config = ROLE_COLORS[normalizedKey]
+
+  if (config) {
+    return config
+  }
+
+  // Fallback para roles no reconocidos
+  return {
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/20',
+    border: 'border-slate-500/30',
+    label: role,
+  }
+}
+
+// ==========================================
 // ICONOS DE PRIORIDAD
 // ==========================================
 

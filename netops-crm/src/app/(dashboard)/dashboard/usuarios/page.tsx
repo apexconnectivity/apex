@@ -3,28 +3,44 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { Card, CardContent } from '@/components/ui/card'
-import { Modal, ModuleContainer } from '@/components/module'
+import { ModuleContainer } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import RoleBadge from '@/components/ui/role-badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   UserPlus,
   Search,
-  MoreVertical,
   Pencil,
   Trash2,
   KeyRound,
   Shield,
   Mail,
   Phone,
-  Calendar,
-  X,
   Check,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS } from '@/types/auth'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { cn } from '@/lib/utils'
 
 // Demo users data
 const INITIAL_USERS = [
@@ -81,7 +97,11 @@ export default function UsersPage() {
   const { user: currentUser } = useAuth()
   const [users, setUsers] = useState(INITIAL_USERS)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activo' | 'inactivo'>('todos')
+  const [filtroRol, setFiltroRol] = useState<'todos' | Role>('todos')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [userToModify, setUserToModify] = useState<{ id: string; action: 'activar' | 'desactivar' } | null>(null)
   const [editingUser, setEditingUser] = useState<typeof INITIAL_USERS[0] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -97,23 +117,24 @@ export default function UsersPage() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
-  const getRoleBadgeColor = (role: Role) => {
-    const colors: Record<Role, string> = {
-      admin: 'bg-red-500/20 text-red-400 border-red-500/30',
-      comercial: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      tecnico: 'bg-green-500/20 text-green-400 border-green-500/30',
-      compras: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-      facturacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      marketing: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-      cliente: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-    }
-    return colors[role]
-  }
-
-  const filteredUsers = users.filter(user =>
-    user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredUsers = users.filter(user => {
+    // Filtro búsqueda
+    const matchesSearch = 
+      user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    // Filtro estado
+    const matchesEstado = filtroEstado === 'todos' 
+      ? true 
+      : filtroEstado === 'activo' ? user.activo : !user.activo
+    
+    // Filtro rol
+    const matchesRol = filtroRol === 'todos'
+      ? true
+      : user.roles.includes(filtroRol)
+    
+    return matchesSearch && matchesEstado && matchesRol
+  })
 
   const handleOpenModal = (user?: typeof INITIAL_USERS[0]) => {
     if (user) {
@@ -176,10 +197,23 @@ export default function UsersPage() {
     handleCloseModal()
   }
 
-  const handleToggleActive = (userId: string) => {
+  const handleRequestToggleActive = (user: typeof INITIAL_USERS[0]) => {
+    setUserToModify({ 
+      id: user.id, 
+      action: user.activo ? 'desactivar' : 'activar' 
+    })
+    setIsConfirmModalOpen(true)
+  }
+
+  const handleConfirmToggleActive = () => {
+    if (!userToModify) return
     setUsers(prev => prev.map(u =>
-      u.id === userId ? { ...u, activo: !u.activo } : u
+      u.id === userToModify.id 
+        ? { ...u, activo: userToModify.action === 'activar' } 
+        : u
     ))
+    setIsConfirmModalOpen(false)
+    setUserToModify(null)
   }
 
   if (currentUser?.roles[0] !== 'admin') {
@@ -218,21 +252,75 @@ export default function UsersPage() {
         />
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 items-center text-sm">
+        <span className="text-muted-foreground mr-1">Filtros:</span>
+        
+        <div className="flex items-center gap-1">
+          <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
+          <Select value={filtroEstado} onValueChange={(v) => setFiltroEstado(v as typeof filtroEstado)}>
+            <SelectTrigger className="w-32 h-8 bg-input border-border">
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="activo">Activos</SelectItem>
+              <SelectItem value="inactivo">Inactivos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <Label className="text-xs text-muted-foreground mr-1">Rol:</Label>
+          <Select value={filtroRol} onValueChange={(v) => setFiltroRol(v as typeof filtroRol)}>
+            <SelectTrigger className="w-40 h-8 bg-input border-border">
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              {INTERNAL_ROLES.map(role => (
+                <SelectItem key={role} value={role}>
+                  {ROLE_DEFINITIONS[role]?.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(filtroEstado !== 'todos' || filtroRol !== 'todos') && (
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => {
+              setFiltroEstado('todos')
+              setFiltroRol('todos')
+            }}
+          >
+            <X className="h-3 w-3 mr-1" />
+            Limpiar
+          </Button>
+        )}
+        
+        <span className="text-sm text-muted-foreground ml-auto">
+          {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
       {/* Users Grid */}
       <div className="grid gap-4">
         {filteredUsers.map((user) => (
-          <Card key={user.id} className={`hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 ${!user.activo ? 'opacity-60' : ''}`}>
+          <Card key={user.id} className={cn('hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5', !user.activo ? 'opacity-60' : '')}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-slate-800 text-white">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
                       {getInitials(user.nombre)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-white">{user.nombre}</h3>
+                      <h3 className="font-semibold">{user.nombre}</h3>
                       {!user.activo && (
                         <Badge variant="secondary" className="text-xs">
                           Inactivo
@@ -255,12 +343,7 @@ export default function UsersPage() {
                 <div className="flex items-center gap-4">
                   <div className="flex gap-1">
                     {user.roles.map(role => (
-                      <Badge
-                        key={role}
-                        className={`${getRoleBadgeColor(role)} border text-xs`}
-                      >
-                        {ROLE_DEFINITIONS[role]?.label || role}
-                      </Badge>
+                      <RoleBadge key={role} role={role} className="text-xs" />
                     ))}
                   </div>
 
@@ -275,7 +358,7 @@ export default function UsersPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleToggleActive(user.id)}
+                      onClick={() => handleRequestToggleActive(user)}
                       className={user.activo ? 'hover:text-red-400' : 'hover:text-green-400'}
                     >
                       {user.activo ? (
@@ -292,91 +375,134 @@ export default function UsersPage() {
         ))}
       </div>
 
-      {/* Modal */}
+      {/* User Modal */}
       {isModalOpen && (
-        <Modal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title={editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
-          size="md"
-        >
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nombre completo</label>
-              <Input
-                value={formData.nombre}
-                onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                placeholder="Juan Pérez"
-              />
-            </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent size="md">
+            <DialogHeader>
+              <DialogTitle>
+                {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
+              </DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Nombre completo</label>
+                  <Input
+                    value={formData.nombre}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
+                    placeholder="Juan Pérez"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="juan@apex.com"
-                disabled={!!editingUser}
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email</label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="juan@apex.com"
+                    disabled={!!editingUser}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Teléfono</label>
-              <Input
-                value={formData.telefono}
-                onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
-                placeholder="+54 9 11 1234-5678"
-              />
-            </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Teléfono</label>
+                  <Input
+                    value={formData.telefono}
+                    onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
+                    placeholder="+54 9 11 1234-5678"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Roles</label>
-              <div className="grid grid-cols-2 gap-2">
-                {INTERNAL_ROLES.map(role => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => handleRoleToggle(role)}
-                    className={`
-                        flex items-center justify-between p-3 rounded-lg border transition-all
-                        ${formData.roles.includes(role)
-                        ? 'border-cyan-500 bg-cyan-500/10'
-                        : 'border-slate-700 hover:border-slate-600'
-                      }
-                      `}
-                  >
-                    <span className="text-sm text-white">
-                      {ROLE_DEFINITIONS[role]?.label}
-                    </span>
-                    {formData.roles.includes(role) && (
-                      <Check className="h-4 w-4 text-cyan-400" />
-                    )}
-                  </button>
-                ))}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Roles</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {INTERNAL_ROLES.map(role => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => handleRoleToggle(role)}
+                        className={cn(
+                          'flex items-center justify-between p-3 rounded-lg border transition-all',
+                          formData.roles.includes(role)
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        <span className="text-sm">
+                          {ROLE_DEFINITIONS[role]?.label}
+                        </span>
+                        {formData.roles.includes(role) && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={handleCloseModal}
-                disabled={isLoading}
-              >
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseModal} disabled={isLoading}>
                 Cancelar
               </Button>
-              <Button
-                className="flex-1"
-                onClick={handleSave}
-                disabled={isLoading || !formData.nombre || !formData.email || formData.roles.length === 0}
-              >
+              <Button onClick={handleSave} disabled={isLoading || !formData.nombre || !formData.email || formData.roles.length === 0}>
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
               </Button>
-            </div>
-          </div>
-        </Modal>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirmation Modal */}
+      {isConfirmModalOpen && userToModify && (
+        <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+          <DialogContent size="sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {userToModify.action === 'desactivar' ? (
+                  <>
+                    <Trash2 className="h-5 w-5 text-destructive" />
+                    Desactivar Usuario
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="h-5 w-5 text-green-400" />
+                    Reactivar Usuario
+                  </>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              <p className="text-sm text-muted-foreground">
+                {userToModify.action === 'desactivar' 
+                  ? '¿Estás seguro de que deseas desactivar este usuario? Ya no podrá acceder al sistema.'
+                  : '¿Estás seguro de que deseas reactivar este usuario? Volverá a tener acceso al sistema.'
+                }
+              </p>
+              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                <p className="font-medium">
+                  {users.find(u => u.id === userToModify.id)?.nombre}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {users.find(u => u.id === userToModify.id)?.email}
+                </p>
+              </div>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                variant={userToModify.action === 'desactivar' ? 'destructive' : 'default'}
+                onClick={handleConfirmToggleActive}
+              >
+                {userToModify.action === 'desactivar' ? 'Desactivar' : 'Reactivar'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </ModuleContainer>
   )

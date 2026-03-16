@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.8  
+**Versión:** 1.9  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo archivos y archivados refactorizado con localStorage y componentes extraídos
+**Estado:** En desarrollo - Módulo usuarios refactorizado con RoleBadge, filtros consistentes y modal de confirmación
 
 ---
 
@@ -143,6 +143,7 @@
 - MiniStat
 - InfoCard
 - AccessDeniedCard
+- RoleBadge
 
 ### 4.2 @dnd-kit
 
@@ -249,7 +250,8 @@ netops-crm/
 │   │   │   ├── info-card.tsx
 │   │   │   ├── mini-stat.tsx
 │   │   │   ├── skeleton.tsx
-│   │   │   └── stat-card.tsx
+│   │   │   ├── stat-card.tsx
+│   │   │   └── role-badge.tsx
 │   │   │
 │   │   ├── module/           # Componentes de módulo
 │   │   │   ├── TicketDetailPanel.tsx
@@ -291,7 +293,7 @@ netops-crm/
 │   │
 │   ├── lib/                   # Utilidades
 │   │   ├── utils.ts           # cn() y cnHoverLift helpers
-│   │   ├── colors.ts          # Colores centralizados
+│   │   ├── colors.ts          # Colores centralizados (ROLE_COLORS)
 │   │   ├── date-utils.ts      # Utilidades de fecha
 │   │   ├── useLocalStorage.ts # Hook localStorage
 │   │   └── data/              # Datos iniciales
@@ -401,6 +403,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.6 | 2026-03-15 | Módulo compras: localStorage, constantes centralizadas, estilos consistentes, datos demo extraídos |
 | 1.7 | 2026-03-15 | Módulo notificaciones: localStorage, constantes centralizadas, ModuleContainer corregido, StatCards consistentes |
 | 1.8 | 2026-03-15 | Módulo archivos y archivados: localStorage, componentes extraídos, constantes centralizadas, hooks personalizados |
+| 1.9 | 2026-03-15 | Módulo usuarios: RoleBadge componente, getRoleColor en colors, filtros consistentes, modal confirmación |
 
 ---
 
@@ -427,5 +430,5 @@ SUPABASE_SERVICE_ROLE_KEY=
 ---
 
 **Documento creado:** 2026-03-07  
-**Última actualización:** 2026-03-15 (v1.8)  
+**Última actualización:** 2026-03-15 (v1.9)  
 **Responsable:** Sistema
