@@ -440,21 +440,20 @@ export default function CRMPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] w-full overflow-x-hidden px-6 py-6">
-      <div className="h-full w-full overflow-y-auto space-y-6 rounded-xl bg-slate-900/50 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">CRM</h1>
-            <p className="text-muted-foreground">Gestión de empresas, clientes y proveedores</p>
-          </div>
-          {canEdit && (
-            <Button onClick={handleNewEmpresa}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Empresa
-            </Button>
-          )}
+    <ModuleContainer>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">CRM</h1>
+          <p className="text-muted-foreground">Gestión de empresas, clientes y proveedores</p>
         </div>
+        {canEdit && (
+          <Button onClick={handleNewEmpresa}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Empresa
+          </Button>
+        )}
+      </div>
 
         {/* Alertas */}
         {alertas.length > 0 && (
@@ -786,7 +785,6 @@ export default function CRMPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+      </ModuleContainer>
   )
 }

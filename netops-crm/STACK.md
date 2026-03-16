@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.9  
+**Versión:** 1.10  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo usuarios refactorizado con RoleBadge, filtros consistentes y modal de confirmación
+**Estado:** En desarrollo - Coherencia de UI: ModuleContainer, ModuleCard, StatGrid, hooks centralizados
 
 ---
 
@@ -404,6 +404,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.7 | 2026-03-15 | Módulo notificaciones: localStorage, constantes centralizadas, ModuleContainer corregido, StatCards consistentes |
 | 1.8 | 2026-03-15 | Módulo archivos y archivados: localStorage, componentes extraídos, constantes centralizadas, hooks personalizados |
 | 1.9 | 2026-03-15 | Módulo usuarios: RoleBadge componente, getRoleColor en colors, filtros consistentes, modal confirmación |
+| 1.10 | 2026-03-15 | Coherencia UI: Dashboard y CRM usan ModuleContainer, Pipeline usa ModuleCard, Stats usan StatGrid+MiniStat, hooks centralizados |
 
 ---
 
@@ -430,5 +431,5 @@ SUPABASE_SERVICE_ROLE_KEY=
 ---
 
 **Documento creado:** 2026-03-07  
-**Última actualización:** 2026-03-15 (v1.9)  
+**Última actualización:** 2026-03-15 (v1.10)  
 **Responsable:** Sistema

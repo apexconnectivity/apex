@@ -2,22 +2,23 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { useLocalStorage } from "@/lib/useLocalStorage"
-import { STORAGE_KEYS, INITIAL_DATA } from "@/constants/storage"
+import { useProyectos } from "@/lib/data"
 import type { Proyecto } from "@/types/proyectos"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ModuleCard } from "@/components/module/ModuleCard"
 import {
   FolderKanban,
   MoreHorizontal,
   Calendar,
   DollarSign,
   Users,
-  Plus,
-  GripVertical,
+  TrendingUp,
+  Target,
+  Clock,
 } from "lucide-react"
 
 // Tipos locales para el componente
@@ -41,6 +42,8 @@ interface Phase {
   name: string
   color: string
   projects: Project[]
+  totalValue: number
+  projectCount: number
 }
 
 // Funciones helper para las fases
@@ -104,75 +107,66 @@ function mapProyectoToProject(proyecto: Proyecto): Project {
 
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <Card className="group cursor-grab active:cursor-grabbing card-hover border-border/50">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm truncate text-foreground">
-              {project.name}
-            </h4>
-            <p className="text-xs text-muted-foreground truncate">
-              {project.client}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+    <ModuleCard className="group">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm truncate text-foreground">
+            {project.name}
+          </h4>
+          <p className="text-xs text-muted-foreground truncate">
+            {project.client}
+          </p>
         </div>
+      </div>
 
-        {/* Progress bar */}
-        <div className="mb-3">
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-muted-foreground">Progreso</span>
-            <span className="font-medium">{project.progress}%</span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
+      {/* Progress bar */}
+      <div className="mb-3">
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-muted-foreground">Progreso</span>
+          <span className="font-medium">{project.progress}%</span>
         </div>
-
-        {/* Tags */}
-        {project.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {project.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-[10px] px-1.5 py-0 h-5"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            <span>{project.dueDate}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">
-              {project.value}
-            </span>
-            <Avatar className="h-6 w-6 border border-border">
-              <AvatarImage src={project.assignee.avatar} />
-              <AvatarFallback className="text-[10px]">
-                {project.assignee.name.split(" ").map((n) => n[0]).join("")}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+            style={{ width: `${project.progress}%` }}
+          />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Tags */}
+      {project.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {project.tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 h-5"
+            >
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          <span>{project.dueDate}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-green-600 dark:text-green-400">
+            {project.value}
+          </span>
+          <Avatar className="h-6 w-6 border border-border">
+            <AvatarImage src={project.assignee.avatar} />
+            <AvatarFallback className="text-[10px]">
+              {project.assignee.name.split(" ").map((n) => n[0]).join("")}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+    </ModuleCard>
   )
 }
 
@@ -187,11 +181,9 @@ export function ProjectPipeline({
   showCommercialPhases = false,
   showAssignedOnly = false
 }: ProjectPipelineProps) {
-  // Usar localStorage para obtener los proyectos
-  const [proyectos, setProyectos, isLoaded] = useLocalStorage<Proyecto[]>(
-    STORAGE_KEYS.proyectos,
-    INITIAL_DATA.proyectos
-  )
+  // Usar hook centralizado para obtener los proyectos
+  const [proyectos] = useProyectos()
+  const isLoaded = true
 
   // Mapear proyectos al formato interno
   const mappedProjects: Project[] = React.useMemo(() => {
@@ -200,12 +192,23 @@ export function ProjectPipeline({
 
   // Crear estructura de fases basada en los proyectos
   const phases: Phase[] = React.useMemo(() => {
-    return [1, 2, 3, 4, 5].map(faseId => ({
-      id: faseId,
-      name: getFaseName(faseId),
-      color: getFaseColor(faseId),
-      projects: mappedProjects.filter(p => p.phase === faseId)
-    }))
+    return [1, 2, 3, 4, 5].map(faseId => {
+      const phaseProjects = mappedProjects.filter(p => p.phase === faseId)
+      const totalValue = phaseProjects.reduce((sum, p) => {
+        // Extraer valor numérico del string formateado
+        const numericValue = p.value.replace(/[^0-9.-]/g, '')
+        return sum + (parseFloat(numericValue) || 0)
+      }, 0)
+      
+      return {
+        id: faseId,
+        name: getFaseName(faseId),
+        color: getFaseColor(faseId),
+        projects: phaseProjects,
+        totalValue,
+        projectCount: phaseProjects.length
+      }
+    })
   }, [mappedProjects])
 
   // Filtrar fases según permisos
@@ -275,12 +278,6 @@ export function ProjectPipeline({
             }
           </p>
         </div>
-        {showAllPhases && (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Proyecto
-          </Button>
-        )}
       </div>
 
       <div className={`grid gap-4 overflow-x-auto pb-4 ${showCommercialPhases || showAssignedOnly ? 'grid-cols-3' : 'grid-cols-5'
@@ -299,18 +296,47 @@ export function ProjectPipeline({
               </Badge>
             </div>
 
+            {/* Phase Summary Card */}
+            {phase.projects.length > 0 && (
+              <ModuleCard hover={false} className="mb-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      Proyectos
+                    </span>
+                    <span className="font-semibold">{phase.projectCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <DollarSign className="h-3 w-3" />
+                      Valor total
+                    </span>
+                    <span className="font-semibold text-emerald-400">
+                      {phase.totalValue > 0 
+                        ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(phase.totalValue)
+                        : '-'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      Prob. promedio
+                    </span>
+                    <span className="font-semibold">
+                      {Math.round(phase.projects.reduce((sum, p) => sum + p.progress, 0) / phase.projects.length)}%
+                    </span>
+                  </div>
+                </div>
+              </ModuleCard>
+            )}
+
             {/* Projects */}
             <div className="space-y-3">
               {phase.projects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-muted-foreground hover:text-foreground h-auto py-3"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                <span className="text-sm">Agregar proyecto</span>
-              </Button>
             </div>
           </div>
         ))}

@@ -3,10 +3,9 @@
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { StatCard } from "@/components/ui/stat-card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useLocalStorage } from "@/lib/useLocalStorage"
-import { STORAGE_KEYS, INITIAL_DATA } from "@/constants/storage"
+import { useEmpresas, useProyectos, useTareas, useTickets } from "@/lib/data"
+import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
 import type { Empresa } from "@/types/crm"
 import type { Proyecto } from "@/types/proyectos"
 import type { Tarea } from "@/types/tareas"
@@ -20,27 +19,20 @@ import {
 
 function StatsSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <StatGrid cols={4}>
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-10 w-10 rounded-xl" />
-          </div>
-          <Skeleton className="h-8 w-16 mt-2" />
-          <Skeleton className="h-3 w-20 mt-2" />
-        </div>
+        <Skeleton key={i} className="h-24" />
       ))}
-    </div>
+    </StatGrid>
   )
 }
 
 export function DashboardStats() {
-  // Cargar datos desde localStorage
-  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, INITIAL_DATA.empresas)
-  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, INITIAL_DATA.proyectos)
-  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, INITIAL_DATA.tareas)
-  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, INITIAL_DATA.tickets)
+  // Hooks centralizados para gestión de datos
+  const [empresas] = useEmpresas()
+  const [proyectos] = useProyectos()
+  const [tareas] = useTareas()
+  const [tickets] = useTickets()
 
   // Contar clientes activos: empresas donde tipo_entidad === 'cliente'
   const clientesActivos = React.useMemo(() => {
@@ -72,40 +64,40 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard
-        title="Clientes Activos"
-        value={clientesActivos.toString()}
-        change={`${empresas.length} empresas`}
-        changeType="neutral"
-        icon={<Building2 className="h-5 w-5 text-white" />}
-        iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+    <StatGrid cols={4}>
+      <MiniStat
+        value={clientesActivos}
+        label="Clientes Activos"
+        icon={<Building2 className="h-5 w-5" />}
+        variant="primary"
+        showBorder
+        accentColor="#06b6d4"
       />
-      <StatCard
-        title="Proyectos Activos"
-        value={proyectosActivos.toString()}
-        change={`${proyectos.length} total`}
-        changeType="neutral"
-        icon={<FolderKanban className="h-5 w-5 text-white" />}
-        iconBg="bg-gradient-to-br from-cyan-500 to-cyan-600"
+      <MiniStat
+        value={proyectosActivos}
+        label="Proyectos Activos"
+        icon={<FolderKanban className="h-5 w-5" />}
+        variant="info"
+        showBorder
+        accentColor="#3b82f6"
       />
-      <StatCard
-        title="Tareas Pendientes"
-        value={tareasPendientes.toString()}
-        change={`${tareas.length} total`}
-        changeType="neutral"
-        icon={<CheckSquare className="h-5 w-5 text-white" />}
-        iconBg="bg-gradient-to-br from-amber-500 to-orange-500"
+      <MiniStat
+        value={tareasPendientes}
+        label="Tareas Pendientes"
+        icon={<CheckSquare className="h-5 w-5" />}
+        variant="warning"
+        showBorder
+        accentColor="#f59e0b"
       />
-      <StatCard
-        title="Tickets Abiertos"
-        value={ticketsAbiertos.toString()}
-        change={`${tickets.length} total`}
-        changeType="neutral"
-        icon={<Headphones className="h-5 w-5 text-white" />}
-        iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+      <MiniStat
+        value={ticketsAbiertos}
+        label="Tickets Abiertos"
+        icon={<Headphones className="h-5 w-5" />}
+        variant="danger"
+        showBorder
+        accentColor="#ef4444"
       />
-    </div>
+    </StatGrid>
   )
 }
 

@@ -1,29 +1,23 @@
 "use client"
 
 import { useAuth } from '@/contexts/auth-context'
-import { useLocalStorage } from '@/lib/useLocalStorage'
+import { useEmpresas, useProyectos, useTareas, useTickets } from '@/lib/data'
+import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { DashboardStats, RecentActivity, UpcomingTasks } from "@/components/dashboard-stats"
 import { ProjectPipeline } from "@/components/pipeline"
 import { WelcomeHeader } from "@/components/welcome-header"
-import { Card, CardContent } from "@/components/ui/card"
 import { AccessDeniedCard } from "@/components/ui/access-denied-card"
-import { MiniStat } from "@/components/ui/mini-stat"
+import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
-import Link from "next/link"
-import { STORAGE_KEYS, INITIAL_DATA } from '@/constants/storage'
-import type { Empresa } from "@/types/crm"
-import type { Proyecto } from "@/types/proyectos"
-import type { Tarea } from "@/types/tareas"
-import type { Ticket } from "@/types/soporte"
 
 export default function DashboardPage() {
   const { user, canAccessModule, isInternalUser } = useAuth()
 
-  // Cargar datos desde localStorage
-  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, INITIAL_DATA.empresas)
-  const [proyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, INITIAL_DATA.proyectos)
-  const [tareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, INITIAL_DATA.tareas)
-  const [tickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, INITIAL_DATA.tickets)
+  // Hooks centralizados para gestión de datos
+  const [empresas] = useEmpresas()
+  const [proyectos] = useProyectos()
+  const [tareas] = useTareas()
+  const [tickets] = useTickets()
 
   // Determinar qué mostrar según el rol
   const isAdmin = user?.roles.includes('admin')
@@ -36,44 +30,51 @@ export default function DashboardPage() {
   // Si es cliente, mostrar portal del cliente
   if (isCliente) {
     return (
-      <div className="space-y-8 w-full overflow-x-hidden">
+      <ModuleContainer>
         <WelcomeHeader />
 
         {/* Portal del Cliente - Vista simplificada */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+        <StatGrid cols={4}>
           <MiniStat
             value={1}
             label="Proyecto Activo"
             valueColor="text-cyan-400"
-            icon={<FolderKanban className="h-6 w-6 text-cyan-400" />}
-            className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20"
-            size="md"
+            icon={<FolderKanban className="h-6 w-6" />}
+            variant="primary"
+            showBorder
+            accentColor="#06b6d4"
           />
 
           <MiniStat
             value={3}
             label="Tareas Pendientes"
             valueColor="text-emerald-400"
-            icon={<CheckSquare className="h-6 w-6 text-emerald-400" />}
-            size="md"
+            icon={<CheckSquare className="h-6 w-6" />}
+            variant="success"
+            showBorder
+            accentColor="#10b981"
           />
 
           <MiniStat
             value={2}
             label="Tickets Abiertos"
             valueColor="text-amber-400"
-            icon={<Headphones className="h-6 w-6 text-amber-400" />}
-            size="md"
+            icon={<Headphones className="h-6 w-6" />}
+            variant="warning"
+            showBorder
+            accentColor="#f59e0b"
           />
 
           <MiniStat
             value={5}
             label="Documentos"
             valueColor="text-violet-400"
-            icon={<Building2 className="h-6 w-6 text-violet-400" />}
-            size="md"
+            icon={<Building2 className="h-6 w-6" />}
+            variant="info"
+            showBorder
+            accentColor="#8b5cf6"
           />
-        </div>
+        </StatGrid>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentActivity
@@ -87,7 +88,7 @@ export default function DashboardPage() {
             proyectos={proyectos}
           />
         </div>
-      </div>
+      </ModuleContainer>
     )
   }
 
@@ -103,7 +104,7 @@ export default function DashboardPage() {
 
   // Dashboard para usuarios internos
   return (
-    <div className="space-y-8 w-full overflow-x-hidden">
+    <ModuleContainer>
       <WelcomeHeader />
 
       {/* Stats - varies by role */}
@@ -120,30 +121,24 @@ export default function DashboardPage() {
 
       {/* CRM - solo comerciales y admin */}
       {isAdmin && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-          <Card className="w-full max-w-sm overflow-hidden hover:shadow-lg transition-all duration-200 border border-border/50 rounded-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground">Empresas Activas</p>
-                  <p className="text-3xl font-bold">24</p>
-                </div>
-                <Building2 className="h-8 w-8 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="w-full max-w-sm overflow-hidden hover:shadow-lg transition-all duration-200 border border-border/50 rounded-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground">Contactos</p>
-                  <p className="text-3xl font-bold">58</p>
-                </div>
-                <Headphones className="h-8 w-8 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatGrid cols={2}>
+          <MiniStat
+            value={24}
+            label="Empresas Activas"
+            icon={<Building2 className="h-6 w-6" />}
+            variant="primary"
+            showBorder
+            accentColor="#06b6d4"
+          />
+          <MiniStat
+            value={58}
+            label="Contactos"
+            icon={<Headphones className="h-6 w-6" />}
+            variant="info"
+            showBorder
+            accentColor="#3b82f6"
+          />
+        </StatGrid>
       )}
 
       {/* Bottom section - filtered by role */}
@@ -161,6 +156,6 @@ export default function DashboardPage() {
           />
         )}
       </div>
-    </div>
+    </ModuleContainer>
   )
 }
