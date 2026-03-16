@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.10  
+**Versión:** 1.11  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Coherencia de UI: ModuleContainer, ModuleCard, StatGrid, hooks centralizados
+**Estado:** En desarrollo - Módulo de Estadísticas: gráficos reutilizables, constantes centralizadas, sin hardcoding
 
 ---
 
@@ -85,25 +85,21 @@
 ### 3.3 Rutas
 
 ```
-/                         → Landing / Redirect
-/login                    → Login público
-/recuperar-password       → Recuperar contraseña
-
 /dashboard                → Dashboard principal
+/dashboard/estadisticas   → Estadísticas y métricas
 /dashboard/crm            → CRM Empresas/Contactos
 /dashboard/proyectos      → Pipeline de proyectos
 /dashboard/tareas         → Mis tareas
 /dashboard/calendario     → Calendario
-/dashboard/compras       → Órdenes de compra
-/dashboard/soporte       → Tickets y contratos de soporte
-/dashboard/usuarios      → Gestión de usuarios
-/dashboard/archivos      → Archivos
-/dashboard/archivados    → Elementos archivados
+/dashboard/compras        → Órdenes de compra
+/dashboard/soporte        → Tickets y contratos de soporte
+/dashboard/usuarios       → Gestión de usuarios
+/dashboard/archivos       → Archivos
+/dashboard/archivados     → Elementos archivados
 /dashboard/notificaciones → Notificaciones
 /dashboard/perfil        → Perfil de usuario
-
-/portal                   → Portal cliente (vista simplificada)
-/portal/proyectos         → Proyectos del cliente
+/dashboard/configuracion  → Configuración general
+/dashboard/archivados     → Proyectos archivados
 ```
 
 ---
@@ -141,9 +137,11 @@
 - Skeleton
 - StatCard
 - MiniStat
+- StatGrid
 - InfoCard
 - AccessDeniedCard
 - RoleBadge
+- stats-chart (BarChart, PieChart, ProgressRing, MetricCard, ChartGrid)
 
 ### 4.2 @dnd-kit
 
@@ -228,6 +226,7 @@ netops-crm/
 │   │   │       ├── usuarios/
 │   │   │       ├── archivos/
 │   │   │       ├── archivados/
+│   │   │       ├── estadisticas/
 │   │   │       ├── notificaciones/
 │   │   │       └── perfil/
 │   │   ├── portal/            # Portal cliente
@@ -324,7 +323,8 @@ netops-crm/
 │       ├── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
 │       ├── archivado.ts       # Textos, labels y configuraciones (módulo archivados)
 │       ├── compras.ts         # Textos, labels, impuestos (módulo compras)
-│       └── notificaciones.ts  # Textos, labels y configuraciones (módulo notificaciones)
+│       ├── notificaciones.ts  # Textos, labels y configuraciones (módulo notificaciones)
+│       └── estadisticas.ts    # Colores, labels y funciones helper para gráficos
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
@@ -368,6 +368,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | Módulo | Estado | Notas |
 |--------|--------|-------|
 | Dashboard principal | ✅ | Stats, actividad reciente, próximas tareas |
+| Estadísticas | ✅ | Métricas, gráficos reutilizables, datos de localStorage |
 | CRM | ✅ | Empresas, contactos, pipeline |
 | Proyectos | ✅ | Pipeline con drag & drop |
 | Tareas | ✅ | Kanban por estado |
@@ -405,6 +406,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.8 | 2026-03-15 | Módulo archivos y archivados: localStorage, componentes extraídos, constantes centralizadas, hooks personalizados |
 | 1.9 | 2026-03-15 | Módulo usuarios: RoleBadge componente, getRoleColor en colors, filtros consistentes, modal confirmación |
 | 1.10 | 2026-03-15 | Coherencia UI: Dashboard y CRM usan ModuleContainer, Pipeline usa ModuleCard, Stats usan StatGrid+MiniStat, hooks centralizados |
+| 1.11 | 2026-03-15 | Módulo estadísticas: gráficos reutilizables (BarChart, PieChart, ProgressRing, MetricCard), constantes centralizadas (estadisticas.ts), sin hardcoding |
 
 ---
 
@@ -431,5 +433,5 @@ SUPABASE_SERVICE_ROLE_KEY=
 ---
 
 **Documento creado:** 2026-03-07  
-**Última actualización:** 2026-03-15 (v1.10)  
+**Última actualización:** 2026-03-15 (v1.11)  
 **Responsable:** Sistema

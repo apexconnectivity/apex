@@ -193,8 +193,78 @@ The project uses a custom UI component library in `src/components/ui/`:
 | Badge | `badge.tsx` | Status/category indicator |
 | Tabs | `tabs.tsx` | Tabbed navigation |
 | Avatar | `avatar.tsx` | User avatar display |
+| MiniStat | `mini-stat.tsx` | Compact stat card with icon |
+| StatGrid | `mini-stat.tsx` | Grid layout for stats |
+| BarChart | `stats-chart.tsx` | Bar chart component |
+| PieChart | `stats-chart.tsx` | Pie chart component |
+| ProgressRing | `stats-chart.tsx` | Circular progress indicator |
+| MetricCard | `stats-chart.tsx` | Card with metric display |
+| ChartGrid | `stats-chart.tsx` | Grid layout for charts |
 
 All UI components use **Radix UI** primitives and follow the same patterns.
+
+---
+
+## Statistics Module
+
+The project includes a complete statistics module with reusable components:
+
+### Constants
+Located in `src/constants/estadisticas.ts`:
+
+| Constant | Description |
+|----------|-------------|
+| `CHART_COLORS` | Centralized color palette for charts |
+| `CHART_PALETTE` | Rotating color palette |
+| `STATS_LABELS` | Centralized labels and text |
+| `ENTITY_TYPE_COLORS` | Colors for CRM entity types |
+| `PROJECT_STATUS_COLORS` | Colors for project states |
+| `TASK_STATUS_COLORS_MAP` | Colors for task states |
+| `PRIORITY_COLORS_MAP` | Colors for priorities |
+| `TICKET_STATUS_COLORS_MAP` | Colors for ticket states |
+
+### Helper Functions
+- `getChartColorByIndex(index)`: Get color from palette by index
+- `mapToChartData(data, colorMap)`: Convert data records to chart format
+- `getVariantByStatus(status)`: Get MiniStat variant from status string
+
+### Chart Components
+Located in `src/components/ui/stats-chart.tsx`:
+
+```typescript
+// Bar Chart
+<BarChart 
+  data={[{ label: 'Label', value: 10, color: '#06b6d4' }]} 
+  title="Chart Title" 
+/>
+
+// Pie Chart
+<PieChart 
+  data={[{ label: 'Label', value: 10, color: '#06b6d4' }]} 
+  title="Chart Title" 
+/>
+
+// Progress Ring
+<ProgressRing 
+  value={75} 
+  max={100} 
+  color="#10b981" 
+  label="Progress" 
+/>
+
+// Metric Card
+<MetricCard 
+  title="Metric Title" 
+  value={100} 
+  icon={<Icon />} 
+/>
+
+// Chart Grid
+<ChartGrid cols={2}>
+  <Chart1 />
+  <Chart2 />
+</ChartGrid>
+```
 
 ---
 
