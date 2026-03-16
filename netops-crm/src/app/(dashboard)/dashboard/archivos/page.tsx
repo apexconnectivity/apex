@@ -6,23 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { Folder, FolderOpen, FileText, Image, Download, ExternalLink, Trash2, Upload, Eye, Link2, X, ChevronRight, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive } from 'lucide-react'
-import { Archivo, CarpetaDrive, EntidadTipo, Visibilidad, formatBytes, getFileIcon, TAMAÑO_MAXIMO, TIPOS_ARCHIVO_PERMITIDOS } from '@/types/archivos'
+import { ArchivoCard, FolderSection, UploadModal } from '@/components/module'
+import { useArchivosStorage } from '@/hooks/useArchivosStorage'
+import { Folder, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive, Trash2, Upload } from 'lucide-react'
+import { Archivo, EntidadTipo, Visibilidad } from '@/types/archivos'
 import { 
   PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS, 
-  FILTER_LABELS, EMPTY_MESSAGES, SECTION_TITLES, UPLOAD_MODAL, 
-  VISIBILITY_OPTIONS, FILE_PLACEHOLDER, BADGE_LABELS, ERROR_MESSAGES, ACCESS_DENIED,
-  STAT_COLORS, FILE_TYPES
+  FILTER_LABELS, EMPTY_MESSAGES, SECTION_TITLES, UPLOAD_MODAL,
+  STAT_COLORS, BADGE_LABELS, ERROR_MESSAGES, ACCESS_DENIED
 } from '@/lib/constants/archivos'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
+// ============================================================================
+// Datos demo para selects (se mantienen para funcionalidades de filtro)
+// ============================================================================
 const DEMO_EMPRESAS = [
   { id: '1', nombre: 'Soluciones Tecnológicas SA', tipo_entidad: 'cliente' },
   { id: '2', nombre: 'Hospital Regional Norte', tipo_entidad: 'cliente' },
@@ -36,269 +38,14 @@ const DEMO_PROYECTOS = [
   { id: '3', nombre: 'Auditoría Seguridad Tech', empresa_nombre: 'TechCorp International' },
 ]
 
-const DEMO_ARCHIVOS: Archivo[] = [
-  { id: '1', drive_file_id: 'abc123', nombre_original: 'contrato_marco.pdf', nombre_guardado: '2026-01-15_contrato_marco.pdf', mime_type: 'application/pdf', tamaño_bytes: 2450000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Clientes Activos/Soluciones Tecnológicas SA/Corporativo/Interno/', entidad_tipo: 'empresa', entidad_id: '1', visibilidad: 'interno', subido_por: '1', subido_por_nombre: 'Carlos Admin', fecha_subida: '2026-01-15T10:30:00' },
-  { id: '2', drive_file_id: 'def456', nombre_original: 'diagrama_red.pdf', nombre_guardado: '2026-02-01_diagrama_red.pdf', mime_type: 'application/pdf', tamaño_bytes: 850000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Clientes Activos/Soluciones Tecnológicas SA/Implementación Firewall Corp/Entregables Cliente/', entidad_tipo: 'proyecto', entidad_id: '1', visibilidad: 'interno', subido_por: '2', subido_por_nombre: 'Laura Pérez', fecha_subida: '2026-02-01T14:20:00' },
-  { id: '3', drive_file_id: 'ghi789', nombre_original: 'config_firewall.conf', nombre_guardado: '2026-02-10_config_firewall.conf', mime_type: 'application/octet-stream', tamaño_bytes: 15000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Clientes Activos/Soluciones Tecnológicas SA/Implementación Firewall Corp/Internos/', entidad_tipo: 'proyecto', entidad_id: '1', visibilidad: 'interno', subido_por: '3', subido_por_nombre: 'Juan Técnico', fecha_subida: '2026-02-10T09:15:00' },
-  { id: '4', drive_file_id: 'jkl012', nombre_original: 'factura_2026-02.pdf', nombre_guardado: '2026-02-28_factura_2026-02.pdf', mime_type: 'application/pdf', tamaño_bytes: 125000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Clientes Activos/Soluciones Tecnológicas SA/Implementación Firewall Corp/Facturas/', entidad_tipo: 'proyecto', entidad_id: '1', visibilidad: 'interno', subido_por: '1', subido_por_nombre: 'Carlos Admin', fecha_subida: '2026-02-28T16:00:00' },
-  { id: '5', drive_file_id: 'mno345', nombre_original: 'catalogo_equipos.pdf', nombre_guardado: '2026-01-20_catalogo_equipos.pdf', mime_type: 'application/pdf', tamaño_bytes: 5600000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Proveedores/Distribuidor Mayorista SA/Corporativo/Interno/', entidad_tipo: 'empresa', entidad_id: '4', visibilidad: 'interno', subido_por: '4', subido_por_nombre: 'María Compras', fecha_subida: '2026-01-20T11:00:00' },
-  { id: '6', drive_file_id: 'pqr678', nombre_original: 'requisitos_usuarios.docx', nombre_guardado: '2026-03-01_requisitos_usuarios.docx', mime_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', tamaño_bytes: 45000, drive_view_link: '#', drive_download_link: '#', ruta_completa: '/Clientes Activos/Soluciones Tecnológicas SA/Implementación Firewall Corp/Entregables Cliente/', entidad_tipo: 'proyecto', entidad_id: '1', visibilidad: 'publico', subido_por: '2', subido_por_nombre: 'Laura Pérez', fecha_subida: '2026-03-01T08:30:00' },
-]
-
-function ArchivoCard({ archivo, onVer, onEliminar }: { archivo: Archivo; onVer: () => void; onEliminar: () => void }) {
-  const isImage = archivo.mime_type.includes('image')
-
-  return (
-    <Card className="card-hover-scale-glow">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="text-muted-foreground">{getFileIcon(archivo.mime_type)}</div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate">{archivo.nombre_original}</h4>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span>{formatBytes(archivo.tamaño_bytes)}</span>
-              <span>•</span>
-              <span>{new Date(archivo.fecha_subida).toLocaleDateString('es-ES')}</span>
-              <span>•</span>
-              <span>{archivo.subido_por_nombre}</span>
-            </div>
-            <div className="flex items-center gap-1 mt-2">
-              {archivo.visibilidad === 'publico' && (
-                <Badge variant="outline" className="text-xs"><Globe className="h-3 w-3 mr-1" />{BADGE_LABELS.publico}</Badge>
-              )}
-              {archivo.visibilidad === 'interno' && (
-                <Badge variant="outline" className="text-xs"><Lock className="h-3 w-3 mr-1" />{BADGE_LABELS.interno}</Badge>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onVer} title="Ver en Drive">
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard.writeText(archivo.drive_view_link)} title="Copiar enlace">
-              <Link2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onEliminar} title="Eliminar">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function FolderSection({ titulo, icon: Icon, archivos, onVer, onEliminar, defaultOpen = false }: {
-  titulo: string
-  icon: any
-  archivos: Archivo[]
-  onVer: (archivo: Archivo) => void
-  onEliminar: (archivo: Archivo) => void
-  defaultOpen?: boolean
-}) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-
-  return (
-    <div className="border rounded-lg overflow-hidden">
-      <button
-        className="w-full flex items-center gap-2 p-4 bg-muted/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <FolderOpen className="h-5 w-5 text-amber-500" /> : <Folder className="h-5 w-5 text-amber-500" />}
-        <span className="font-medium flex-1 text-left">{titulo}</span>
-        <Badge variant="secondary" className="mr-2">{archivos.length}</Badge>
-        <ChevronRight className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-      </button>
-      {isOpen && (
-        <div className="p-4 space-y-2">
-          {archivos.length > 0 ? (
-            archivos.map(archivo => (
-              <ArchivoCard
-                key={archivo.id}
-                archivo={archivo}
-                onVer={() => onVer(archivo)}
-                onEliminar={() => onEliminar(archivo)}
-              />
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noArchivosCarpeta}</p>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function UploadModal({ isOpen, onClose, onUpload }: {
-  isOpen: boolean
-  onClose: () => void
-  onUpload: (archivo: Omit<Archivo, 'id' | 'drive_file_id' | 'nombre_guardado' | 'drive_view_link' | 'drive_download_link' | 'drive_embed_link' | 'ruta_completa' | 'fecha_subida'>) => void
-}) {
-  const [archivo, setArchivo] = useState({
-    nombre_original: '',
-    mime_type: '',
-    tamaño_bytes: 0,
-    entidad_tipo: '' as EntidadTipo | '',
-    entidad_id: '',
-    visibilidad: 'interno' as Visibilidad,
-    descripcion: '',
-    tipo: '',
-  })
-  const [file, setFile] = useState<File | null>(null)
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (f) {
-      setFile(f)
-      // Extraer extensión del archivo original
-      const ext = f.name.split('.').pop() || ''
-      setArchivo({ ...archivo, nombre_original: f.name, mime_type: f.type, tamaño_bytes: f.size })
-    }
-  }
-
-  const handleUpload = () => {
-    if (!file || !archivo.entidad_tipo || !archivo.entidad_id) return
-    // Usar el nombre personalizado o el original
-    const nombreFinal = archivo.descripcion.trim() || file.name
-    onUpload({
-      ...archivo,
-      nombre_original: nombreFinal,
-      entidad_tipo: archivo.entidad_tipo as EntidadTipo,
-      subido_por: '1',
-      subido_por_nombre: 'Carlos Admin',
-    })
-    onClose()
-    setFile(null)
-    setArchivo({ nombre_original: '', mime_type: '', tamaño_bytes: 0, entidad_tipo: '', entidad_id: '', visibilidad: 'interno', descripcion: '', tipo: '' })
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            {UPLOAD_MODAL.titulo}
-          </DialogTitle>
-        </DialogHeader>
-        <DialogBody>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>{UPLOAD_MODAL.destino}</Label>
-                <Select value={archivo.entidad_tipo} onValueChange={(v) => setArchivo({ ...archivo, entidad_tipo: v as EntidadTipo, entidad_id: '' })}>
-                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="empresa">Empresa</SelectItem>
-                    <SelectItem value="proyecto">Proyecto</SelectItem>
-                    <SelectItem value="ticket">Ticket</SelectItem>
-                    <SelectItem value="tarea">Tarea</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>{UPLOAD_MODAL.tipo}</Label>
-                <Select value={archivo.tipo} onValueChange={(v) => setArchivo({ ...archivo, tipo: v })}>
-                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="contrato">{FILE_TYPES.contrato}</SelectItem>
-                    <SelectItem value="factura">{FILE_TYPES.factura}</SelectItem>
-                    <SelectItem value="presupuesto">{FILE_TYPES.presupuesto}</SelectItem>
-                    <SelectItem value="documentoTecnico">{FILE_TYPES.documentoTecnico}</SelectItem>
-                    <SelectItem value="entregable">{FILE_TYPES.entregable}</SelectItem>
-                    <SelectItem value="manual">{FILE_TYPES.manual}</SelectItem>
-                    <SelectItem value="otro">{FILE_TYPES.otro}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {archivo.entidad_tipo === 'empresa' && (
-              <div>
-                <Label>{UPLOAD_MODAL.empresa}</Label>
-                <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
-                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    {DEMO_EMPRESAS.map(e => (
-                      <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {archivo.entidad_tipo === 'proyecto' && (
-              <div>
-                <Label>{UPLOAD_MODAL.proyecto}</Label>
-                <Select value={archivo.entidad_id} onValueChange={(v) => setArchivo({ ...archivo, entidad_id: v })}>
-                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
-                  <SelectContent>
-                    {DEMO_PROYECTOS.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {archivo.entidad_tipo === 'empresa' && (
-              <div>
-                <Label>{UPLOAD_MODAL.visibilidad}</Label>
-                <Select value={archivo.visibilidad} onValueChange={(v) => setArchivo({ ...archivo, visibilidad: v as Visibilidad })}>
-                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="interno">{VISIBILITY_OPTIONS.interno}</SelectItem>
-                    <SelectItem value="publico">{VISIBILITY_OPTIONS.publico}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div>
-              <Label>{UPLOAD_MODAL.descripcion}</Label>
-              <Input 
-                placeholder="Nombre o descripción del archivo..." 
-                value={archivo.descripcion}
-                onChange={(e) => setArchivo({ ...archivo, descripcion: e.target.value })}
-              />
-              <p className="text-xs text-muted-foreground mt-1">Este nombre se usará para guardar el archivo en Drive</p>
-            </div>
-
-            <div>
-              <Label>{UPLOAD_MODAL.archivo}</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/30 transition-colors">
-                <input type="file" onChange={handleFileChange} className="hidden" id="file-upload" />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {file ? file.name : FILE_PLACEHOLDER}
-                  </p>
-                  {file && <p className="text-xs text-muted-foreground mt-1">{formatBytes(file.size)}</p>}
-                </label>
-              </div>
-              {file && file.size > TAMAÑO_MAXIMO && (
-                <p className="text-sm text-destructive mt-1">{ERROR_MESSAGES.tamanoMaximo(25)}</p>
-              )}
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>{BUTTON_LABELS.cancelar}</Button>
-          <Button onClick={handleUpload} disabled={!file || !archivo.entidad_tipo || !archivo.entidad_id || file.size > TAMAÑO_MAXIMO}>
-            <Upload className="h-4 w-4 mr-2" />{BUTTON_LABELS.subir}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 export default function ArchivosPage() {
   const { user } = useAuth()
-  const [archivos, setArchivos] = useState<Archivo[]>(DEMO_ARCHIVOS)
+  
+  // ============================================================================
+  // Usar hook de localStorage para gestionar archivos
+  // ============================================================================
+  const { archivos, addArchivo, removeArchivo, loading } = useArchivosStorage()
+  
   const [view, setView] = useState<'todos' | 'empresas' | 'proyectos'>('todos')
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('todas')
   const [showUpload, setShowUpload] = useState(false)
@@ -312,6 +59,9 @@ export default function ArchivosPage() {
   const isFacturacion = user?.roles.includes('facturacion')
   const canUpload = isAdmin || isTecnico || isComercial || isCompras || isFacturacion
 
+  // ============================================================================
+  // Memoized: archivos filtrados por vista y empresa seleccionada
+  // ============================================================================
   const archivosPorEntidad = useMemo(() => {
     return archivos.filter(a => {
       if (view === 'empresas' && a.entidad_tipo !== 'empresa') return false
@@ -324,6 +74,9 @@ export default function ArchivosPage() {
     })
   }, [archivos, view, selectedEmpresa])
 
+  // ============================================================================
+  // Memoized: archivos agrupados por carpeta
+  // ============================================================================
   const archivosPorCarpeta = useMemo(() => {
     const result: Record<string, Archivo[]> = {
       'Empresas': [],
@@ -336,6 +89,9 @@ export default function ArchivosPage() {
     return result
   }, [archivosPorEntidad])
 
+  // ============================================================================
+  // Memoized: estadísticas de archivos
+  // ============================================================================
   const stats = useMemo(() => ({
     total: archivos.length,
     empresas: archivos.filter(a => a.entidad_tipo === 'empresa').length,
@@ -344,21 +100,9 @@ export default function ArchivosPage() {
     tamañoTotal: archivos.reduce((acc, a) => acc + a.tamaño_bytes, 0),
   }), [archivos])
 
-  const handleUpload = (archivo: Omit<Archivo, 'id' | 'drive_file_id' | 'nombre_guardado' | 'drive_view_link' | 'drive_download_link' | 'drive_embed_link' | 'ruta_completa' | 'fecha_subida'>) => {
-    const ruta = getRuta(archivo.entidad_tipo, archivo.entidad_id, archivo.visibilidad)
-    const nuevo: Archivo = {
-      ...archivo,
-      id: Date.now().toString(),
-      drive_file_id: Math.random().toString(36).substr(2, 9),
-      nombre_guardado: `${new Date().toISOString().split('T')[0]}_${archivo.nombre_original}`,
-      drive_view_link: '#',
-      drive_download_link: '#',
-      ruta_completa: ruta,
-      fecha_subida: new Date().toISOString(),
-    }
-    setArchivos(prev => [...prev, nuevo])
-  }
-
+  // ============================================================================
+  // Handler: generar ruta para el archivo
+  // ============================================================================
   const getRuta = (entidad: EntidadTipo, id: string, visibilidad: Visibilidad): string => {
     if (entidad === 'empresa') {
       const empresa = DEMO_EMPRESAS.find(e => e.id === id)
@@ -372,23 +116,61 @@ export default function ArchivosPage() {
     return '/'
   }
 
+  // ============================================================================
+  // Handler: preparar upload - pasa los datos al hook que genera el ID
+  // ============================================================================
+  const handleUpload = (archivo: Omit<Archivo, 'id' | 'drive_file_id' | 'nombre_guardado' | 'drive_view_link' | 'drive_download_link' | 'drive_embed_link' | 'ruta_completa' | 'fecha_subida'>) => {
+    // El hook addArchivo se encarga de generar el ID, fechas y enlaces
+    // Solo necesitamos pasar la ruta calculada
+    const archivoConRuta = {
+      ...archivo,
+      ruta_completa: getRuta(archivo.entidad_tipo, archivo.entidad_id, archivo.visibilidad)
+    }
+    addArchivo(archivoConRuta)
+  }
+
+  // ============================================================================
+  // Handler: abrir diálogo de confirmación de eliminación
+  // ============================================================================
   const handleEliminar = (archivo: Archivo) => {
     setArchivoAEliminar(archivo)
   }
 
+  // ============================================================================
+  // Handler: confirmar eliminación usando el hook
+  // ============================================================================
   const confirmarEliminar = () => {
     if (archivoAEliminar) {
-      setArchivos(prev => prev.filter(a => a.id !== archivoAEliminar.id))
+      removeArchivo(archivoAEliminar.id)
       setArchivoAEliminar(null)
     }
   }
 
+  // ============================================================================
+  // Handler: toggle carpeta expandida
+  // ============================================================================
   const toggleFolder = (folder: string) => {
     setExpandedFolders(prev =>
       prev.includes(folder) ? prev.filter(f => f !== folder) : [...prev, folder]
     )
   }
 
+  // ============================================================================
+  // Estado de carga
+  // ============================================================================
+  if (loading) {
+    return (
+      <ModuleContainer>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Cargando archivos...</p>
+        </div>
+      </ModuleContainer>
+    )
+  }
+
+  // ============================================================================
+  // Control de acceso
+  // ============================================================================
   if (!canUpload && !isAdmin) {
     return (
       <AccessDeniedCard
@@ -400,6 +182,9 @@ export default function ArchivosPage() {
 
   return (
     <ModuleContainer>
+      {/* ====================================================================== */}
+      {/* Header */}
+      {/* ====================================================================== */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -425,6 +210,9 @@ export default function ArchivosPage() {
         </div>
       </div>
 
+      {/* ====================================================================== */}
+      {/* Stats */}
+      {/* ====================================================================== */}
       <StatGrid cols={5}>
         <MiniStat value={stats.total} label={STATS_LABELS.totalArchivos} variant="primary" showBorder accentColor={STAT_COLORS.total} icon={<Files className="h-5 w-5" />} />
         <MiniStat value={stats.empresas} label={STATS_LABELS.empresas} variant="info" showBorder accentColor={STAT_COLORS.empresas} icon={<Building2 className="h-5 w-5" />} />
@@ -433,6 +221,9 @@ export default function ArchivosPage() {
         <MiniStat value={formatBytes(stats.tamañoTotal)} label={STATS_LABELS.espacioUsado} variant="default" showBorder accentColor={STAT_COLORS.espacio} icon={<HardDrive className="h-5 w-5" />} />
       </StatGrid>
 
+      {/* ====================================================================== */}
+      {/* Filtro por empresa */}
+      {/* ====================================================================== */}
       {view === 'empresas' && (
         <div className="flex gap-4">
           <Select value={selectedEmpresa} onValueChange={setSelectedEmpresa}>
@@ -447,9 +238,13 @@ export default function ArchivosPage() {
         </div>
       )}
 
+      {/* ====================================================================== */}
+      {/* Lista de archivos por vista */}
+      {/* ====================================================================== */}
       <div className="grid gap-4">
         {view === 'todos' && (
           <>
+            {/* Empresas Section */}
             <div className="border rounded-lg overflow-hidden">
               <button
                 className="w-full flex items-center gap-2 p-4 bg-muted/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5"
@@ -477,6 +272,7 @@ export default function ArchivosPage() {
               )}
             </div>
 
+            {/* Proyectos Section */}
             <div className="border rounded-lg overflow-hidden">
               <button
                 className="w-full flex items-center gap-2 p-4 bg-muted/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5"
@@ -525,6 +321,9 @@ export default function ArchivosPage() {
         ))}
       </div>
 
+      {/* ====================================================================== */}
+      {/* Diálogo de confirmación de eliminación */}
+      {/* ====================================================================== */}
       <Dialog open={!!archivoAEliminar} onOpenChange={() => setArchivoAEliminar(null)}>
         <DialogContent size="sm">
           <DialogHeader>
@@ -546,11 +345,27 @@ export default function ArchivosPage() {
         </DialogContent>
       </Dialog>
 
+      {/* ====================================================================== */}
+      {/* Modal de upload */}
+      {/* ====================================================================== */}
       <UploadModal
         isOpen={showUpload}
         onClose={() => setShowUpload(false)}
         onUpload={handleUpload}
+        empresas={DEMO_EMPRESAS}
+        proyectos={DEMO_PROYECTOS}
       />
     </ModuleContainer>
   )
+}
+
+// ========================================================================
+// Utilidad para formatear bytes (copiada para mantener compatibilidad)
+// ========================================================================
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }

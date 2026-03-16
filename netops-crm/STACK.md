@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.7  
+**Versión:** 1.8  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo notificaciones refactorizado con localStorage y constantes centralizadas
+**Estado:** En desarrollo - Módulo archivos y archivados refactorizado con localStorage y componentes extraídos
 
 ---
 
@@ -178,6 +178,10 @@
 | Eventos Notificaciones | `apex_notificaciones_eventos` | ✅ Implementado |
 | Vista Notificaciones | `apex_notificaciones_vista` | ✅ Implementado |
 | Usuario sesión | `apex_user` | ✅ Implementado |
+| Archivos | `netops_archivos` | ✅ Implementado |
+| Proyectos Archivados | `netops_proyectos_archivados` | ✅ Implementado |
+| Proyectos Cerrados | `netops_proyectos_cerrados` | ✅ Implementado |
+| Config Archivado | `netops_config_archivado` | ✅ Implementado |
 
 **Constantes centralizadas:** Todas las keys están definidas en `src/constants/storage.ts`
 
@@ -258,6 +262,15 @@ netops-crm/
 │   │   │   ├── ModuleContainer.tsx
 │   │   │   ├── ModuleHeader.tsx
 │   │   │   ├── ModuleCard.tsx
+│   │   │   ├── ArchivoCard.tsx
+│   │   │   ├── FolderSection.tsx
+│   │   │   ├── UploadModal.tsx
+│   │   │   ├── ProyectoCerradoCard.tsx
+│   │   │   ├── ProyectoArchivadoCard.tsx
+│   │   │   ├── DetalleArchivadoModal.tsx
+│   │   │   ├── ConfirmArchiveModal.tsx
+│   │   │   ├── ConfirmDeleteModal.tsx
+│   │   │   ├── ConfiguracionTab.tsx
 │   │   │   └── ...
 │   │   │
 │   │   ├── dashboard-stats.tsx
@@ -270,6 +283,11 @@ netops-crm/
 │   ├── contexts/              # React Context
 │   │   ├── auth-context.tsx
 │   │   └── portal-auth-context.tsx
+│   │
+│   ├── hooks/                 # Custom hooks
+│   │   ├── useArchivosStorage.ts    # Hook para archivos (localStorage)
+│   │   ├── useArchivadoStorage.ts   # Hook para archivados (localStorage)
+│   │   └── index.ts           # Export centralizado
 │   │
 │   ├── lib/                   # Utilidades
 │   │   ├── utils.ts           # cn() y cnHoverLift helpers
@@ -302,6 +320,7 @@ netops-crm/
 │       ├── soporte.ts         # Textos y keys localStorage (módulo soporte)
 │       ├── storage.ts         # Keys y valores iniciales centralizados (localStorage)
 │       ├── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
+│       ├── archivado.ts       # Textos, labels y configuraciones (módulo archivados)
 │       ├── compras.ts         # Textos, labels, impuestos (módulo compras)
 │       └── notificaciones.ts  # Textos, labels y configuraciones (módulo notificaciones)
 │
@@ -381,6 +400,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.5 | 2026-03-15 | Constantes centralizadas para archivos y storage, mejoras de consistencia UI |
 | 1.6 | 2026-03-15 | Módulo compras: localStorage, constantes centralizadas, estilos consistentes, datos demo extraídos |
 | 1.7 | 2026-03-15 | Módulo notificaciones: localStorage, constantes centralizadas, ModuleContainer corregido, StatCards consistentes |
+| 1.8 | 2026-03-15 | Módulo archivos y archivados: localStorage, componentes extraídos, constantes centralizadas, hooks personalizados |
 
 ---
 
@@ -407,5 +427,5 @@ SUPABASE_SERVICE_ROLE_KEY=
 ---
 
 **Documento creado:** 2026-03-07  
-**Última actualización:** 2026-03-15  
+**Última actualización:** 2026-03-15 (v1.8)  
 **Responsable:** Sistema

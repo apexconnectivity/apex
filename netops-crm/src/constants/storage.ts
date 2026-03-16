@@ -39,6 +39,16 @@ export const STORAGE_KEYS = {
   notificacionesPreferencia: 'apex_notificaciones_preferencia',
   notificacionesEventos: 'apex_notificaciones_eventos',
   notificacionesVista: 'apex_notificaciones_vista',
+
+  // Archivado
+  empresasArchivadas: 'apex_crm_archivados',
+  proyectosArchivados: 'apex_proyectos_archivados',
+  tareasArchivadas: 'apex_tareas_archivadas',
+  ticketsArchivados: 'apex_soporte_archivados',
+  contratosArchivados: 'apex_contratos_archivados',
+  comprasArchivadas: 'apex_compras_archivadas',
+  proveedoresArchivados: 'apex_proveedores_archivados',
+  cotizacionesArchivadas: 'apex_cotizaciones_archivadas',
 } as const
 
 // ============================================
@@ -57,6 +67,15 @@ export const INITIAL_DATA = {
   compras: [] as OrdenCompra[],
   proveedores: [] as Proveedor[],
   cotizaciones: [] as Cotizacion[],
+  // Archivado
+  empresasArchivadas: [] as Empresa[],
+  proyectosArchivados: [] as Proyecto[],
+  tareasArchivadas: [] as Tarea[],
+  ticketsArchivados: [] as Ticket[],
+  contratosArchivados: [] as ContratoSoporte[],
+  comprasArchivadas: [] as OrdenCompra[],
+  proveedoresArchivados: [] as Proveedor[],
+  cotizacionesArchivadas: [] as Cotizacion[],
 } as const
 
 // ============================================
