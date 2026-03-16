@@ -6,7 +6,7 @@ import { useLocalStorage } from '@/lib/useLocalStorage'
 import { type Archivo } from '@/types/archivos'
 
 export function useArchivos() {
-  const key = 'netops_archivos'
+  const key = 'apex_archivos'
   const initialValue: Archivo[] = []
   return useLocalStorage<Archivo[]>(key, initialValue)
 }
