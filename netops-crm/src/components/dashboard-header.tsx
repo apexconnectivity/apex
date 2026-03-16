@@ -13,6 +13,7 @@ import {
   Zap,
   Plus,
 } from 'lucide-react'
+import { STATUS_COLORS } from '@/lib/colors'
 
 interface BreadcrumbItem {
   label: string
@@ -46,7 +47,7 @@ export function DashboardHeader({ showSearch = true, showNewProject = true }: Da
       perfil: 'Perfil',
       configuracion: 'Configuración',
       estadisticas: 'Estadísticas',
-      archivados: 'Archivados',
+      archivados: 'Proyectos Archivados',
     }
 
     let currentPath = ''
@@ -139,7 +140,7 @@ export function DashboardHeader({ showSearch = true, showNewProject = true }: Da
               className="relative h-10 w-10"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500" />
+              <span className={`absolute top-2 right-2 h-2 w-2 rounded-full ${STATUS_COLORS.error.bg.replace('/15', '')}`} />
             </Button>
 
             {user && (

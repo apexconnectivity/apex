@@ -17,7 +17,8 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
-import { IMPUESTO_TASA, IMPUESTO_LABEL, 
+import {
+  IMPUESTO_TASA, IMPUESTO_LABEL,
   COMPRAS_TITLE, COMPRAS_DESCRIPTION,
   BOTON_NUEVA_ORDEN, BOTON_GUARDAR_BORRADOR, BOTON_SOLICITAR_APROBACION, BOTON_CANCELAR,
   BOTON_APROBAR, BOTON_ENVIAR, BOTON_REGISTRAR_RECEPCION, BOTON_DESCARGAR_PDF,
@@ -34,7 +35,7 @@ import { IMPUESTO_TASA, IMPUESTO_LABEL,
   MENSAJE_SIN_PERMISO
 } from '@/constants/compras'
 import { getOrdenCompraColor } from '@/lib/colors'
-import { DEMO_PROVEEDORES, DEMO_PROYECTOS, DEMO_ORDENES, DEMO_COTIZACIONES } from '@/data/compras-demo'
+import { useProyectos } from '@/hooks'
 import {
   ShoppingCart, Plus, Package, FileText, Truck, CheckCircle, XCircle,
   Clock, AlertTriangle, Search, Filter, DollarSign, Calendar,
@@ -334,9 +335,10 @@ function DetalleOrdenModal({ orden, onClose, onCambiarEstado }: {
 
 export default function ComprasPage() {
   const { user } = useAuth()
-  const [ordenes, setOrdenes] = useLocalStorage<OrdenCompra[]>(STORAGE_KEYS.compras, DEMO_ORDENES)
-  const [proveedores, setProveedores] = useLocalStorage<Proveedor[]>(STORAGE_KEYS.proveedores, DEMO_PROVEEDORES)
-  const [cotizaciones] = useLocalStorage<Cotizacion[]>(STORAGE_KEYS.cotizaciones, DEMO_COTIZACIONES)
+  const [ordenes, setOrdenes] = useLocalStorage<OrdenCompra[]>(STORAGE_KEYS.compras, [])
+  const [proveedores, setProveedores] = useLocalStorage<Proveedor[]>(STORAGE_KEYS.proveedores, [])
+  const [cotizaciones] = useLocalStorage<Cotizacion[]>(STORAGE_KEYS.cotizaciones, [])
+  const [proyectos] = useProyectos()
   const [vista, setVista] = useLocalStorage<'dashboard' | 'ordenes' | 'proveedores'>(STORAGE_KEYS.comprasVista, 'dashboard')
   const [showNuevaOrden, setShowNuevaOrden] = useState(false)
   const [selectedOrden, setSelectedOrden] = useState<OrdenCompra | null>(null)
@@ -376,7 +378,7 @@ export default function ComprasPage() {
   if (!canCreate && !isAdmin) {
     return (
       <AccessDeniedCard
-        icon={ShoppingCart}
+        icon={ClipboardList}
         description={MENSAJE_SIN_PERMISO}
       />
     )
@@ -500,11 +502,11 @@ export default function ComprasPage() {
         </TabsContent>
       </Tabs>
 
-      <NuevaOrdenModal 
-        isOpen={showNuevaOrden} 
-        onClose={() => setShowNuevaOrden(false)} 
-        onCreate={handleCreateOrden} 
-        proyectos={DEMO_PROYECTOS} 
+      <NuevaOrdenModal
+        isOpen={showNuevaOrden}
+        onClose={() => setShowNuevaOrden(false)}
+        onCreate={handleCreateOrden}
+        proyectos={proyectos.map(p => ({ id: p.id, nombre: p.nombre }))}
         proveedores={proveedores.map(p => ({ id: p.id, nombre: p.nombre }))}
         userName={user?.nombre ?? 'Usuario'}
       />

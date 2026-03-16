@@ -15,37 +15,24 @@ import { ArchivoCard, FolderSection, UploadModal } from '@/components/module'
 import { useArchivosStorage } from '@/hooks/useArchivosStorage'
 import { Folder, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive, Trash2, Upload } from 'lucide-react'
 import { Archivo, EntidadTipo, Visibilidad } from '@/types/archivos'
-import { 
-  PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS, 
+import {
+  PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS,
   FILTER_LABELS, EMPTY_MESSAGES, SECTION_TITLES, UPLOAD_MODAL,
   STAT_COLORS, BADGE_LABELS, ERROR_MESSAGES, ACCESS_DENIED
-} from '@/lib/constants/archivos'
+} from '@/constants/archivos'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
-
-// ============================================================================
-// Datos demo para selects (se mantienen para funcionalidades de filtro)
-// ============================================================================
-const DEMO_EMPRESAS = [
-  { id: '1', nombre: 'Soluciones Tecnológicas SA', tipo_entidad: 'cliente' },
-  { id: '2', nombre: 'Hospital Regional Norte', tipo_entidad: 'cliente' },
-  { id: '3', nombre: 'TechCorp International', tipo_entidad: 'cliente' },
-  { id: '4', nombre: 'Distribuidor Mayorista SA', tipo_entidad: 'proveedor' },
-]
-
-const DEMO_PROYECTOS = [
-  { id: '1', nombre: 'Implementación Firewall Corp', empresa_nombre: 'Soluciones Tecnológicas SA' },
-  { id: '2', nombre: 'Migración Cloud Tech', empresa_nombre: 'Hospital Regional Norte' },
-  { id: '3', nombre: 'Auditoría Seguridad Tech', empresa_nombre: 'TechCorp International' },
-]
+import { useEmpresas, useProyectos } from '@/hooks'
 
 export default function ArchivosPage() {
   const { user } = useAuth()
-  
+
   // ============================================================================
   // Usar hook de localStorage para gestionar archivos
   // ============================================================================
   const { archivos, addArchivo, removeArchivo, loading } = useArchivosStorage()
-  
+  const [empresas] = useEmpresas()
+  const [proyectos] = useProyectos()
+
   const [view, setView] = useState<'todos' | 'empresas' | 'proyectos'>('todos')
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('todas')
   const [showUpload, setShowUpload] = useState(false)
@@ -105,13 +92,13 @@ export default function ArchivosPage() {
   // ============================================================================
   const getRuta = (entidad: EntidadTipo, id: string, visibilidad: Visibilidad): string => {
     if (entidad === 'empresa') {
-      const empresa = DEMO_EMPRESAS.find(e => e.id === id)
+      const empresa = empresas.find(e => e.id === id)
       const tipoCarpeta = empresa?.tipo_entidad === 'proveedor' ? 'Proveedores' : 'Clientes Activos'
       return `/${tipoCarpeta}/${empresa?.nombre}/Corporativo/${visibilidad}/`
     }
     if (entidad === 'proyecto') {
-      const proyecto = DEMO_PROYECTOS.find(p => p.id === id)
-      return `/Clientes Activos/${proyecto?.empresa_nombre}/${proyecto?.nombre}/`
+      const proyecto = proyectos.find(p => p.id === id)
+      return `/Clientes Activos/${proyecto?.empresa_id}/${proyecto?.nombre}/`
     }
     return '/'
   }
@@ -162,7 +149,7 @@ export default function ArchivosPage() {
     return (
       <ModuleContainer>
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Cargando archivos...</p>
+          <p className="text-muted-foreground">{EMPTY_MESSAGES.cargandoArchivos}</p>
         </div>
       </ModuleContainer>
     )
@@ -173,10 +160,12 @@ export default function ArchivosPage() {
   // ============================================================================
   if (!canUpload && !isAdmin) {
     return (
-      <AccessDeniedCard
-        icon={Folder}
-        description={ACCESS_DENIED}
-      />
+      <Card className="m-4 p-8 text-center">
+        <CardContent className="flex flex-col items-center gap-4">
+          <Folder className="h-12 w-12 text-muted-foreground" />
+          <p className="text-lg font-medium">{ACCESS_DENIED.mensaje}</p>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -230,7 +219,7 @@ export default function ArchivosPage() {
             <SelectTrigger className="w-64 bg-background"><SelectValue placeholder={FILTER_LABELS.filtrarPorEmpresa} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="todas">{FILTER_LABELS.todasLasEmpresas}</SelectItem>
-              {DEMO_EMPRESAS.map(e => (
+              {empresas.map(e => (
                 <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
               ))}
             </SelectContent>
@@ -329,7 +318,7 @@ export default function ArchivosPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <Trash2 className="h-5 w-5" />
-              Confirmar eliminación
+              {ERROR_MESSAGES.confirmEliminacionTitulo}
             </DialogTitle>
           </DialogHeader>
           <DialogBody>
@@ -349,11 +338,11 @@ export default function ArchivosPage() {
       {/* Modal de upload */}
       {/* ====================================================================== */}
       <UploadModal
-        isOpen={showUpload}
-        onClose={() => setShowUpload(false)}
+        open={showUpload}
+        onOpenChange={(open) => !open && setShowUpload(false)}
         onUpload={handleUpload}
-        empresas={DEMO_EMPRESAS}
-        proyectos={DEMO_PROYECTOS}
+        empresas={empresas.map(e => ({ id: e.id, nombre: e.nombre }))}
+        proyectos={proyectos.map(p => ({ id: p.id, nombre: p.nombre }))}
       />
     </ModuleContainer>
   )

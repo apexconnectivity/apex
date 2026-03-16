@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Trash2, FileCheck, Building2 } from 'lucide-react'
+import { Trash2, FileCheck } from 'lucide-react'
 import { ContratoSoporte as ContratoType, TipoContrato, EstadoContrato, CONTRATOS_TIPOS, CONTRATOS_ESTADOS } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { CREATE_CONTRACT_MODAL } from '@/constants/soporte'
@@ -26,6 +26,10 @@ export interface CreateContractData {
   mode: 'create' | 'edit'
   contrato: Omit<ContratoType, 'id' | 'creado_en'>
 }
+
+// ============================================================================
+// COMPONENTES AUXILIARES
+// ============================================================================
 
 function ContractFormFields({
   contrato,
@@ -187,6 +191,16 @@ function ContractFormFields({
   )
 }
 
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
+/**
+ * CreateContractModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body/Footer
+ */
 export function CreateContractModal({
   open,
   onOpenChange,
@@ -285,46 +299,53 @@ export function CreateContractModal({
   const canSave = contratoData.empresa_id && contratoData.nombre && contratoData.fecha_inicio && contratoData.fecha_fin && hasEmpresas
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md" className="max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+    <BaseModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="md"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
               <FileCheck className="h-5 w-5 text-green-400" />
             </div>
-            <DialogTitle>{isEditMode ? CREATE_CONTRACT_MODAL.tituloEditar : CREATE_CONTRACT_MODAL.tituloCrear}</DialogTitle>
+            {isEditMode ? CREATE_CONTRACT_MODAL.tituloEditar : CREATE_CONTRACT_MODAL.tituloCrear}
           </div>
-        </DialogHeader>
-
-        <DialogBody className="overflow-y-auto">
-          {!hasEmpresas ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.sinEmpresas}</p>
-              <p className="text-sm text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.crearEmpresaPrimero}</p>
-            </div>
-          ) : (
-            <ContractFormFields
-              contrato={contratoData}
-              setContrato={setContratoData}
-              empresas={empresas}
-              usuarios={usuarios}
-            />
-          )}
-        </DialogBody>
-
-        <DialogFooter>
-          {isEditMode && onDelete && (
-            <Button variant="destructive" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" /> {CREATE_CONTRACT_MODAL.botones.eliminar}
-            </Button>
-          )}
-          <div className="flex-1" />
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{CREATE_CONTRACT_MODAL.botones.cancelar}</Button>
-          <Button onClick={handleSave} disabled={!canSave}>
-            {isEditMode ? CREATE_CONTRACT_MODAL.botones.guardar : CREATE_CONTRACT_MODAL.botones.crear}
+        }
+      />
+      
+      {/* ✅ ModalBody */}
+      <ModalBody>
+        {!hasEmpresas ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.sinEmpresas}</p>
+            <p className="text-sm text-muted-foreground">{CREATE_CONTRACT_MODAL.alertas.crearEmpresaPrimero}</p>
+          </div>
+        ) : (
+          <ContractFormFields
+            contrato={contratoData}
+            setContrato={setContratoData}
+            empresas={empresas}
+            usuarios={usuarios}
+          />
+        )}
+      </ModalBody>
+      
+      {/* ✅ ModalFooter */}
+      <ModalFooter layout="inline-between">
+        {isEditMode && onDelete && (
+          <Button variant="destructive" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 mr-2" /> {CREATE_CONTRACT_MODAL.botones.eliminar}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        )}
+        <div className="flex-1" />
+        <Button variant="outline" onClick={() => onOpenChange(false)}>{CREATE_CONTRACT_MODAL.botones.cancelar}</Button>
+        <Button onClick={handleSave} disabled={!canSave}>
+          {isEditMode ? CREATE_CONTRACT_MODAL.botones.guardar : CREATE_CONTRACT_MODAL.botones.crear}
+        </Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }

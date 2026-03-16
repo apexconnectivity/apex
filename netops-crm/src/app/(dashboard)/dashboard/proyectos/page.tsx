@@ -20,27 +20,32 @@ import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from '@/types/proyectos'
 import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE, Subtarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
 import { User } from '@/types/auth'
-import { useEmpresas, useContactos, useProyectos, useTareas, useHistorialProyectos } from '@/lib/data'
+import { useEmpresas, useContactos, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
+import { VARIANT_COLORS, STATUS_COLORS, ARCHIVE_CLASSES } from '@/lib/colors'
 
-// Usuarios internos demo (no hay store para usuarios internos)
-const DEMO_USUARIOS: User[] = [
-  { id: '1', email: 'carlos@apex.com', nombre: 'Carlos Admin', telefono: '+54 9 11 1234-5678', activo: true, creado_en: '2024-01-01', cambiar_password_proximo_login: false, roles: ['admin'] },
-  { id: '2', email: 'laura@apex.com', nombre: 'Laura Pérez', telefono: '+54 9 11 2345-6789', activo: true, creado_en: '2024-02-15', cambiar_password_proximo_login: false, roles: ['tecnico'] },
-  { id: '3', email: 'juan@apex.com', nombre: 'Juan Técnico', telefono: '+54 9 11 3456-7890', activo: true, creado_en: '2024-03-01', cambiar_password_proximo_login: false, roles: ['tecnico'] },
-  { id: '4', email: 'marcos@apex.com', nombre: 'Marcos González', telefono: '+54 9 11 4567-8901', activo: true, creado_en: '2024-04-10', cambiar_password_proximo_login: false, roles: ['comercial'] },
-]
+// Importar constantes
+import {
+  PAGE_TITLE,
+  PAGE_DESCRIPTION,
+  BUTTON_LABELS,
+  TABS_LABELS,
+  EMPTY_MESSAGES,
+  FORM_LABELS,
+  FILTER_LABELS,
+  STATS_LABELS,
+  VALIDATION_ERRORS,
+  ALERT_MESSAGES,
+  VIEW_LABELS,
+  MODAL_LABELS,
+} from '@/constants/proyectos'
+
+// Lista de usuarios internos (se填充ará con datos del módulo de usuarios)
+const USUARIOS_INTERNOS: User[] = []
 
 // Constante para formulario de nuevo proyecto
 const PROYECTO_VACIO: Partial<Proyecto> = {
@@ -61,16 +66,16 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
 export default function ProyectosPage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
-  
+
   // Hooks del store centralizado
   const [proyectos, setProyectos] = useProyectos()
   const [tareas, setTareas] = useTareas()
   const [empresas, setEmpresas] = useEmpresas()
   const [contactos] = useContactos()
-  
-  // Usuarios se mantiene en memoria (no hay store para usuarios internos)
-  const [usuarios, setUsuarios] = useState<User[]>(DEMO_USUARIOS)
-  
+
+  // Usuarios internos (se填充ará con datos del módulo de usuarios)
+  const [usuarios, setUsuarios] = useState<User[]>(USUARIOS_INTERNOS)
+
   const [view, setView] = useState<'pipeline' | 'cerrados'>('pipeline')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -181,7 +186,7 @@ export default function ProyectosPage() {
       return true
     })
 
-    proyectosFiltrados.forEach(p => { if (r[p.fase_actual]) r[p.fase_actual].push(p) })
+    proyectosFiltrados.forEach((p: Proyecto) => { if (p.fase_actual && r[p.fase_actual]) r[p.fase_actual].push(p) })
     return r
   }, [proyectos, isAdmin, isComercial, isTecnico])
 
@@ -310,7 +315,7 @@ export default function ProyectosPage() {
 
     // Validar motivo obligatorio
     if (!motivoCierre || motivoCierre.trim().length < 5) {
-      setErrorsCierre({ motivo_cierre: 'El motivo debe tener al menos 5 caracteres' })
+      setErrorsCierre({ motivo_cierre: VALIDATION_ERRORS.motivoCierre })
       return
     }
 
@@ -403,31 +408,31 @@ export default function ProyectosPage() {
 
     // Validaciones
     if (!nuevoProyecto?.nombre || nuevoProyecto.nombre.trim().length < 3) {
-      setErrors({ nombre: 'El nombre es obligatorio (mínimo 3 caracteres)' })
+      setErrors({ nombre: VALIDATION_ERRORS.nombreProyecto })
       return
     }
     if (!nuevoProyecto?.empresa_id) {
-      setErrors({ empresa_id: 'Selecciona una empresa cliente' })
+      setErrors({ empresa_id: VALIDATION_ERRORS.empresaRequerida })
       return
     }
     if (!nuevoProyecto?.responsable_id) {
-      setErrors({ responsable_id: 'Selecciona un responsable técnico' })
+      setErrors({ responsable_id: VALIDATION_ERRORS.responsableRequerido })
       return
     }
     if (!nuevoProyecto?.contacto_tecnico_id) {
-      setErrors({ contacto_tecnico_id: 'Selecciona un contacto técnico del cliente' })
+      setErrors({ contacto_tecnico_id: VALIDATION_ERRORS.contactoTecnicoRequerido })
       return
     }
     if (!nuevoProyecto?.moneda) {
-      setErrors({ moneda: 'Selecciona una moneda' })
+      setErrors({ moneda: VALIDATION_ERRORS.monedaRequerida })
       return
     }
     if (nuevoProyecto.monto_estimado && nuevoProyecto.monto_estimado < 0) {
-      setErrors({ monto_estimado: 'El monto no puede ser negativo' })
+      setErrors({ monto_estimado: VALIDATION_ERRORS.montoNegativo })
       return
     }
     if (nuevoProyecto.probabilidad_cierre && (nuevoProyecto.probabilidad_cierre < 0 || nuevoProyecto.probabilidad_cierre > 100)) {
-      setErrors({ probabilidad_cierre: 'La probabilidad debe estar entre 0 y 100' })
+      setErrors({ probabilidad_cierre: VALIDATION_ERRORS.probabilidadInvalida })
       return
     }
 
@@ -672,644 +677,636 @@ export default function ProyectosPage() {
       </ModuleContainerWithPanel>
 
       {/* Modal Nuevo Proyecto */}
-      <Dialog open={isModalNuevo} onOpenChange={setIsModalNuevo}>
-        <DialogContent size="lg">
-          <DialogHeader>
-            <DialogTitle>Nuevo Proyecto</DialogTitle>
-          </DialogHeader>
+      <BaseModal open={isModalNuevo} onOpenChange={setIsModalNuevo} size="lg">
+        <ModalHeader title="Nuevo Proyecto" />
 
-          <DialogBody className="space-y-4">
-            <div>
-              <Label htmlFor="nombre">Nombre del Proyecto *</Label>
-              <Input
-                id="nombre"
-                value={nuevoProyecto.nombre || ''}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, nombre: e.target.value })}
-                placeholder="Ej: Implementación de Red"
-                className={errors.nombre ? 'border-red-500' : ''}
-              />
-              {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
-            </div>
+        <ModalBody className="space-y-4">
+          <div>
+            <Label htmlFor="nombre">Nombre del Proyecto *</Label>
+            <Input
+              id="nombre"
+              value={nuevoProyecto.nombre || ''}
+              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, nombre: e.target.value })}
+              placeholder="Ej: Implementación de Red"
+              className={errors.nombre ? VARIANT_COLORS.danger.borderColor : ''}
+            />
+            {errors.nombre && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.nombre}</p>}
+          </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="empresa">Cliente *</Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsModalNuevaEmpresa(true)}
-                >
-                  <Building2 className="h-3 w-3 mr-1" />
-                  Nueva empresa
-                </Button>
-              </div>
-              <Select
-                value={nuevoProyecto.empresa_id || ''}
-                onValueChange={(value) => setNuevoProyecto({ ...nuevoProyecto, empresa_id: value, contacto_tecnico_id: '', contacto_tecnico_nombre: '' })}
-              >
-                <SelectTrigger className={errors.empresa_id ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Selecciona una empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {empresas.filter(e => e.tipo_entidad === 'cliente').map((empresa) => (
-                    <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.empresa_id && <p className="text-xs text-red-500 mt-1">{errors.empresa_id}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="responsable">Responsable *</Label>
-              <Select
-                value={nuevoProyecto.responsable_id || ''}
-                onValueChange={(value) => {
-                  const responsable = usuarios.find(u => u.id === value)
-                  setNuevoProyecto({
-                    ...nuevoProyecto,
-                    responsable_id: value,
-                    responsable_nombre: responsable?.nombre || ''
-                  })
-                }}
-              >
-                <SelectTrigger className={errors.responsable_id ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Selecciona un responsable" />
-                </SelectTrigger>
-                <SelectContent>
-                  {responsablesPosibles.map((usuario) => (
-                    <SelectItem key={usuario.id} value={usuario.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{usuario.nombre}</span>
-                        <Badge variant="secondary" className="text-xs ml-2">
-                          {usuario.roles.includes('admin') ? 'Admin' : 'Técnico'}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.responsable_id && <p className="text-xs text-red-500 mt-1">{errors.responsable_id}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
-              <Select
-                value={nuevoProyecto.contacto_tecnico_id || ''}
-                onValueChange={(value) => {
-                  const contacto = contactos.find(c => c.id === value)
-                  setNuevoProyecto({
-                    ...nuevoProyecto,
-                    contacto_tecnico_id: value,
-                    contacto_tecnico_nombre: contacto?.nombre || ''
-                  })
-                }}
-                disabled={!nuevoProyecto.empresa_id}
-              >
-                <SelectTrigger className={errors.contacto_tecnico_id ? 'border-red-500' : ''}>
-                  <SelectValue placeholder={nuevoProyecto.empresa_id ? "Selecciona un contacto" : "Selecciona primero un cliente"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {contactosTecnicos.map((contacto) => (
-                    <SelectItem key={contacto.id} value={contacto.id}>
-                      <div className="flex flex-col">
-                        <span>{contacto.nombre}</span>
-                        <span className="text-xs text-muted-foreground">{contacto.cargo}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.contacto_tecnico_id && <p className="text-xs text-red-500 mt-1">{errors.contacto_tecnico_id}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="moneda">Moneda *</Label>
-                <Select
-                  value={nuevoProyecto.moneda || 'USD'}
-                  onValueChange={(value: "USD" | "MXN" | "EUR") => setNuevoProyecto({ ...nuevoProyecto, moneda: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MONEDAS.map((m) => (
-                      <SelectItem key={m} value={m}>{m}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.moneda && <p className="text-xs text-red-500 mt-1">{errors.moneda}</p>}
-              </div>
-              <div>
-                <Label htmlFor="monto">Monto Estimado</Label>
-                <Input
-                  id="monto"
-                  type="number"
-                  value={nuevoProyecto.monto_estimado || ''}
-                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
-                  placeholder="0"
-                  className={errors.monto_estimado ? 'border-red-500' : ''}
-                />
-                {errors.monto_estimado && <p className="text-xs text-red-500 mt-1">{errors.monto_estimado}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="probabilidad">Probabilidad de Cierre (%)</Label>
-                <Input
-                  id="probabilidad"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={nuevoProyecto.probabilidad_cierre || ''}
-                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, probabilidad_cierre: Number(e.target.value) })}
-                  placeholder="20"
-                  className={errors.probabilidad_cierre ? 'border-red-500' : ''}
-                />
-                {errors.probabilidad_cierre && <p className="text-xs text-red-500 mt-1">{errors.probabilidad_cierre}</p>}
-              </div>
-              <div>
-                <Label htmlFor="fecha">Fecha Estimada de Fin</Label>
-                <Input
-                  id="fecha"
-                  type="date"
-                  value={nuevoProyecto.fecha_estimada_fin || ''}
-                  onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, fecha_estimada_fin: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                id="requiere_compras"
-                type="checkbox"
-                checked={nuevoProyecto.requiere_compras || false}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: e.target.checked })}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="requiere_compras" className="text-sm font-normal">
-                Requiere compras
-              </Label>
-            </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalNuevo(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveProyecto} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
-                </>
-              ) : (
-                'Crear Proyecto'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Nueva Empresa */}
-      <Dialog open={isModalNuevaEmpresa} onOpenChange={setIsModalNuevaEmpresa}>
-        <DialogContent size="lg">
-          <DialogHeader>
-            <DialogTitle>Nueva Empresa</DialogTitle>
-          </DialogHeader>
-
-          <DialogBody className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="emp_nombre">Nombre *</Label>
-                <Input
-                  id="emp_nombre"
-                  value={nuevaEmpresa.nombre || ''}
-                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, nombre: e.target.value })}
-                  placeholder="Razón social"
-                  className={errorsEmpresa.nombre ? 'border-red-500' : ''}
-                />
-                {errorsEmpresa.nombre && <p className="text-xs text-red-500 mt-1">{errorsEmpresa.nombre}</p>}
-              </div>
-              <div>
-                <Label htmlFor="emp_tipo">Tipo</Label>
-                <Select
-                  value={nuevaEmpresa.tipo_entidad || 'cliente'}
-                  onValueChange={(value) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_entidad: value as TipoEntidad })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cliente">Cliente</SelectItem>
-                    <SelectItem value="proveedor">Proveedor</SelectItem>
-                    <SelectItem value="ambos">Ambos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="emp_industria">Industria</Label>
-                <Select
-                  value={nuevaEmpresa.industria || ''}
-                  onValueChange={(value: Industria) => setNuevaEmpresa({ ...nuevaEmpresa, industria: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIAS.map((ind) => (
-                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="emp_tamano">Tamaño</Label>
-                <Select
-                  value={nuevaEmpresa.tamaño || ''}
-                  onValueChange={(value: "Micro" | "PYME" | "Gran empresa") => setNuevaEmpresa({ ...nuevaEmpresa, tamaño: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TAMAÑOS.map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="emp_email">Email</Label>
-                <Input
-                  id="emp_email"
-                  type="email"
-                  value={nuevaEmpresa.email_principal || ''}
-                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, email_principal: e.target.value })}
-                  placeholder="contacto@empresa.com"
-                />
-              </div>
-              <div>
-                <Label htmlFor="emp_telefono">Teléfono</Label>
-                <Input
-                  id="emp_telefono"
-                  value={nuevaEmpresa.telefono_principal || ''}
-                  onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, telefono_principal: e.target.value })}
-                  placeholder="+54 9 11 1234-5678"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="emp_direccion">Dirección</Label>
-              <Input
-                id="emp_direccion"
-                value={nuevaEmpresa.direccion || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, direccion: e.target.value })}
-                placeholder="Dirección completa"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="emp_origen">Origen</Label>
-                <Select
-                  value={nuevaEmpresa.origen || ''}
-                  onValueChange={(value: Origen) => setNuevaEmpresa({ ...nuevaEmpresa, origen: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ORIGENES.map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="emp_relacion">Relación</Label>
-                <Select
-                  value={nuevaEmpresa.tipo_relacion || 'Cliente'}
-                  onValueChange={(value: TipoRelacion) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_relacion: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_RELACION.map((r) => (
-                      <SelectItem key={r} value={r}>{r}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalNuevaEmpresa(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveEmpresa} disabled={isSavingEmpresa}>
-              {isSavingEmpresa ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
-                </>
-              ) : (
-                'Crear Empresa'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Cerrar Proyecto */}
-      <Dialog open={isModalCerrar} onOpenChange={setIsModalCerrar}>
-        <DialogContent size="md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-500" />
-              Cerrar Proyecto
-            </DialogTitle>
-          </DialogHeader>
-
-          <DialogBody className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              El proyecto <span className="font-semibold text-foreground">{proyectoACerrar?.nombre}</span> pasará a estado "Cerrado" y desaparecerá del pipeline.
-            </p>
-
-            <div>
-              <Label htmlFor="motivo_cierre">Motivo del cierre *</Label>
-              <Select
-                value={motivoCierre}
-                onValueChange={(value) => setMotivoCierre(value)}
-              >
-                <SelectTrigger className={errorsCierre.motivo_cierre ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Selecciona un motivo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Proyecto completado">Proyecto completado</SelectItem>
-                  <SelectItem value="Cancelado por el cliente">Cancelado por el cliente</SelectItem>
-                  <SelectItem value="Pérdida de interés">Pérdida de interés</SelectItem>
-                  <SelectItem value="Presupuesto insuficiente">Presupuesto insuficiente</SelectItem>
-                  <SelectItem value="Otro">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-              {errorsCierre.motivo_cierre && <p className="text-xs text-red-500 mt-1">{errorsCierre.motivo_cierre}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="notas_cierre">Notas adicionales (opcional)</Label>
-              <Textarea
-                id="notas_cierre"
-                value={notasCierre}
-                onChange={(e) => setNotasCierre(e.target.value)}
-                placeholder="Agrega cualquier nota adicional sobre el cierre del proyecto..."
-                rows={3}
-              />
-            </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalCerrar(false)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmarCerrar}
-              disabled={isClosing}
-            >
-              {isClosing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Cerrando...
-                </>
-              ) : (
-                'Cerrar Proyecto'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Archivar Proyecto */}
-      <Dialog open={isModalArchivar} onOpenChange={setIsModalArchivar}>
-        <DialogContent size="md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Archive className="h-5 w-5 text-amber-500" />
-              Archivar Proyecto
-            </DialogTitle>
-          </DialogHeader>
-
-          <DialogBody className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              El proyecto <span className="font-semibold text-foreground">{proyectoAArchivar?.nombre}</span> será archivado y movido a Google Drive.
-            </p>
-
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-              <p className="text-sm text-amber-300 mb-2">
-                Clasificación automática:
-              </p>
-              <div className="flex items-center gap-2">
-                <Badge variant={clasificacionArchivo === 'completado' ? 'default' : 'secondary'} className={clasificacionArchivo === 'completado' ? 'bg-emerald-500' : ''}>
-                  {clasificacionArchivo === 'completado' ? '✓ Completado' : '⚠ Inconcluso'}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                {clasificacionArchivo === 'completado'
-                  ? 'El proyecto se cerró desde fase 5 con todas las tareas completadas.'
-                  : 'El proyecto no cumple los criterios de completado.'}
-              </p>
-            </div>
-
-            <div>
-              <Label>Clasificación (puedes cambiarla)</Label>
-              <div className="flex gap-4 mt-2">
-                <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'completado' ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="clasificacion"
-                    checked={clasificacionArchivo === 'completado'}
-                    onChange={() => setClasificacionArchivo('completado')}
-                    className="sr-only"
-                  />
-                  <span className="text-sm">Completado</span>
-                </label>
-                <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'inconcluso' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-700'
-                  }`}>
-                  <input
-                    type="radio"
-                    name="clasificacion"
-                    checked={clasificacionArchivo === 'inconcluso'}
-                    onChange={() => setClasificacionArchivo('inconcluso')}
-                    className="sr-only"
-                  />
-                  <span className="text-sm">Inconcluso</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              <p>Destino en Drive:</p>
-              <p className="text-xs mt-1 font-mono">
-                {clasificacionArchivo === 'completado'
-                  ? '/Archivo Historico/Completados/2026/proyecto'
-                  : '/Archivo Historico/Inconclusos/2026/proyecto'}
-              </p>
-            </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalArchivar(false)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="default"
-              className="bg-amber-500 hover:bg-amber-600"
-              onClick={confirmarArchivar}
-              disabled={isArchiving}
-            >
-              {isArchiving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Archivando...
-                </>
-              ) : (
-                'Archivar Proyecto'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Configurar Fases */}
-      <Dialog open={isModalConfigFases} onOpenChange={setIsModalConfigFases}>
-        <DialogContent size="lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Configurar Fases del Pipeline
-            </DialogTitle>
-          </DialogHeader>
-
-          <DialogBody className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Personaliza los nombres, colores y probabilidades de cada fase del pipeline.
-            </p>
-
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
-              {fasesEditando.map((fase, index) => (
-                <div
-                  key={fase.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border bg-card/50"
-                >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Nombre</label>
-                      <Input
-                        value={fase.nombre}
-                        onChange={(e) => {
-                          const nuevasFases = [...fasesEditando]
-                          nuevasFases[index] = { ...fase, nombre: e.target.value }
-                          setFasesEditando(nuevasFases)
-                        }}
-                        placeholder="Nombre de la fase"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={fase.color}
-                          onChange={(e) => {
-                            const nuevasFases = [...fasesEditando]
-                            nuevasFases[index] = { ...fase, color: e.target.value }
-                            setFasesEditando(nuevasFases)
-                          }}
-                          className="w-10 h-10 rounded border cursor-pointer"
-                        />
-                        <Input
-                          value={fase.color}
-                          onChange={(e) => {
-                            const nuevasFases = [...fasesEditando]
-                            nuevasFases[index] = { ...fase, color: e.target.value }
-                            setFasesEditando(nuevasFases)
-                          }}
-                          placeholder="#Hex"
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Probabilidad (%)</label>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={fase.probabilidad_default}
-                        onChange={(e) => {
-                          const nuevasFases = [...fasesEditando]
-                          nuevasFases[index] = { ...fase, probabilidad_default: parseInt(e.target.value) || 0 }
-                          setFasesEditando(nuevasFases)
-                        }}
-                        placeholder="0-100"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <Label htmlFor="empresa">Cliente *</Label>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => setFasesEditando([...FASES])}
+                className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setIsModalNuevaEmpresa(true)}
               >
-                Restaurar Valores Predeterminados
+                <Building2 className="h-3 w-3 mr-1" />
+                Nueva empresa
               </Button>
             </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalConfigFases(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setIsModalConfigFases(false)
-                // Aquí se guardaría en Supabase
-                alert('Configuración guardada (solo en memoria)')
-              }}
-              disabled={isSavingFases}
+            <Select
+              value={nuevoProyecto.empresa_id || ''}
+              onValueChange={(value) => setNuevoProyecto({ ...nuevoProyecto, empresa_id: value, contacto_tecnico_id: '', contacto_tecnico_nombre: '' })}
             >
-              {isSavingFases ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
-                </>
-              ) : (
-                'Guardar Configuración'
-              )}
+              <SelectTrigger className={errors.empresa_id ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Selecciona una empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                {empresas.filter(e => e.tipo_entidad === 'cliente').map((empresa) => (
+                  <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.empresa_id && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.empresa_id}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="responsable">Responsable *</Label>
+            <Select
+              value={nuevoProyecto.responsable_id || ''}
+              onValueChange={(value) => {
+                const responsable = usuarios.find(u => u.id === value)
+                setNuevoProyecto({
+                  ...nuevoProyecto,
+                  responsable_id: value,
+                  responsable_nombre: responsable?.nombre || ''
+                })
+              }}
+            >
+              <SelectTrigger className={errors.responsable_id ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Selecciona un responsable" />
+              </SelectTrigger>
+              <SelectContent>
+                {responsablesPosibles.map((usuario) => (
+                  <SelectItem key={usuario.id} value={usuario.id}>
+                    <div className="flex items-center gap-2">
+                      <span>{usuario.nombre}</span>
+                      <Badge variant="secondary" className="text-xs ml-2">
+                        {usuario.roles.includes('admin') ? 'Admin' : 'Técnico'}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.responsable_id && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.responsable_id}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
+            <Select
+              value={nuevoProyecto.contacto_tecnico_id || ''}
+              onValueChange={(value) => {
+                const contacto = contactos.find(c => c.id === value)
+                setNuevoProyecto({
+                  ...nuevoProyecto,
+                  contacto_tecnico_id: value,
+                  contacto_tecnico_nombre: contacto?.nombre || ''
+                })
+              }}
+              disabled={!nuevoProyecto.empresa_id}
+            >
+              <SelectTrigger className={errors.contacto_tecnico_id ? 'border-red-500' : ''}>
+                <SelectValue placeholder={nuevoProyecto.empresa_id ? "Selecciona un contacto" : "Selecciona primero un cliente"} />
+              </SelectTrigger>
+              <SelectContent>
+                {contactosTecnicos.map((contacto) => (
+                  <SelectItem key={contacto.id} value={contacto.id}>
+                    <div className="flex flex-col">
+                      <span>{contacto.nombre}</span>
+                      <span className="text-xs text-muted-foreground">{contacto.cargo}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.contacto_tecnico_id && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.contacto_tecnico_id}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="moneda">Moneda *</Label>
+              <Select
+                value={nuevoProyecto.moneda || 'USD'}
+                onValueChange={(value: "USD" | "MXN" | "EUR") => setNuevoProyecto({ ...nuevoProyecto, moneda: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONEDAS.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.moneda && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.moneda}</p>}
+            </div>
+            <div>
+              <Label htmlFor="monto">Monto Estimado</Label>
+              <Input
+                id="monto"
+                type="number"
+                value={nuevoProyecto.monto_estimado || ''}
+                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
+                placeholder="0"
+                className={errors.monto_estimado ? 'border-red-500' : ''}
+              />
+              {errors.monto_estimado && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.monto_estimado}</p>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="probabilidad">Probabilidad de Cierre (%)</Label>
+              <Input
+                id="probabilidad"
+                type="number"
+                min={0}
+                max={100}
+                value={nuevoProyecto.probabilidad_cierre || ''}
+                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, probabilidad_cierre: Number(e.target.value) })}
+                placeholder="20"
+                className={errors.probabilidad_cierre ? 'border-red-500' : ''}
+              />
+              {errors.probabilidad_cierre && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.probabilidad_cierre}</p>}
+            </div>
+            <div>
+              <Label htmlFor="fecha">Fecha Estimada de Fin</Label>
+              <Input
+                id="fecha"
+                type="date"
+                value={nuevoProyecto.fecha_estimada_fin || ''}
+                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, fecha_estimada_fin: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="requiere_compras"
+              type="checkbox"
+              checked={nuevoProyecto.requiere_compras || false}
+              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <Label htmlFor="requiere_compras" className="text-sm font-normal">
+              Requiere compras
+            </Label>
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalNuevo(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSaveProyecto} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              'Crear Proyecto'
+            )}
+          </Button>
+        </ModalFooter>
+      </BaseModal>
+
+      {/* Modal Nueva Empresa */}
+      <BaseModal open={isModalNuevaEmpresa} onOpenChange={setIsModalNuevaEmpresa} size="lg">
+        <ModalHeader title="Nueva Empresa" />
+
+        <ModalBody className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="emp_nombre">Nombre *</Label>
+              <Input
+                id="emp_nombre"
+                value={nuevaEmpresa.nombre || ''}
+                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, nombre: e.target.value })}
+                placeholder="Razón social"
+                className={errorsEmpresa.nombre ? 'border-red-500' : ''}
+              />
+              {errorsEmpresa.nombre && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errorsEmpresa.nombre}</p>}
+            </div>
+            <div>
+              <Label htmlFor="emp_tipo">Tipo</Label>
+              <Select
+                value={nuevaEmpresa.tipo_entidad || 'cliente'}
+                onValueChange={(value) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_entidad: value as TipoEntidad })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cliente">Cliente</SelectItem>
+                  <SelectItem value="proveedor">Proveedor</SelectItem>
+                  <SelectItem value="ambos">Ambos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="emp_industria">Industria</Label>
+              <Select
+                value={nuevaEmpresa.industria || ''}
+                onValueChange={(value: Industria) => setNuevaEmpresa({ ...nuevaEmpresa, industria: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRIAS.map((ind) => (
+                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="emp_tamano">Tamaño</Label>
+              <Select
+                value={nuevaEmpresa.tamaño || ''}
+                onValueChange={(value: "Micro" | "PYME" | "Gran empresa") => setNuevaEmpresa({ ...nuevaEmpresa, tamaño: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TAMAÑOS.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="emp_email">Email</Label>
+              <Input
+                id="emp_email"
+                type="email"
+                value={nuevaEmpresa.email_principal || ''}
+                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, email_principal: e.target.value })}
+                placeholder="contacto@empresa.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="emp_telefono">Teléfono</Label>
+              <Input
+                id="emp_telefono"
+                value={nuevaEmpresa.telefono_principal || ''}
+                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, telefono_principal: e.target.value })}
+                placeholder="+54 9 11 1234-5678"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="emp_direccion">Dirección</Label>
+            <Input
+              id="emp_direccion"
+              value={nuevaEmpresa.direccion || ''}
+              onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, direccion: e.target.value })}
+              placeholder="Dirección completa"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="emp_origen">Origen</Label>
+              <Select
+                value={nuevaEmpresa.origen || ''}
+                onValueChange={(value: Origen) => setNuevaEmpresa({ ...nuevaEmpresa, origen: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORIGENES.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="emp_relacion">Relación</Label>
+              <Select
+                value={nuevaEmpresa.tipo_relacion || 'Cliente'}
+                onValueChange={(value: TipoRelacion) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_relacion: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_RELACION.map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalNuevaEmpresa(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSaveEmpresa} disabled={isSavingEmpresa}>
+            {isSavingEmpresa ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              'Crear Empresa'
+            )}
+          </Button>
+        </ModalFooter>
+      </BaseModal>
+
+      {/* Modal Cerrar Proyecto */}
+      <BaseModal open={isModalCerrar} onOpenChange={setIsModalCerrar} size="md">
+        <ModalHeader
+          title={
+            <span className="flex items-center gap-2">
+              <XCircle className={`h-5 w-5 ${STATUS_COLORS.error.text}`} />
+              Cerrar Proyecto
+            </span>
+          }
+        />
+
+        <ModalBody className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            El proyecto <span className="font-semibold text-foreground">{proyectoACerrar?.nombre}</span> pasará a estado "Cerrado" y desaparecerá del pipeline.
+          </p>
+
+          <div>
+            <Label htmlFor="motivo_cierre">Motivo del cierre *</Label>
+            <Select
+              value={motivoCierre}
+              onValueChange={(value) => setMotivoCierre(value)}
+            >
+              <SelectTrigger className={errorsCierre.motivo_cierre ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Selecciona un motivo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Proyecto completado">Proyecto completado</SelectItem>
+                <SelectItem value="Cancelado por el cliente">Cancelado por el cliente</SelectItem>
+                <SelectItem value="Pérdida de interés">Pérdida de interés</SelectItem>
+                <SelectItem value="Presupuesto insuficiente">Presupuesto insuficiente</SelectItem>
+                <SelectItem value="Otro">Otro</SelectItem>
+              </SelectContent>
+            </Select>
+            {errorsCierre.motivo_cierre && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errorsCierre.motivo_cierre}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="notas_cierre">Notas adicionales (opcional)</Label>
+            <Textarea
+              id="notas_cierre"
+              value={notasCierre}
+              onChange={(e) => setNotasCierre(e.target.value)}
+              placeholder="Agrega cualquier nota adicional sobre el cierre del proyecto..."
+              rows={3}
+            />
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalCerrar(false)}>
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={confirmarCerrar}
+            disabled={isClosing}
+          >
+            {isClosing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Cerrando...
+              </>
+            ) : (
+              'Cerrar Proyecto'
+            )}
+          </Button>
+        </ModalFooter>
+      </BaseModal>
+
+      {/* Modal Archivar Proyecto */}
+      <BaseModal open={isModalArchivar} onOpenChange={setIsModalArchivar} size="md">
+        <ModalHeader
+          title={
+            <span className="flex items-center gap-2">
+              <Archive className={`h-5 w-5 ${STATUS_COLORS.warning.text}`} />
+              Archivar Proyecto
+            </span>
+          }
+        />
+
+        <ModalBody className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            El proyecto <span className="font-semibold text-foreground">{proyectoAArchivar?.nombre}</span> será archivado y movido a Google Drive.
+          </p>
+
+          <div className={`${ARCHIVE_CLASSES.container.bg} border ${ARCHIVE_CLASSES.container.border} rounded-lg p-4`}>
+            <p className={`text-sm ${ARCHIVE_CLASSES.inconclusive.text} mb-2`}>
+              Clasificación automática:
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant={clasificacionArchivo === 'completado' ? 'default' : 'secondary'} className={clasificacionArchivo === 'completado' ? ARCHIVE_CLASSES.completado.badge : ''}>
+                {clasificacionArchivo === 'completado' ? '✓ Completado' : '⚠ Inconcluso'}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {clasificacionArchivo === 'completado'
+                ? 'El proyecto se cerró desde fase 5 con todas las tareas completadas.'
+                : 'El proyecto no cumple los criterios de completado.'}
+            </p>
+          </div>
+
+          <div>
+            <Label>Clasificación (puedes cambiarla)</Label>
+            <div className="flex gap-4 mt-2">
+              <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'completado' ? `${STATUS_COLORS.success.border} ${STATUS_COLORS.success.bg}` : 'border-slate-700'
+                }`}>
+                <input
+                  type="radio"
+                  name="clasificacion"
+                  checked={clasificacionArchivo === 'completado'}
+                  onChange={() => setClasificacionArchivo('completado')}
+                  className="sr-only"
+                />
+                <span className="text-sm">Completado</span>
+              </label>
+              <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${clasificacionArchivo === 'inconcluso' ? `${STATUS_COLORS.warning.border} ${STATUS_COLORS.warning.bg}` : 'border-slate-700'
+                }`}>
+                <input
+                  type="radio"
+                  name="clasificacion"
+                  checked={clasificacionArchivo === 'inconcluso'}
+                  onChange={() => setClasificacionArchivo('inconcluso')}
+                  className="sr-only"
+                />
+                <span className="text-sm">Inconcluso</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="text-sm text-muted-foreground">
+            <p>Destino en Drive:</p>
+            <p className="text-xs mt-1 font-mono">
+              {clasificacionArchivo === 'completado'
+                ? '/Archivo Historico/Completados/2026/proyecto'
+                : '/Archivo Historico/Inconclusos/2026/proyecto'}
+            </p>
+          </div>
+        </ModalBody >
+
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalArchivar(false)}>
+            Cancelar
+          </Button>
+          <Button
+            variant="default"
+            className={`${STATUS_COLORS.warning.bg} hover:${STATUS_COLORS.warning.bg.replace('/15', '/25')}`}
+            onClick={confirmarArchivar}
+            disabled={isArchiving}
+          >
+            {isArchiving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Archivando...
+              </>
+            ) : (
+              'Archivar Proyecto'
+            )}
+          </Button>
+        </ModalFooter>
+      </BaseModal >
+
+      {/* Modal Configurar Fases */}
+      < BaseModal open={isModalConfigFases} onOpenChange={setIsModalConfigFases} size="lg" >
+        <ModalHeader
+          title={
+            <span className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configurar Fases del Pipeline
+            </span>
+          }
+        />
+
+        <ModalBody className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Personaliza los nombres, colores y probabilidades de cada fase del pipeline.
+          </p>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {fasesEditando.map((fase, index) => (
+              <div
+                key={fase.id}
+                className="flex items-center gap-3 p-3 rounded-lg border bg-card/50"
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
+                  {index + 1}
+                </div>
+                <div className="flex-1 grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Nombre</label>
+                    <Input
+                      value={fase.nombre}
+                      onChange={(e) => {
+                        const nuevasFases = [...fasesEditando]
+                        nuevasFases[index] = { ...fase, nombre: e.target.value }
+                        setFasesEditando(nuevasFases)
+                      }}
+                      placeholder="Nombre de la fase"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Color</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={fase.color}
+                        onChange={(e) => {
+                          const nuevasFases = [...fasesEditando]
+                          nuevasFases[index] = { ...fase, color: e.target.value }
+                          setFasesEditando(nuevasFases)
+                        }}
+                        className="w-10 h-10 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={fase.color}
+                        onChange={(e) => {
+                          const nuevasFases = [...fasesEditando]
+                          nuevasFases[index] = { ...fase, color: e.target.value }
+                          setFasesEditando(nuevasFases)
+                        }}
+                        placeholder="#Hex"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Probabilidad (%)</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={fase.probabilidad_default}
+                      onChange={(e) => {
+                        const nuevasFases = [...fasesEditando]
+                        nuevasFases[index] = { ...fase, probabilidad_default: parseInt(e.target.value) || 0 }
+                        setFasesEditando(nuevasFases)
+                      }}
+                      placeholder="0-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFasesEditando([...FASES])}
+            >
+              Restaurar Valores Predeterminados
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalConfigFases(false)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => {
+              setIsModalConfigFases(false)
+              // Aquí se guardaría en Supabase
+              alert('Configuración guardada (solo en memoria)')
+            }}
+            disabled={isSavingFases}
+          >
+            {isSavingFases ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              'Guardar Configuración'
+            )}
+          </Button>
+        </ModalFooter>
+      </BaseModal >
     </>
   )
 }

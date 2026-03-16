@@ -5,15 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { SelectWithAdd } from './SelectWithAdd'
 import {
   Empresa,
@@ -28,12 +20,12 @@ import {
 
 interface EmpresaModalProps {
   open: boolean
-  onClose: () => void
+  onOpenChange: (open: boolean) => void
   onSave: (empresa: Partial<Empresa>, isNew: boolean) => void
   empresa?: Partial<Empresa> | null
   isSaving?: boolean
   errors?: Record<string, string>
-  userRoles?: string[]  // Agregar roles del usuario
+  userRoles?: string[]
 }
 
 const EMPRESA_VACIA: Partial<Empresa> = {
@@ -59,9 +51,15 @@ const EMPRESA_VACIA: Partial<Empresa> = {
   moneda_preferida: undefined,
 }
 
+/**
+ * EmpresaModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body/Footer
+ */
 export function EmpresaModal({
   open,
-  onClose,
+  onOpenChange,
   onSave,
   empresa,
   isSaving = false,
@@ -117,58 +115,68 @@ export function EmpresaModal({
     }
 
     onSave(formData, !isEditing)
+    onOpenChange(false)
+  }
+
+  const handleClose = () => {
+    onOpenChange(false)
   }
 
   const allErrors = { ...localErrors, ...errors }
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent size="lg">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar' : 'Nueva'} Empresa</DialogTitle>
-        </DialogHeader>
+  // Determinar tipos disponibles según rol
+  const isComercial = userRoles.includes('comercial')
+  const isCompras = userRoles.includes('compras')
+  const isAdmin = userRoles.includes('admin')
 
-        <DialogBody className="p-6 space-y-6">
+  let tiposDisponibles: TipoEntidad[] = []
+  if (isAdmin || (!isComercial && !isCompras)) {
+    tiposDisponibles = ['cliente', 'proveedor', 'ambos']
+  } else if (isComercial) {
+    tiposDisponibles = ['cliente', 'ambos']
+  } else if (isCompras) {
+    tiposDisponibles = ['proveedor', 'ambos']
+  }
+
+  return (
+    <BaseModal
+      open={open}
+      onOpenChange={handleClose}
+      size="lg"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={isEditing ? 'Editar Empresa' : 'Nueva Empresa'}
+      />
+      
+      {/* ✅ ModalBody */}
+      <ModalBody>
+        <div className="space-y-6">
           {/* Sector */}
           <div className="space-y-2">
             <Label>Sector *</Label>
             <div className="flex gap-4">
-              {(() => {
-                // Determinar tipos disponibles según rol
-                const isComercial = userRoles.includes('comercial')
-                const isCompras = userRoles.includes('compras')
-                const isAdmin = userRoles.includes('admin')
-
-                let tiposDisponibles: TipoEntidad[] = []
-                if (isAdmin || (!isComercial && !isCompras)) {
-                  tiposDisponibles = ['cliente', 'proveedor', 'ambos']
-                } else if (isComercial) {
-                  tiposDisponibles = ['cliente', 'ambos']
-                } else if (isCompras) {
-                  tiposDisponibles = ['proveedor', 'ambos']
-                }
-
-                return tiposDisponibles.map((tipo) => (
-                  <label
-                    key={tipo}
-                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${formData.tipo_entidad === tipo
+              {tiposDisponibles.map((tipo) => (
+                <label
+                  key={tipo}
+                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${
+                    formData.tipo_entidad === tipo
                       ? 'border-cyan-500 bg-cyan-500/10'
                       : 'border-slate-700'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="tipo"
-                      checked={formData.tipo_entidad === tipo}
-                      onChange={() => setFormData({ ...formData, tipo_entidad: tipo })}
-                      className="sr-only"
-                    />
-                    <span className="text-sm">
-                      {tipo === 'cliente' ? 'Cliente' : tipo === 'proveedor' ? 'Proveedor' : 'Ambos'}
-                    </span>
-                  </label>
-                ))
-              })()}
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="tipo"
+                    checked={formData.tipo_entidad === tipo}
+                    onChange={() => setFormData({ ...formData, tipo_entidad: tipo })}
+                    className="sr-only"
+                  />
+                  <span className="text-sm">
+                    {tipo === 'cliente' ? 'Cliente' : tipo === 'proveedor' ? 'Proveedor' : 'Ambos'}
+                  </span>
+                </label>
+              ))}
             </div>
             {allErrors.tipo_entidad && (
               <p className="text-red-500 text-sm">{allErrors.tipo_entidad}</p>
@@ -345,18 +353,19 @@ export function EmpresaModal({
               </div>
             </div>
           </div>
-        </DialogBody>
-
-        <DialogFooter>
-          <Button variant="outline" className="flex-1" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button className="flex-1" onClick={handleSave} disabled={isSaving}>
-            {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Guardar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </ModalBody>
+      
+      {/* ✅ ModalFooter */}
+      <ModalFooter layout="inline-between">
+        <Button variant="outline" className="flex-1" onClick={handleClose}>
+          Cancelar
+        </Button>
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving}>
+          {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          Guardar
+        </Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }

@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { BaseCard } from '@/components/base'
 
 interface ModuleCardProps {
   children: ReactNode
@@ -10,6 +9,12 @@ interface ModuleCardProps {
   noPadding?: boolean
 }
 
+/**
+ * ModuleCard - Card base para módulos
+ * 
+ * Usa BaseCard como estructura base.
+ * Proporciona efectos de hover y glow por defecto.
+ */
 export function ModuleCard({
   children,
   onClick,
@@ -18,18 +23,15 @@ export function ModuleCard({
   noPadding = false
 }: ModuleCardProps) {
   return (
-    <Card
-      className={cn(
-        'bg-card border-border/50 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30 overflow-hidden',
-        hover && 'card-hover-glow',
-        onClick && 'cursor-pointer',
-        className
-      )}
+    <BaseCard
+      hoverable={hover}
+      clickable={!!onClick}
       onClick={onClick}
+      glowOnHover={hover}
+      padding={noPadding ? 'none' : 'md'}
+      className={className}
     >
-      <CardContent className={cn(noPadding ? 'p-0' : 'p-4')}>
-        {children}
-      </CardContent>
-    </Card>
+      {children}
+    </BaseCard>
   )
 }

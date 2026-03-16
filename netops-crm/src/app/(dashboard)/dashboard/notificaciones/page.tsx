@@ -13,6 +13,7 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getEstadoNotificacionColor } from '@/types/notificaciones'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { NOTIFICACIONES_STATS_COLORS } from '@/lib/colors'
 import {
   Bell, Settings, Slack, Mail, Clock, CheckCircle, XCircle,
   AlertCircle, Activity, Zap, Save, RefreshCw, Eye, EyeOff,
@@ -45,7 +46,7 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
 
   return (
     <div className="space-y-6">
-          <Card>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -69,7 +70,7 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
               {local.slack_activo ? 'Activo' : 'Inactivo'}
             </Button>
           </div>
-          
+
           {/* Email Clientes */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -86,7 +87,7 @@ function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlo
               {local.email_clientes_activo ? 'Activo' : 'Inactivo'}
             </Button>
           </div>
-          
+
           {/* Email Internos */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -325,10 +326,10 @@ function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: Preferenci
             {NOTIFICACIONES_TEXTS.canalesPreferencia.map(opcion => {
               const IconComponent = getCanalIcon(opcion.value)
               return (
-                <Button 
-                  key={opcion.value} 
-                  variant={local.canal_preferido === opcion.value ? 'default' : 'outline'} 
-                  onClick={() => setLocal({ ...local, canal_preferido: opcion.value as any })} 
+                <Button
+                  key={opcion.value}
+                  variant={local.canal_preferido === opcion.value ? 'default' : 'outline'}
+                  onClick={() => setLocal({ ...local, canal_preferido: opcion.value as any })}
                   className="flex-1"
                 >
                   <IconComponent className="h-4 w-4 mr-2" />
@@ -359,16 +360,16 @@ function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: Preferenci
               }
             }
             const IconComponent = getEventIcon(opcion.key)
-            
+
             return (
               <div key={opcion.key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <IconComponent className="h-4 w-4 text-muted-foreground" />
                   <span>{opcion.label}</span>
                 </div>
-                <Button 
-                  variant={local[opcion.key as keyof PreferenciaNotificacion] ? 'default' : 'outline'} 
-                  size="sm" 
+                <Button
+                  variant={local[opcion.key as keyof PreferenciaNotificacion] ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => setLocal({ ...local, [opcion.key]: !local[opcion.key as keyof PreferenciaNotificacion] })}
                 >
                   {local[opcion.key as keyof PreferenciaNotificacion] ? 'Activado' : 'Desactivado'}
@@ -389,7 +390,7 @@ function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: Preferenci
 
 export default function NotificacionesPage() {
   const { user } = useAuth()
-  
+
   // Usar localStorage para persistir los datos
   const [config, setConfig] = useLocalStorage<ConfiguracionGlobal>(NOTIFICACIONES_STORAGE_KEYS.config, CONFIG_INICIAL)
   const [eventos, setEventos] = useLocalStorage<EventoNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.eventos, EVENTOS_NOTIFICACION)
@@ -398,7 +399,7 @@ export default function NotificacionesPage() {
   const [vista, setVista] = useLocalStorage<'config' | 'eventos' | 'logs' | 'mispreferencias'>(NOTIFICACIONES_STORAGE_KEYS.vista, 'config')
 
   const isAdmin = user?.roles.includes('admin')
-  
+
   // Agregar un log de prueba para demostrar funcionalidad
   const handleAddLog = () => {
     const nuevosLogs: LogNotificacion[] = [
@@ -447,10 +448,10 @@ export default function NotificacionesPage() {
 
       {/* Stats */}
       <StatGrid cols={4}>
-        <MiniStat value={stats.total} label={statsLabels.total} variant="primary" showBorder accentColor="#06b6d4" icon={<Bell className="h-5 w-5" />} />
-        <MiniStat value={stats.enviados} label={statsLabels.enviados} variant="success" showBorder accentColor="#10b981" icon={<Send className="h-5 w-5" />} />
-        <MiniStat value={stats.fallidos} label={statsLabels.fallidos} variant="danger" showBorder accentColor="#ef4444" icon={<AlertTriangle className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label={statsLabels.pendientes} variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label={statsLabels.total} variant="primary" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.total} icon={<Bell className="h-5 w-5" />} />
+        <MiniStat value={stats.enviados} label={statsLabels.enviados} variant="success" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.enviados} icon={<Send className="h-5 w-5" />} />
+        <MiniStat value={stats.fallidos} label={statsLabels.fallidos} variant="danger" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.fallidos} icon={<AlertTriangle className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label={statsLabels.pendientes} variant="warning" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
       </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>

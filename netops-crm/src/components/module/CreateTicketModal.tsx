@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Trash2, Ticket, Building2, Briefcase, User, AlertCircle, Info, Calendar } from 'lucide-react'
+import { Trash2, Ticket, AlertCircle, Info, Calendar } from 'lucide-react'
 import { Ticket as TicketType, ContratoSoporte, CategoriaTicket, PrioridadTicket, EstadoTicket, CATEGORIAS_TICKET, PRIORIDADES_TICKET, ESTADOS_TICKET } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
@@ -35,7 +35,10 @@ export interface CreateTicketData {
 
 type TicketFormData = Omit<TicketType, 'id' | 'numero_ticket' | 'creado_en' | 'creado_por' | 'creado_por_nombre' | 'creado_por_cliente' | 'fecha_apertura'>
 
-// Función para auto-asignar responsable según categoría
+// ============================================================================
+// FUNCIONES AUXILIARES
+// ============================================================================
+
 function getSuggestedResponsable(
   categoria: CategoriaTicket,
   contratos: ContratoSoporte[],
@@ -46,18 +49,15 @@ function getSuggestedResponsable(
 
   switch (categoria) {
     case 'Soporte técnico': {
-      // Buscar técnico asignado del contrato de esta empresa
       const contrato = empresaId ? activeContracts.find(c => c.empresa_id === empresaId) : null
       if (contrato?.tecnico_asignado_id && contrato.tecnico_asignado_nombre) {
         return { id: contrato.tecnico_asignado_id, nombre: contrato.tecnico_asignado_nombre }
       }
-      // Si no hay contrato, buscar cualquier técnico
       const tecnico = usuarios.find(u => u.rol === 'tecnico' || u.rol === 'admin')
       if (tecnico) return { id: tecnico.id, nombre: tecnico.nombre }
       return null
     }
     case 'Consulta comercial': {
-      // Buscar comercial de la empresa (futuro: campo en Empresa)
       const comercial = usuarios.find(u => u.rol === 'comercial')
       if (comercial) return { id: comercial.id, nombre: comercial.nombre }
       return null
@@ -72,11 +72,14 @@ function getSuggestedResponsable(
       if (compras) return { id: compras.id, nombre: compras.nombre }
       return null
     }
-    case 'Otro':
     default:
       return null
   }
 }
+
+// ============================================================================
+// COMPONENTES AUXILIARES
+// ============================================================================
 
 function TicketFormFields({
   ticket,
@@ -100,19 +103,16 @@ function TicketFormFields({
   const activeContracts = contratos.filter(c => c.estado === 'Activo')
   const clientEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos')
 
-  // Proyectos activos ( filtrar por empresa seleccionada si aplica)
   const proyectosActivos = useMemo(() => {
     if (!proyectos) return []
     return proyectos.filter(p => p.estado === 'activo')
   }, [proyectos])
 
-  // Contratos de la empresa seleccionada
   const contratosFiltrados = useMemo(() => {
     if (!ticket.empresa_id) return activeContracts
     return activeContracts.filter(c => c.empresa_id === ticket.empresa_id)
   }, [activeContracts, ticket.empresa_id])
 
-  // Manejar cambio de categoría - auto-asignar responsable
   const handleCategoriaChange = (categoria: CategoriaTicket) => {
     const sugerido = getSuggestedResponsable(categoria, contratos, usuarios, ticket.empresa_id)
     setTicket({
@@ -123,10 +123,8 @@ function TicketFormFields({
     })
   }
 
-  // Manejar cambio de empresa
   const handleEmpresaChange = (empresaId: string) => {
     const empresa = empresas.find(e => e.id === empresaId)
-    // NO auto-seleccionar contrato - dejar que el usuario elija
     setTicket({
       ...ticket,
       empresa_id: empresaId,
@@ -136,7 +134,6 @@ function TicketFormFields({
     })
   }
 
-  // Manejar cambio de contrato
   const handleContratoChange = (contratoId: string) => {
     const contrato = contratos.find(c => c.id === contratoId)
     if (contrato) {
@@ -151,11 +148,9 @@ function TicketFormFields({
     }
   }
 
-  // Manejar cambio de proyecto
   const handleProyectoChange = (proyectoId: string) => {
     const proyecto = proyectos?.find(p => p.id === proyectoId)
     if (proyecto) {
-      // Si es proyecto, el tipo origen es proyecto
       setTicket({
         ...ticket,
         proyecto_id: proyectoId,
@@ -169,8 +164,6 @@ function TicketFormFields({
 
   const isClienteMode = mode === 'cliente'
   const isEditMode = mode === 'edit'
-
-  // Mostrar responsable sugerido
   const suggestedResponsable = getSuggestedResponsable(ticket.categoria, contratos, usuarios, ticket.empresa_id)
 
   return (
@@ -304,7 +297,6 @@ function TicketFormFields({
           </SelectContent>
         </Select>
 
-        {/* Mostrar sugerencia de auto-asignación */}
         {!isClienteMode && suggestedResponsable && (
           <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
             <Info className="h-3 w-3" />
@@ -331,7 +323,6 @@ function TicketFormFields({
           </Select>
         </div>
 
-        {/* Estado: solo editable en modo edit e interno */}
         {!isClienteMode && (
           <div>
             <Label>{CREATE_TICKET_MODAL.labels.estado}</Label>
@@ -418,20 +409,28 @@ function TicketFormFields({
       </div>
 
       {/* Alerta si no hay contrato para tickets de soporte */}
-      {
-        !isClienteMode && ticket.tipo_origen === 'soporte' && !ticket.contrato_id && ticket.empresa_id && (
-          <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-amber-400" />
-            <span className="text-sm text-amber-400">
-              {CREATE_TICKET_MODAL.alertas.sinContratosAlerta}
-            </span>
-          </div>
-        )
-      }
-    </div >
+      {!isClienteMode && ticket.tipo_origen === 'soporte' && !ticket.contrato_id && ticket.empresa_id && (
+        <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <AlertCircle className="h-4 w-4 text-amber-400" />
+          <span className="text-sm text-amber-400">
+            {CREATE_TICKET_MODAL.alertas.sinContratosAlerta}
+          </span>
+        </div>
+      )}
+    </div>
   )
 }
 
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
+/**
+ * CreateTicketModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body/Footer
+ */
 export function CreateTicketModal({
   open,
   onOpenChange,
@@ -498,7 +497,6 @@ export function CreateTicketModal({
         tiempo_invertido_minutos: ticket.tiempo_invertido_minutos,
       })
     } else {
-      // Reset para modo create/cliente
       setTicketData({
         empresa_id: '',
         empresa_nombre: '',
@@ -520,15 +518,12 @@ export function CreateTicketModal({
   }, [open, ticket, isEditMode])
 
   const handleSave = () => {
-    // Validaciones
     if (!ticketData.titulo || !ticketData.descripcion) return
 
-    // Para interno: necesita empresa o contrato/proyecto
     if (!isClienteMode) {
       if (ticketData.tipo_origen === 'soporte' && !ticketData.contrato_id) return
       if (ticketData.tipo_origen === 'proyecto' && !ticketData.proyecto_id) return
     } else {
-      // Para cliente: necesita contrato
       if (!ticketData.contrato_id) return
     }
 
@@ -541,25 +536,20 @@ export function CreateTicketModal({
     onOpenChange(false)
   }
 
+  const handleClose = () => {
+    onOpenChange(false)
+  }
+
   const hasContratos = contratos.filter(c => c.estado === 'Activo').length > 0
   const hasEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos').length > 0
 
-  // Validación según modo
   const canSave = (() => {
     if (!ticketData.titulo || !ticketData.descripcion) return false
-
-    if (isClienteMode) {
-      return !!ticketData.contrato_id
-    }
-
-    if (ticketData.tipo_origen === 'soporte') {
-      return !!ticketData.contrato_id
-    }
-
+    if (isClienteMode) return !!ticketData.contrato_id
+    if (ticketData.tipo_origen === 'soporte') return !!ticketData.contrato_id
     return !!ticketData.proyecto_id
   })()
 
-  // Título del modal según modo
   const getModalTitle = () => {
     if (isEditMode) return CREATE_TICKET_MODAL.tituloEditar
     if (isClienteMode) return CREATE_TICKET_MODAL.tituloCliente
@@ -567,54 +557,61 @@ export function CreateTicketModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md" className="max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+    <BaseModal
+      open={open}
+      onOpenChange={handleClose}
+      size="md"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
               <Ticket className="h-5 w-5 text-blue-400" />
             </div>
-            <DialogTitle>{getModalTitle()}</DialogTitle>
+            {getModalTitle()}
           </div>
-        </DialogHeader>
-
-        <DialogBody className="overflow-y-auto">
-          {!hasContratos && !isClienteMode ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinContratos}</p>
-              <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
-            </div>
-          ) : !hasEmpresas && !isClienteMode ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinEmpresas}</p>
-              <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearEmpresaPrimero}</p>
-            </div>
-          ) : (
-            <TicketFormFields
-              ticket={ticketData}
-              setTicket={setTicketData}
-              contratos={contratos}
-              empresas={empresas}
-              proyectos={proyectos}
-              usuarios={usuarios}
-              mode={mode}
-            />
-          )}
-        </DialogBody>
-
-        <DialogFooter>
-          {isEditMode && onDelete && (
-            <Button variant="destructive" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" /> {CREATE_TICKET_MODAL.botones.eliminar}
-            </Button>
-          )}
-          <div className="flex-1" />
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{CREATE_TICKET_MODAL.botones.cancelar}</Button>
-          <Button onClick={handleSave} disabled={!canSave}>
-            {isEditMode ? CREATE_TICKET_MODAL.botones.guardar : isClienteMode ? CREATE_TICKET_MODAL.botones.enviar : CREATE_TICKET_MODAL.botones.crear}
+        }
+      />
+      
+      {/* ✅ ModalBody */}
+      <ModalBody>
+        {!hasContratos && !isClienteMode ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinContratos}</p>
+            <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
+          </div>
+        ) : !hasEmpresas && !isClienteMode ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinEmpresas}</p>
+            <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearEmpresaPrimero}</p>
+          </div>
+        ) : (
+          <TicketFormFields
+            ticket={ticketData}
+            setTicket={setTicketData}
+            contratos={contratos}
+            empresas={empresas}
+            proyectos={proyectos}
+            usuarios={usuarios}
+            mode={mode}
+          />
+        )}
+      </ModalBody>
+      
+      {/* ✅ ModalFooter */}
+      <ModalFooter layout="inline-between">
+        {isEditMode && onDelete && (
+          <Button variant="destructive" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 mr-2" /> {CREATE_TICKET_MODAL.botones.eliminar}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        )}
+        <div className="flex-1" />
+        <Button variant="outline" onClick={handleClose}>{CREATE_TICKET_MODAL.botones.cancelar}</Button>
+        <Button onClick={handleSave} disabled={!canSave}>
+          {isEditMode ? CREATE_TICKET_MODAL.botones.guardar : isClienteMode ? CREATE_TICKET_MODAL.botones.enviar : CREATE_TICKET_MODAL.botones.crear}
+        </Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }

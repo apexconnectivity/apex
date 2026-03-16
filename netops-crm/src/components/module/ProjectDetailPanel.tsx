@@ -1,14 +1,15 @@
 "use client"
 
 import { useMemo } from 'react'
-import { X, CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Building2, DollarSign, Target, XCircle, Archive, History } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Building2, Target, Archive, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
+import { PIPELINE_FASE_COLORS } from '@/lib/colors'
+import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Tarea, EstadoTarea } from '@/types/tareas'
 import { HistorialProyecto } from '@/types/proyectos'
-import { formatDateLong, formatDateShort } from '@/lib/date-utils'
 
 interface ProjectDetailPanelProps {
   isOpen: boolean
@@ -21,6 +22,12 @@ interface ProjectDetailPanelProps {
   canClose?: boolean
 }
 
+/**
+ * ProjectDetailPanel - Panel lateral de detalles de proyecto
+ * 
+ * Usa BaseSidePanel para la estructura y SidePanelHeader/Content/Footer
+ * para una arquitectura reutilizable.
+ */
 export function ProjectDetailPanel({
   isOpen,
   onClose,
@@ -53,7 +60,7 @@ export function ProjectDetailPanel({
     return FASES.find(f => f.id === proyecto.fase_actual)
   }, [proyecto])
 
-  // Renderizar icono según estado de tarea
+  // Función para renderizar icono según estado de tarea
   const renderEstadoIcono = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
@@ -67,7 +74,7 @@ export function ProjectDetailPanel({
     }
   }
 
-  // Obtener clase según estado para el texto - unificado con StatusBadge
+  // Obtener clase según estado
   const getEstadoClase = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
@@ -77,298 +84,163 @@ export function ProjectDetailPanel({
       case 'Bloqueada':
         return 'text-orange-400'
       default:
-        return 'text-amber-400' // Pendiente
+        return 'text-amber-400'
     }
   }
 
+  if (!proyecto) return null
+
   return (
-    <>
-      {/* Panel lateral */}
-      <div className="h-full flex flex-col">
-        {/* Header del panel */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: faseActual?.color || '#6b7280' }}
-            />
-            <h2 className="font-semibold text-foreground truncate max-w-[280px]">
-              {proyecto?.nombre || 'Detalles del Proyecto'}
-            </h2>
+    <BaseSidePanel
+      isOpen={isOpen}
+      onClose={onClose}
+      position="right"
+      width="w-[400px]"
+    >
+      {/* Header */}
+      <SidePanelHeader
+        icon={
+          <div
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: faseActual?.color || PIPELINE_FASE_COLORS[1] }}
+          />
+        }
+        title={proyecto.nombre}
+        subtitle={proyecto.cliente_nombre}
+      />
+
+      {/* Contenido */}
+      <SidePanelContent>
+        {/* Progreso del proyecto */}
+        <SidePanelSection title="Progreso del Proyecto">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Probabilidad de cierre</span>
+              <span className="font-medium">{proyecto.probabilidad_cierre}%</span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${proyecto.probabilidad_cierre}%` }}
+              />
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8 hover:bg-muted text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+        </SidePanelSection>
 
-        {/* Contenido */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
-          {proyecto ? (
-            <>
-              {/* Información del cliente */}
-              <div className="flex items-center gap-2 text-foreground">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{proyecto.cliente_nombre}</span>
+        {/* Grid de información */}
+        <SidePanelSection>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Fase */}
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                <Target className="h-3.5 w-3.5" />
+                <span className="text-xs">Fase</span>
               </div>
-
-              {/* Progreso del proyecto */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Progreso del Proyecto</span>
-                  <span className="text-foreground font-medium">{proyecto.probabilidad_cierre}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${proyecto.probabilidad_cierre}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">Probabilidad de cierre</p>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: faseActual?.color }}
+                />
+                <span className="text-sm font-medium">{faseActual?.nombre}</span>
               </div>
+            </div>
 
-              {/* Grid de información */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Fase */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <Target className="h-3.5 w-3.5" />
-                    <span className="text-xs">Fase</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: faseActual?.color }}
-                    />
-                    <span className="text-sm font-medium text-foreground">{faseActual?.nombre}</span>
-                  </div>
-                </div>
-
-                {/* Estado */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="text-xs">Estado</span>
-                  </div>
-                  <StatusBadge
-                    status={proyecto.estado === 'activo' ? 'Activo' : 'Cerrado'}
-                    className="mt-0.5"
-                  />
-                </div>
-
-                {/* Monto */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    <span className="text-xs">Monto</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {proyecto.monto_estimado 
-                      ? `${proyecto.moneda} ${proyecto.monto_estimado.toLocaleString()}` 
-                      : <span className="text-muted-foreground">Sin monto</span>}
-                  </span>
-                </div>
-
-                {/* Responsable */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <User className="h-3.5 w-3.5" />
-                    <span className="text-xs">Responsable</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground truncate block">
-                    {proyecto.responsable_nombre || 'Sin asignar'}
-                  </span>
-                </div>
-
-                {/* Fecha inicio */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span className="text-xs">Inicio</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {formatDateLong(proyecto.fecha_inicio)}
-                  </span>
-                </div>
-
-                {/* Fecha fin estimada */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span className="text-xs">Fin Estimada</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {formatDateLong(proyecto.fecha_estimada_fin)}
-                  </span>
-                </div>
+            {/* Estado */}
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span className="text-xs">Estado</span>
               </div>
+              <StatusBadge
+                status={proyecto.estado === 'activo' ? 'Activo' : 'Cerrado'}
+                className="mt-0.5"
+              />
+            </div>
 
-              {/* Tags */}
-              {proyecto.tags && proyecto.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {proyecto.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="bg-muted/50 text-foreground text-xs hover:bg-muted/70"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
+            {/* Tareas */}
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span className="text-xs">Tareas</span>
+              </div>
+              <span className="text-sm font-medium">
+                {progresoTareas}%
+                <span className="text-muted-foreground text-xs ml-1">
+                  ({tareasDelProyecto.filter(t => t.estado === 'Completada').length}/{tareasDelProyecto.length})
+                </span>
+              </span>
+            </div>
+
+            {/* Presupuesto */}
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                <Calendar className="h-3.5 w-3.5" />
+                <span className="text-xs">Fecha Inicio</span>
+              </div>
+              <span className="text-sm font-medium">
+                {proyecto.fecha_inicio ? new Date(proyecto.fecha_inicio).toLocaleDateString('es-ES') : '-'}
+              </span>
+            </div>
+          </div>
+        </SidePanelSection>
+
+        {/* Lista de tareas */}
+        {tareasDelProyecto.length > 0 && (
+          <SidePanelSection title={`Tareas de ${faseActual?.nombre}`}>
+            <div className="space-y-2">
+              {tareasDelProyecto.slice(0, 5).map((tarea) => (
+                <div
+                  key={tarea.id}
+                  className="flex items-center gap-3 p-2 rounded-lg bg-muted/30"
+                >
+                  {renderEstadoIcono(tarea.estado)}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm truncate ${getEstadoClase(tarea.estado)}`}>
+                      {tarea.nombre}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tarea.responsable_nombre || 'Sin asignar'}
+                    </p>
+                  </div>
                 </div>
+              ))}
+              {tareasDelProyecto.length > 5 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  +{tareasDelProyecto.length - 5} más
+                </p>
               )}
-
-              {/* Sección de Tareas */}
-              <div className="space-y-3">
-                {/* Header de tareas con progreso */}
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                    Tareas del Proyecto
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {tareasDelProyecto.filter(t => t.estado === 'Completada').length}/{tareasDelProyecto.length}
-                    </span>
-                    <span className="text-xs font-medium text-emerald-400">
-                      {progresoTareas}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Barra de progreso de tareas */}
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${progresoTareas}%` }}
-                  />
-                </div>
-
-                {/* Lista de tareas */}
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                  {tareasDelProyecto.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No hay tareas en esta fase</p>
-                    </div>
-                  ) : (
-                    tareasDelProyecto.map((tarea) => (
-                      <div
-                        key={tarea.id}
-                        className="flex items-start gap-3 p-3 bg-muted/20 rounded-lg hover:bg-muted/40 transition-colors group"
-                      >
-                        {renderEstadoIcono(tarea.estado)}
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${getEstadoClase(tarea.estado)}`}>
-                            {tarea.nombre}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <StatusBadge
-                              status={tarea.estado}
-                              className="text-[10px] h-5"
-                            />
-                            {tarea.categoria && (
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] h-5 bg-muted/50 text-foreground"
-                              >
-                                {tarea.categoria}
-                              </Badge>
-                            )}
-                          </div>
-                          {tarea.fecha_vencimiento && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Vence: {formatDateShort(tarea.fecha_vencimiento)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Sección de Historial */}
-              {historial.length > 0 && (
-                <div className="space-y-3 pt-4 border-t border-border">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <History className="h-4 w-4 text-muted-foreground" />
-                    Historial del Proyecto
-                  </h3>
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-                    {historial.map((evento) => (
-                      <div
-                        key={evento.id}
-                        className="flex items-start gap-3 p-2 bg-muted/20 rounded-lg text-xs"
-                      >
-                        <div className="mt-0.5">
-                          {evento.tipo_evento === 'cambio_fase' && <Target className="h-3.5 w-3.5 text-blue-400" />}
-                          {evento.tipo_evento === 'cierre' && <XCircle className="h-3.5 w-3.5 text-red-400" />}
-                          {evento.tipo_evento === 'reapertura' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
-                          {evento.tipo_evento === 'archivado' && <Archive className="h-3.5 w-3.5 text-amber-400" />}
-                          {evento.tipo_evento === 'creacion' && <Building2 className="h-3.5 w-3.5 text-muted-foreground" />}
-                          {evento.tipo_evento === 'edicion' && <Clock className="h-3.5 w-3.5 text-muted-foreground" />}
-                          {evento.tipo_evento === 'asignacion_responsable' && <User className="h-3.5 w-3.5 text-purple-400" />}
-                          {evento.tipo_evento === 'asignacion_contacto' && <User className="h-3.5 w-3.5 text-purple-400" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-foreground">{evento.descripcion}</p>
-                          <p className="text-muted-foreground mt-0.5">
-                            {new Date(evento.fecha).toLocaleString('es-ES', {
-                              day: '2-digit',
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                            {evento.usuario_nombre && ` • ${evento.usuario_nombre}`}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-              <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-sm">Selecciona un proyecto para ver detalles</p>
             </div>
-          )}
+          </SidePanelSection>
+        )}
+      </SidePanelContent>
 
-          {/* Botón de cerrar proyecto - al final del panel */}
-          {canClose && proyecto && proyecto.estado === 'activo' && (
-            <div className="pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500"
-                onClick={() => onCerrar?.(proyecto)}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Cerrar Proyecto
-              </Button>
-            </div>
+      {/* Footer con acciones */}
+      {(onCerrar || onArchivar) && (
+        <SidePanelFooter>
+          {canClose && onCerrar && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCerrar(proyecto)}
+              className="flex-1"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Cerrar Proyecto
+            </Button>
           )}
-
-          {/* Botón de archivar proyecto - solo para proyectos cerrados */}
-          {canClose && proyecto && proyecto.estado === 'cerrado' && (
-            <div className="pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500"
-                onClick={() => onArchivar?.(proyecto)}
-              >
-                <Archive className="h-4 w-4 mr-2" />
-                Archivar Proyecto
-              </Button>
-            </div>
+          {onArchivar && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onArchivar(proyecto)}
+              className="flex-1"
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              Archivar
+            </Button>
           )}
-        </div>
-      </div>
-    </>
+        </SidePanelFooter>
+      )}
+    </BaseSidePanel>
   )
 }

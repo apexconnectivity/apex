@@ -90,6 +90,26 @@ export const STATS_LABELS = {
   alta: 'Alta',
   media: 'Media',
   baja: 'Baja',
+
+  // Página
+  tituloPagina: 'Estadísticas',
+  descripcionPagina: 'Panel de métricas y análisis de tu negocio',
+  tabResumen: 'Resumen',
+  tabCrm: 'CRM',
+
+  // Empty states
+  sinActividadReciente: 'Sin actividad reciente',
+  noHayTareasProximas: 'No hay tareas próximas',
+  noHayReunionesProximas: 'No hay reuniones próximas',
+  sinAcceso: 'Sin acceso',
+  noTienesPermisos: 'No tienes permisos para ver las estadísticas.',
+  proximas: 'Próximas',
+
+  // Fechas
+  porMes: '/mes',
+  sinRelacion: 'Sin relación',
+  vencido: 'Vencida',
+  vencidoPlural: 'Vencidas',
 } as const
 
 // ============================================================================
@@ -146,13 +166,13 @@ export const STATUS_TO_VARIANT: Record<string, StatVariant> = {
   resuelta: 'success',
   resueltos: 'success',
   exitosa: 'success',
-  
+
   // Estados de advertencia
   pendiente: 'warning',
   pendientes: 'warning',
   'en progreso': 'warning',
   media: 'warning',
-  
+
   // Estados de peligro
   abierto: 'danger',
   abiertos: 'danger',
@@ -160,7 +180,7 @@ export const STATUS_TO_VARIANT: Record<string, StatVariant> = {
   alta: 'danger',
   vencido: 'danger',
   vencidos: 'danger',
-  
+
   // Estados informativos
   info: 'info',
   cerrado: 'info',

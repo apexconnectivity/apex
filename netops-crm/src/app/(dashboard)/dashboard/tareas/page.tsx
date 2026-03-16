@@ -2,7 +2,23 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/lib/data'
+import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
+import { VARIANT_COLORS, STATUS_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
+
+// Importar constantes
+import {
+  PAGE_TITLE,
+  PAGE_DESCRIPTION,
+  TABS_LABELS,
+  BUTTON_LABELS,
+  EMPTY_MESSAGES,
+  FORM_LABELS,
+  FILTER_LABELS,
+  STATS_LABELS,
+  DATE_LABELS,
+  OTHER_LABELS,
+  TASK_STATUS,
+} from '@/constants/tareas'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,17 +34,9 @@ import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTa
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 
-const DEMO_USUARIOS = [
-  { id: '1', nombre: 'Carlos Admin', rol: 'admin' },
-  { id: '2', nombre: 'Laura Pérez', rol: 'comercial' },
-  { id: '3', nombre: 'Juan Técnico', rol: 'tecnico' },
-  { id: '4', nombre: 'María Compras', rol: 'compras' },
-  { id: '5', nombre: 'Ana Admin', rol: 'admin' },
-]
-
-const USUARIOS: { id: string; nombre: string; rol: string }[] = DEMO_USUARIOS
+// Lista de usuarios (se填充ará con datos del módulo de usuarios)
+const USUARIOS: { id: string; nombre: string; rol: string }[] = []
 
 function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
@@ -45,13 +53,13 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
   const getEstadoIcon = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
-        return <CheckCircle className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+        return <CheckCircle className={`h-3.5 w-3.5 ${TASK_STATUS_COLORS.completada.color} flex-shrink-0`} />
       case 'En progreso':
-        return <Clock className="h-3.5 w-3.5 text-blue-400 flex-shrink-0 animate-pulse" />
+        return <Clock className={`h-3.5 w-3.5 ${TASK_STATUS_COLORS.en_progreso.color} flex-shrink-0 animate-pulse`} />
       case 'Bloqueada':
-        return <AlertCircle className="h-3.5 w-3.5 text-red-400 flex-shrink-0" />
+        return <AlertCircle className={`h-3.5 w-3.5 ${TASK_STATUS_COLORS.bloqueada.color} flex-shrink-0`} />
       default:
-        return <Clock className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
+        return <Clock className={`h-3.5 w-3.5 ${TASK_STATUS_COLORS.pendiente.color} flex-shrink-0`} />
     }
   }
 
@@ -86,7 +94,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
         )}
 
         {isBlocked && (
-          <div className="flex items-center gap-1 text-xs text-amber-400">
+          <div className={`flex items-center gap-1 text-xs ${PRIORITY_COLORS.alta.color}`}>
             <AlertCircle className="h-3 w-3" />
             <span>Bloqueada</span>
           </div>
@@ -97,7 +105,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
             {getEstadoIcon(tarea.estado)}
             <StatusBadge status={tarea.estado} type="estado" />
           </div>
-          
+
           {isBlocked && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
               <Select value="" onValueChange={(v) => onStatusChange(tarea.id, v as EstadoTarea)}>
@@ -156,31 +164,31 @@ export default function TareasPage() {
       if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false
       if (filtroCategoria !== 'todas' && t.categoria !== filtroCategoria) return false
       if (filtroPrioridad !== 'todas' && t.prioridad !== filtroPrioridad) return false
-      
+
       if (filtroFechaDesde && t.fecha_vencimiento && t.fecha_vencimiento < filtroFechaDesde) return false
       if (filtroFechaHasta && t.fecha_vencimiento && t.fecha_vencimiento > filtroFechaHasta) return false
-      
+
       const isOverdue = t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada'
       if (filtroVencidas && !isOverdue) return false
-      
+
       return true
     })
   }, [tareas, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaDesde, filtroFechaHasta, filtroVencidas])
 
   const visibleTareas = useMemo(() => {
     if (isAdmin) return filteredTareas
-    
+
     return filteredTareas.filter(t => {
       const isOwnTask = t.responsable_id === user?.id
       const isClientTask = t.asignado_a_cliente
-      
+
       return isOwnTask || isClientTask
     })
   }, [filteredTareas, isAdmin, user?.id])
 
   const tareasPorEstado = useMemo(() => {
     const r: Record<EstadoTarea, Tarea[]> = { 'Pendiente': [], 'En progreso': [], 'Completada': [], 'Bloqueada': [] }
-    visibleTareas.forEach(t => { if (r[t.estado]) r[t.estado].push(t) })
+    visibleTareas.forEach((t: Tarea) => { if (t.estado && r[t.estado]) r[t.estado].push(t) })
     return r
   }, [visibleTareas])
 
@@ -211,7 +219,7 @@ export default function TareasPage() {
         creado_por: user?.id || '1',
       }
       setTareas(prev => [...prev, newTarea])
-      
+
       if (data.subtareas && data.subtareas.length > 0) {
         const newSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
           id: Date.now().toString() + '-' + i,
@@ -224,7 +232,7 @@ export default function TareasPage() {
       } else {
         setSubtareas(prev => ({ ...prev, [newTarea.id]: [] }))
       }
-      
+
       if (data.comentarios && data.comentarios.length > 0) {
         const newComentarios: Comentario[] = data.comentarios.map((c, i) => ({
           id: Date.now().toString() + '-' + i,
@@ -248,7 +256,7 @@ export default function TareasPage() {
         creado_por: editingTarea?.creado_por || user?.id || '1',
       }
       setTareas(prev => prev.map(t => t.id === updatedTarea.id ? updatedTarea : t))
-      
+
       if (data.subtareas) {
         const taskSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
           id: s.id || Date.now().toString() + '-' + i,
@@ -259,7 +267,7 @@ export default function TareasPage() {
         }))
         setSubtareas(prev => ({ ...prev, [updatedTarea.id]: taskSubtareas }))
       }
-      
+
       if (data.comentarios) {
         const taskComentarios: Comentario[] = data.comentarios.map((c, i) => ({
           id: c.id || Date.now().toString() + '-' + i,
@@ -272,7 +280,7 @@ export default function TareasPage() {
         }))
         setComentarios(prev => ({ ...prev, [updatedTarea.id]: taskComentarios }))
       }
-      
+
       setSelectedId(updatedTarea.id)
     }
   }
@@ -344,7 +352,14 @@ export default function TareasPage() {
   }
 
   if (!isAdmin && !isComercial && !isTecnico && !isCompras) {
-    return <AccessDeniedCard icon={CheckSquare} />
+    return (
+      <Card className="m-4 p-8 text-center">
+        <CardContent className="flex flex-col items-center gap-4">
+          <CheckSquare className="h-12 w-12 text-muted-foreground" />
+          <p className="text-lg font-medium">Acceso restringido</p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -357,7 +372,7 @@ export default function TareasPage() {
               onClose={() => setSelectedId(null)}
               tarea={selected}
               proyectos={proyectos}
-              usuarios={DEMO_USUARIOS}
+              usuarios={USUARIOS}
               subtareas={subtareas[selected.id] || []}
               comentarios={comentarios[selected.id] || []}
               onUpdate={handleUpdateTarea}
@@ -383,152 +398,152 @@ export default function TareasPage() {
         />
 
         <StatGrid cols={6}>
-            <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
-            <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<Clock className="h-5 w-5" />} />
-            <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor="#3b82f6" icon={<Loader2 className="h-5 w-5" />} />
-            <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
-            <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor="#ef4444" icon={<Ban className="h-5 w-5" />} />
-            <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor="#dc2626" icon={<AlertTriangle className="h-5 w-5" />} />
-          </StatGrid>
+          <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor={TAREAS_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
+          <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor={TAREAS_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
+          <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor={TAREAS_STATS_COLORS.enProgreso} icon={<Loader2 className="h-5 w-5" />} />
+          <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor={TAREAS_STATS_COLORS.completadas} icon={<CheckCircle className="h-5 w-5" />} />
+          <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.bloqueadas} icon={<Ban className="h-5 w-5" />} />
+          <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
+        </StatGrid>
 
-          <div className="flex flex-wrap gap-2 items-center text-sm">
-            <span className="text-muted-foreground mr-1">Filtros:</span>
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground mr-1">Proyecto:</Label>
-              <Select value={filtroProyecto} onValueChange={setFiltroProyecto}>
-                <SelectTrigger className="w-32 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {isAdmin && (
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">Persona:</Label>
-                <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todas</SelectItem>
-                    {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
-              <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
-              <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas</SelectItem>
-                  {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
-              <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-                <SelectTrigger className="w-24 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas</SelectItem>
-                  {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground">Desde:</Label>
-              <Input 
-                type="date" 
-                value={filtroFechaDesde} 
-                onChange={(e) => setFiltroFechaDesde(e.target.value)} 
-                className="w-28 h-8 bg-input border-border"
-              />
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground">Hasta:</Label>
-              <Input 
-                type="date" 
-                value={filtroFechaHasta} 
-                onChange={(e) => setFiltroFechaHasta(e.target.value)} 
-                className="w-28 h-8 bg-input border-border"
-              />
-            </div>
-            
-            <label className="flex items-center gap-1.5 cursor-pointer h-8">
-              <Checkbox 
-                checked={filtroVencidas} 
-                onCheckedChange={(checked) => setFiltroVencidas(checked as boolean)}
-              />
-              <span className="text-xs text-muted-foreground">Vencidas</span>
-            </label>
-            
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs text-muted-foreground hover:text-foreground">
-              <X className="h-3 w-3 mr-1" /> Limpiar
-            </Button>
+        <div className="flex flex-wrap gap-2 items-center text-sm">
+          <span className="text-muted-foreground mr-1">Filtros:</span>
+
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground mr-1">Proyecto:</Label>
+            <Select value={filtroProyecto} onValueChange={setFiltroProyecto}>
+              <SelectTrigger className="w-32 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
-          {view === 'kanban' && (
-            <div className="-mx-6 px-6 overflow-x-auto">
-              <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
-                {ESTADOS.map(estado => (
-                  <div key={estado} className="min-w-[280px]">
-                    <div className="flex items-center gap-2 mb-4">
-                      <h3 className="font-semibold">{estado}</h3>
-                      <Badge variant="secondary" className="ml-auto">{tareasPorEstado[estado]?.length || 0}</Badge>
-                    </div>
-                    <div className="space-y-3">
-                      {tareasPorEstado[estado]?.map(tarea => (
-                        <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
-                      ))}
-                      {tareasPorEstado[estado]?.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground text-sm">No hay tareas</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {isAdmin && (
+            <div className="flex items-center gap-1">
+              <Label className="text-xs text-muted-foreground mr-1">Persona:</Label>
+              <Select value={filtroPersona} onValueChange={setFiltroPersona}>
+                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todas</SelectItem>
+                  {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          {view === 'lista' && (
-            <div className="space-y-2">
-              {visibleTareas.map(tarea => (
-                <Card key={tarea.id} className="cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30" onClick={() => setSelectedId(tarea.id)}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <h4 className="font-semibold">{tarea.nombre}</h4>
-                        <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} • {tarea.fase_nombre}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={tarea.categoria} type="categoria" />
-                      <StatusBadge status={tarea.prioridad} type="prioridad" />
-                      <StatusBadge status={tarea.estado} type="estado" />
-                    </div>
-                  </CardContent>
-                </Card>
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
+            <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+              <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
+            <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+              <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
+            <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
+              <SelectTrigger className="w-24 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Desde:</Label>
+            <Input
+              type="date"
+              value={filtroFechaDesde}
+              onChange={(e) => setFiltroFechaDesde(e.target.value)}
+              className="w-28 h-8 bg-input border-border"
+            />
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Hasta:</Label>
+            <Input
+              type="date"
+              value={filtroFechaHasta}
+              onChange={(e) => setFiltroFechaHasta(e.target.value)}
+              className="w-28 h-8 bg-input border-border"
+            />
+          </div>
+
+          <label className="flex items-center gap-1.5 cursor-pointer h-8">
+            <Checkbox
+              checked={filtroVencidas}
+              onCheckedChange={(checked) => setFiltroVencidas(checked as boolean)}
+            />
+            <span className="text-xs text-muted-foreground">Vencidas</span>
+          </label>
+
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs text-muted-foreground hover:text-foreground">
+            <X className="h-3 w-3 mr-1" /> Limpiar
+          </Button>
+        </div>
+
+        {view === 'kanban' && (
+          <div className="-mx-6 px-6 overflow-x-auto">
+            <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
+              {ESTADOS.map(estado => (
+                <div key={estado} className="min-w-[280px]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <h3 className="font-semibold">{estado}</h3>
+                    <Badge variant="secondary" className="ml-auto">{tareasPorEstado[estado]?.length || 0}</Badge>
+                  </div>
+                  <div className="space-y-3">
+                    {tareasPorEstado[estado]?.map(tarea => (
+                      <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
+                    ))}
+                    {tareasPorEstado[estado]?.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground text-sm">{OTHER_LABELS.noHayTareas}</div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
-          )}
+          </div>
+        )}
+
+        {view === 'lista' && (
+          <div className="space-y-2">
+            {visibleTareas.map(tarea => (
+              <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <h4 className="font-semibold">{tarea.nombre}</h4>
+                      <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} • {tarea.fase_nombre}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={tarea.categoria} type="categoria" />
+                    <StatusBadge status={tarea.prioridad} type="prioridad" />
+                    <StatusBadge status={tarea.estado} type="estado" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
       </ModuleContainerWithPanel>
 
@@ -536,7 +551,7 @@ export default function TareasPage() {
         open={showCreate}
         onOpenChange={setShowCreate}
         proyectos={proyectos}
-        usuarios={DEMO_USUARIOS}
+        usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         onSave={handleSaveTarea}
       />
@@ -545,7 +560,7 @@ export default function TareasPage() {
         open={showEdit}
         onOpenChange={setShowEdit}
         proyectos={proyectos}
-        usuarios={DEMO_USUARIOS}
+        usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         tarea={editingTarea}
         subtareas={editingTarea ? subtareas[editingTarea.id] || [] : []}

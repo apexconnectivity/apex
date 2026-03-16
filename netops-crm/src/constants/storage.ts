@@ -1,86 +1,56 @@
-// ============================================
-// Constantes centralizadas para localStorage
-// ============================================
+/**
+ * ============================================
+ * @deprecated Usa storage-config.ts en su lugar
+ * ============================================
+ * Este archivo se mantiene solo por compatibilidad.
+ * Por favor migrar a '@/constants/storage-config'
+ */
 
-import type { Empresa } from '@/types/crm'
-import type { Proyecto } from '@/types/proyectos'
-import type { Tarea } from '@/types/tareas'
-import type { Ticket, ContratoSoporte, ComentarioTicket } from '@/types/soporte'
-import type { OrdenCompra, Proveedor, Cotizacion } from '@/types/compras'
-
-// ============================================
-// STORAGE KEYS - Claves para localStorage
-// ============================================
-
+// Keys simples para compatibilidad (valores string)
 export const STORAGE_KEYS = {
-  // CRM
-  empresas: 'apex_crm_datos',
-  
-  // Proyectos
-  proyectos: 'apex_proyectos_datos',
-  
-  // Tareas
-  tareas: 'apex_tareas_datos',
-  
-  // Soporte
-  tickets: 'apex_soporte_datos',
-  contratos: 'apex_contratos_soporte',
-  comentarios: 'apex_soporte_comentarios',
-  soporteVista: 'apex_soporte_vista',
-  
-  // Compras
-  compras: 'apex_compras_datos',
-  proveedores: 'apex_proveedores_datos',
-  cotizaciones: 'apex_cotizaciones_datos',
-  comprasVista: 'apex_compras_vista',
-  
-  // Notificaciones
-  notificacionesConfig: 'apex_notificaciones_config',
-  notificacionesPreferencia: 'apex_notificaciones_preferencia',
-  notificacionesEventos: 'apex_notificaciones_eventos',
-  notificacionesVista: 'apex_notificaciones_vista',
-
-  // Archivado
-  empresasArchivadas: 'apex_crm_archivados',
-  proyectosArchivados: 'apex_proyectos_archivados',
-  tareasArchivadas: 'apex_tareas_archivadas',
-  ticketsArchivados: 'apex_soporte_archivados',
-  contratosArchivados: 'apex_contratos_archivados',
-  comprasArchivadas: 'apex_compras_archivadas',
-  proveedoresArchivados: 'apex_proveedores_archivados',
-  cotizacionesArchivadas: 'apex_cotizaciones_archivadas',
+  empresas: 'netops_crm_empresas',
+  usuarios: 'netops_usuarios',
+  proyectos: 'netops_proyectos',
+  tareas: 'netops_tareas',
+  tickets: 'netops_soporte_tickets',
+  contratos: 'netops_soporte_contratos',
+  comentarios: 'netops_soporte_comentarios',
+  soporteVista: 'netops_ui_soporte_vista',
+  compras: 'netops_compras_ordenes',
+  proveedores: 'netops_compras_proveedores',
+  cotizaciones: 'netops_compras_cotizaciones',
+  comprasVista: 'netops_ui_compras_vista',
+  notificacionesConfig: 'netops_notificaciones_config',
+  notificacionesPreferencia: 'netops_notificaciones_preferencia',
+  notificacionesEventos: 'netops_notificaciones_eventos',
+  notificacionesVista: 'netops_ui_notificaciones_vista',
+  empresasArchivadas: 'netops_proyectos_archivados',
+  proyectosArchivados: 'netops_proyectos_archivados',
+  tareasArchivadas: 'netops_tareas_archivadas',
+  ticketsArchivados: 'netops_soporte_archivados',
+  contratosArchivados: 'netops_contratos_archivados',
+  comprasArchivadas: 'netops_compras_archivadas',
+  proveedoresArchivados: 'netops_proveedores_archivados',
+  cotizacionesArchivadas: 'netops_cotizaciones_archivadas',
 } as const
 
-// ============================================
-// VALORES INICIALES - Datos demo por defecto
-// ============================================
-
-// Valores iniciales vacíos (para uso general)
+// Valores iniciales simples
 export const INITIAL_DATA = {
-  empresas: [] as Empresa[],
-  proyectos: [] as Proyecto[],
-  tareas: [] as Tarea[],
-  tickets: [] as Ticket[],
-  contratos: [] as ContratoSoporte[],
-  comentarios: {} as Record<string, ComentarioTicket[]>,
-  // Compras
-  compras: [] as OrdenCompra[],
-  proveedores: [] as Proveedor[],
-  cotizaciones: [] as Cotizacion[],
-  // Archivado
-  empresasArchivadas: [] as Empresa[],
-  proyectosArchivados: [] as Proyecto[],
-  tareasArchivadas: [] as Tarea[],
-  ticketsArchivados: [] as Ticket[],
-  contratosArchivados: [] as ContratoSoporte[],
-  comprasArchivadas: [] as OrdenCompra[],
-  proveedoresArchivados: [] as Proveedor[],
-  cotizacionesArchivadas: [] as Cotizacion[],
+  empresas: [],
+  proyectos: [],
+  tareas: [],
+  tickets: [],
+  contratos: [],
+  comentarios: {},
+  compras: [],
+  proveedores: [],
+  cotizaciones: [],
+  empresasArchivadas: [],
+  proyectosArchivados: [],
+  tareasArchivadas: [],
+  ticketsArchivados: [],
+  contratosArchivados: [],
+  comprasArchivadas: [],
+  proveedoresArchivados: [],
+  cotizacionesArchivadas: [],
 } as const
-
-// ============================================
-// TIPOS EXPORTADOS
-// ============================================
-
-export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]
-export type InitialData = typeof INITIAL_DATA

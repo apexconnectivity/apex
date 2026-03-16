@@ -16,7 +16,8 @@ import { DetalleArchivadoModal } from '@/components/module/DetalleArchivadoModal
 import { ConfirmArchiveModal } from '@/components/module/ConfirmArchiveModal'
 import { ConfirmDeleteModal } from '@/components/module/ConfirmDeleteModal'
 import { ConfiguracionTab } from '@/components/module/ConfiguracionTab'
-import { 
+import { ARCHIVADOS_STATS_COLORS } from '@/lib/colors'
+import {
   ARCHIVADO_TITULOS, ARCHIVADO_TABS, ARCHIVADO_STATS, ARCHIVADO_FILTROS,
   ARCHIVADO_EMPTY, ARCHIVADO_ACCESS
 } from '@/constants/archivado'
@@ -26,22 +27,22 @@ import { useMemo } from 'react'
 
 export default function ArchivadoPage() {
   const { user } = useAuth()
-  const { 
-    proyectosCerrados, 
-    proyectosArchivados, 
-    config, 
+  const {
+    proyectosCerrados,
+    proyectosArchivados,
+    config,
     addProyectoArchivado,
     removeProyectoArchivado,
     restaurarProyecto,
     updateConfig,
-    loading 
+    loading
   } = useArchivadoStorage()
-  
+
   const [vista, setVista] = useState<'cerrados' | 'archivados' | 'config'>('cerrados')
   const [selectedProject, setSelectedProject] = useState<ProyectoArchivado | null>(null)
   const [archiveConfirm, setArchiveConfirm] = useState<ProyectoCerrado | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<ProyectoArchivado | null>(null)
-  
+
   // Estados locales para filtros
   const [searchCerrados, setSearchCerrados] = useState('')
   const [searchArchivados, setSearchArchivados] = useState('')
@@ -159,11 +160,11 @@ export default function ArchivadoPage() {
             <div className="flex gap-2">
               <div className="relative flex-1 max-w-md">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-                <Input 
-                  placeholder={ARCHIVADO_FILTROS.buscarProyectos} 
-                  value={searchCerrados} 
-                  onChange={(e) => setSearchCerrados(e.target.value)} 
-                  className="pl-9 pr-8 bg-background/80 border-border/50" 
+                <Input
+                  placeholder={ARCHIVADO_FILTROS.buscarProyectos}
+                  value={searchCerrados}
+                  onChange={(e) => setSearchCerrados(e.target.value)}
+                  className="pl-9 pr-8 bg-background/80 border-border/50"
                 />
               </div>
             </div>
@@ -192,20 +193,20 @@ export default function ArchivadoPage() {
         <TabsContent value="archivados">
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <MiniStat value={statsArchivados.total} label={ARCHIVADO_STATS.totalArchivados} variant="primary" showBorder accentColor="#06b6d4" icon={<Archive className="h-5 w-5" />} />
-              <MiniStat value={statsArchivados.completados} label={ARCHIVADO_STATS.completados} variant="success" showBorder accentColor="#10b981" icon={<CheckSquare className="h-5 w-5" />} />
-              <MiniStat value={statsArchivados.inconclusos} label={ARCHIVADO_STATS.inconclusos} variant="warning" showBorder accentColor="#f59e0b" icon={<AlertTriangle className="h-5 w-5" />} />
+              <MiniStat value={statsArchivados.total} label={ARCHIVADO_STATS.totalArchivados} variant="primary" showBorder accentColor={ARCHIVADOS_STATS_COLORS.total} icon={<Archive className="h-5 w-5" />} />
+              <MiniStat value={statsArchivados.completados} label={ARCHIVADO_STATS.completados} variant="success" showBorder accentColor={ARCHIVADOS_STATS_COLORS.completados} icon={<CheckSquare className="h-5 w-5" />} />
+              <MiniStat value={statsArchivados.inconclusos} label={ARCHIVADO_STATS.inconclusos} variant="warning" showBorder accentColor={ARCHIVADOS_STATS_COLORS.inconclusos} icon={<AlertTriangle className="h-5 w-5" />} />
               <MiniStat value={`${statsArchivados.espacio} MB`} label={ARCHIVADO_STATS.espacioUsado} />
             </div>
 
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input 
-                  placeholder={ARCHIVADO_FILTROS.buscarProyectosArchivados} 
-                  value={searchArchivados} 
-                  onChange={(e) => setSearchArchivados(e.target.value)} 
-                  className="pl-9 pr-8 bg-background/80 border-border/50" 
+                <Input
+                  placeholder={ARCHIVADO_FILTROS.buscarProyectosArchivados}
+                  value={searchArchivados}
+                  onChange={(e) => setSearchArchivados(e.target.value)}
+                  className="pl-9 pr-8 bg-background/80 border-border/50"
                 />
               </div>
               <Select value={filtroArchivados} onValueChange={(v) => setFiltroArchivados(v as typeof filtroArchivados)}>
@@ -244,37 +245,34 @@ export default function ArchivadoPage() {
         </TabsContent>
 
         <TabsContent value="config">
-          <ConfiguracionTab 
-            config={config} 
-            onUpdate={handleConfigUpdate} 
+          <ConfiguracionTab
+            config={config}
+            onUpdate={handleConfigUpdate}
           />
         </TabsContent>
       </Tabs>
 
-      {selectedProject && (
-        <DetalleArchivadoModal
-          proyecto={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onRestaurar={() => handleRestaurar(selectedProject)}
-          onEliminar={() => setDeleteConfirm(selectedProject)}
-        />
-      )}
+      <DetalleArchivadoModal
+        proyecto={selectedProject}
+        open={selectedProject !== null}
+        onOpenChange={(open) => !open && setSelectedProject(null)}
+        onRestaurar={() => selectedProject && handleRestaurar(selectedProject)}
+        onEliminar={() => selectedProject && setDeleteConfirm(selectedProject)}
+      />
 
-      {archiveConfirm && (
-        <ConfirmArchiveModal
-          proyecto={archiveConfirm}
-          onClose={() => setArchiveConfirm(null)}
-          onConfirm={(clasificacion) => handleArchivar(archiveConfirm, clasificacion)}
-        />
-      )}
+      <ConfirmArchiveModal
+        proyecto={archiveConfirm}
+        open={archiveConfirm !== null}
+        onOpenChange={(open) => !open && setArchiveConfirm(null)}
+        onConfirm={(clasificacion) => archiveConfirm && handleArchivar(archiveConfirm, clasificacion)}
+      />
 
-      {deleteConfirm && (
-        <ConfirmDeleteModal
-          proyecto={deleteConfirm}
-          onClose={() => setDeleteConfirm(null)}
-          onConfirm={() => handleEliminar(deleteConfirm)}
-        />
-      )}
+      <ConfirmDeleteModal
+        proyecto={deleteConfirm}
+        open={deleteConfirm !== null}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        onConfirm={() => deleteConfirm && handleEliminar(deleteConfirm)}
+      />
     </ModuleContainer>
   )
 }

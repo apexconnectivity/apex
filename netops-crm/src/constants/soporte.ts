@@ -53,6 +53,15 @@ export const SOPORTE_FILTROS = {
 } as const
 
 // ============================================
+// OPCIONES DE SELECTORES
+// ============================================
+
+export const SOPORTE_SELECTORES = {
+  todos: 'Todos',
+  todas: 'Todas',
+} as const
+
+// ============================================
 // BOTONES
 // ============================================
 
@@ -117,6 +126,22 @@ export const TICKET_COMENTARIOS = {
   noHayComentarios: 'No hay comentarios aún',
   placeholder: 'Escribir comentario...',
   interno: 'Comentario interno',
+  agregar: 'Agregar',
+} as const
+
+// ============================================
+// LABELS DEL DETALLE DEL TICKET
+// ============================================
+
+export const TICKET_LABELS = {
+  contrato: 'Contrato',
+  estado: 'Estado',
+  prioridad: 'Prioridad',
+  creado: 'Creado',
+  responsable: 'Responsable',
+  sla: 'SLA',
+  noEspecificada: 'No especificada',
+  sinAsignar: 'Sin asignar',
 } as const
 
 // ============================================
@@ -228,29 +253,31 @@ export const CREATE_CONTRACT_MODAL = {
 } as const
 
 // ============================================
- // STORAGE KEYS - localStorage
- // ============================================
+// STORAGE KEYS - localStorage
+// ============================================
 
- export const SOPORTE_STORAGE_KEYS = {
-   tickets: 'apex_soporte_datos',
-   contratos: 'apex_contratos_soporte',
-   comentarios: 'apex_soporte_comentarios',
-   vista: 'apex_soporte_vista',
- } as const
+export const SOPORTE_STORAGE_KEYS = {
+  tickets: 'apex_soporte_datos',
+  contratos: 'apex_contratos_soporte',
+  comentarios: 'apex_soporte_comentarios',
+  vista: 'apex_soporte_vista',
+} as const
 
- // ============================================
- // EXPORT AGRUPADO
- // ============================================
+// ============================================
+// EXPORT AGRUPADO
+// ============================================
 
- export const SOPORTE_TEXTS = {
+export const SOPORTE_TEXTS = {
   titulos: SOPORTE_TITULOS,
   tabs: SOPORTE_TABS,
   stats: SOPORTE_STATS,
   filtros: SOPORTE_FILTROS,
+  selectores: SOPORTE_SELECTORES,
   botones: SOPORTE_BOTONES,
   empty: SOPORTE_EMPTY,
   contratos: SOPORTE_CONTRATOS,
   ticketDetalle: TICKET_DETALLE,
+  ticketLabels: TICKET_LABELS,
   ticketAcciones: TICKET_ACCIONES,
   ticketComentarios: TICKET_COMENTARIOS,
   ticketPanelEmpty: TICKET_PANEL_EMPTY,

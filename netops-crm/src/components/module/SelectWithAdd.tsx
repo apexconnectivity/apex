@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -11,13 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 
 type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto'
 
@@ -28,37 +22,49 @@ interface SelectWithAddProps {
   optionsType: OptionType
   placeholder?: string
   showAllOption?: { label: string; value: string }
-  hideLabel?: boolean
 }
 
-const STORAGE_KEY = 'apex_crm_opciones'
-
-const DEFAULT_OPTIONS: Record<OptionType, string[]> = {
-  industrias: ['Tecnología', 'Salud', 'Educación', 'Finanzas', 'Comercio', 'Industria', 'Gobierno', 'Otro'],
-  tamanios: ['Micro', 'PYME', 'Gran empresa'],
-  tipos: ['Cliente', 'Proveedor', 'Ambos'],
-  tipos_contacto: ['Técnico', 'Administrativo', 'Financiero', 'Compras', 'Comercial', 'Soporte', 'Otro'],
+const OPTIONS_BY_TYPE: Record<OptionType, { label: string; value: string }[]> = {
+  industrias: [
+    { label: 'Tecnología', value: 'Tecnología' },
+    { label: 'Finanzas', value: 'Finanzas' },
+    { label: 'Salud', value: 'Salud' },
+    { label: 'Educación', value: 'Educación' },
+    { label: 'Retail', value: 'Retail' },
+    { label: 'Manufactura', value: 'Manufactura' },
+    { label: 'Servicios', value: 'Servicios' },
+    { label: 'Construcción', value: 'Construcción' },
+    { label: 'Transporte', value: 'Transporte' },
+    { label: 'Agricultura', value: 'Agricultura' },
+    { label: 'Otro', value: 'Otro' },
+  ],
+  tamanios: [
+    { label: 'Micro (1-10 empleados)', value: 'Micro' },
+    { label: 'Pequeña (11-50 empleados)', value: 'Pequeña' },
+    { label: 'Mediana (51-200 empleados)', value: 'Mediana' },
+    { label: 'Grande (201-500 empleados)', value: 'Grande' },
+    { label: 'Enterprise (500+ empleados)', value: 'Enterprise' },
+  ],
+  tipos: [
+    { label: 'Cliente', value: 'cliente' },
+    { label: 'Proveedor', value: 'proveedor' },
+    { label: 'Ambos', value: 'ambos' },
+  ],
+  tipos_contacto: [
+    { label: 'Técnico', value: 'Técnico' },
+    { label: 'Comercial', value: 'Comercial' },
+    { label: 'Administrativo', value: 'Administrativo' },
+    { label: 'Gerencial', value: 'Gerencial' },
+    { label: 'Directivo', value: 'Directivo' },
+    { label: 'Otro', value: 'Otro' },
+  ],
 }
 
-function getStoredOptions(): Record<OptionType, string[]> {
-  if (typeof window === 'undefined') return DEFAULT_OPTIONS
-  
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      return DEFAULT_OPTIONS
-    }
-  }
-  return DEFAULT_OPTIONS
-}
-
-function saveOptions(options: Record<OptionType, string[]>) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(options))
-}
-
+/**
+ * SelectWithAdd - Componente migrado a BaseModal
+ * 
+ * Select con opción de agregar nuevas opciones
+ */
 export function SelectWithAdd({
   label,
   value,
@@ -66,88 +72,103 @@ export function SelectWithAdd({
   optionsType,
   placeholder = 'Seleccionar...',
   showAllOption,
-  hideLabel = false,
 }: SelectWithAddProps) {
-  const [options, setOptions] = useState<string[]>(DEFAULT_OPTIONS[optionsType])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newValue, setNewValue] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const [newOption, setNewOption] = useState('')
+  const [customOptions, setCustomOptions] = useState<{ label: string; value: string }[]>([])
 
+  // Cargar opciones personalizadas desde localStorage
   useEffect(() => {
-    setOptions(getStoredOptions()[optionsType])
-  }, [optionsType, isModalOpen])
-
-  const handleAdd = () => {
-    if (!newValue.trim()) return
-    
-    const currentOptions = getStoredOptions()
-    if (!currentOptions[optionsType].includes(newValue.trim())) {
-      currentOptions[optionsType] = [...currentOptions[optionsType], newValue.trim()]
-      saveOptions(currentOptions)
-      setOptions(currentOptions[optionsType])
-      onValueChange(newValue.trim())
+    const stored = localStorage.getItem(`custom_options_${optionsType}`)
+    if (stored) {
+      setCustomOptions(JSON.parse(stored))
     }
-    
-    setNewValue('')
-    setIsModalOpen(false)
+  }, [optionsType])
+
+  const allOptions = [...OPTIONS_BY_TYPE[optionsType], ...customOptions]
+
+  const handleAddOption = () => {
+    if (!newOption.trim()) return
+
+    const newValue = newOption.trim()
+    const newOptionObj = { label: newValue, value: newValue }
+
+    const updated = [...customOptions, newOptionObj]
+    setCustomOptions(updated)
+    localStorage.setItem(`custom_options_${optionsType}`, JSON.stringify(updated))
+
+    onValueChange(newValue)
+    setNewOption('')
+    setIsOpen(false)
+  }
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (!open) setNewOption('')
   }
 
   return (
-    <div className="space-y-2">
-      {!hideLabel && <Label>{label}</Label>}
-      <Select value={value} onValueChange={(val) => {
-        if (val === '__new__') {
-          setIsModalOpen(true)
-        } else {
-          onValueChange(val)
-        }
-      }}>
-        <SelectTrigger className={hideLabel ? "w-[140px]" : "w-full"}>
+    <>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className="bg-background">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {showAllOption && (
-            <SelectItem value={showAllOption.value}>
-              {showAllOption.label}
-            </SelectItem>
+            <SelectItem value={showAllOption.value}>{showAllOption.label}</SelectItem>
           )}
-          {options.map((opt) => (
-            <SelectItem key={opt} value={opt}>
-              {opt}
+          {allOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
             </SelectItem>
           ))}
-          <SelectItem value="__new__" className="text-muted-foreground font-medium">
-            + Nueva {label}
-          </SelectItem>
+          <div className="border-t my-1" />
+          <div
+            className="px-2 py-1.5 text-sm text-cyan-400 cursor-pointer hover:bg-accent rounded"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsOpen(true)
+            }}
+          >
+            + Agregar nueva opción
+          </div>
         </SelectContent>
       </Select>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent size="sm">
-          <DialogHeader>
-            <DialogTitle>Nueva {label}</DialogTitle>
-          </DialogHeader>
+      {/* Modal para agregar nueva opción */}
+      <BaseModal
+        open={isOpen}
+        onOpenChange={handleOpenChange}
+        size="sm"
+      >
+        <ModalHeader
+          title={`Agregar ${label}`}
+        />
+        <ModalBody>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="new-option">Nombre</Label>
+              <Label>Nueva {label}</Label>
               <Input
-                id="new-option"
-                value={newValue}
-                onChange={(e) => setNewValue(e.target.value)}
-                placeholder={`Ej: ${optionsType === 'industrias' ? 'Telecomunicaciones' : 'Startup'}`}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                value={newOption}
+                onChange={(e) => setNewOption(e.target.value)}
+                placeholder={`Ej: Nueva ${label.toLowerCase()}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddOption()
+                }}
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAdd} disabled={!newValue.trim()}>
-              Agregar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </ModalBody>
+        <ModalFooter layout="inline-between">
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleAddOption} disabled={!newOption.trim()}>
+            Agregar
+          </Button>
+        </ModalFooter>
+      </BaseModal>
+    </>
   )
 }

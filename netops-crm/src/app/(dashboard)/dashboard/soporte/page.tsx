@@ -3,70 +3,41 @@
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
+import { STORAGE_KEYS } from '@/constants/storage'
+import { useEmpresas, useProyectos } from '@/hooks'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { Ticket, ContratoSoporte, ComentarioTicket, EstadoTicket, ESTADOS_TICKET, CategoriaTicket, CATEGORIAS_TICKET, PrioridadTicket, PRIORIDADES_TICKET } from '@/types/soporte'
+import { CreateTicketData } from '@/components/module/CreateTicketModal'
+import { CreateContractData } from '@/components/module/CreateContractModal'
+import { CreateTicketModal } from '@/components/module/CreateTicketModal'
+import { CreateContractModal } from '@/components/module/CreateContractModal'
+import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_SELECTORES } from '@/constants/soporte'
+import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
-import { DndContext, DragOverlay, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragStartEvent, DragEndEvent } from '@dnd-kit/core'
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { Headphones, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, Clock, CheckCircle, GripVertical, FileText, CircleDot, Archive, Siren } from 'lucide-react'
-import { ContratoSoporte, Ticket, ComentarioTicket, CATEGORIAS_TICKET, ESTADOS_TICKET, PRIORIDADES_TICKET, CONTRATOS_TIPOS, CONTRATOS_ESTADOS, CategoriaTicket, EstadoTicket, PrioridadTicket, TipoOrigen, DEFAULT_SLA } from '@/types/soporte'
-import { SOPORTE_TEXTS, SOPORTE_TITULOS, SOPORTE_TABS, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_BOTONES, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
-import { STORAGE_KEYS, INITIAL_DATA } from '@/constants/storage'
-import { getStatusColor } from '@/lib/colors'
-import { StatusBadge, ModuleCard, TicketDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTicketModal, CreateContractModal, type CreateTicketData, type CreateContractData } from '@/components/module'
-import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { AccessDeniedCard } from '@/components/ui/access-denied-card'
-import { Empresa } from '@/types/crm'
-import { Proyecto } from '@/types/proyectos'
+import { Badge } from '@/components/ui/badge'
+import { ModuleCard } from '@/components/module/ModuleCard'
+import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWithPanel'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
+import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
+import { StatusBadge } from '@/components/module/StatusBadge'
+import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
+import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Filter, X, Plus } from 'lucide-react'
+import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
+import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 
-const DEMO_EMPRESAS: Empresa[] = [
-  { id: '1', nombre: 'Soluciones Tecnológicas SA', tipo_entidad: 'cliente', email_principal: 'contacto@soltec.com', telefono_principal: '+54 11 1234-5678', direccion: 'Av. Libertador 1000', ciudad: 'Buenos Aires', pais: 'Argentina', creado_en: '2024-01-15', tipo_relacion: 'Cliente' },
-  { id: '2', nombre: 'Hospital Regional Norte', tipo_entidad: 'cliente', email_principal: 'info@hrn.com', telefono_principal: '+54 11 2345-6789', ciudad: 'Buenos Aires', pais: 'Argentina', creado_en: '2024-02-01', tipo_relacion: 'Cliente' },
-  { id: '3', nombre: 'TechCorp International', tipo_entidad: 'cliente', ciudad: 'Miami', pais: 'EEUU', creado_en: '2024-03-01', tipo_relacion: 'Cliente' },
-]
-
-const DEMO_PROYECTOS: Proyecto[] = [
-  { id: 'p1', empresa_id: '1', nombre: 'Implementación CRM', fase_actual: 4, estado: 'activo', moneda: 'USD', probabilidad_cierre: 90, responsable_id: '3', contacto_tecnico_id: '1', requiere_compras: true, creado_en: '2025-06-01' },
-  { id: 'p2', empresa_id: '2', nombre: 'Migración Cloud', fase_actual: 2, estado: 'activo', moneda: 'USD', probabilidad_cierre: 40, responsable_id: '3', contacto_tecnico_id: '2', requiere_compras: false, creado_en: '2025-11-01' },
-]
-
-const DEMO_USUARIOS = [
+// Lista de usuarios internos (se llenará con datos del módulo de usuarios)
+const USUARIOS_INTERNOS = [
   { id: '1', nombre: 'Carlos Admin', rol: 'admin' },
   { id: '2', nombre: 'Laura Pérez', rol: 'comercial' },
   { id: '3', nombre: 'Juan Técnico', rol: 'tecnico' },
   { id: '4', nombre: 'María Compras', rol: 'compras' },
   { id: '5', nombre: 'Ana Facturación', rol: 'facturacion' },
 ]
-
-const DEMO_CONTRATOS: ContratoSoporte[] = [
-  { id: '1', empresa_id: '1', empresa_nombre: 'Soluciones Tecnológicas SA', nombre: 'Soporte Premium 2026', tipo: 'Premium', fecha_inicio: '2026-01-01', fecha_fin: '2027-01-01', renovacion_automatica: true, estado: 'Activo', moneda: 'USD', monto_mensual: 1500, horas_incluidas_mes: 10, horas_consumidas_mes: 3.5, contacto_principal_nombre: 'Juan Pérez', contacto_tecnico_nombre: 'María García', tecnico_asignado_id: '3', tecnico_asignado_nombre: 'Juan Técnico', notas: 'Cliente con horario crítico: 8-20 hs', creado_en: '2026-01-01' },
-  { id: '2', empresa_id: '2', empresa_nombre: 'Hospital Regional Norte', nombre: 'Soporte Básico', tipo: 'Básico', fecha_inicio: '2026-02-01', fecha_fin: '2026-08-01', renovacion_automatica: false, estado: 'Activo', moneda: 'USD', monto_mensual: 500, horas_incluidas_mes: 4, horas_consumidas_mes: 1, tecnico_asignado_id: '3', tecnico_asignado_nombre: 'Juan Técnico', creado_en: '2026-02-01' },
-  { id: '3', empresa_id: '3', empresa_nombre: 'TechCorp International', nombre: 'Monitoreo 24x7', tipo: '24x7', fecha_inicio: '2025-12-01', fecha_fin: '2026-03-01', renovacion_automatica: true, estado: 'Vencido', moneda: 'USD', monto_mensual: 3000, horas_incluidas_mes: 20, horas_consumidas_mes: 18, tecnico_asignado_id: '3', tecnico_asignado_nombre: 'Juan Técnico', creado_en: '2025-12-01' },
-]
-
-const DEMO_TICKETS: Ticket[] = [
-  { id: '1', numero_ticket: 'TK-2026-001', contrato_id: '1', contrato_nombre: 'Soporte Premium 2026', tipo_origen: 'soporte', categoria: 'Soporte técnico', titulo: 'No hay conexión desde sede norte', descripcion: 'Desde esta mañana, la sede norte no tiene conexión a internet. Necesitamos asistencia urgente.', creado_por: '1', creado_por_nombre: 'María García', creado_por_cliente: true, fecha_apertura: '2026-03-10T10:30:00', estado: 'Abierto', prioridad: 'Urgente', fecha_limite_respuesta: '2026-03-10T12:30:00', fecha_limite_resolucion: '2026-03-10T18:30:00', responsable_id: '3', responsable_nombre: 'Juan Técnico', tiempo_invertido_minutos: 0 },
-  { id: '2', numero_ticket: 'TK-2026-002', contrato_id: '1', contrato_nombre: 'Soporte Premium 2026', tipo_origen: 'soporte', categoria: 'Soporte técnico', titulo: 'Firewall caído', descripcion: 'El firewall principal no responde. Los usuarios no pueden acceder a los recursos.', creado_por: '1', creado_por_nombre: 'María García', creado_por_cliente: true, fecha_apertura: '2026-03-09T14:00:00', estado: 'En progreso', prioridad: 'Alta', fecha_limite_respuesta: '2026-03-09T22:00:00', fecha_limite_resolucion: '2026-03-10T14:00:00', responsable_id: '3', responsable_nombre: 'Juan Técnico', tiempo_invertido_minutos: 45 },
-  { id: '3', numero_ticket: 'TK-2026-003', contrato_id: '1', contrato_nombre: 'Soporte Premium 2026', tipo_origen: 'soporte', categoria: 'Facturación', titulo: 'Consulta sobre factura de febrero', descripcion: 'Necesitamos verificar los cargos adicionales del mes pasado.', creado_por: '1', creado_por_nombre: 'Juan Pérez', creado_por_cliente: true, fecha_apertura: '2026-03-08T09:00:00', estado: 'Esperando cliente', prioridad: 'Baja', responsable_id: '5', responsable_nombre: 'Ana Facturación', tiempo_invertido_minutos: 15 },
-  { id: '4', numero_ticket: 'TK-2026-004', contrato_id: '2', contrato_nombre: 'Soporte Básico', tipo_origen: 'soporte', categoria: 'Consulta comercial', titulo: 'Interested in upgrading plan', descripcion: 'We would like to know the options for upgrading to Premium support.', creado_por: '2', creado_por_nombre: 'Laura Pérez', creado_por_cliente: false, fecha_apertura: '2026-03-07T11:00:00', estado: 'Resuelto', prioridad: 'Media', responsable_id: '2', responsable_nombre: 'Laura Pérez', tiempo_invertido_minutos: 30, fecha_cierre: '2026-03-08T16:00:00' },
-  { id: '5', numero_ticket: 'TK-2026-005', contrato_id: '1', contrato_nombre: 'Soporte Premium 2026', tipo_origen: 'soporte', categoria: 'Compras', titulo: 'Solicitud de cotizaciones para servidores', descripcion: 'Necesitamos cotizar 3 servidores Dell para expansión.', creado_por: '1', creado_por_nombre: 'María García', creado_por_cliente: true, fecha_apertura: '2026-03-05T08:00:00', estado: 'En progreso', prioridad: 'Media', responsable_id: '4', responsable_nombre: 'María Compras', tiempo_invertido_minutos: 60 },
-]
-
-const DEMO_COMENTARIOS: Record<string, ComentarioTicket[]> = {
-  '1': [
-    { id: 'c1', ticket_id: '1', usuario_id: '0', usuario_nombre: 'Sistema', es_interno: false, comentario: 'Ticket asignado a Juan Técnico automáticamente según categoría.', fecha: '2026-03-10T10:31:00' },
-  ],
-  '2': [
-    { id: 'c2', ticket_id: '2', usuario_id: '3', usuario_nombre: 'Juan Técnico', es_interno: false, comentario: 'Estoy revisando el dispositivo. Parece ser un problema de hardware.', fecha: '2026-03-09T14:30:00' },
-  ],
-}
 
 function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ticket.id })
@@ -152,10 +123,12 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 
 export default function SoportePage() {
   const { user } = useAuth()
+  const [empresas] = useEmpresas()
+  const [proyectos] = useProyectos()
   const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(STORAGE_KEYS.soporteVista, 'tickets')
-  const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(STORAGE_KEYS.contratos, DEMO_CONTRATOS)
-  const [tickets, setTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, DEMO_TICKETS)
-  const [comentarios, setComentarios] = useLocalStorage<Record<string, ComentarioTicket[]>>(STORAGE_KEYS.comentarios, DEMO_COMENTARIOS)
+  const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(STORAGE_KEYS.contratos, [])
+  const [tickets, setTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
+  const [comentarios, setComentarios] = useLocalStorage<Record<string, ComentarioTicket[]>>(STORAGE_KEYS.comentarios, {})
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tickets.find(t => t.id === selectedId) || null
   const [showCreateTicket, setShowCreateTicket] = useState(false)
@@ -334,7 +307,14 @@ export default function SoportePage() {
   }
 
   if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion) {
-    return <AccessDeniedCard icon={Headphones} title={SOPORTE_TITULOS.accesoRestringido} />
+    return (
+      <Card className="m-4 p-8 text-center">
+        <CardContent className="flex flex-col items-center gap-4">
+          <Headphones className="h-12 w-12 text-muted-foreground" />
+          <p className="text-lg font-medium">{SOPORTE_TITULOS.accesoRestringido}</p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -369,12 +349,12 @@ export default function SoportePage() {
         {view === 'tickets' && (
           <>
             <StatGrid cols={6}>
-              <MiniStat value={stats.total} label={SOPORTE_STATS.total} variant="primary" showBorder accentColor="#06b6d4" icon={<FileText className="h-5 w-5" />} />
-              <MiniStat value={stats.abiertos} label={SOPORTE_STATS.abiertos} variant="danger" showBorder accentColor="#ef4444" icon={<CircleDot className="h-5 w-5" />} />
-              <MiniStat value={stats.enProgreso} label={SOPORTE_STATS.enProgreso} variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
-              <MiniStat value={stats.resueltos} label={SOPORTE_STATS.resueltos} variant="success" showBorder accentColor="#10b981" icon={<CheckCircle className="h-5 w-5" />} />
-              <MiniStat value={stats.cerrados} label={SOPORTE_STATS.cerrados} variant="default" showBorder accentColor="#64748b" icon={<Archive className="h-5 w-5" />} />
-              <MiniStat value={stats.urgentes} label={SOPORTE_STATS.urgentes} variant="danger" showBorder accentColor="#dc2626" icon={<Siren className="h-5 w-5" />} />
+              <MiniStat value={stats.total} label={SOPORTE_STATS.total} variant="primary" showBorder accentColor={SOPORTE_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
+              <MiniStat value={stats.abiertos} label={SOPORTE_STATS.abiertos} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.abiertos} icon={<CircleDot className="h-5 w-5" />} />
+              <MiniStat value={stats.enProgreso} label={SOPORTE_STATS.enProgreso} variant="info" showBorder accentColor={SOPORTE_STATS_COLORS.enProgreso} icon={<Clock className="h-5 w-5" />} />
+              <MiniStat value={stats.resueltos} label={SOPORTE_STATS.resueltos} variant="success" showBorder accentColor={SOPORTE_STATS_COLORS.resueltos} icon={<CheckCircle className="h-5 w-5" />} />
+              <MiniStat value={stats.cerrados} label={SOPORTE_STATS.cerrados} variant="default" showBorder accentColor={SOPORTE_STATS_COLORS.cerrados} icon={<Archive className="h-5 w-5" />} />
+              <MiniStat value={stats.urgentes} label={SOPORTE_STATS.urgentes} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.urgentes} icon={<Siren className="h-5 w-5" />} />
             </StatGrid>
 
             <div className="flex gap-4 items-center">
@@ -383,10 +363,10 @@ export default function SoportePage() {
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.cliente}</Label>
                 <Select value={filtroCliente} onValueChange={setFiltroCliente}>
-                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
+                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todos} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    {DEMO_EMPRESAS.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
+                    <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
+                    {empresas.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -397,8 +377,8 @@ export default function SoportePage() {
                   <Select value={filtroResponsable} onValueChange={setFiltroResponsable}>
                     <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      {DEMO_USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+                      <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
+                      {USUARIOS_INTERNOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -407,9 +387,9 @@ export default function SoportePage() {
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.estado}</Label>
                 <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todos} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
                     {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -418,9 +398,9 @@ export default function SoportePage() {
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.categoria}</Label>
                 <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todas} /></SelectTrigger>
+                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todas} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
+                    <SelectItem value="todas">{SOPORTE_SELECTORES.todas}</SelectItem>
                     {CATEGORIAS_TICKET.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -429,9 +409,9 @@ export default function SoportePage() {
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.prioridad}</Label>
                 <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todas} /></SelectTrigger>
+                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todas} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
+                    <SelectItem value="todas">{SOPORTE_SELECTORES.todas}</SelectItem>
                     {PRIORIDADES_TICKET.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -567,9 +547,9 @@ export default function SoportePage() {
             open={showCreateTicket}
             onOpenChange={setShowCreateTicket}
             contratos={contratos}
-            empresas={DEMO_EMPRESAS}
-            proyectos={DEMO_PROYECTOS}
-            usuarios={DEMO_USUARIOS}
+            empresas={empresas}
+            proyectos={proyectos}
+            usuarios={USUARIOS_INTERNOS}
             onSave={handleCreateTicket}
           />
         )}
@@ -578,8 +558,8 @@ export default function SoportePage() {
           <CreateContractModal
             open={showCreateContract}
             onOpenChange={setShowCreateContract}
-            empresas={DEMO_EMPRESAS}
-            usuarios={DEMO_USUARIOS}
+            empresas={empresas}
+            usuarios={USUARIOS_INTERNOS}
             onSave={handleCreateContract}
           />
         )}

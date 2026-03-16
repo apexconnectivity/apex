@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ModuleCard } from "@/components/module/ModuleCard"
+import { PIPELINE_FASE_COLORS } from "@/lib/colors"
 import {
   FolderKanban,
   MoreHorizontal,
@@ -59,14 +60,7 @@ function getFaseName(faseId: number): string {
 }
 
 function getFaseColor(faseId: number): string {
-  const faseColors: Record<number, string> = {
-    1: "#6b7280",
-    2: "#3b82f6",
-    3: "#eab308",
-    4: "#10b981",
-    5: "#8b5cf6",
-  }
-  return faseColors[faseId] || "#6b7280"
+  return PIPELINE_FASE_COLORS[faseId as keyof typeof PIPELINE_FASE_COLORS] || PIPELINE_FASE_COLORS[1]
 }
 
 // Función para convertir Proyecto a Project (formato interno del componente)
@@ -199,7 +193,7 @@ export function ProjectPipeline({
         const numericValue = p.value.replace(/[^0-9.-]/g, '')
         return sum + (parseFloat(numericValue) || 0)
       }, 0)
-      
+
       return {
         id: faseId,
         name: getFaseName(faseId),
@@ -313,7 +307,7 @@ export function ProjectPipeline({
                       Valor total
                     </span>
                     <span className="font-semibold text-emerald-400">
-                      {phase.totalValue > 0 
+                      {phase.totalValue > 0
                         ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(phase.totalValue)
                         : '-'
                       }

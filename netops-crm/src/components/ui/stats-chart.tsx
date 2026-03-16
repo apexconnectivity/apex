@@ -7,6 +7,7 @@ import { ReactNode } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react"
+import { CHART_COLORS } from "@/lib/colors"
 
 // ============================================================================
 // TIPOS
@@ -82,7 +83,7 @@ interface PieChartProps {
 
 export function PieChart({ data, title, className, showLegend = true }: PieChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0)
-  
+
   // Create conic gradient for pie chart
   let currentAngle = 0
   const gradientParts = data.map((item) => {
@@ -108,7 +109,7 @@ export function PieChart({ data, title, className, showLegend = true }: PieChart
       <CardContent>
         <div className={cn("flex items-center gap-6", !showLegend && "justify-center")}>
           {/* Pie Chart */}
-          <div 
+          <div
             className="relative rounded-full flex-shrink-0"
             style={{
               width: 120,
@@ -118,7 +119,7 @@ export function PieChart({ data, title, className, showLegend = true }: PieChart
           >
             <div className="absolute inset-4 rounded-full bg-slate-950" />
           </div>
-          
+
           {/* Legend */}
           {showLegend && (
             <div className="space-y-2 flex-1">
@@ -146,7 +147,7 @@ export function PieChart({ data, title, className, showLegend = true }: PieChart
   )
 }
 
-const CHART_EMPTY_COLOR = '#334155'
+const CHART_EMPTY_COLOR = CHART_COLORS.empty
 
 // ============================================================================
 // PROGRESS RING
@@ -168,7 +169,7 @@ export function ProgressRing({
   max,
   size = 80,
   strokeWidth = 8,
-  color = '#06b6d4',
+  color = CHART_COLORS.default,
   label,
   sublabel,
   className,

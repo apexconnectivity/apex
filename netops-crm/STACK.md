@@ -1,8 +1,8 @@
 # STACK TÉCNICO - NetOps CRM
 
-**Versión:** 1.11  
+**Versión:** 1.12  
 **Fecha:** 2026-03-15  
-**Estado:** En desarrollo - Módulo de Estadísticas: gráficos reutilizables, constantes centralizadas, sin hardcoding
+**Estado:** En desarrollo - Reorganización completa: constants centralizadas por módulo, hooks centralizados, sin datos demo
 
 ---
 
@@ -300,9 +300,6 @@ netops-crm/
 │   │       ├── initial-data.ts
 │   │       └── index.ts
 │   │
-│   ├── data/                   # Datos demo separados por módulo
-│   │   └── compras-demo.ts    # Datos demo compras
-│   │
 │   ├── types/                 # TypeScript types
 │   │   ├── soporte.ts
 │   │   ├── proyectos.ts
@@ -317,14 +314,27 @@ netops-crm/
 │   │   ├── notificaciones.ts
 │   │   └── compartidos.ts
 │   │
-│   └── constants/             # Constantes
+│   ├── lib/                   # Utilidades
+│   │   ├── utils.ts           # cn() y helpers
+│   │   ├── colors.ts          # Sistema de colores centralizado
+│   │   ├── date-utils.ts      # Utilidades de fecha
+│   │   ├── useLocalStorage.ts # Hook base localStorage
+│   │   └── data/
+│   │       └── index.ts       # Hooks centralizados (useEmpresas, useProyectos, etc)
+│   │
+│   └── constants/             # Constantes centralizadas por módulo
 │       ├── soporte.ts         # Textos y keys localStorage (módulo soporte)
 │       ├── storage.ts         # Keys y valores iniciales centralizados (localStorage)
 │       ├── archivos.ts        # Textos, labels y configuraciones (módulo archivos)
 │       ├── archivado.ts       # Textos, labels y configuraciones (módulo archivados)
 │       ├── compras.ts         # Textos, labels, impuestos (módulo compras)
 │       ├── notificaciones.ts  # Textos, labels y configuraciones (módulo notificaciones)
-│       └── estadisticas.ts    # Colores, labels y funciones helper para gráficos
+│       ├── estadisticas.ts    # Colores, labels y funciones helper para gráficos
+│       ├── crm.ts            # Etapas, estados, labels CRM
+│       ├── proyectos.ts       # Fases, estados proyectos
+│       ├── tareas.ts         # Estados, prioridades, categorías
+│       ├── calendario.ts     # Estados, tipos reuniones
+│       └── auth.ts           # Roles, permisos, labels auth
 │
 ├── public/                   # Archivos estáticos
 ├── package.json
@@ -407,6 +417,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 | 1.9 | 2026-03-15 | Módulo usuarios: RoleBadge componente, getRoleColor en colors, filtros consistentes, modal confirmación |
 | 1.10 | 2026-03-15 | Coherencia UI: Dashboard y CRM usan ModuleContainer, Pipeline usa ModuleCard, Stats usan StatGrid+MiniStat, hooks centralizados |
 | 1.11 | 2026-03-15 | Módulo estadísticas: gráficos reutilizables (BarChart, PieChart, ProgressRing, MetricCard), constantes centralizadas (estadisticas.ts), sin hardcoding |
+| 1.12 | 2026-03-15 | Reorganización completa: eliminación datos demo, constants centralizadas por módulo (crm, proyectos, tareas, calendario, auth), hooks centralizados en lib/data/index.ts |
 
 ---
 

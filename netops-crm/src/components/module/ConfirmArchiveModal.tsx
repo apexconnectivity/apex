@@ -1,41 +1,75 @@
+'use client'
+
 import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ProyectoCerrado, Clasificacion, getClasificacionColor } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, ARCHIVADO_CLASIFICACION, ARCHIVAR_MODAL } from '@/constants/archivado'
-import { CheckCircle, AlertTriangle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, Archive } from 'lucide-react'
 
 interface ConfirmArchiveModalProps {
-  proyecto: ProyectoCerrado
-  onClose: () => void
+  proyecto: ProyectoCerrado | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onConfirm: (clasificacion: Clasificacion) => void
 }
 
-export function ConfirmArchiveModal({ proyecto, onClose, onConfirm }: ConfirmArchiveModalProps) {
+/**
+ * ConfirmArchiveModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body/Footer
+ */
+export function ConfirmArchiveModal({ 
+  proyecto, 
+  open, 
+  onOpenChange,
+  onConfirm 
+}: ConfirmArchiveModalProps) {
+  // Si no hay proyecto, no renderizar
+  if (!proyecto) return null
+  
   const esCompletado = proyecto.fase_actual === 5 && proyecto.tareas_fase5_completadas === proyecto.tareas_fase5_totales
   const [clasificacion, setClasificacion] = useState<Clasificacion>(esCompletado ? 'completado' : 'inconcluso')
 
+  const handleConfirm = () => {
+    onConfirm(clasificacion)
+    onOpenChange(false)
+  }
+
+  const handleClose = () => {
+    onOpenChange(false)
+  }
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle>{ARCHIVAR_MODAL.titulo}</DialogTitle>
-        </DialogHeader>
+    <BaseModal
+      open={open}
+      onOpenChange={handleClose}
+      size="md"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Archive className="h-5 w-5 text-cyan-400" />
+            {ARCHIVAR_MODAL.titulo}
+          </span>
+        }
+      />
+      
+      {/* ✅ ModalBody */}
+      <ModalBody>
         <div className="space-y-4">
+          {/* Info del proyecto */}
           <div>
             <p className="font-medium">{proyecto.nombre}</p>
             <p className="text-sm text-muted-foreground">{proyecto.empresa_nombre}</p>
           </div>
 
+          {/* Clasificación automática */}
           <div className="p-4 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground mb-2">{ARCHIVAR_MODAL.clasificacionAutomatica}</p>
             {esCompletado ? (
@@ -54,6 +88,7 @@ export function ConfirmArchiveModal({ proyecto, onClose, onConfirm }: ConfirmArc
             </p>
           </div>
 
+          {/* Selector de clasificación */}
           <div>
             <Label>{ARCHIVAR_MODAL.clasificacionEditable}</Label>
             <Select value={clasificacion} onValueChange={(v) => setClasificacion(v as Clasificacion)}>
@@ -67,15 +102,17 @@ export function ConfirmArchiveModal({ proyecto, onClose, onConfirm }: ConfirmArc
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {ARCHIVADO_BOTONES.cancelar}
-          </Button>
-          <Button onClick={() => onConfirm(clasificacion)}>
-            {ARCHIVADO_BOTONES.archivar}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </ModalBody>
+      
+      {/* ✅ ModalFooter */}
+      <ModalFooter layout="inline-between">
+        <Button variant="outline" onClick={handleClose}>
+          {ARCHIVADO_BOTONES.cancelar}
+        </Button>
+        <Button onClick={handleConfirm}>
+          {ARCHIVADO_BOTONES.archivar}
+        </Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }

@@ -16,6 +16,10 @@ import {
   CheckSquare,
   Headphones,
 } from "lucide-react"
+import { DASHBOARD_STATS, SECTION_TITLES, ACTIVITY_TITLES, PRIORITY_LABELS, EMPTY_MESSAGES, DATE_RELATIVE, DUE_DATE } from "@/constants/dashboard"
+import { STATS_LABELS } from "@/constants/estadisticas"
+import { PRIORIDADES } from "@/constants/tareas"
+import { HEX_COLORS, VARIANT_COLORS, ACTIVITY_COLORS, SECTION_INDICATOR_COLORS, getActivityColor, getSectionIndicatorColor } from "@/lib/colors"
 
 function StatsSkeleton() {
   return (
@@ -67,35 +71,35 @@ export function DashboardStats() {
     <StatGrid cols={4}>
       <MiniStat
         value={clientesActivos}
-        label="Clientes Activos"
+        label={DASHBOARD_STATS.clientesActivos}
         icon={<Building2 className="h-5 w-5" />}
         variant="primary"
         showBorder
-        accentColor="#06b6d4"
+        accentColor={HEX_COLORS.primary}
       />
       <MiniStat
         value={proyectosActivos}
-        label="Proyectos Activos"
+        label={DASHBOARD_STATS.proyectosActivos}
         icon={<FolderKanban className="h-5 w-5" />}
         variant="info"
         showBorder
-        accentColor="#3b82f6"
+        accentColor={HEX_COLORS.info}
       />
       <MiniStat
         value={tareasPendientes}
-        label="Tareas Pendientes"
+        label={DASHBOARD_STATS.tareasPendientes}
         icon={<CheckSquare className="h-5 w-5" />}
         variant="warning"
         showBorder
-        accentColor="#f59e0b"
+        accentColor={HEX_COLORS.warning}
       />
       <MiniStat
         value={ticketsAbiertos}
-        label="Tickets Abiertos"
+        label={DASHBOARD_STATS.ticketsAbiertos}
         icon={<Headphones className="h-5 w-5" />}
         variant="danger"
         showBorder
-        accentColor="#ef4444"
+        accentColor={HEX_COLORS.danger}
       />
     </StatGrid>
   )
@@ -110,13 +114,13 @@ function getRelativeTime(dateString: string): string {
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
 
-  if (diffInMinutes < 1) return 'Hace un momento'
-  if (diffInMinutes < 60) return `Hace ${diffInMinutes} min`
-  if (diffInHours < 24) return `Hace ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`
-  if (diffInDays === 1) return 'Ayer'
-  if (diffInDays < 7) return `Hace ${diffInDays} días`
-  if (diffInDays < 30) return `Hace ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`
-  return `Hace ${Math.floor(diffInDays / 30)} mes${Math.floor(diffInDays / 30) > 1 ? 'es' : ''}`
+  if (diffInMinutes < 1) return DATE_RELATIVE.ahora
+  if (diffInMinutes < 60) return DATE_RELATIVE.minutos(diffInMinutes)
+  if (diffInHours < 24) return DATE_RELATIVE.hora(diffInHours)
+  if (diffInDays === 1) return DATE_RELATIVE.ayer
+  if (diffInDays < 7) return DATE_RELATIVE.dias(diffInDays)
+  if (diffInDays < 30) return DATE_RELATIVE.semanas(Math.floor(diffInDays / 7))
+  return DATE_RELATIVE.meses(Math.floor(diffInDays / 30))
 }
 
 // Función para formatear fecha de vencimiento
@@ -127,10 +131,10 @@ function formatDueDate(dateString: string): string {
   const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
   const diffInDays = Math.floor((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
-  if (diffInDays < 0) return `Vencida (${Math.abs(diffInDays)} día${Math.abs(diffInDays) > 1 ? 's' : ''})`
-  if (diffInDays === 0) return 'Hoy'
-  if (diffInDays === 1) return 'Mañana'
-  if (diffInDays < 7) return `${diffInDays} días`
+  if (diffInDays < 0) return DUE_DATE.vencida(Math.abs(diffInDays))
+  if (diffInDays === 0) return DUE_DATE.hoy
+  if (diffInDays === 1) return DUE_DATE.manana
+  if (diffInDays < 7) return DUE_DATE.dias(diffInDays)
   return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
 }
 
@@ -164,11 +168,11 @@ export function RecentActivity({
       allActivities.push({
         id: `proyecto-${proyecto.id}`,
         type: 'project',
-        title: 'Proyecto actualizado',
+        title: ACTIVITY_TITLES.proyectoActualizado,
         description: `${proyecto.nombre} - Fase ${proyecto.fase_actual}`,
         time: proyecto.creado_en,
         icon: FolderKanban,
-        iconColor: 'bg-blue-500',
+        iconColor: ACTIVITY_COLORS.project,
       })
     })
 
@@ -179,11 +183,11 @@ export function RecentActivity({
         allActivities.push({
           id: `tarea-${tarea.id}`,
           type: 'task',
-          title: 'Tarea completada',
+          title: ACTIVITY_TITLES.tareaCompletada,
           description: `${tarea.nombre} - ${tarea.proyecto_nombre}`,
           time: tarea.fecha_completado!,
           icon: CheckSquare,
-          iconColor: 'bg-green-500',
+          iconColor: ACTIVITY_COLORS.task,
         })
       })
 
@@ -192,11 +196,11 @@ export function RecentActivity({
       allActivities.push({
         id: `ticket-${ticket.id}`,
         type: 'ticket',
-        title: 'Nuevo ticket',
+        title: ACTIVITY_TITLES.nuevoTicket,
         description: `${ticket.empresa_nombre || 'Sin empresa'}: ${ticket.titulo}`,
         time: ticket.fecha_apertura,
         icon: Headphones,
-        iconColor: 'bg-red-500',
+        iconColor: ACTIVITY_COLORS.ticket,
       })
     })
 
@@ -205,11 +209,11 @@ export function RecentActivity({
       allActivities.push({
         id: `empresa-${empresa.id}`,
         type: 'client',
-        title: empresa.tipo_entidad === 'cliente' ? 'Nuevo cliente' : 'Empresa agregada',
+        title: empresa.tipo_entidad === 'cliente' ? ACTIVITY_TITLES.nuevoCliente : ACTIVITY_TITLES.empresaAgregada,
         description: `${empresa.nombre} - ${empresa.tipo_relacion || 'Sin relación'}`,
         time: empresa.creado_en,
         icon: Building2,
-        iconColor: 'bg-purple-500',
+        iconColor: ACTIVITY_COLORS.empresa,
       })
     })
 
@@ -225,8 +229,8 @@ export function RecentActivity({
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <div className="w-1 h-5 bg-cyan-500 rounded-full" />
-          Actividad Reciente
+          <div className={`w-1 h-5 rounded-full ${getSectionIndicatorColor('actividadReciente')}`} />
+          {SECTION_TITLES.actividadReciente}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -255,8 +259,8 @@ export function RecentActivity({
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <FolderKanban className="h-10 w-10 text-muted-foreground/50 mb-2" />
-            <p className="text-sm text-muted-foreground">No hay actividad reciente</p>
-            <p className="text-xs text-muted-foreground/70">Los proyectos, tareas, tickets y empresas aparecerán aquí</p>
+            <p className="text-sm text-muted-foreground">{EMPTY_MESSAGES.noActividadReciente}</p>
+            <p className="text-xs text-muted-foreground/70">{EMPTY_MESSAGES.noActividadRecienteDesc}</p>
           </div>
         )}
       </CardContent>
@@ -318,8 +322,8 @@ export function UpcomingTasks({
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <div className="w-1 h-5 bg-amber-500 rounded-full" />
-          Próximas Tareas
+          <div className={`w-1 h-5 rounded-full ${getSectionIndicatorColor('proximasTareas')}`} />
+          {SECTION_TITLES.proximasTareas}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -328,7 +332,7 @@ export function UpcomingTasks({
             {upcomingTasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all duration-200 group"
+                className={`flex items-center justify-between p-3 rounded-lg border border-border/50 hover:${VARIANT_COLORS.primary.borderColor} hover:${VARIANT_COLORS.primary.iconBg} transition-all duration-200 group`}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{task.title}</p>
@@ -345,7 +349,7 @@ export function UpcomingTasks({
                     }
                     className="text-xs"
                   >
-                    {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Media" : "Baja"}
+                    {task.priority === "high" ? PRIORITY_LABELS.alta : task.priority === "medium" ? PRIORITY_LABELS.media : PRIORITY_LABELS.baja}
                   </Badge>
                   <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{formatDueDate(task.dueDate)}</span>
                 </div>
@@ -355,8 +359,8 @@ export function UpcomingTasks({
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <CheckSquare className="h-10 w-10 text-muted-foreground/50 mb-2" />
-            <p className="text-sm text-muted-foreground">No hay tareas próximas</p>
-            <p className="text-xs text-muted-foreground/70">Las tareas pendientes aparecerán aquí</p>
+            <p className="text-sm text-muted-foreground">{EMPTY_MESSAGES.noTareasProximas}</p>
+            <p className="text-xs text-muted-foreground/70">{EMPTY_MESSAGES.noTareasProximasDesc}</p>
           </div>
         )}
       </CardContent>

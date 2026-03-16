@@ -1,9 +1,6 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+'use client'
+
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getClasificacionColor, ProyectoArchivado } from '@/types/archivado'
@@ -11,28 +8,58 @@ import { ARCHIVADO_BOTONES, DETALLE_ARCHIVADO_MODAL, ARCHIVADO_CLASIFICACION } f
 import { Archive, FileText, Download, Folder, RotateCcw, Trash2, ExternalLink } from 'lucide-react'
 
 interface DetalleArchivadoModalProps {
-  proyecto: ProyectoArchivado
-  onClose: () => void
+  proyecto: ProyectoArchivado | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onRestaurar: () => void
   onEliminar: () => void
 }
 
-export function DetalleArchivadoModal({ proyecto, onClose, onRestaurar, onEliminar }: DetalleArchivadoModalProps) {
+/**
+ * DetalleArchivadoModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body
+ */
+export function DetalleArchivadoModal({ 
+  proyecto, 
+  open, 
+  onOpenChange,
+  onRestaurar, 
+  onEliminar 
+}: DetalleArchivadoModalProps) {
+  // Si no hay proyecto, no renderizar
+  if (!proyecto) return null
+  
+  const handleClose = () => onOpenChange(false)
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent size="lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Archive className="h-5 w-5" />
+    <BaseModal
+      open={open}
+      onOpenChange={handleClose}
+      size="lg"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Archive className="h-5 w-5 text-cyan-400" />
             {DETALLE_ARCHIVADO_MODAL.titulo}
-          </DialogTitle>
-        </DialogHeader>
+          </span>
+        }
+        showBorder={false}
+      />
+      
+      {/* ✅ ModalBody - Todo el contenido */}
+      <ModalBody>
         <div className="space-y-6">
+          {/* Título y empresa */}
           <div>
             <h2 className="text-xl font-bold">{proyecto.nombre}</h2>
             <p className="text-muted-foreground">{proyecto.empresa_nombre}</p>
           </div>
 
+          {/* Stats grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-muted/50 rounded-lg">
               <p className="text-sm text-muted-foreground">{ARCHIVADO_CLASIFICACION.clasificacion}</p>
@@ -54,11 +81,13 @@ export function DetalleArchivadoModal({ proyecto, onClose, onRestaurar, onElimin
             </div>
           </div>
 
+          {/* Motivo de cierre */}
           <div>
             <p className="text-sm text-muted-foreground">{DETALLE_ARCHIVADO_MODAL.motivoCierre}</p>
             <p className="text-sm bg-muted/50 p-3 rounded-lg">{proyecto.motivo_cierre}</p>
           </div>
 
+          {/* Resumen */}
           <div className="border-t pt-4">
             <h3 className="font-semibold mb-3">{DETALLE_ARCHIVADO_MODAL.resumen}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -81,6 +110,7 @@ export function DetalleArchivadoModal({ proyecto, onClose, onRestaurar, onElimin
             </div>
           </div>
 
+          {/* Archivos generados */}
           <div className="border-t pt-4">
             <h3 className="font-semibold mb-3">{DETALLE_ARCHIVADO_MODAL.archivosGenerados}</h3>
             <div className="space-y-2">
@@ -118,6 +148,7 @@ export function DetalleArchivadoModal({ proyecto, onClose, onRestaurar, onElimin
             </div>
           </div>
 
+          {/* Botones de acción */}
           <div className="border-t pt-4 flex gap-2">
             <Button className="flex-1" onClick={onRestaurar}>
               <RotateCcw className="h-4 w-4 mr-2" />
@@ -129,7 +160,7 @@ export function DetalleArchivadoModal({ proyecto, onClose, onRestaurar, onElimin
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ModalBody>
+    </BaseModal>
   )
 }

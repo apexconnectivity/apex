@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 /**
- * Hook personalizado para gestionar datos en localStorage
+ * Hook para gestionar datos en localStorage
  * 
  * @param key - Clave única para almacenar en localStorage
  * @param initialValue - Valor inicial si no existe en localStorage
@@ -23,57 +23,51 @@ export function useLocalStorage<T>(
   // Estado para indicar si ya se cargó desde localStorage
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Función para obtener el valor inicial desde localStorage
-  const getInitialValue = useCallback((): T => {
-    if (typeof window === 'undefined') {
-      return initialValue
-    }
-
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? (JSON.parse(item) as T) : initialValue
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
-      return initialValue
-    }
-  }, [key, initialValue])
-
-  // Efecto para cargar el valor inicial - solo se ejecuta una vez al montar
+  // ============================================
+  // Efecto para cargar el valor inicial
+  // ============================================
   useEffect(() => {
-    try {
-      if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {
+      setIsLoaded(true)
+      return
+    }
 
+    try {
       const item = window.localStorage.getItem(key)
-      const value = item ? JSON.parse(item) as T : initialValue
-      setStoredValue(value)
+      if (item) {
+        const parsed = JSON.parse(item) as T
+        setStoredValue(parsed)
+      }
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error)
-      setStoredValue(initialValue)
     } finally {
       setIsLoaded(true)
     }
-  }, [])
+  }, [key])
 
+  // ============================================
   // Función para actualizar el valor
+  // ============================================
   const setValue = useCallback(
     (value: T | ((prev: T) => T)): void => {
       try {
-        // Permitir pasar una función para actualizar el valor anterior
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value
+        setStoredValue(prev => {
+          // Permitir pasar una función para actualizar el valor anterior
+          const valueToStore =
+            value instanceof Function ? value(prev) : value
 
-        // Actualizar el estado
-        setStoredValue(valueToStore)
+          // Persistir en localStorage solo si estamos en el navegador
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(key, JSON.stringify(valueToStore))
+          }
 
-        // Persistir en localStorage solo si estamos en el navegador
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore))
-        }
+          return valueToStore
+        })
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error)
       }
     },
-    [key, storedValue]
+    [key]
   )
 
   return [storedValue, setValue, isLoaded] as const

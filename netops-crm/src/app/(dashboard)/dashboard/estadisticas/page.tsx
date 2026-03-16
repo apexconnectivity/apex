@@ -39,6 +39,12 @@ import {
   getVariantByStatus,
 } from "@/constants/estadisticas"
 
+// Importar constantes de colores centralizados
+import { VARIANT_COLORS } from "@/lib/colors"
+
+// Importar constantes de tareas para fechas
+import { DATE_LABELS } from "@/constants/tareas"
+
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -63,11 +69,11 @@ function getRelativeTime(dateString: string): string {
   const diffInMs = now.getTime() - date.getTime()
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
 
-  if (diffInDays === 0) return 'Hoy'
-  if (diffInDays === 1) return 'Ayer'
-  if (diffInDays < 7) return `Hace ${diffInDays} días`
-  if (diffInDays < 30) return `Hace ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`
-  return `Hace ${Math.floor(diffInDays / 30)} mes${Math.floor(diffInDays / 30) > 1 ? 'es' : ''}`
+  if (diffInDays === 0) return DATE_LABELS.hoy
+  if (diffInDays === 1) return DATE_LABELS.ayer
+  if (diffInDays < 7) return DATE_LABELS.proximaSemana.replace('Próxima ', '')
+  if (diffInDays < 30) return DATE_LABELS.estaSemana.replace('Esta ', '')
+  return DATE_LABELS.sinFecha
 }
 
 // ============================================================================
@@ -83,7 +89,7 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
   const clientes = empresas.filter(e => e.tipo_entidad === 'cliente')
   const proveedores = empresas.filter(e => e.tipo_entidad === 'proveedor')
   const ambos = empresas.filter(e => e.tipo_entidad === 'ambos')
-  
+
   // Empresas por industria
   const industriasCount = React.useMemo(() => {
     const count: Record<string, number> = {}
@@ -93,10 +99,10 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
       }
     })
     return Object.entries(count)
-      .map(([label, value], index) => ({ 
-        label, 
-        value, 
-        color: getChartColorByIndex(index) 
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: getChartColorByIndex(index)
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5)
@@ -106,14 +112,14 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
   const relacionesCount = React.useMemo(() => {
     const count: Record<string, number> = {}
     empresas.forEach(e => {
-      const relacion = e.tipo_relacion || 'Sin relación'
+      const relacion = e.tipo_relacion || STATS_LABELS.sinRelacion
       count[relacion] = (count[relacion] || 0) + 1
     })
     return Object.entries(count)
-      .map(([label, value], index) => ({ 
-        label, 
-        value, 
-        color: getChartColorByIndex(index) 
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: getChartColorByIndex(index)
       }))
       .sort((a, b) => b.value - a.value)
   }, [empresas])
@@ -125,10 +131,10 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
       count[c.tipo_contacto] = (count[c.tipo_contacto] || 0) + 1
     })
     return Object.entries(count)
-      .map(([label, value], index) => ({ 
-        label, 
-        value, 
-        color: getChartColorByIndex(index) 
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: getChartColorByIndex(index)
       }))
       .sort((a, b) => b.value - a.value)
   }, [contactos])
@@ -184,7 +190,7 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
 
       {/* Charts Row */}
       <ChartGrid>
-        <PieChart 
+        <PieChart
           title={STATS_LABELS.porTipo}
           data={tipoEntityData}
         />
@@ -220,21 +226,21 @@ interface ProyectosStatsProps {
 function ProyectosStats({ proyectos }: ProyectosStatsProps) {
   const proyectosActivos = proyectos.filter(p => p.estado === 'activo')
   const proyectosCerrados = proyectos.filter(p => p.estado === 'cerrado')
-  
+
   // Proyectos por fase
   const fasesCount = React.useMemo(() => {
     const fases = ['DIAGNÓSTICO', 'PROPUESTA', 'PLANIFICACIÓN', 'IMPLEMENTACIÓN', 'CIERRE']
     const faseColors = [CHART_COLORS.primary, CHART_COLORS.info, CHART_COLORS.purple, CHART_COLORS.warning, CHART_COLORS.success]
     const count: Record<string, number> = {}
-    
+
     proyectosActivos.forEach(p => {
       const fase = fases[p.fase_actual - 1] || `Fase ${p.fase_actual}`
       count[fase] = (count[fase] || 0) + 1
     })
-    
+
     return Object.entries(count)
-      .map(([label, value], index) => ({ 
-        label, 
+      .map(([label, value], index) => ({
+        label,
         value,
         color: faseColors[index % faseColors.length]
       }))
@@ -251,8 +257,8 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
   }, [proyectosCerrados])
 
   // Tasa de éxito
-  const tasaExito = proyectos.length > 0 
-    ? Math.round((proyectosCerrados.length / proyectos.length) * 100) 
+  const tasaExito = proyectos.length > 0
+    ? Math.round((proyectosCerrados.length / proyectos.length) * 100)
     : 0
 
   // Datos para gráfico de estado
@@ -305,7 +311,7 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
 
       {/* Charts Row */}
       <ChartGrid>
-        <PieChart 
+        <PieChart
           title={STATS_LABELS.porEstado}
           data={estadoData}
         />
@@ -321,8 +327,8 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
           title={STATS_LABELS.activos}
           value={`${proyectosActivos.length} / ${proyectos.length}`}
           icon={<Activity className="h-5 w-5" />}
-          iconBg="bg-emerald-500/15"
-          iconColor="text-emerald-400"
+          iconBg={VARIANT_COLORS.success.iconBg}
+          iconColor={VARIANT_COLORS.success.iconColor}
         >
           <ProgressRing
             value={proyectosActivos.length}
@@ -335,8 +341,8 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
           title={STATS_LABELS.cerrados}
           value={`${proyectosCerrados.length} / ${proyectos.length}`}
           icon={<CheckCircle2 className="h-5 w-5" />}
-          iconBg="bg-blue-500/15"
-          iconColor="text-blue-400"
+          iconBg={VARIANT_COLORS.info.iconBg}
+          iconColor={VARIANT_COLORS.info.iconColor}
         >
           <ProgressRing
             value={proyectosCerrados.length}
@@ -350,8 +356,8 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
           value={formatCurrency(valorCerrado)}
           subtitle={`${STATS_LABELS.cerrados}: ${formatCurrency(valorCerrado)}`}
           icon={<DollarSign className="h-5 w-5" />}
-          iconBg="bg-purple-500/15"
-          iconColor="text-purple-400"
+          iconBg={VARIANT_COLORS.purple.iconBg}
+          iconColor={VARIANT_COLORS.purple.iconColor}
         >
           <ProgressRing
             value={valorCerrado}
@@ -388,18 +394,18 @@ function TareasStats({ tareas }: TareasStatsProps) {
     tareas.forEach(t => {
       count[t.prioridad] = (count[t.prioridad] || 0) + 1
     })
-    
+
     return Object.entries(count)
-      .map(([label, value]) => ({ 
-        label: PRIORITY_COLORS_MAP[label]?.label || label, 
+      .map(([label, value]) => ({
+        label: PRIORITY_COLORS_MAP[label]?.label || label,
         value,
         color: PRIORITY_COLORS_MAP[label]?.color || CHART_COLORS.neutral
       }))
   }, [tareas])
 
   // Tasa de completación
-  const tasaCompletacion = tareas.length > 0 
-    ? Math.round((tareasCompletadas.length / tareas.length) * 100) 
+  const tasaCompletacion = tareas.length > 0
+    ? Math.round((tareasCompletadas.length / tareas.length) * 100)
     : 0
 
   // Datos para gráfico de estado
@@ -407,7 +413,7 @@ function TareasStats({ tareas }: TareasStatsProps) {
     { label: TASK_STATUS_COLORS_MAP['Completada'].label, value: tareasCompletadas.length, color: TASK_STATUS_COLORS_MAP['Completada'].color },
     { label: TASK_STATUS_COLORS_MAP['En progreso'].label, value: tareasEnProgreso.length, color: TASK_STATUS_COLORS_MAP['En progreso'].color },
     { label: TASK_STATUS_COLORS_MAP['Pendiente'].label, value: tareasPendientes.length, color: TASK_STATUS_COLORS_MAP['Pendiente'].color },
-    { label: 'Vencidas', value: tareasVencidas.length, color: CHART_COLORS.danger },
+    { label: STATS_LABELS.vencidoPlural, value: tareasVencidas.length, color: CHART_COLORS.danger },
   ].filter(d => d.value > 0)
 
   if (estadoData.length === 0) {
@@ -454,7 +460,7 @@ function TareasStats({ tareas }: TareasStatsProps) {
 
       {/* Charts Row */}
       <ChartGrid>
-        <PieChart 
+        <PieChart
           title={STATS_LABELS.porEstado}
           data={estadoData}
         />
@@ -496,9 +502,9 @@ function TareasStats({ tareas }: TareasStatsProps) {
                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full"
-                    style={{ 
+                    style={{
                       width: `${getPorcentajeValue(item.value, tareas.length)}%`,
-                      backgroundColor: item.color 
+                      backgroundColor: item.color
                     }}
                   />
                 </div>
@@ -533,10 +539,10 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
     tickets.forEach(t => {
       count[t.prioridad] = (count[t.prioridad] || 0) + 1
     })
-    
+
     return Object.entries(count)
-      .map(([label, value]) => ({ 
-        label: PRIORITY_COLORS_MAP[label]?.label || label, 
+      .map(([label, value]) => ({
+        label: PRIORITY_COLORS_MAP[label]?.label || label,
         value,
         color: PRIORITY_COLORS_MAP[label]?.color || CHART_COLORS.neutral
       }))
@@ -615,7 +621,7 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
 
       {/* Charts Row */}
       <ChartGrid>
-        <PieChart 
+        <PieChart
           title={STATS_LABELS.porEstado}
           data={estadoData}
         />
@@ -629,27 +635,27 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
       <ChartGrid cols={3}>
         <MetricCard
           title={STATS_LABELS.tiempoPromedio}
-          value={tiempoPromedioRespuesta > 0 
+          value={tiempoPromedioRespuesta > 0
             ? `${Math.round(tiempoPromedioRespuesta / 60)}h ${tiempoPromedioRespuesta % 60}m`
-            : 'Sin datos'
+            : STATS_LABELS.sinDatos
           }
           icon={<Clock className="h-5 w-5" />}
-          iconBg="bg-blue-500/15"
-          iconColor="text-blue-400"
+          iconBg={VARIANT_COLORS.info.iconBg}
+          iconColor={VARIANT_COLORS.info.iconColor}
         />
         <MetricCard
           title={STATS_LABELS.resuelto}
           value={ticketsResueltos.length}
           icon={<CheckCircle2 className="h-5 w-5" />}
-          iconBg="bg-emerald-500/15"
-          iconColor="text-emerald-400"
+          iconBg={VARIANT_COLORS.success.iconBg}
+          iconColor={VARIANT_COLORS.success.iconColor}
         />
         <MetricCard
           title={STATS_LABELS.enProgreso}
           value={ticketsEnProgreso.length}
           icon={<Activity className="h-5 w-5" />}
-          iconBg="bg-amber-500/15"
-          iconColor="text-amber-400"
+          iconBg={VARIANT_COLORS.warning.iconBg}
+          iconColor={VARIANT_COLORS.warning.iconColor}
         />
       </ChartGrid>
     </div>
@@ -765,7 +771,7 @@ function ResumenGeneral({
           <CardContent>
             <div className="text-4xl font-bold text-emerald-400 mb-4">
               {formatCurrency(valorContratosActivos)}
-              <span className="text-lg text-muted-foreground font-normal ml-2">/mes</span>
+              <span className="text-lg text-muted-foreground font-normal ml-2">{STATS_LABELS.porMes}</span>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -787,7 +793,7 @@ function ResumenGeneral({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Activity className="h-4 w-4 text-cyan-400" />
-              Actividad Reciente
+              {STATS_LABELS.sinActividadReciente}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -802,7 +808,7 @@ function ResumenGeneral({
                 </div>
               ))}
               {ultimasEmpresas.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Sin actividad reciente</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{STATS_LABELS.sinActividadReciente}</p>
               )}
             </div>
           </CardContent>
@@ -816,7 +822,7 @@ function ResumenGeneral({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <CheckSquare className="h-4 w-4 text-amber-400" />
-              Próximas {STATS_LABELS.tareas}
+              {STATS_LABELS.proximas} {STATS_LABELS.tareas}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -824,12 +830,12 @@ function ResumenGeneral({
               {tareasProximas.map((tarea) => (
                 <div key={tarea.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-900/50">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Badge 
+                    <Badge
                       variant={
-                        tarea.prioridad === 'Alta' || tarea.prioridad === 'Urgente' 
-                          ? 'destructive' 
-                          : tarea.prioridad === 'Media' 
-                            ? 'warning' 
+                        tarea.prioridad === 'Alta' || tarea.prioridad === 'Urgente'
+                          ? 'destructive'
+                          : tarea.prioridad === 'Media'
+                            ? 'warning'
                             : 'secondary'
                       }
                       className="text-xs"
@@ -844,7 +850,7 @@ function ResumenGeneral({
                 </div>
               ))}
               {tareasProximas.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">No hay {STATS_LABELS.tareas} próximas</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{STATS_LABELS.noHayTareasProximas}</p>
               )}
             </div>
           </CardContent>
@@ -855,7 +861,7 @@ function ResumenGeneral({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Calendar className="h-4 w-4 text-purple-400" />
-              Próximas {STATS_LABELS.reuniones}
+              {STATS_LABELS.proximas} {STATS_LABELS.reuniones}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -868,22 +874,22 @@ function ResumenGeneral({
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs">
-                      {new Date(reunion.fecha_hora_inicio).toLocaleDateString('es-AR', { 
-                        day: 'numeric', 
-                        month: 'short' 
+                      {new Date(reunion.fecha_hora_inicio).toLocaleDateString('es-AR', {
+                        day: 'numeric',
+                        month: 'short'
                       })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(reunion.fecha_hora_inicio).toLocaleTimeString('es-AR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                      {new Date(reunion.fecha_hora_inicio).toLocaleTimeString('es-AR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })}
                     </p>
                   </div>
                 </div>
               ))}
               {proximasReuniones.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">No hay {STATS_LABELS.reuniones} próximas</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{STATS_LABELS.noHayReunionesProximas}</p>
               )}
             </div>
           </CardContent>
@@ -901,7 +907,7 @@ function ResumenGeneral({
 
 export default function EstadisticasPage() {
   const { user } = useAuth()
-  
+
   // Data hooks
   const [empresas] = useEmpresas()
   const [proyectos] = useProyectos()
@@ -921,9 +927,9 @@ export default function EstadisticasPage() {
       <ModuleContainer>
         <Card className="p-12 text-center">
           <Zap className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Sin acceso</h3>
+          <h3 className="text-lg font-medium mb-2">{STATS_LABELS.sinAcceso}</h3>
           <p className="text-muted-foreground">
-            No tienes permisos para ver las estadísticas.
+            {STATS_LABELS.noTienesPermisos}
           </p>
         </Card>
       </ModuleContainer>
@@ -937,10 +943,10 @@ export default function EstadisticasPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Zap className="h-8 w-8 text-cyan-400" />
-            Estadísticas
+            {STATS_LABELS.tituloPagina}
           </h1>
           <p className="text-muted-foreground">
-            Panel de métricas y análisis de tu negocio
+            {STATS_LABELS.descripcionPagina}
           </p>
         </div>
       </div>
@@ -950,23 +956,23 @@ export default function EstadisticasPage() {
         <TabsList className="bg-slate-900 border-slate-800">
           <TabsTrigger value="resumen" className="gap-2">
             <Activity className="h-4 w-4" />
-            Resumen
+            {STATS_LABELS.tabResumen}
           </TabsTrigger>
           <TabsTrigger value="crm" className="gap-2">
             <Building2 className="h-4 w-4" />
-            CRM
+            {STATS_LABELS.tabCrm}
           </TabsTrigger>
           <TabsTrigger value="proyectos" className="gap-2">
             <FolderKanban className="h-4 w-4" />
-            Proyectos
+            {STATS_LABELS.proyectos}
           </TabsTrigger>
           <TabsTrigger value="tareas" className="gap-2">
             <CheckSquare className="h-4 w-4" />
-            Tareas
+            {STATS_LABELS.tareas}
           </TabsTrigger>
           <TabsTrigger value="tickets" className="gap-2">
             <Headphones className="h-4 w-4" />
-            Tickets
+            {STATS_LABELS.tickets}
           </TabsTrigger>
         </TabsList>
 

@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { BaseCard, CardHeader, CardContent, CardFooter } from "@/components/base"
 
 interface LoginFormProps {
   onSubmit?: (data: LoginCredentials) => Promise<void>
@@ -15,6 +15,11 @@ export interface LoginCredentials {
   password: string
 }
 
+/**
+ * LoginForm - Formulario de inicio de sesión
+ * 
+ * Usa BaseCard con subcomponentes CardHeader, CardContent, CardFooter.
+ */
 export function LoginForm({ onSubmit }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -38,13 +43,12 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Iniciar sesión</CardTitle>
-        <CardDescription>
-          Ingresa tu correo electrónico y contraseña para acceder
-        </CardDescription>
-      </CardHeader>
+    <BaseCard className="w-full max-w-md mx-auto" padding="none">
+      <CardHeader
+        title="Iniciar sesión"
+        subtitle="Ingresa tu correo electrónico y contraseña para acceder"
+      />
+      
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {error && (
@@ -77,12 +81,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        
+        <CardFooter align="center">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
         </CardFooter>
       </form>
-    </Card>
+    </BaseCard>
   )
 }

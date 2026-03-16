@@ -51,7 +51,7 @@ const navigation = [
     title: "Sistema",
     items: [
       { name: "Notificaciones", href: "/dashboard/notificaciones", icon: Bell, module: 'notificaciones' },
-      { name: "Archivado", href: "/dashboard/archivados", icon: Archive, module: 'archivados' },
+      { name: "Proyectos Archivados", href: "/dashboard/archivados", icon: Archive, module: 'archivados' },
       { name: "Usuarios", href: "/dashboard/usuarios", icon: UserCog, module: 'configuracion', adminOnly: true },
       { name: "Configuración", href: "/dashboard/configuracion", icon: Settings, module: 'configuracion' },
     ],
@@ -100,8 +100,9 @@ export default function DashboardLayout({
     )
   }
 
+  // Si no hay usuario después de cargar, no renderizar nada
+  // (el login redirect ya se maneja en el contexto)
   if (!user) {
-    router.push('/login')
     return null
   }
 

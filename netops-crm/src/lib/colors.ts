@@ -11,38 +11,47 @@ export const STATUS_COLORS = {
   success: {
     text: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
+    border: 'border-emerald-500/30',
   },
   warning: {
     text: 'text-amber-400',
     bg: 'bg-amber-500/15',
+    border: 'border-amber-500/30',
   },
   info: {
     text: 'text-blue-400',
     bg: 'bg-blue-500/15',
+    border: 'border-blue-500/30',
   },
   error: {
     text: 'text-red-400',
     bg: 'bg-red-500/15',
+    border: 'border-red-500/30',
   },
   neutral: {
     text: 'text-slate-400',
     bg: 'bg-slate-500/15',
+    border: 'border-slate-500/30',
   },
   primary: {
     text: 'text-cyan-400',
     bg: 'bg-cyan-500/15',
+    border: 'border-cyan-500/30',
   },
   purple: {
     text: 'text-violet-400',
     bg: 'bg-violet-500/15',
+    border: 'border-violet-500/30',
   },
   orange: {
     text: 'text-orange-400',
     bg: 'bg-orange-500/15',
+    border: 'border-orange-500/30',
   },
   green: {
     text: 'text-green-400',
     bg: 'bg-green-500/15',
+    border: 'border-green-500/30',
   },
 } as const
 
@@ -374,3 +383,376 @@ export function getTipoReunionIcon(tipo: string): string {
     default: return '📅'
   }
 }
+
+// ==========================================
+// COLORES BASE PARA ESTADÍSTICAS (MiniStat accentColor)
+// Estos colores base se usan en todas las constantes de stats
+// ==========================================
+
+const BASE_STATS_COLORS = {
+  total: '#06b6d4',       // cyan-500
+  info: '#3b82f6',       // blue-500
+  success: '#10b981',    // emerald-500
+  warning: '#f59e0b',    // amber-500
+  danger: '#ef4444',     // red-500
+  slate: '#64748b',      // slate-500
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE SOPORTE (MiniStat accentColor)
+// ==========================================
+
+export const SOPORTE_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  abiertos: BASE_STATS_COLORS.danger,
+  enProgreso: BASE_STATS_COLORS.info,
+  resueltos: BASE_STATS_COLORS.success,
+  cerrados: BASE_STATS_COLORS.slate,
+  urgentes: '#dc2626',    // red-600 (especial para urgentes)
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE CALENDARIO (MiniStat accentColor)
+// ==========================================
+
+export const CALENDAR_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  proximas: BASE_STATS_COLORS.info,
+  confirmadas: BASE_STATS_COLORS.success,
+  pendientes: BASE_STATS_COLORS.warning,
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE NOTIFICACIONES (MiniStat accentColor)
+// ==========================================
+
+export const NOTIFICACIONES_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  enviados: BASE_STATS_COLORS.success,
+  fallidos: BASE_STATS_COLORS.danger,
+  pendientes: BASE_STATS_COLORS.warning,
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE ARCHIVADOS (MiniStat accentColor)
+// ==========================================
+
+export const ARCHIVADOS_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  completados: BASE_STATS_COLORS.success,
+  inconclusos: BASE_STATS_COLORS.warning,
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE CRM (MiniStat accentColor)
+// ==========================================
+
+export const CRM_STATS_COLORS = {
+  empresas: BASE_STATS_COLORS.total,
+  contactos: BASE_STATS_COLORS.info,
+  oportunidades: BASE_STATS_COLORS.warning,
+  ganancias: BASE_STATS_COLORS.success,
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE TAREAS (MiniStat accentColor)
+// ==========================================
+
+export const TAREAS_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  pendientes: BASE_STATS_COLORS.warning,
+  enProgreso: BASE_STATS_COLORS.info,
+  completadas: BASE_STATS_COLORS.success,
+  bloqueadas: BASE_STATS_COLORS.danger,
+  overdue: '#dc2626',    // red-600 (especial para overdue)
+} as const
+
+// ==========================================
+// COLORES DE FASES DE PIPELINE (Proyectos)
+// ==========================================
+
+export const PIPELINE_FASE_COLORS = {
+  1: '#6b7280',   // gray-500
+  2: '#3b82f6',   // blue-500
+  3: '#eab308',   // yellow-500
+  4: '#10b981',   // emerald-500
+  5: '#8b5cf6',   // violet-500
+} as const
+
+// ==========================================
+// COLORES DE CHART (Gráficos)
+// ==========================================
+
+export const CHART_COLORS = {
+  empty: '#334155',  // slate-700
+  default: '#06b6d4', // cyan-500
+} as const
+
+export const HEX_COLORS = {
+  primary: '#06b6d4',   // cyan-500
+  info: '#3b82f6',      // blue-500
+  success: '#10b981',   // emerald-500
+  warning: '#f59e0b',   // amber-500
+  danger: '#ef4444',    // red-500
+  purple: '#8b5cf6',    // violet-500
+  pink: '#ec4899',
+  orange: '#f97316',
+  green: '#22c55e',     // green-500
+  slate: '#64748b',
+  indigo: '#6366f1',
+  urgent: '#dc2626',    // red-600
+} as const
+
+// ==========================================
+// VARIANTES DE COLORES (para MiniStat, Cards, etc.)
+// ==========================================
+
+export const VARIANT_COLORS = {
+  primary: {
+    iconBg: 'bg-cyan-500/15',
+    iconColor: 'text-cyan-400',
+    valueColor: 'text-cyan-400',
+    borderColor: 'border-cyan-500/20',
+    gradient: 'from-cyan-500/10 to-blue-500/10',
+    gradientBorder: 'border-cyan-500/20',
+  },
+  success: {
+    iconBg: 'bg-emerald-500/15',
+    iconColor: 'text-emerald-400',
+    valueColor: 'text-emerald-400',
+    borderColor: 'border-emerald-500/20',
+    gradient: 'from-emerald-500/10 to-green-500/10',
+    gradientBorder: 'border-emerald-500/20',
+  },
+  warning: {
+    iconBg: 'bg-amber-500/15',
+    iconColor: 'text-amber-400',
+    valueColor: 'text-amber-400',
+    borderColor: 'border-amber-500/20',
+    gradient: 'from-amber-500/10 to-orange-500/10',
+    gradientBorder: 'border-amber-500/20',
+  },
+  danger: {
+    iconBg: 'bg-red-500/15',
+    iconColor: 'text-red-400',
+    valueColor: 'text-red-400',
+    borderColor: 'border-red-500/20',
+    gradient: 'from-red-500/10 to-orange-500/10',
+    gradientBorder: 'border-red-500/20',
+  },
+  info: {
+    iconBg: 'bg-blue-500/15',
+    iconColor: 'text-blue-400',
+    valueColor: 'text-blue-400',
+    borderColor: 'border-blue-500/20',
+    gradient: 'from-blue-500/10 to-indigo-500/10',
+    gradientBorder: 'border-blue-500/20',
+  },
+  purple: {
+    iconBg: 'bg-violet-500/15',
+    iconColor: 'text-violet-400',
+    valueColor: 'text-violet-400',
+    borderColor: 'border-violet-500/20',
+    gradient: 'from-violet-500/10 to-purple-500/10',
+    gradientBorder: 'border-violet-500/20',
+  },
+} as const
+
+export type VariantColorKey = keyof typeof VARIANT_COLORS
+
+// ==========================================
+// ICONOS DE ACTIVIDAD (Dashboard RecentActivity)
+// ==========================================
+
+export const ACTIVITY_COLORS = {
+  project: 'bg-blue-500',
+  task: 'bg-green-500',
+  ticket: 'bg-red-500',
+  client: 'bg-purple-500',
+  empresa: 'bg-purple-500',
+} as const
+
+export type ActivityColorKey = keyof typeof ACTIVITY_COLORS
+
+// ==========================================
+// COLORES DE INDICADORES SECTION (Dashboard)
+// ==========================================
+
+export const SECTION_INDICATOR_COLORS = {
+  actividadReciente: 'bg-cyan-500',
+  proximasTareas: 'bg-amber-500',
+} as const
+
+// ==========================================
+// COLORES DE ESTADOS DE PROYECTO
+// ==========================================
+
+export const PROJECT_STATUS_COLORS = {
+  activo: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
+    indicator: 'bg-emerald-500',
+    label: 'Activo',
+  },
+  en_progreso: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/15',
+    indicator: 'bg-blue-500',
+    label: 'En progreso',
+  },
+  completado: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
+    indicator: 'bg-emerald-500',
+    label: 'Completado',
+  },
+  pausado: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15',
+    indicator: 'bg-amber-500',
+    label: 'Pausado',
+  },
+  cancelado: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/15',
+    indicator: 'bg-red-500',
+    label: 'Cancelado',
+  },
+  bloqueado: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/15',
+    indicator: 'bg-red-500',
+    label: 'Bloqueado',
+  },
+} as const
+
+// ==========================================
+// COLORES DE TIPOS DE ENTIDAD (CRM)
+// ==========================================
+
+export const ENTITY_TYPE_COLORS = {
+  cliente: {
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/20',
+    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    label: 'Cliente',
+  },
+  proveedor: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/20',
+    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    label: 'Proveedor',
+  },
+  prospecto: {
+    color: 'text-violet-400',
+    bg: 'bg-violet-500/20',
+    badge: 'bg-violet-500/15 text-violet-400 border-violet-500/30',
+    label: 'Prospecto',
+  },
+  ambos: {
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/20',
+    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    label: 'Ambos',
+  },
+} as const
+
+export type EntityTypeKey = keyof typeof ENTITY_TYPE_COLORS
+
+// ==========================================
+// COLORES DE PRIORIDADES (通用)
+// ==========================================
+
+export const PRIORITY_COLORS_MAP = {
+  urgente: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/15',
+    indicator: 'bg-red-500',
+    border: 'border-red-500/30',
+    label: 'Urgente',
+  },
+  alta: {
+    color: 'text-orange-400',
+    bg: 'bg-orange-500/15',
+    indicator: 'bg-orange-500',
+    border: 'border-orange-500/30',
+    label: 'Alta',
+  },
+  media: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15',
+    indicator: 'bg-amber-500',
+    border: 'border-amber-500/30',
+    label: 'Media',
+  },
+  baja: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/15',
+    indicator: 'bg-blue-500',
+    border: 'border-blue-500/30',
+    label: 'Baja',
+  },
+} as const
+
+// ==========================================
+// FUNCIONES HELPER ADICIONALES
+// ==========================================
+
+// ==========================================
+// INTERFAZ PARA VARIANT COLORS
+// ==========================================
+
+interface VariantColorConfig {
+  iconBg: string
+  iconColor: string
+  valueColor: string
+  borderColor: string
+  gradient: string
+  gradientBorder: string
+}
+
+/**
+ * Obtiene la configuración de variante de color por key
+ */
+export function getVariantColor(variant: string): VariantColorConfig {
+  const key = variant as VariantColorKey
+  return VARIANT_COLORS[key] || VARIANT_COLORS.primary
+}
+
+/**
+ * Obtiene el color de actividad por tipo
+ */
+export function getActivityColor(type: string): string {
+  const key = type as ActivityColorKey
+  return ACTIVITY_COLORS[key] || 'bg-slate-500'
+}
+
+/**
+ * Obtiene el color de sección por nombre
+ */
+export function getSectionIndicatorColor(section: string): string {
+  return SECTION_INDICATOR_COLORS[section as keyof typeof SECTION_INDICATOR_COLORS] || 'bg-cyan-500'
+}
+
+// ==========================================
+// COLORES PARA ARCHIVADO DE PROYECTOS
+// ==========================================
+
+export const ARCHIVE_CLASSES = {
+  completado: {
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500',
+    badge: 'bg-emerald-500',
+    text: 'text-emerald-400',
+  },
+  inconclusive: {
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500',
+    badge: '',
+    text: 'text-amber-300',
+  },
+  container: {
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/30',
+  },
+} as const

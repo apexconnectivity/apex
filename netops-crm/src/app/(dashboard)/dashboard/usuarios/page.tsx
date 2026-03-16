@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleContainer } from '@/components/module'
 import { Button } from '@/components/ui/button'
@@ -38,71 +40,29 @@ import {
   Loader2,
   X
 } from 'lucide-react'
-import { Role, ROLE_DEFINITIONS } from '@/types/auth'
+import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { cn } from '@/lib/utils'
+import { USUARIOS_PAGE, BUTTON_LABELS, FORM_LABELS, USER_STATUS } from '@/constants/auth'
 
-// Demo users data
-const INITIAL_USERS = [
-  {
-    id: '1',
-    email: 'admin@apex.com',
-    nombre: 'Carlos Admin',
-    telefono: '+54 9 11 1234-5678',
-    activo: true,
-    roles: ['admin'] as Role[],
-    creado_en: '2024-01-15',
-  },
-  {
-    id: '2',
-    email: 'laura@apex.com',
-    nombre: 'Laura Pérez',
-    telefono: '+54 9 11 2345-6789',
-    activo: true,
-    roles: ['comercial'] as Role[],
-    creado_en: '2024-02-20',
-  },
-  {
-    id: '3',
-    email: 'juan@apex.com',
-    nombre: 'Juan García',
-    telefono: '+54 9 11 3456-7890',
-    activo: true,
-    roles: ['tecnico'] as Role[],
-    creado_en: '2024-03-10',
-  },
-  {
-    id: '4',
-    email: 'maria@apex.com',
-    nombre: 'María López',
-    telefono: '+54 9 11 4567-8901',
-    activo: true,
-    roles: ['tecnico', 'compras'] as Role[],
-    creado_en: '2024-04-05',
-  },
-  {
-    id: '5',
-    email: 'pedro@apex.com',
-    nombre: 'Pedro Martínez',
-    telefono: '+54 9 11 5678-9012',
-    activo: false,
-    roles: ['facturacion'] as Role[],
-    creado_en: '2024-05-12',
-  },
-]
+// ============================================================================
+// Tipos locales para el formulario
+// ============================================================================
+type UserFormData = Pick<User, 'nombre' | 'email' | 'telefono' | 'roles'>
 
+// Roles internos disponibles
 const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth()
-  const [users, setUsers] = useState(INITIAL_USERS)
+  const [users, setUsers] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activo' | 'inactivo'>('todos')
   const [filtroRol, setFiltroRol] = useState<'todos' | Role>('todos')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [userToModify, setUserToModify] = useState<{ id: string; action: 'activar' | 'desactivar' } | null>(null)
-  const [editingUser, setEditingUser] = useState<typeof INITIAL_USERS[0] | null>(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // Form state
@@ -119,30 +79,30 @@ export default function UsersPage() {
 
   const filteredUsers = users.filter(user => {
     // Filtro búsqueda
-    const matchesSearch = 
+    const matchesSearch =
       user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    
+
     // Filtro estado
-    const matchesEstado = filtroEstado === 'todos' 
-      ? true 
+    const matchesEstado = filtroEstado === 'todos'
+      ? true
       : filtroEstado === 'activo' ? user.activo : !user.activo
-    
+
     // Filtro rol
     const matchesRol = filtroRol === 'todos'
       ? true
       : user.roles.includes(filtroRol)
-    
+
     return matchesSearch && matchesEstado && matchesRol
   })
 
-  const handleOpenModal = (user?: typeof INITIAL_USERS[0]) => {
+  const handleOpenModal = (user?: User) => {
     if (user) {
       setEditingUser(user)
       setFormData({
         nombre: user.nombre,
         email: user.email,
-        telefono: user.telefono,
+        telefono: user.telefono || '',
         roles: [...user.roles],
       })
     } else {
@@ -184,11 +144,12 @@ export default function UsersPage() {
       ))
     } else {
       // Create new user
-      const newUser = {
+      const newUser: User = {
         id: String(Date.now()),
         ...formData,
         activo: true,
         creado_en: new Date().toISOString().split('T')[0],
+        cambiar_password_proximo_login: false,
       }
       setUsers(prev => [...prev, newUser])
     }
@@ -197,10 +158,10 @@ export default function UsersPage() {
     handleCloseModal()
   }
 
-  const handleRequestToggleActive = (user: typeof INITIAL_USERS[0]) => {
-    setUserToModify({ 
-      id: user.id, 
-      action: user.activo ? 'desactivar' : 'activar' 
+  const handleRequestToggleActive = (user: User) => {
+    setUserToModify({
+      id: user.id,
+      action: user.activo ? 'desactivar' : 'activar'
     })
     setIsConfirmModalOpen(true)
   }
@@ -208,8 +169,8 @@ export default function UsersPage() {
   const handleConfirmToggleActive = () => {
     if (!userToModify) return
     setUsers(prev => prev.map(u =>
-      u.id === userToModify.id 
-        ? { ...u, activo: userToModify.action === 'activar' } 
+      u.id === userToModify.id
+        ? { ...u, activo: userToModify.action === 'activar' }
         : u
     ))
     setIsConfirmModalOpen(false)
@@ -220,7 +181,7 @@ export default function UsersPage() {
     return (
       <AccessDeniedCard
         icon={Shield}
-        description="Solo los administradores pueden gestionar usuarios."
+        description={USUARIOS_PAGE.soloAdmin}
       />
     )
   }
@@ -230,14 +191,14 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{USUARIOS_PAGE.titulo}</h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona los usuarios internos del sistema
+            {USUARIOS_PAGE.descripcion}
           </p>
         </div>
         <Button onClick={() => handleOpenModal()}>
           <UserPlus className="h-4 w-4 mr-2" />
-          Nuevo Usuario
+          {USUARIOS_PAGE.nuevoUsuario}
         </Button>
       </div>
 
@@ -245,7 +206,7 @@ export default function UsersPage() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
         <Input
-          placeholder="Buscar usuarios..."
+          placeholder={USUARIOS_PAGE.buscarPlaceholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 pr-8 bg-background/80 border-border/50"
@@ -254,30 +215,30 @@ export default function UsersPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center text-sm">
-        <span className="text-muted-foreground mr-1">Filtros:</span>
-        
+        <span className="text-muted-foreground mr-1">{USUARIOS_PAGE.filtros}</span>
+
         <div className="flex items-center gap-1">
-          <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
+          <Label className="text-xs text-muted-foreground mr-1">{USUARIOS_PAGE.estado}</Label>
           <Select value={filtroEstado} onValueChange={(v) => setFiltroEstado(v as typeof filtroEstado)}>
             <SelectTrigger className="w-32 h-8 bg-input border-border">
-              <SelectValue placeholder="Todos" />
+              <SelectValue placeholder={USUARIOS_PAGE.todos} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="activo">Activos</SelectItem>
-              <SelectItem value="inactivo">Inactivos</SelectItem>
+              <SelectItem value="todos">{USUARIOS_PAGE.todos}</SelectItem>
+              <SelectItem value="activo">{USUARIOS_PAGE.activos}</SelectItem>
+              <SelectItem value="inactivo">{USUARIOS_PAGE.inactivos}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex items-center gap-1">
-          <Label className="text-xs text-muted-foreground mr-1">Rol:</Label>
+          <Label className="text-xs text-muted-foreground mr-1">{USUARIOS_PAGE.rol}</Label>
           <Select value={filtroRol} onValueChange={(v) => setFiltroRol(v as typeof filtroRol)}>
             <SelectTrigger className="w-40 h-8 bg-input border-border">
-              <SelectValue placeholder="Todos" />
+              <SelectValue placeholder={USUARIOS_PAGE.todos} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="todos">{USUARIOS_PAGE.todos}</SelectItem>
               {INTERNAL_ROLES.map(role => (
                 <SelectItem key={role} value={role}>
                   {ROLE_DEFINITIONS[role]?.label}
@@ -288,8 +249,8 @@ export default function UsersPage() {
         </div>
 
         {(filtroEstado !== 'todos' || filtroRol !== 'todos') && (
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => {
               setFiltroEstado('todos')
@@ -297,12 +258,12 @@ export default function UsersPage() {
             }}
           >
             <X className="h-3 w-3 mr-1" />
-            Limpiar
+            {USUARIOS_PAGE.limpiar}
           </Button>
         )}
-        
+
         <span className="text-sm text-muted-foreground ml-auto">
-          {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}
+          {filteredUsers.length} {filteredUsers.length !== 1 ? USUARIOS_PAGE.usuarioPlural : USUARIOS_PAGE.usuarioSingular}
         </span>
       </div>
 
@@ -323,7 +284,7 @@ export default function UsersPage() {
                       <h3 className="font-semibold">{user.nombre}</h3>
                       {!user.activo && (
                         <Badge variant="secondary" className="text-xs">
-                          Inactivo
+                          {USUARIOS_PAGE.inactivo}
                         </Badge>
                       )}
                     </div>
@@ -381,42 +342,42 @@ export default function UsersPage() {
           <DialogContent size="md">
             <DialogHeader>
               <DialogTitle>
-                {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
+                {editingUser ? USUARIOS_PAGE.editarUsuario : USUARIOS_PAGE.nuevoUsuario}
               </DialogTitle>
             </DialogHeader>
             <DialogBody>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Nombre completo</label>
+                  <label className="text-sm font-medium">{USUARIOS_PAGE.nombreCompleto}</label>
                   <Input
                     value={formData.nombre}
                     onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                    placeholder="Juan Pérez"
+                    placeholder={USUARIOS_PAGE.nombrePlaceholder}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
+                  <label className="text-sm font-medium">{FORM_LABELS.email}</label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="juan@apex.com"
+                    placeholder={USUARIOS_PAGE.emailPlaceholder}
                     disabled={!!editingUser}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Teléfono</label>
+                  <label className="text-sm font-medium">{FORM_LABELS.telefono}</label>
                   <Input
                     value={formData.telefono}
                     onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
-                    placeholder="+54 9 11 1234-5678"
+                    placeholder={USUARIOS_PAGE.telefonoPlaceholder}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Roles</label>
+                  <label className="text-sm font-medium">{USUARIOS_PAGE.roles}</label>
                   <div className="grid grid-cols-2 gap-2">
                     {INTERNAL_ROLES.map(role => (
                       <button
@@ -444,11 +405,11 @@ export default function UsersPage() {
             </DialogBody>
             <DialogFooter>
               <Button variant="outline" onClick={handleCloseModal} disabled={isLoading}>
-                Cancelar
+                {BUTTON_LABELS.cancelar}
               </Button>
               <Button onClick={handleSave} disabled={isLoading || !formData.nombre || !formData.email || formData.roles.length === 0}>
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                {editingUser ? USUARIOS_PAGE.guardarCambios : USUARIOS_PAGE.crearUsuario}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -464,21 +425,21 @@ export default function UsersPage() {
                 {userToModify.action === 'desactivar' ? (
                   <>
                     <Trash2 className="h-5 w-5 text-destructive" />
-                    Desactivar Usuario
+                    {USUARIOS_PAGE.desactivarUsuario}
                   </>
                 ) : (
                   <>
                     <KeyRound className="h-5 w-5 text-green-400" />
-                    Reactivar Usuario
+                    {USUARIOS_PAGE.reactivarUsuario}
                   </>
                 )}
               </DialogTitle>
             </DialogHeader>
             <DialogBody>
               <p className="text-sm text-muted-foreground">
-                {userToModify.action === 'desactivar' 
-                  ? '¿Estás seguro de que deseas desactivar este usuario? Ya no podrá acceder al sistema.'
-                  : '¿Estás seguro de que deseas reactivar este usuario? Volverá a tener acceso al sistema.'
+                {userToModify.action === 'desactivar'
+                  ? USUARIOS_PAGE.msgDesactivar
+                  : USUARIOS_PAGE.msgReactivar
                 }
               </p>
               <div className="mt-4 p-3 bg-muted/50 rounded-lg">
@@ -492,13 +453,13 @@ export default function UsersPage() {
             </DialogBody>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>
-                Cancelar
+                {BUTTON_LABELS.cancelar}
               </Button>
-              <Button 
+              <Button
                 variant={userToModify.action === 'desactivar' ? 'destructive' : 'default'}
                 onClick={handleConfirmToggleActive}
               >
-                {userToModify.action === 'desactivar' ? 'Desactivar' : 'Reactivar'}
+                {userToModify.action === 'desactivar' ? USUARIOS_PAGE.desactivarUsuario : USUARIOS_PAGE.reactivarUsuario}
               </Button>
             </DialogFooter>
           </DialogContent>

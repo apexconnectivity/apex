@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
-import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/lib/data'
+import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/hooks'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,7 @@ import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { VARIANT_COLORS, STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import {
   Select,
   SelectContent,
@@ -66,8 +67,24 @@ import {
   TipoEntidad,
   TipoContacto
 } from '@/types/crm'
+import { type Archivo } from '@/types/archivos'
 import { Proyecto, FASES } from '@/types/proyectos'
 import { Ticket, EstadoTicket } from '@/types/soporte'
+
+// Importar constantes
+import {
+  PAGE_TITLE,
+  PAGE_DESCRIPTION,
+  TABS_LABELS,
+  BUTTON_LABELS,
+  ALERT_LABELS,
+  VALIDATION_ERRORS,
+  ACCESS_MESSAGES,
+  CRM_EMPTY,
+  EMPTY_MESSAGES,
+  FORM_LABELS,
+  STATS_LABELS,
+} from '@/constants/crm'
 
 const EMPRESAS_VACIA: Partial<Empresa> = {
   tipo_entidad: 'cliente',
@@ -170,9 +187,9 @@ export default function CRMPage() {
   })
 
   const getContactos = (empresaId: string) => contactos.filter(c => c.empresa_id === empresaId)
-  const getDocumentos = (empresaId: string) => documentos.filter(d => d.empresa_id === empresaId)
-  const getDocumentosInternos = (empresaId: string) => documentos.filter(d => d.empresa_id === empresaId && d.visibilidad === 'interno')
-  const getDocumentosPublicos = (empresaId: string) => documentos.filter(d => d.empresa_id === empresaId && d.visibilidad === 'publico')
+  const getDocumentos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId)
+  const getDocumentosInternos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId && d.visibilidad === 'interno')
+  const getDocumentosPublicos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId && d.visibilidad === 'publico')
   const getProyectos = (empresaId: string) => proyectos.filter(p => p.empresa_id === empresaId)
   const getTickets = (empresaId: string) => {
     const proyectosIds = proyectos.filter(p => p.empresa_id === empresaId).map(p => p.id!).filter(Boolean)
@@ -270,31 +287,31 @@ export default function CRMPage() {
     setErrors({})
 
     if (!editingContacto?.nombre || editingContacto.nombre.trim().length < 2) {
-      setErrors({ nombre: 'El nombre es obligatorio (mínimo 2 caracteres)' })
+      setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
       return
     }
     if (!editingContacto?.email) {
-      setErrors({ email: 'El email es obligatorio' })
+      setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
       return
     }
     // Validar formato email
     if (editingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingContacto.email)) {
-      setErrors({ email: 'Ingresa un email válido' })
+      setErrors({ email: VALIDATION_ERRORS.emailInvalido })
       return
     }
     // Verificar email único en el sistema
     const emailExists = contactos.some(c => c.email.toLowerCase() === editingContacto?.email?.toLowerCase() && c.id !== editingContacto?.id)
     if (emailExists) {
-      setErrors({ email: 'Este email ya está registrado para otro contacto' })
+      setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
       return
     }
     if (!editingContacto?.tipo_contacto) {
-      setErrors({ tipo_contacto: 'Selecciona un tipo de contacto' })
+      setErrors({ tipo_contacto: VALIDATION_ERRORS.tipoContactoRequerido })
       return
     }
     // Validar teléfono si se ingresa
     if (editingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(editingContacto.telefono)) {
-      setErrors({ telefono: 'Teléfono inválido' })
+      setErrors({ telefono: VALIDATION_ERRORS.telefonoInvalido })
       return
     }
 
@@ -337,7 +354,7 @@ export default function CRMPage() {
   // Documentos
   const handleUploadDocumento = async (empresaId: string, visibilidad: 'interno' | 'publico', descripcion: string, nombreArchivo: string) => {
     await new Promise(r => setTimeout(r, 500))
-    const nuevoDoc: Documento = {
+    const nuevoDoc = {
       id: String(Date.now()),
       empresa_id: empresaId,
       archivo_id: `arch${Date.now()}`,
@@ -346,7 +363,7 @@ export default function CRMPage() {
       subido_por: user?.nombre || 'Usuario',
       fecha_subida: new Date().toISOString().split('T')[0],
       nombre_archivo: nombreArchivo
-    }
+    } as unknown as Archivo
     setDocumentos(prev => [...prev, nuevoDoc])
   }
 
@@ -374,9 +391,9 @@ export default function CRMPage() {
       if (contactosEmpresa.length > 0 && !contactosEmpresa.some(c => c.es_principal)) {
         alertas.push({
           id: `sin-principal-${e.id}`,
-          tipo: 'warning',
-          titulo: 'Sin contacto principal',
-          mensaje: `${e.nombre} no tiene un contacto principal designado.`,
+          tipo: 'warning' as const,
+          titulo: ALERT_LABELS.sinContactoPrincipal,
+          mensaje: `${e.nombre} ${ALERT_LABELS.sinContactoPrincipalMsg}`,
           empresaId: e.id
         })
       }
@@ -389,9 +406,9 @@ export default function CRMPage() {
         if (diasInactivo > 60) {
           alertas.push({
             id: `inactivo-${e.id}`,
-            tipo: 'danger',
-            titulo: 'Prospecto inactivo',
-            mensaje: `${e.nombre} no ha tenido actividad en ${diasInactivo} días.`,
+            tipo: 'danger' as const,
+            titulo: ALERT_LABELS.prospectoInactivo,
+            mensaje: `${e.nombre} ${ALERT_LABELS.prospectoInactivoMsg} ${diasInactivo} ${ALERT_LABELS.dias}.`,
             empresaId: e.id
           })
         }
@@ -401,9 +418,9 @@ export default function CRMPage() {
       if (e.tipo_entidad === 'proveedor' && contactosEmpresa.length === 0) {
         alertas.push({
           id: `sin-contacto-prov-${e.id}`,
-          tipo: 'warning',
-          titulo: 'Proveedor sin contactos',
-          mensaje: `${e.nombre} no tiene contactos asociados.`,
+          tipo: 'warning' as const,
+          titulo: ALERT_LABELS.proveedorSinContactos,
+          mensaje: `${e.nombre} ${ALERT_LABELS.proveedorSinContactosMsg}`,
           empresaId: e.id
         })
       }
@@ -432,8 +449,8 @@ export default function CRMPage() {
         icon={Building2}
         description={
           isTecnico
-            ? 'No tienes empresas asignadas en tus proyectos.'
-            : 'No tienes permisos para acceder al CRM.'
+            ? ACCESS_MESSAGES.noTieneEmpresas
+            : ACCESS_MESSAGES.noTienePermisos
         }
       />
     )
@@ -444,347 +461,347 @@ export default function CRMPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">CRM</h1>
-          <p className="text-muted-foreground">Gestión de empresas, clientes y proveedores</p>
+          <h1 className="text-3xl font-bold">{PAGE_TITLE}</h1>
+          <p className="text-muted-foreground">{PAGE_DESCRIPTION}</p>
         </div>
         {canEdit && (
           <Button onClick={handleNewEmpresa}>
             <Plus className="h-4 w-4 mr-2" />
-            Nueva Empresa
+            {BUTTON_LABELS.nuevaEmpresa}
           </Button>
         )}
       </div>
 
-        {/* Alertas */}
-        {alertas.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Bell className="h-4 w-4" />
-              <span>Alertas ({alertas.length})</span>
-            </div>
-            <div className="grid gap-2">
-              {alertas.slice(0, 3).map(alerta => (
-                <div
-                  key={alerta.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border ${alerta.tipo === 'danger'
-                    ? 'border-red-500/30 bg-red-500/5'
-                    : 'border-amber-500/30 bg-amber-500/5'
-                    }`}
-                >
-                  {alerta.tipo === 'danger' ? (
-                    <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-amber-400 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${alerta.tipo === 'danger' ? 'text-red-400' : 'text-amber-400'}`}>
-                      {alerta.titulo}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{alerta.mensaje}</p>
-                  </div>
-                  {alerta.empresaId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const emp = empresas.find(e => e.id === alerta.empresaId)
-                        if (emp) setSelectedEmpresa(emp)
-                      }}
-                    >
-                      Ver
-                    </Button>
-                  )}
+      {/* Alertas */}
+      {alertas.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Bell className="h-4 w-4" />
+            <span>Alertas ({alertas.length})</span>
+          </div>
+          <div className="grid gap-2">
+            {alertas.slice(0, 3).map(alerta => (
+              <div
+                key={alerta.id}
+                className={`flex items-center gap-3 p-3 rounded-lg border ${alerta.tipo === 'danger'
+                  ? `${STATUS_COLORS.error.border} ${STATUS_COLORS.error.bg}`
+                  : `${STATUS_COLORS.warning.border} ${STATUS_COLORS.warning.bg}`
+                  }`}
+              >
+                {alerta.tipo === 'danger' ? (
+                  <AlertTriangle className={`h-5 w-5 ${STATUS_COLORS.error.text} flex-shrink-0`} />
+                ) : (
+                  <Clock className={`h-5 w-5 ${STATUS_COLORS.warning.text} flex-shrink-0`} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium ${alerta.tipo === 'danger' ? STATUS_COLORS.error.text : STATUS_COLORS.warning.text}`}>
+                    {alerta.titulo}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{alerta.mensaje}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Filtros */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Buscar empresas..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={tipoFilter} onValueChange={(v) => setTipoFilter(v as TipoEntidad | 'todos')}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos los tipos</SelectItem>
-              <SelectItem value="cliente">Clientes</SelectItem>
-              <SelectItem value="proveedor">Proveedores</SelectItem>
-              <SelectItem value="ambos">Ambos</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={industriaFilter} onValueChange={setIndustriaFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Industria" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas las industrias</SelectItem>
-              {INDUSTRIAS.map(ind => (
-                <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Stats */}
-        <StatGrid cols={4}>
-          <MiniStat
-            label="Total Empresas"
-            value={filteredEmpresas.length}
-            icon={<Building2 className="h-5 w-5" />}
-            variant="primary"
-            showBorder
-            accentColor="#06b6d4"
-          />
-          <MiniStat
-            label="Clientes"
-            value={empresas.filter(e => e.tipo_entidad === 'cliente').length}
-            icon={<Users className="h-5 w-5" />}
-            variant="info"
-            showBorder
-            accentColor="#3b82f6"
-          />
-          <MiniStat
-            label="Proveedores"
-            value={empresas.filter(e => e.tipo_entidad === 'proveedor').length}
-            icon={<Building2 className="h-5 w-5" />}
-            variant="warning"
-            showBorder
-            accentColor="#f59e0b"
-          />
-          <MiniStat
-            label="Contactos"
-            value={contactos.length}
-            icon={<Users className="h-5 w-5" />}
-            variant="success"
-            showBorder
-            accentColor="#10b981"
-          />
-        </StatGrid>
-
-        {/* Listado de Empresas */}
-        {filteredEmpresas.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Building2 className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No se encontraron empresas</h3>
-              <p className="text-muted-foreground mb-4">
-                {canEdit ? 'Crea tu primera empresa haciendo clic en el botón de arriba.' : 'No hay empresas que coincidan con los filtros aplicados.'}
-              </p>
-              {canEdit && (
-                <Button onClick={handleNewEmpresa}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Empresa
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredEmpresas.map(empresa => (
-              <EmpresaCard
-                key={empresa.id}
-                empresa={empresa}
-                stats={{
-                  contactos: getContactos(empresa.id).length,
-                  proyectos: getProyectos(empresa.id).length
-                }}
-                onClick={() => setSelectedEmpresa(empresa)}
-              />
+                {alerta.empresaId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const emp = empresas.find(e => e.id === alerta.empresaId)
+                      if (emp) setSelectedEmpresa(emp)
+                    }}
+                  >
+                    Ver
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Modal de Empresa */}
-        <EmpresaModal
-          open={isModalEmpresa}
-          onClose={() => { setIsModalEmpresa(false); setEditingEmpresa(null) }}
-          onSave={handleSaveEmpresa}
-          empresa={editingEmpresa}
-          isSaving={isSaving}
-          errors={errors}
-          userRoles={user?.roles || []}
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Buscar empresas..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={tipoFilter} onValueChange={(v) => setTipoFilter(v as TipoEntidad | 'todos')}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos los tipos</SelectItem>
+            <SelectItem value="cliente">Clientes</SelectItem>
+            <SelectItem value="proveedor">Proveedores</SelectItem>
+            <SelectItem value="ambos">Ambos</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={industriaFilter} onValueChange={setIndustriaFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Industria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las industrias</SelectItem>
+            {INDUSTRIAS.map(ind => (
+              <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Stats */}
+      <StatGrid cols={4}>
+        <MiniStat
+          label="Total Empresas"
+          value={filteredEmpresas.length}
+          icon={<Building2 className="h-5 w-5" />}
+          variant="primary"
+          showBorder
+          accentColor={CRM_STATS_COLORS.empresas}
         />
-
-        {/* Vista Detallada de Empresa */}
-        <EmpresaDetailModal
-          open={!!selectedEmpresa && !isModalEmpresa && !isModalContacto && !isModalDocumento}
-          onClose={() => setSelectedEmpresa(null)}
-          empresa={selectedEmpresa}
-          contactos={contactos}
-          documentos={documentos}
-          proyectos={proyectos}
-          canEdit={!!canEdit}
-          canUploadDocuments={!!canUploadDocuments}
-          onEdit={() => selectedEmpresa && handleEditEmpresa(selectedEmpresa)}
-          onDelete={() => selectedEmpresa && handleDeleteEmpresa(selectedEmpresa.id)}
-          onNewContacto={() => selectedEmpresa && handleNewContacto(selectedEmpresa)}
-          onEditContacto={handleEditContacto}
-          onDeleteContacto={handleDeleteContacto}
-          onNewDocumento={() => selectedEmpresa && handleNewDocumento(selectedEmpresa)}
-          onDeleteDocumento={handleDeleteDocumento}
-          notaEditando={notaEditando}
-          notaTemporal={notaTemporal}
-          onOpenNotaEdit={openNotaEdit}
-          onNotaChange={setNotaTemporal}
-          onSaveNota={() => selectedEmpresa && handleSaveNota(selectedEmpresa.id)}
-          onCancelNota={handleCancelNota}
+        <MiniStat
+          label="Clientes"
+          value={empresas.filter(e => e.tipo_entidad === 'cliente').length}
+          icon={<Users className="h-5 w-5" />}
+          variant="info"
+          showBorder
+          accentColor={CRM_STATS_COLORS.contactos}
         />
+        <MiniStat
+          label="Proveedores"
+          value={empresas.filter(e => e.tipo_entidad === 'proveedor').length}
+          icon={<Building2 className="h-5 w-5" />}
+          variant="warning"
+          showBorder
+          accentColor={CRM_STATS_COLORS.oportunidades}
+        />
+        <MiniStat
+          label="Contactos"
+          value={contactos.length}
+          icon={<Users className="h-5 w-5" />}
+          variant="success"
+          showBorder
+          accentColor={CRM_STATS_COLORS.ganancias}
+        />
+      </StatGrid>
 
-        {/* Modal de Contacto */}
-        <Dialog open={isModalContacto} onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}>
-          <DialogContent size="lg">
-            <DialogHeader>
-              <DialogTitle>{editingContacto?.id ? 'Editar' : 'Nuevo'} Contacto</DialogTitle>
-            </DialogHeader>
-            <DialogBody className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>Nombre *</Label>
-                <Input
-                  value={editingContacto?.nombre || ''}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, nombre: e.target.value })}
-                  className={errors.nombre ? 'border-red-500' : ''}
-                />
-                {errors.nombre && <p className="text-red-500 text-xs">{errors.nombre}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label>Cargo</Label>
-                <Input
-                  value={editingContacto?.cargo || ''}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, cargo: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Tipo de Contacto *</Label>
-                <Select
-                  value={editingContacto?.tipo_contacto || ''}
-                  onValueChange={(v) => setEditingContacto({ ...editingContacto, tipo_contacto: v as TipoContacto })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_CONTACTO.map(tipo => (
-                      <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={editingContacto?.email || ''}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, email: e.target.value })}
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-                {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label>Teléfono</Label>
-                <Input
-                  value={editingContacto?.telefono || ''}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, telefono: e.target.value })}
-                  className={errors.telefono ? 'border-red-500' : ''}
-                />
-                {errors.telefono && <p className="text-red-500 text-xs">{errors.telefono}</p>}
-              </div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={editingContacto?.es_principal || false}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, es_principal: e.target.checked })}
-                />
-                <span className="text-sm">Contacto principal</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={editingContacto?.recibe_facturas || false}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, recibe_facturas: e.target.checked })}
-                />
-                <span className="text-sm">Recibe facturas</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={editingContacto?.activo !== false}
-                  onChange={(e) => setEditingContacto({ ...editingContacto, activo: e.target.checked })}
-                />
-                <span className="text-sm">Contacto activo</span>
-              </label>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsModalContacto(false); setEditingContacto(null) }}>
-                Cancelar
+      {/* Listado de Empresas */}
+      {filteredEmpresas.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Building2 className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No se encontraron empresas</h3>
+            <p className="text-muted-foreground mb-4">
+              {canEdit ? 'Crea tu primera empresa haciendo clic en el botón de arriba.' : 'No hay empresas que coincidan con los filtros aplicados.'}
+            </p>
+            {canEdit && (
+              <Button onClick={handleNewEmpresa}>
+                <Plus className="h-4 w-4 mr-2" />
+                {BUTTON_LABELS.nuevaEmpresa}
               </Button>
-              <Button onClick={handleSaveContacto} disabled={isSaving}>
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Guardar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredEmpresas.map(empresa => (
+            <EmpresaCard
+              key={empresa.id}
+              empresa={empresa}
+              stats={{
+                contactos: getContactos(empresa.id).length,
+                proyectos: getProyectos(empresa.id).length
+              }}
+              onClick={() => setSelectedEmpresa(empresa)}
+            />
+          ))}
+        </div>
+      )}
 
-        {/* Modal de Documento */}
-        <Dialog open={isModalDocumento} onOpenChange={(open) => { if (!open) { setIsModalDocumento(false); setEmpresaForDocumento(null) } }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Subir Documento</DialogTitle>
-            </DialogHeader>
-            <DialogBody className="space-y-4">
-              <div className="space-y-2">
-                <Label>Visibilidad</Label>
-                <Select
-                  value={newDocumento.visibilidad}
-                  onValueChange={(v: 'interno' | 'publico') => setNewDocumento({ ...newDocumento, visibilidad: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="interno">Interno</SelectItem>
-                    <SelectItem value="publico">Público</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Descripción</Label>
-                <Input
-                  value={newDocumento.descripcion}
-                  onChange={(e) => setNewDocumento({ ...newDocumento, descripcion: e.target.value })}
-                  placeholder="Descripción del documento"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Nombre del Archivo</Label>
-                <Input
-                  value={newDocumento.nombreArchivo}
-                  onChange={(e) => setNewDocumento({ ...newDocumento, nombreArchivo: e.target.value })}
-                  placeholder="ej: contrato_2024.pdf"
-                />
-              </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsModalDocumento(false); setEmpresaForDocumento(null) }}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSaveDocumento}>
-                <Upload className="h-4 w-4 mr-2" />
-                Subir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </ModuleContainer>
+      {/* Modal de Empresa */}
+      <EmpresaModal
+        open={isModalEmpresa}
+        onOpenChange={(open) => { if (!open) { setIsModalEmpresa(false); setEditingEmpresa(null) } }}
+        onSave={handleSaveEmpresa}
+        empresa={editingEmpresa}
+        isSaving={isSaving}
+        errors={errors}
+        userRoles={user?.roles || []}
+      />
+
+      {/* Vista Detallada de Empresa */}
+      <EmpresaDetailModal
+        open={!!selectedEmpresa && !isModalEmpresa && !isModalContacto && !isModalDocumento}
+        onOpenChange={(open) => !open && setSelectedEmpresa(null)}
+        empresa={selectedEmpresa}
+        contactos={contactos}
+        documentos={documentos as unknown as Documento[]}
+        proyectos={proyectos}
+        canEdit={!!canEdit}
+        canUploadDocuments={!!canUploadDocuments}
+        onEdit={() => selectedEmpresa && handleEditEmpresa(selectedEmpresa)}
+        onDelete={() => selectedEmpresa && handleDeleteEmpresa(selectedEmpresa.id)}
+        onNewContacto={() => selectedEmpresa && handleNewContacto(selectedEmpresa)}
+        onEditContacto={handleEditContacto}
+        onDeleteContacto={handleDeleteContacto}
+        onNewDocumento={() => selectedEmpresa && handleNewDocumento(selectedEmpresa)}
+        onDeleteDocumento={handleDeleteDocumento}
+        notaEditando={notaEditando}
+        notaTemporal={notaTemporal}
+        onOpenNotaEdit={openNotaEdit}
+        onNotaChange={setNotaTemporal}
+        onSaveNota={() => selectedEmpresa && handleSaveNota(selectedEmpresa.id)}
+        onCancelNota={handleCancelNota}
+      />
+
+      {/* Modal de Contacto */}
+      <Dialog open={isModalContacto} onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>{editingContacto?.id ? CRM_EMPTY.editarContacto : CRM_EMPTY.nuevoContacto} {TABS_LABELS.contactos}</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label>Nombre *</Label>
+              <Input
+                value={editingContacto?.nombre || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, nombre: e.target.value })}
+                className={errors.nombre ? VARIANT_COLORS.danger.borderColor : ''}
+              />
+              {errors.nombre && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.nombre}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Cargo</Label>
+              <Input
+                value={editingContacto?.cargo || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, cargo: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de Contacto *</Label>
+              <Select
+                value={editingContacto?.tipo_contacto || ''}
+                onValueChange={(v) => setEditingContacto({ ...editingContacto, tipo_contacto: v as TipoContacto })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_CONTACTO.map(tipo => (
+                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={editingContacto?.email || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, email: e.target.value })}
+                className={errors.email ? VARIANT_COLORS.danger.borderColor : ''}
+              />
+              {errors.email && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.email}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Teléfono</Label>
+              <Input
+                value={editingContacto?.telefono || ''}
+                onChange={(e) => setEditingContacto({ ...editingContacto, telefono: e.target.value })}
+                className={errors.telefono ? VARIANT_COLORS.danger.borderColor : ''}
+              />
+              {errors.telefono && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.telefono}</p>}
+            </div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editingContacto?.es_principal || false}
+                onChange={(e) => setEditingContacto({ ...editingContacto, es_principal: e.target.checked })}
+              />
+              <span className="text-sm">Contacto principal</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editingContacto?.recibe_facturas || false}
+                onChange={(e) => setEditingContacto({ ...editingContacto, recibe_facturas: e.target.checked })}
+              />
+              <span className="text-sm">Recibe facturas</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editingContacto?.activo !== false}
+                onChange={(e) => setEditingContacto({ ...editingContacto, activo: e.target.checked })}
+              />
+              <span className="text-sm">Contacto activo</span>
+            </label>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsModalContacto(false); setEditingContacto(null) }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveContacto} disabled={isSaving}>
+              {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Documento */}
+      <Dialog open={isModalDocumento} onOpenChange={(open) => { if (!open) { setIsModalDocumento(false); setEmpresaForDocumento(null) } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Subir Documento</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label>Visibilidad</Label>
+              <Select
+                value={newDocumento.visibilidad}
+                onValueChange={(v: 'interno' | 'publico') => setNewDocumento({ ...newDocumento, visibilidad: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="interno">Interno</SelectItem>
+                  <SelectItem value="publico">Público</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Descripción</Label>
+              <Input
+                value={newDocumento.descripcion}
+                onChange={(e) => setNewDocumento({ ...newDocumento, descripcion: e.target.value })}
+                placeholder="Descripción del documento"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nombre del Archivo</Label>
+              <Input
+                value={newDocumento.nombreArchivo}
+                onChange={(e) => setNewDocumento({ ...newDocumento, nombreArchivo: e.target.value })}
+                placeholder="ej: contrato_2024.pdf"
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsModalDocumento(false); setEmpresaForDocumento(null) }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveDocumento}>
+              <Upload className="h-4 w-4 mr-2" />
+              Subir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </ModuleContainer>
   )
 }

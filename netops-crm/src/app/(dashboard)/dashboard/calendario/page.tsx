@@ -9,41 +9,38 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, TIPOS_SOLICITUD } from '@/types/calendario'
-import { getReunionEstadoColor, getTipoReunionIcon } from '@/lib/colors'
+import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
+import { useEmpresas, useProyectos } from '@/hooks'
+import { Calendar, Clock, User, CalendarDays, CalendarCheck, CalendarX, MapPin, Video, Check, X, Building2, Grid3X3, List, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
-  Calendar, ChevronLeft, ChevronRight, Plus, Clock, MapPin,
-  Users, Video, X, Check, Mail, Phone, User, Building2,
-  AlertCircle, CalendarDays, List, Grid3X3, CalendarCheck, CalendarX, GripHorizontal
-} from 'lucide-react'
+  PAGE_TITLE,
+  PAGE_DESCRIPTION,
+  BUTTON_LABELS,
+  EMPTY_MESSAGES,
+  FILTER_LABELS,
+  STATS_LABELS,
+  MEETING_STATUS,
+  DURATION_OPTIONS,
+  FORM_LABELS_REUNION,
+} from '@/constants/calendario'
 
-const DEMO_PROYECTOS = [
-  { id: '1', nombre: 'Implementación Firewall Corp' },
-  { id: '2', nombre: 'Migración Cloud Tech' },
-  { id: '3', nombre: 'Auditoría Seguridad Tech' },
-]
-
-const DEMO_USUARIOS = [
+// Lista de usuarios internos (se llenará con datos del módulo de usuarios)
+const USUARIOS_INTERNOS = [
   { id: '1', nombre: 'Carlos Admin' },
   { id: '2', nombre: 'Laura Pérez' },
   { id: '3', nombre: 'Juan Técnico' },
 ]
 
-const DEMO_REUNIONES: Reunion[] = [
-  { id: '1', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', titulo: 'Reunión de diagnóstico', descripcion: 'Primera reunión con el cliente para entender necesidades', fecha_hora_inicio: '2026-03-15T10:00:00', fecha_hora_fin: '2026-03-15T11:00:00', duracion_minutos: 60, tipo: 'Diagnóstico', organizador_id: '1', organizador_nombre: 'Carlos Admin', asistentes_internos: [{ id: '3', nombre: 'Juan Técnico' }], asistente_cliente_id: 'c1', asistente_cliente_nombre: 'Juan Pérez', ubicacion: 'Google Meet', meet_link: 'https://meet.google.com/abc-defg-hij', estado: 'Programada', solicitada_por_cliente: false, creado_en: '2026-03-10T09:00:00' },
-  { id: '2', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', titulo: 'Seguimiento de implementación', fecha_hora_inicio: '2026-03-18T14:00:00', fecha_hora_fin: '2026-03-18T15:00:00', duracion_minutos: 60, tipo: 'Seguimiento', organizador_id: '3', organizador_nombre: 'Juan Técnico', asistentes_internos: [{ id: '1', nombre: 'Carlos Admin' }], asistente_cliente_nombre: 'Juan Pérez', ubicacion: 'Google Meet', estado: 'Confirmada', solicitada_por_cliente: false, creado_en: '2026-03-12T10:00:00' },
-  { id: '3', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', titulo: 'Presentación de propuesta', descripcion: 'Presentación de la propuesta técnica y económica', fecha_hora_inicio: '2026-03-20T11:00:00', fecha_hora_fin: '2026-03-20T12:30:00', duracion_minutos: 90, tipo: 'Propuesta', organizador_id: '2', organizador_nombre: 'Laura Pérez', asistentes_internos: [{ id: '1', nombre: 'Carlos Admin' }], asistente_cliente_nombre: 'María García', ubicacion: 'Oficina cliente', estado: 'Programada', solicitada_por_cliente: true, creado_en: '2026-03-11T14:00:00' },
-  { id: '4', proyecto_id: '3', proyecto_nombre: 'Auditoría Seguridad Tech', titulo: 'Cierre de auditoría', fecha_hora_inicio: '2026-03-25T09:00:00', fecha_hora_fin: '2026-03-25T11:00:00', duracion_minutos: 120, tipo: 'Cierre', organizador_id: '1', organizador_nombre: 'Carlos Admin', asistentes_internos: [{ id: '3', nombre: 'Juan Técnico' }], ubicacion: 'Google Meet', meet_link: 'https://meet.google.com/xyz-uvw-rst', estado: 'Programada', solicitada_por_cliente: false, creado_en: '2026-03-08T16:00:00' },
-]
+// Reuniones (se llenará con datos de localStorage)
+const REUNIONES_VACIAS: Reunion[] = []
 
-const DEMO_SOLICITUDES: SolicitudReunion[] = [
-  { id: 's1', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Corp', contacto_solicitante_id: 'c1', contacto_solicitante_nombre: 'Juan Pérez', empresa_nombre: 'Soluciones Tecnológicas SA', fecha_solicitada: '2026-03-17', hora_solicitada: '15:00', duracion: 60, motivo: 'Revisión de avances', comentarios: 'Necesito verificar el progreso del proyecto', estado: 'Pendiente', fecha_solicitud: '2026-03-14T08:00:00' },
-  { id: 's2', proyecto_id: '2', proyecto_nombre: 'Migración Cloud Tech', contacto_solicitante_id: 'c2', contacto_solicitante_nombre: 'María García', empresa_nombre: 'Hospital Regional Norte', fecha_solicitada: '2026-03-19', hora_solicitada: '10:00', duracion: 45, motivo: 'Consulta técnica', comentarios: 'Tenemos dudas sobre la arquitectura propuesta', estado: 'Pendiente', fecha_solicitud: '2026-03-13T11:00:00' },
-]
+// Solicitudes (se llenará con datos de localStorage)
+const SOLICITUDES_VACIAS: SolicitudReunion[] = []
 
 function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; title: string; onVer: (r: Reunion) => void }) {
   const sortedReuniones = [...reuniones].sort((a, b) => new Date(a.fecha_hora_inicio).getTime() - new Date(b.fecha_hora_inicio).getTime())
@@ -55,7 +52,7 @@ function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; titl
       </CardHeader>
       <CardContent>
         {sortedReuniones.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">No hay reuniones</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noReuniones}</p>
         ) : (
           <div className="space-y-3">
             {sortedReuniones.map(reunion => (
@@ -139,102 +136,108 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios }: {
   if (!isOpen) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent size="lg">
-        <DialogHeader>
-          <DialogTitle>Nueva Reunión</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
-          <div className="space-y-4">
+    <BaseModal
+      open={isOpen}
+      onOpenChange={onClose}
+      size="lg"
+    >
+      <ModalHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-cyan-400" />
+            {BUTTON_LABELS.nuevaReunion}
+          </span>
+        }
+      />
+      <ModalBody>
+        <div className="space-y-4">
+          <div>
+            <Label>{FORM_LABELS_REUNION.proyecto} *</Label>
+            <Select value={reunion.proyecto_id} onValueChange={(v) => setReunion({ ...reunion, proyecto_id: v })}>
+              <SelectTrigger className="bg-background"><SelectValue placeholder={FILTER_LABELS.todosLosProyectos} /></SelectTrigger>
+              <SelectContent>
+                {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.titulo} *</Label>
+            <Input value={reunion.titulo} onChange={(e) => setReunion({ ...reunion, titulo: e.target.value })} placeholder="Título de la reunión" className="bg-background" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Proyecto *</Label>
-              <Select value={reunion.proyecto_id} onValueChange={(v) => setReunion({ ...reunion, proyecto_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proyecto..." /></SelectTrigger>
-                <SelectContent>
-                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Título *</Label>
-              <Input value={reunion.titulo} onChange={(e) => setReunion({ ...reunion, titulo: e.target.value })} placeholder="Título de la reunión" className="bg-background" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Fecha *</Label>
-                <Input type="date" value={reunion.fecha} onChange={(e) => setReunion({ ...reunion, fecha: e.target.value })} className="bg-background" />
-              </div>
-              <div>
-                <Label>Hora inicio *</Label>
-                <Input type="time" value={reunion.hora_inicio} onChange={(e) => setReunion({ ...reunion, hora_inicio: e.target.value })} className="bg-background" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Duración</Label>
-                <Select value={String(reunion.duracion)} onValueChange={(v) => setReunion({ ...reunion, duracion: parseInt(v) })}>
-                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutos</SelectItem>
-                    <SelectItem value="45">45 minutos</SelectItem>
-                    <SelectItem value="60">1 hora</SelectItem>
-                    <SelectItem value="90">1.5 horas</SelectItem>
-                    <SelectItem value="120">2 horas</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Tipo</Label>
-                <Select value={reunion.tipo} onValueChange={(v) => setReunion({ ...reunion, tipo: v as TipoReunion })}>
-                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_REUNION.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Label>Fecha *</Label>
+              <Input type="date" value={reunion.fecha} onChange={(e) => setReunion({ ...reunion, fecha: e.target.value })} className="bg-background" />
             </div>
             <div>
-              <Label>Organizador *</Label>
-              <Select value={reunion.organizador_id} onValueChange={(v) => setReunion({ ...reunion, organizador_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar organizador..." /></SelectTrigger>
-                <SelectContent>
-                  {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Asistentes internos</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {usuarios.map(u => (
-                  <Button key={u.id} variant={reunion.asistentes_internos.includes(u.id) ? 'default' : 'outline'} size="sm" onClick={() => {
-                    const nuevos = reunion.asistentes_internos.includes(u.id)
-                      ? reunion.asistentes_internos.filter(id => id !== u.id)
-                      : [...reunion.asistentes_internos, u.id]
-                    setReunion({ ...reunion, asistentes_internos: nuevos })
-                  }}>{u.nombre}</Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>Cliente asistente</Label>
-              <Input value={reunion.asistente_cliente_nombre} onChange={(e) => setReunion({ ...reunion, asistente_cliente_nombre: e.target.value })} placeholder="Nombre del contacto cliente" className="bg-background" />
-            </div>
-            <div>
-              <Label>Ubicación</Label>
-              <Input value={reunion.ubicacion} onChange={(e) => setReunion({ ...reunion, ubicacion: e.target.value })} placeholder="Google Meet / Oficina" className="bg-background" />
-            </div>
-            <div>
-              <Label>Descripción</Label>
-              <Textarea value={reunion.descripcion} onChange={(e) => setReunion({ ...reunion, descripcion: e.target.value })} placeholder="Agenda de la reunión" rows={2} className="bg-background" />
+              <Label>Hora inicio *</Label>
+              <Input type="time" value={reunion.hora_inicio} onChange={(e) => setReunion({ ...reunion, hora_inicio: e.target.value })} className="bg-background" />
             </div>
           </div>
-        </DialogBody>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={!reunion.proyecto_id || !reunion.titulo || !reunion.fecha || !reunion.hora_inicio || !reunion.organizador_id}>Crear Reunión</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{FORM_LABELS_REUNION.duracion}</Label>
+              <Select value={String(reunion.duracion)} onValueChange={(v) => setReunion({ ...reunion, duracion: parseInt(v) })}>
+                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DURATION_OPTIONS.map(d => <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{FORM_LABELS_REUNION.tipo}</Label>
+              <Select value={reunion.tipo} onValueChange={(v) => setReunion({ ...reunion, tipo: v as TipoReunion })}>
+                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TIPOS_REUNION.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.organizador} *</Label>
+            <Select value={reunion.organizador_id} onValueChange={(v) => setReunion({ ...reunion, organizador_id: v })}>
+              <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar organizador..." /></SelectTrigger>
+              <SelectContent>
+                {usuarios.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.asistentesInternos}</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {usuarios.map(u => (
+                <Button key={u.id} variant={reunion.asistentes_internos.includes(u.id) ? 'default' : 'outline'} size="sm" onClick={() => {
+                  const nuevos = reunion.asistentes_internos.includes(u.id)
+                    ? reunion.asistentes_internos.filter(id => id !== u.id)
+                    : [...reunion.asistentes_internos, u.id]
+                  setReunion({ ...reunion, asistentes_internos: nuevos })
+                }}>{u.nombre}</Button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.asistentesCliente}</Label>
+            <Input value={reunion.asistente_cliente_nombre} onChange={(e) => setReunion({ ...reunion, asistente_cliente_nombre: e.target.value })} placeholder="Nombre del contacto cliente" className="bg-background" />
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.ubicacion}</Label>
+            <Input value={reunion.ubicacion} onChange={(e) => setReunion({ ...reunion, ubicacion: e.target.value })} placeholder="Google Meet / Oficina" className="bg-background" />
+          </div>
+          <div>
+            <Label>{FORM_LABELS_REUNION.descripcion}</Label>
+            <Textarea value={reunion.descripcion} onChange={(e) => setReunion({ ...reunion, descripcion: e.target.value })} placeholder="Agenda de la reunión" rows={2} className="bg-background" />
+          </div>
+        </div>
+      </ModalBody>
+      <ModalFooter layout="inline-between">
+        <div />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose}>{BUTTON_LABELS.cancelar}</Button>
+          <Button onClick={handleCreate} disabled={!reunion.proyecto_id || !reunion.titulo || !reunion.fecha || !reunion.hora_inicio || !reunion.organizador_id}>{BUTTON_LABELS.guardar}</Button>
+        </div>
+      </ModalFooter>
+    </BaseModal>
   )
 }
 
@@ -244,14 +247,20 @@ function DetalleReunionModal({ reunion, onClose, onCambiarEstado }: {
   onCambiarEstado: (id: string, estado: EstadoReunion) => void
 }) {
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <BaseModal
+      open={true}
+      onOpenChange={onClose}
+      size="md"
+    >
+      <ModalHeader
+        title={
+          <span className="flex items-center gap-2">
             <span className="text-2xl">{getTipoReunionIcon(reunion.tipo)}</span>
             {reunion.titulo}
-          </DialogTitle>
-        </DialogHeader>
+          </span>
+        }
+      />
+      <ModalBody>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Badge className={getReunionEstadoColor(reunion.estado)}>{reunion.estado}</Badge>
@@ -259,12 +268,12 @@ function DetalleReunionModal({ reunion, onClose, onCambiarEstado }: {
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><p className="text-muted-foreground">Proyecto</p><p className="font-medium">{reunion.proyecto_nombre}</p></div>
-            <div><p className="text-muted-foreground">Organizador</p><p className="font-medium">{reunion.organizador_nombre}</p></div>
+            <div><p className="text-muted-foreground">{FORM_LABELS_REUNION.proyecto}</p><p className="font-medium">{reunion.proyecto_nombre}</p></div>
+            <div><p className="text-muted-foreground">{FORM_LABELS_REUNION.organizador}</p><p className="font-medium">{reunion.organizador_nombre}</p></div>
             <div><p className="text-muted-foreground">Fecha</p><p className="font-medium">{new Date(reunion.fecha_hora_inicio).toLocaleDateString('es-ES')}</p></div>
             <div><p className="text-muted-foreground">Hora</p><p className="font-medium">{new Date(reunion.fecha_hora_inicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - {new Date(reunion.fecha_hora_fin).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p></div>
-            <div><p className="text-muted-foreground">Duración</p><p className="font-medium">{reunion.duracion_minutos} min</p></div>
-            {reunion.asistente_cliente_nombre && <div><p className="text-muted-foreground">Cliente</p><p className="font-medium">{reunion.asistente_cliente_nombre}</p></div>}
+            <div><p className="text-muted-foreground">{FORM_LABELS_REUNION.duracion}</p><p className="font-medium">{reunion.duracion_minutos} min</p></div>
+            {reunion.asistente_cliente_nombre && <div><p className="text-muted-foreground">{FORM_LABELS_REUNION.asistentesCliente}</p><p className="font-medium">{reunion.asistente_cliente_nombre}</p></div>}
           </div>
 
           {reunion.ubicacion && (
@@ -276,23 +285,23 @@ function DetalleReunionModal({ reunion, onClose, onCambiarEstado }: {
           )}
 
           {reunion.descripcion && (
-            <div><p className="text-sm text-muted-foreground">Descripción</p><p className="text-sm bg-muted/50 p-3 rounded-lg">{reunion.descripcion}</p></div>
+            <div><p className="text-sm text-muted-foreground">{FORM_LABELS_REUNION.descripcion}</p><p className="text-sm bg-muted/50 p-3 rounded-lg">{reunion.descripcion}</p></div>
           )}
 
           {reunion.asistentes_internos.length > 0 && (
-            <div><p className="text-sm text-muted-foreground mb-2">Asistentes</p><div className="flex flex-wrap gap-2">{reunion.asistentes_internos.map(a => <Badge key={a.id} variant="outline">{a.nombre}</Badge>)}</div></div>
+            <div><p className="text-sm text-muted-foreground mb-2">{FORM_LABELS_REUNION.asistentesInternos}</p><div className="flex flex-wrap gap-2">{reunion.asistentes_internos.map(a => <Badge key={a.id} variant="outline">{a.nombre}</Badge>)}</div></div>
           )}
 
           {reunion.estado !== 'Cancelada' && reunion.estado !== 'Completada' && (
             <div className="flex gap-2 pt-4 border-t">
-              {reunion.estado === 'Programada' && <Button onClick={() => onCambiarEstado(reunion.id, 'Confirmada')}><Check className="h-4 w-4 mr-2" />Confirmar</Button>}
+              {reunion.estado === 'Programada' && <Button onClick={() => onCambiarEstado(reunion.id, 'Confirmada')}><Check className="h-4 w-4 mr-2" />{BUTTON_LABELS.confirmar}</Button>}
               {reunion.estado === 'Confirmada' && <Button onClick={() => onCambiarEstado(reunion.id, 'Completada')}><Check className="h-4 w-4 mr-2" />Completar</Button>}
-              <Button variant="outline" onClick={() => onCambiarEstado(reunion.id, 'Cancelada')}><X className="h-4 w-4 mr-2" />Cancelar</Button>
+              <Button variant="outline" onClick={() => onCambiarEstado(reunion.id, 'Cancelada')}><X className="h-4 w-4 mr-2" />{BUTTON_LABELS.cancelar}</Button>
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </ModalBody>
+    </BaseModal>
   )
 }
 
@@ -349,8 +358,9 @@ function GestionSolicitudes({ solicitudes, onAprobar, onRechazar }: {
 
 export default function CalendarioPage() {
   const { user } = useAuth()
-  const [reuniones, setReuniones] = useState<Reunion[]>(DEMO_REUNIONES)
-  const [solicitudes, setSolicitudes] = useState<SolicitudReunion[]>(DEMO_SOLICITUDES)
+  const [proyectos] = useProyectos()
+  const [reuniones, setReuniones] = useState<Reunion[]>([])
+  const [solicitudes, setSolicitudes] = useState<SolicitudReunion[]>([])
   const [vista, setVista] = useState<'calendario' | 'lista' | 'solicitudes'>('calendario')
   const [mesActual, setMesActual] = useState(new Date())
   const [showNueva, setShowNueva] = useState(false)
@@ -450,10 +460,10 @@ export default function CalendarioPage() {
       </div>
 
       <StatGrid cols={4}>
-        <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder accentColor="#06b6d4" icon={<CalendarDays className="h-5 w-5" />} />
-        <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder accentColor="#3b82f6" icon={<Clock className="h-5 w-5" />} />
-        <MiniStat value={stats.confirmadas} label="Confirmadas" variant="success" showBorder accentColor="#10b981" icon={<CalendarCheck className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" variant="warning" showBorder accentColor="#f59e0b" icon={<CalendarX className="h-5 w-5" />} />
+        <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder accentColor={CALENDAR_STATS_COLORS.total} icon={<CalendarDays className="h-5 w-5" />} />
+        <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder accentColor={CALENDAR_STATS_COLORS.proximas} icon={<Clock className="h-5 w-5" />} />
+        <MiniStat value={stats.confirmadas} label="Confirmadas" variant="success" showBorder accentColor={CALENDAR_STATS_COLORS.confirmadas} icon={<CalendarCheck className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label="Solicitudes pendientes" variant="warning" showBorder accentColor={CALENDAR_STATS_COLORS.pendientes} icon={<CalendarX className="h-5 w-5" />} />
       </StatGrid>
 
       {vista === 'calendario' && (
@@ -464,7 +474,7 @@ export default function CalendarioPage() {
                 <SelectTrigger className="w-64 bg-background"><SelectValue placeholder="Filtrar por proyecto" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos los proyectos</SelectItem>
-                  {DEMO_PROYECTOS.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -515,7 +525,7 @@ export default function CalendarioPage() {
         <GestionSolicitudes solicitudes={solicitudes} onAprobar={handleAprobarSolicitud} onRechazar={handleRechazarSolicitud} />
       )}
 
-      <NuevaReunionModal isOpen={showNueva} onClose={() => setShowNueva(false)} onCreate={handleCreateReunion} proyectos={DEMO_PROYECTOS} usuarios={DEMO_USUARIOS} />
+      <NuevaReunionModal isOpen={showNueva} onClose={() => setShowNueva(false)} onCreate={handleCreateReunion} proyectos={proyectos.map(p => ({ id: p.id, nombre: p.nombre }))} usuarios={USUARIOS_INTERNOS} />
 
       {selectedReunion && <DetalleReunionModal reunion={selectedReunion} onClose={() => setSelectedReunion(null)} onCambiarEstado={handleCambiarEstado} />}
     </ModuleContainer>

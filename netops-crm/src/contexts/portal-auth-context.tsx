@@ -13,7 +13,7 @@ interface AuthContextType {
 const PortalAuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => false,
-  logout: () => {},
+  logout: () => { },
   isLoading: true,
 })
 

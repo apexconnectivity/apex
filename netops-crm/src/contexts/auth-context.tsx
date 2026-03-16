@@ -16,49 +16,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Demo users for development
-const DEMO_USERS: User[] = [
-  {
-    id: '1',
-    email: 'admin@apex.com',
-    nombre: 'Carlos Admin',
-    telefono: '+54 9 11 1234-5678',
-    activo: true,
-    creado_en: '2024-01-01T00:00:00Z',
-    cambiar_password_proximo_login: false,
-    roles: ['admin'],
-  },
-  {
-    id: '2',
-    email: 'comercial@apex.com',
-    nombre: 'Laura Comercial',
-    telefono: '+54 9 11 2345-6789',
-    activo: true,
-    creado_en: '2024-02-01T00:00:00Z',
-    cambiar_password_proximo_login: false,
-    roles: ['comercial'],
-  },
-  {
-    id: '3',
-    email: 'tecnico@apex.com',
-    nombre: 'Juan Técnico',
-    telefono: '+54 9 11 3456-7890',
-    activo: true,
-    creado_en: '2024-03-01T00:00:00Z',
-    cambiar_password_proximo_login: false,
-    roles: ['tecnico'],
-  },
-  {
-    id: '4',
-    email: 'cliente@empresa.com',
-    nombre: 'Pedro Cliente',
-    telefono: '+54 9 11 4567-8901',
-    activo: true,
-    creado_en: '2024-04-01T00:00:00Z',
-    cambiar_password_proximo_login: false,
-    roles: ['cliente'],
-  },
-]
+// Usuario bootstrap inicial - mínimo necesario para que el sistema funcione
+// Los usuarios deben gestionarse desde el módulo de Usuarios (pendiente localStorage)
+const BOOTSTRAP_USER: User = {
+  id: '1',
+  email: 'admin@apex.com',
+  nombre: 'Administrador',
+  telefono: '',
+  activo: true,
+  creado_en: new Date().toISOString(),
+  cambiar_password_proximo_login: false,
+  roles: ['admin'],
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -79,29 +48,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const foundUser = DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase())
-    
+
+    // Usar usuario bootstrap para login inicial
+    // TODO: Implementar usuarios en localStorage desde módulo de Usuarios
+    const foundUser = email.toLowerCase() === BOOTSTRAP_USER.email.toLowerCase() ? BOOTSTRAP_USER : null
+
     if (!foundUser) {
       setIsLoading(false)
       throw new Error('Email o contraseña incorrectos')
     }
-    
-    // In a real app, we'd verify the password hash
+
+    // En una app real, verificaríamos el hash de la contraseña
+    // Por ahora, cualquier contraseña con más de 5 caracteres funciona
     if (password.length < 6) {
       setIsLoading(false)
       throw new Error('Email o contraseña incorrectos')
     }
-    
+
     // Update last access
     const updatedUser = {
       ...foundUser,
       ultimo_acceso: new Date().toISOString(),
     }
-    
+
     setUser(updatedUser)
     localStorage.setItem('apex_user', JSON.stringify(updatedUser))
     setIsLoading(false)

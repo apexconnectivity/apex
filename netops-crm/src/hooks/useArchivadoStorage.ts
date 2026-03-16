@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { type ProyectoArchivado, type ProyectoCerrado, type ConfigArchivado } from '@/types/archivado'
 
 // ============================================================================
-// Keys para localStorage
+// Keys para localStorage - Valores originales para compatibilidad
 // ============================================================================
+
 const STORAGE_KEYS = {
   ARCHIVADOS: 'netops_proyectos_archivados',
   PROYECTOS_CERRADOS: 'netops_proyectos_cerrados',
@@ -13,9 +14,62 @@ const STORAGE_KEYS = {
 } as const
 
 // ============================================================================
-// Seed de datos iniciales para desarrollo
+// Datos demo para testing
 // ============================================================================
-const DEMO_CONFIG_SEED: ConfigArchivado = {
+
+const PROYECTOS_CERRADOS_DEMO: ProyectoCerrado[] = [
+  {
+    id: 'proj_001',
+    nombre: 'Sistema de Gestión ERP',
+    empresa_nombre: 'TechCorp Solutions',
+    fase_actual: 5,
+    fase_nombre: 'CIERRE',
+    fecha_cierre: '2024-12-15',
+    dias_cerrado: 45,
+    motivo_cierre: 'Proyecto completado exitosamente',
+    tareas_fase5_completadas: 8,
+    tareas_fase5_totales: 8,
+  },
+  {
+    id: 'proj_002',
+    nombre: 'App Mobile Cliente',
+    empresa_nombre: 'Retail Plus',
+    fase_actual: 5,
+    fase_nombre: 'CIERRE',
+    fecha_cierre: '2025-01-20',
+    dias_cerrado: 25,
+    motivo_cierre: 'Entrega parcial - fase 1 completada',
+    tareas_fase5_completadas: 5,
+    tareas_fase5_totales: 10,
+  },
+]
+
+const PROYECTOS_ARCHIVADOS_DEMO: ProyectoArchivado[] = [
+  {
+    id: 'arch_001',
+    proyecto_original_id: 'old_proj_001',
+    empresa_id: '1',
+    empresa_nombre: 'TechCorp Solutions',
+    nombre: 'Sistema de Gestión ERP - Fase 1',
+    clasificacion: 'completado',
+    fecha_cierre: '2024-12-15',
+    fecha_archivado: '2024-12-20T10:00:00Z',
+    motivo_cierre: 'Proyecto completado exitosamente',
+    drive_carpeta_id: 'drive_001',
+    drive_carpeta_link: '#',
+    archivo_json_link: '#',
+    tamaño_archivo_mb: 256,
+    archivado_por: 'Admin',
+    duracion_dias: 120,
+    tareas_completadas: 45,
+    tareas_totales: 45,
+    tickets_count: 23,
+    reuniones_count: 15,
+    archivos_count: 89,
+  },
+]
+
+const CONFIG_VACIA: ConfigArchivado = {
   archivado_automatico: false,
   dias_antes_notificacion: 30,
   incluir_tickets: false,
@@ -26,108 +80,10 @@ const DEMO_CONFIG_SEED: ConfigArchivado = {
   carpeta_raiz: '/Archivo Histórico',
 }
 
-const DEMO_PROYECTOS_CERRADOS_SEED: ProyectoCerrado[] = [
-  {
-    id: 'c1',
-    nombre: 'Implementación WiFi Corporativo',
-    empresa_nombre: 'RetailMax',
-    fase_actual: 5,
-    fase_nombre: 'CIERRE',
-    fecha_cierre: '2026-02-15',
-    dias_cerrado: 28,
-    motivo_cierre: 'Proyecto completado exitosamente',
-    tareas_fase5_completadas: 5,
-    tareas_fase5_totales: 5,
-  },
-  {
-    id: 'c2',
-    nombre: 'Actualización Servidores',
-    empresa_nombre: 'Hospital Regional Norte',
-    fase_actual: 4,
-    fase_nombre: 'IMPLEMENTACIÓN',
-    fecha_cierre: '2026-01-20',
-    dias_cerrado: 54,
-    motivo_cierre: 'Cancelado por el cliente',
-    tareas_fase5_completadas: 2,
-    tareas_fase5_totales: 8,
-  },
-]
-
-const DEMO_PROYECTOS_ARCHIVADOS_SEED: ProyectoArchivado[] = [
-  {
-    id: 'a1',
-    proyecto_original_id: 'p1',
-    empresa_id: '1',
-    empresa_nombre: 'Soluciones Tecnológicas SA',
-    nombre: 'Auditoría de Seguridad 2025',
-    clasificacion: 'completado',
-    fecha_cierre: '2025-12-15',
-    fecha_archivado: '2026-01-15',
-    motivo_cierre: 'Proyecto completado exitosamente',
-    drive_carpeta_id: 'drive123',
-    drive_carpeta_link: '#',
-    archivo_json_link: '#',
-    archivo_pdf_link: '#',
-    tamaño_archivo_mb: 45,
-    archivado_por: 'Carlos Admin',
-    duracion_dias: 90,
-    tareas_completadas: 24,
-    tareas_totales: 24,
-    tickets_count: 5,
-    reuniones_count: 8,
-    archivos_count: 15,
-  },
-  {
-    id: 'a2',
-    proyecto_original_id: 'p2',
-    empresa_id: '2',
-    empresa_nombre: 'TechCorp International',
-    nombre: 'Migración a Cloud',
-    clasificacion: 'inconcluso',
-    fecha_cierre: '2025-11-10',
-    fecha_archivado: '2025-12-10',
-    motivo_cierre: 'Cancelado por el cliente',
-    drive_carpeta_id: 'drive456',
-    drive_carpeta_link: '#',
-    archivo_json_link: '#',
-    archivo_pdf_link: undefined,
-    tamaño_archivo_mb: 120,
-    archivado_por: 'Carlos Admin',
-    duracion_dias: 60,
-    tareas_completadas: 15,
-    tareas_totales: 28,
-    tickets_count: 12,
-    reuniones_count: 4,
-    archivos_count: 8,
-  },
-  {
-    id: 'a3',
-    proyecto_original_id: 'p3',
-    empresa_id: '3',
-    empresa_nombre: 'Banco Nacional',
-    nombre: 'Implementación VPN',
-    clasificacion: 'completado',
-    fecha_cierre: '2025-10-20',
-    fecha_archivado: '2025-11-20',
-    motivo_cierre: 'Proyecto completado exitosamente',
-    drive_carpeta_id: 'drive789',
-    drive_carpeta_link: '#',
-    archivo_json_link: '#',
-    archivo_pdf_link: '#',
-    tamaño_archivo_mb: 85,
-    archivado_por: 'Carlos Admin',
-    duracion_dias: 120,
-    tareas_completadas: 32,
-    tareas_totales: 32,
-    tickets_count: 8,
-    reuniones_count: 15,
-    archivos_count: 22,
-  },
-]
-
 // ============================================================================
 // Hook para gestionar proyectos archivados en localStorage
 // ============================================================================
+
 export interface UseArchivadoStorageReturn {
   proyectosCerrados: ProyectoCerrado[]
   proyectosArchivados: ProyectoArchivado[]
@@ -142,7 +98,7 @@ export interface UseArchivadoStorageReturn {
 export function useArchivadoStorage(): UseArchivadoStorageReturn {
   const [proyectosCerrados, setProyectosCerrados] = useState<ProyectoCerrado[]>([])
   const [proyectosArchivados, setProyectosArchivados] = useState<ProyectoArchivado[]>([])
-  const [config, setConfig] = useState<ConfigArchivado>(DEMO_CONFIG_SEED)
+  const [config, setConfig] = useState<ConfigArchivado>(CONFIG_VACIA)
   const [loading, setLoading] = useState(true)
 
   // ==========================================================================
@@ -158,19 +114,21 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
       // Cargar proyectos archivados
       const storedArchivados = localStorage.getItem(STORAGE_KEYS.ARCHIVADOS)
       if (storedArchivados) {
-        setProyectosArchivados(JSON.parse(storedArchivados) as ProyectoArchivado[])
+        const parsed = JSON.parse(storedArchivados) as ProyectoArchivado[]
+        setProyectosArchivados(parsed.length > 0 ? parsed : PROYECTOS_ARCHIVADOS_DEMO)
       } else {
-        localStorage.setItem(STORAGE_KEYS.ARCHIVADOS, JSON.stringify(DEMO_PROYECTOS_ARCHIVADOS_SEED))
-        setProyectosArchivados(DEMO_PROYECTOS_ARCHIVADOS_SEED)
+        localStorage.setItem(STORAGE_KEYS.ARCHIVADOS, JSON.stringify(PROYECTOS_ARCHIVADOS_DEMO))
+        setProyectosArchivados(PROYECTOS_ARCHIVADOS_DEMO)
       }
 
       // Cargar proyectos cerrados
       const storedCerrados = localStorage.getItem(STORAGE_KEYS.PROYECTOS_CERRADOS)
       if (storedCerrados) {
-        setProyectosCerrados(JSON.parse(storedCerrados) as ProyectoCerrado[])
+        const parsed = JSON.parse(storedCerrados) as ProyectoCerrado[]
+        setProyectosCerrados(parsed.length > 0 ? parsed : PROYECTOS_CERRADOS_DEMO)
       } else {
-        localStorage.setItem(STORAGE_KEYS.PROYECTOS_CERRADOS, JSON.stringify(DEMO_PROYECTOS_CERRADOS_SEED))
-        setProyectosCerrados(DEMO_PROYECTOS_CERRADOS_SEED)
+        localStorage.setItem(STORAGE_KEYS.PROYECTOS_CERRADOS, JSON.stringify(PROYECTOS_CERRADOS_DEMO))
+        setProyectosCerrados(PROYECTOS_CERRADOS_DEMO)
       }
 
       // Cargar configuración
@@ -178,15 +136,14 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
       if (storedConfig) {
         setConfig(JSON.parse(storedConfig) as ConfigArchivado)
       } else {
-        localStorage.setItem(STORAGE_KEYS.CONFIG_ARCHIVADO, JSON.stringify(DEMO_CONFIG_SEED))
-        setConfig(DEMO_CONFIG_SEED)
+        localStorage.setItem(STORAGE_KEYS.CONFIG_ARCHIVADO, JSON.stringify(CONFIG_VACIA))
+        setConfig(CONFIG_VACIA)
       }
     } catch (error) {
       console.error('Error loading archivado data from localStorage:', error)
-      // En caso de error, usar datos por defecto
-      setProyectosArchivados([])
-      setProyectosCerrados([])
-      setConfig(DEMO_CONFIG_SEED)
+      setProyectosArchivados(PROYECTOS_ARCHIVADOS_DEMO)
+      setProyectosCerrados(PROYECTOS_CERRADOS_DEMO)
+      setConfig(CONFIG_VACIA)
     } finally {
       setLoading(false)
     }
@@ -210,7 +167,7 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
 
     setProyectosArchivados((prev) => {
       const updated = [...prev, proyectoConId]
-      
+
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEYS.ARCHIVADOS, JSON.stringify(updated))
@@ -218,14 +175,14 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
           console.error('Error saving proyecto archivado to localStorage:', error)
         }
       }
-      
+
       return updated
     })
 
     // Eliminar de proyectos cerrados si existe
     setProyectosCerrados((prev) => {
       const updated = prev.filter((p) => p.id !== proyecto.proyecto_original_id)
-      
+
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEYS.PROYECTOS_CERRADOS, JSON.stringify(updated))
@@ -233,7 +190,7 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
           console.error('Error updating proyectos cerrados in localStorage:', error)
         }
       }
-      
+
       return updated
     })
   }, [generateId])
@@ -244,7 +201,7 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
   const removeProyectoArchivado = useCallback((id: string): void => {
     setProyectosArchivados((prev) => {
       const updated = prev.filter((proyecto) => proyecto.id !== id)
-      
+
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEYS.ARCHIVADOS, JSON.stringify(updated))
@@ -252,20 +209,18 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
           console.error('Error removing proyecto archivado from localStorage:', error)
         }
       }
-      
+
       return updated
     })
   }, [])
 
   // ==========================================================================
-  // Función para restaurar un proyecto (solo actualiza estado local)
+  // Función para restaurar un proyecto
   // ==========================================================================
   const restaurarProyecto = useCallback((id: string): void => {
-    // Buscar el proyecto archivado
     const proyecto = proyectosArchivados.find((p) => p.id === id)
-    
+
     if (proyecto) {
-      // Crear un proyecto cerrado a partir del archivado
       const proyectoRestaurado: ProyectoCerrado = {
         id: `rest_${proyecto.id}`,
         nombre: proyecto.nombre,
@@ -279,10 +234,9 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
         tareas_fase5_totales: proyecto.tareas_totales,
       }
 
-      // Agregar a proyectos cerrados
       setProyectosCerrados((prev) => {
         const updated = [...prev, proyectoRestaurado]
-        
+
         if (typeof window !== 'undefined') {
           try {
             localStorage.setItem(STORAGE_KEYS.PROYECTOS_CERRADOS, JSON.stringify(updated))
@@ -290,11 +244,10 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
             console.error('Error restoring proyecto to proyectos cerrados:', error)
           }
         }
-        
+
         return updated
       })
 
-      // Eliminar de proyectos archivados
       removeProyectoArchivado(id)
     }
   }, [proyectosArchivados, removeProyectoArchivado])
@@ -304,7 +257,7 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
   // ==========================================================================
   const updateConfig = useCallback((newConfig: ConfigArchivado): void => {
     setConfig(newConfig)
-    
+
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEYS.CONFIG_ARCHIVADO, JSON.stringify(newConfig))
@@ -329,4 +282,5 @@ export function useArchivadoStorage(): UseArchivadoStorageReturn {
 // ============================================================================
 // Exportar keys para uso externo si es necesario
 // ============================================================================
+
 export { STORAGE_KEYS as ARCHIVADO_STORAGE_KEYS }

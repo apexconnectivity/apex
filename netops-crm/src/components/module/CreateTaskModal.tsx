@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +31,10 @@ export interface CreateTaskData {
   subtareas?: { id?: string; nombre: string; completada?: boolean }[]
   comentarios?: { id?: string; comentario: string; usuario_id: string; usuario_nombre: string; es_cliente: boolean }[]
 }
+
+// ============================================================================
+// COMPONENTES AUXILIARES
+// ============================================================================
 
 function TaskFormFields({
   tarea,
@@ -295,6 +299,16 @@ function CommentsSection({
   )
 }
 
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
+/**
+ * CreateTaskModal - Componente migrado a BaseModal
+ * 
+ * Antes: usaba Dialog de @/components/ui/dialog
+ * Ahora: usa BaseModal + ModalHeader/Body/Footer
+ */
 export function CreateTaskModal({
   open,
   onOpenChange,
@@ -426,57 +440,62 @@ export function CreateTaskModal({
   const canSave = tareaData.nombre && tareaData.proyecto_id && hasProyectos
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md" className="max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
-        </DialogHeader>
+    <BaseModal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="md"
+    >
+      {/* ✅ ModalHeader */}
+      <ModalHeader
+        title={isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}
+      />
+      
+      {/* ✅ ModalBody */}
+      <ModalBody>
+        {!hasProyectos ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No hay proyectos disponibles.</p>
+            <p className="text-sm text-muted-foreground">Crea un proyecto primero.</p>
+          </div>
+        ) : (
+          <>
+            <TaskFormFields
+              tarea={tareaData}
+              setTarea={setTareaData}
+              proyectos={proyectos}
+              usuarios={usuarios}
+            />
 
-        <DialogBody className="overflow-y-auto">
-          {!hasProyectos ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">⚠️ No hay proyectos disponibles.</p>
-              <p className="text-sm text-muted-foreground">Crea un proyecto primero.</p>
-            </div>
-          ) : (
-            <>
-              <TaskFormFields
-                tarea={tareaData}
-                setTarea={setTareaData}
-                proyectos={proyectos}
-                usuarios={usuarios}
-              />
+            <SubtasksSection
+              subtareas={subtareas}
+              onAdd={handleAddSubtask}
+              onRemove={handleRemoveSubtask}
+              onToggle={isEditMode ? handleToggleSubtask : undefined}
+            />
 
-              <SubtasksSection
-                subtareas={subtareas}
-                onAdd={handleAddSubtask}
-                onRemove={handleRemoveSubtask}
-                onToggle={isEditMode ? handleToggleSubtask : undefined}
-              />
-
-              <CommentsSection
-                comentarios={comentarios}
-                onAdd={handleAddComment}
-                onRemove={handleRemoveComment}
-                currentUserName={currentUser.nombre}
-              />
-            </>
-          )}
-        </DialogBody>
-
-        <DialogFooter>
-          {isEditMode && onDelete && (
-            <Button variant="destructive" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-            </Button>
-          )}
-          <div className="flex-1" />
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!canSave}>
-            {isEditMode ? 'Guardar' : 'Crear'}
+            <CommentsSection
+              comentarios={comentarios}
+              onAdd={handleAddComment}
+              onRemove={handleRemoveComment}
+              currentUserName={currentUser.nombre}
+            />
+          </>
+        )}
+      </ModalBody>
+      
+      {/* ✅ ModalFooter */}
+      <ModalFooter layout="inline-between">
+        {isEditMode && onDelete && (
+          <Button variant="destructive" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 mr-2" /> Eliminar
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        )}
+        <div className="flex-1" />
+        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+        <Button onClick={handleSave} disabled={!canSave}>
+          {isEditMode ? 'Guardar' : 'Crear'}
+        </Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }

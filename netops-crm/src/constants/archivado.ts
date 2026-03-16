@@ -8,7 +8,7 @@
 // ============================================
 
 export const ARCHIVADO_TITULOS = {
-  titulo: 'Archivado de Proyectos',
+  titulo: 'Proyectos Archivados',
   descripcion: 'Gestión del ciclo de vida de proyectos',
   proyectoArchivado: 'Proyecto Archivado',
   eliminacionDefinitiva: 'Eliminación Definitiva',

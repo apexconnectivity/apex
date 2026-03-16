@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from '@/contexts/auth-context'
-import { useEmpresas, useProyectos, useTareas, useTickets } from '@/lib/data'
+import { useEmpresas, useProyectos, useTareas, useTickets, useContactos } from '@/hooks'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { DashboardStats, RecentActivity, UpcomingTasks } from "@/components/dashboard-stats"
 import { ProjectPipeline } from "@/components/pipeline"
@@ -9,6 +9,9 @@ import { WelcomeHeader } from "@/components/welcome-header"
 import { AccessDeniedCard } from "@/components/ui/access-denied-card"
 import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
+import { DASHBOARD_STATS, ACCESS_MESSAGES } from '@/constants/dashboard'
+import { STATS_LABELS } from '@/constants/estadisticas'
+import { HEX_COLORS, VARIANT_COLORS } from '@/lib/colors'
 
 export default function DashboardPage() {
   const { user, canAccessModule, isInternalUser } = useAuth()
@@ -18,6 +21,7 @@ export default function DashboardPage() {
   const [proyectos] = useProyectos()
   const [tareas] = useTareas()
   const [tickets] = useTickets()
+  const [contactos] = useContactos()
 
   // Determinar qué mostrar según el rol
   const isAdmin = user?.roles.includes('admin')
@@ -37,42 +41,42 @@ export default function DashboardPage() {
         <StatGrid cols={4}>
           <MiniStat
             value={1}
-            label="Proyecto Activo"
-            valueColor="text-cyan-400"
+            label={DASHBOARD_STATS.proyectoActivo}
+            valueColor={VARIANT_COLORS.primary.valueColor}
             icon={<FolderKanban className="h-6 w-6" />}
             variant="primary"
             showBorder
-            accentColor="#06b6d4"
+            accentColor={HEX_COLORS.primary}
           />
 
           <MiniStat
             value={3}
-            label="Tareas Pendientes"
-            valueColor="text-emerald-400"
+            label={DASHBOARD_STATS.tareasPendientes}
+            valueColor={VARIANT_COLORS.success.valueColor}
             icon={<CheckSquare className="h-6 w-6" />}
             variant="success"
             showBorder
-            accentColor="#10b981"
+            accentColor={HEX_COLORS.success}
           />
 
           <MiniStat
             value={2}
-            label="Tickets Abiertos"
-            valueColor="text-amber-400"
+            label={DASHBOARD_STATS.ticketsAbiertos}
+            valueColor={VARIANT_COLORS.warning.valueColor}
             icon={<Headphones className="h-6 w-6" />}
             variant="warning"
             showBorder
-            accentColor="#f59e0b"
+            accentColor={HEX_COLORS.warning}
           />
 
           <MiniStat
             value={5}
-            label="Documentos"
-            valueColor="text-violet-400"
+            label={DASHBOARD_STATS.documentos}
+            valueColor={VARIANT_COLORS.purple.valueColor}
             icon={<Building2 className="h-6 w-6" />}
             variant="info"
             showBorder
-            accentColor="#8b5cf6"
+            accentColor={HEX_COLORS.purple}
           />
         </StatGrid>
 
@@ -97,7 +101,7 @@ export default function DashboardPage() {
     return (
       <AccessDeniedCard
         icon={Shield}
-        description="No tienes permisos para acceder al dashboard."
+        description={ACCESS_MESSAGES.accesoDenegado}
       />
     )
   }
@@ -123,20 +127,20 @@ export default function DashboardPage() {
       {isAdmin && (
         <StatGrid cols={2}>
           <MiniStat
-            value={24}
-            label="Empresas Activas"
+            value={empresas.length}
+            label={DASHBOARD_STATS.empresasActivas}
             icon={<Building2 className="h-6 w-6" />}
             variant="primary"
             showBorder
-            accentColor="#06b6d4"
+            accentColor={HEX_COLORS.primary}
           />
           <MiniStat
-            value={58}
-            label="Contactos"
+            value={contactos.length}
+            label={STATS_LABELS.contactos}
             icon={<Headphones className="h-6 w-6" />}
             variant="info"
             showBorder
-            accentColor="#3b82f6"
+            accentColor={HEX_COLORS.info}
           />
         </StatGrid>
       )}
