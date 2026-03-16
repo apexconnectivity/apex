@@ -30,6 +30,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   size?: "sm" | "md" | "lg" | "xl" | "full"
+  description?: string
 }
 
 const sizeClasses = {
@@ -43,7 +44,7 @@ const sizeClasses = {
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, size = "md", ...props }, ref) => (
+>(({ className, children, size = "md", description, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -53,8 +54,12 @@ const DialogContent = React.forwardRef<
         sizeClasses[size],
         className
       )}
+      aria-describedby="modal-description"
       {...props}
     >
+      <DialogPrimitive.Description id="modal-description" className="sr-only">
+        {description || 'Modal dialog'}
+      </DialogPrimitive.Description>
       <div className="flex flex-col h-full">
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
           <X className="h-4 w-4" />

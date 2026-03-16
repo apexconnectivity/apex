@@ -11,24 +11,27 @@ export interface BaseModalProps {
   // Estado
   open: boolean
   onOpenChange: (open: boolean) => void
-  
+
   // Contenido
   children: React.ReactNode
-  
+
   // Configuración visual
   size?: ModalSize
   showCloseButton?: boolean
-  
+
   // Comportamiento
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
   disableClose?: boolean
-  
+
+  // Accesibilidad
+  description?: string
+
   // Estilos
   className?: string
   overlayClassName?: string
   contentClassName?: string
-  
+
   // Callbacks
   onClose?: () => void
   onOpen?: () => void
@@ -37,7 +40,7 @@ export interface BaseModalProps {
 // Mapeo de tamaños
 const SIZE_CLASSES: Record<ModalSize, string> = {
   sm: "max-w-sm",
-  md: "max-w-lg", 
+  md: "max-w-lg",
   lg: "max-w-2xl",
   xl: "max-w-4xl",
   "2xl": "max-w-5xl",
@@ -60,6 +63,7 @@ export function BaseModal({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   disableClose = false,
+  description,
   className,
   overlayClassName,
   contentClassName,
@@ -76,7 +80,7 @@ export function BaseModal({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay 
+        <DialogPrimitive.Overlay
           className={cn(ANIMATION_CLASSES.overlay, overlayClassName)}
           style={{ pointerEvents: closeOnOverlayClick ? "auto" : "none" }}
         />
@@ -86,12 +90,16 @@ export function BaseModal({
             SIZE_CLASSES[size],
             contentClassName
           )}
+          aria-describedby="modal-description"
           onPointerDownOutside={(e) => {
             if (!closeOnOverlayClick) {
               e.preventDefault()
             }
           }}
         >
+          <DialogPrimitive.Description id="modal-description" className="sr-only">
+            {description || 'Dialog modal'}
+          </DialogPrimitive.Description>
           <div className={cn("flex flex-col max-h-[90vh]", className)}>
             {/* Botón de cierre */}
             {showCloseButton && !disableClose && (
@@ -100,7 +108,7 @@ export function BaseModal({
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
             )}
-            
+
             {children}
           </div>
         </DialogPrimitive.Content>
@@ -120,14 +128,14 @@ interface ModalHeaderProps {
   className?: string
 }
 
-export function ModalHeader({ 
-  title, 
-  description, 
+export function ModalHeader({
+  title,
+  description,
   showBorder = true,
-  className 
+  className
 }: ModalHeaderProps) {
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-col space-y-1.5 p-6",
         showBorder && "border-b border-border/50",
@@ -150,13 +158,13 @@ interface ModalBodyProps extends React.HTMLAttributes<HTMLDivElement> {
   scrollable?: boolean
 }
 
-export function ModalBody({ 
+export function ModalBody({
   scrollable = true,
-  className, 
-  ...props 
+  className,
+  ...props
 }: ModalBodyProps) {
   return (
-    <div 
+    <div
       className={cn(
         "p-6",
         scrollable && "overflow-y-auto flex-1 min-h-0",
@@ -178,13 +186,13 @@ const LAYOUT_CLASSES: Record<NonNullable<ModalFooterProps["layout"]>, string> = 
   "inline-between": "flex flex-row justify-end gap-2"
 }
 
-export function ModalFooter({ 
+export function ModalFooter({
   layout = "inline",
-  className, 
-  ...props 
+  className,
+  ...props
 }: ModalFooterProps) {
   return (
-    <div 
+    <div
       className={cn(
         "p-6 pt-0 border-t border-border/50",
         LAYOUT_CLASSES[layout],

@@ -198,7 +198,9 @@ export default function CRMPage() {
 
   // Abrir modal para nueva empresa
   const handleNewEmpresa = () => {
-    setEditingEmpresa({ ...EMPRESAS_VACIA, id: String(Date.now()) })
+    // NO asignar ID aquí - el modal lo detectará como nueva empresa
+    // y handleSaveEmpresa generará el ID al guardarla
+    setEditingEmpresa({ ...EMPRESAS_VACIA })
     setErrors({})
     setSelectedEmpresa(null) // Cerrar modal de empresa si está abierto
     setIsModalEmpresa(true)
@@ -214,6 +216,7 @@ export default function CRMPage() {
 
   // Guardar empresa
   const handleSaveEmpresa = async (empresa: Partial<Empresa>, isNew: boolean) => {
+    console.log(`[CRM] handleSaveEmpresa called, isNew: ${isNew}, empresa:`, empresa)
     setErrors({})
     setIsSaving(true)
     await new Promise(r => setTimeout(r, 500))
@@ -221,20 +224,28 @@ export default function CRMPage() {
     const now = new Date().toISOString().split('T')[0]
 
     if (!isNew) {
+      console.log('[CRM] Updating existing empresa')
       setEmpresas(prev => prev.map(e =>
         e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
       ))
     } else {
-      setEmpresas(prev => [...prev, {
+      console.log('[CRM] Creating new empresa')
+      const newEmpresa = {
         ...empresa,
         id: String(Date.now()),
         creado_en: now
-      } as Empresa])
+      } as Empresa
+      console.log('[CRM] New empresa to save:', newEmpresa)
+      setEmpresas(prev => {
+        const updated = [...prev, newEmpresa]
+        console.log('[CRM] Updated empresas array, length:', updated.length)
+        return updated
+      })
     }
 
     setIsSaving(false)
-    setIsModalEmpresa(false)
     setEditingEmpresa(null)
+    console.log('[CRM] handleSaveEmpresa completed')
   }
 
   // Eliminar empresa

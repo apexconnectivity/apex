@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 /**
  * Hook para gestionar datos en localStorage
@@ -23,6 +23,10 @@ export function useLocalStorage<T>(
   // Estado para indicar si ya se cargó desde localStorage
   const [isLoaded, setIsLoaded] = useState(false)
 
+  // Usar ref para mantener el valor inicial sin causar re-renders
+  const initialValueRef = useRef(initialValue)
+  initialValueRef.current = initialValue
+
   // ============================================
   // Efecto para cargar el valor inicial
   // ============================================
@@ -35,14 +39,36 @@ export function useLocalStorage<T>(
     try {
       const item = window.localStorage.getItem(key)
       if (item) {
-        const parsed = JSON.parse(item) as T
-        setStoredValue(parsed)
+        try {
+          const parsed = JSON.parse(item) as T
+
+          // Validar que los datos parseados sean válidos
+          if (parsed === null || parsed === undefined) {
+            console.warn(`[useLocalStorage] Invalid data for key "${key}", using initial value`)
+            setStoredValue(initialValueRef.current)
+          } else if (Array.isArray(parsed) || typeof parsed === 'object') {
+            setStoredValue(parsed)
+          } else {
+            console.warn(`[useLocalStorage] Unexpected data type for key "${key}", using initial value`)
+            setStoredValue(initialValueRef.current)
+          }
+        } catch (parseError) {
+          console.error(`[useLocalStorage] Failed to parse localStorage key "${key}":`, parseError)
+          // Limpiar datos corruptos
+          window.localStorage.removeItem(key)
+          setStoredValue(initialValueRef.current)
+        }
+      } else {
+        console.log(`[useLocalStorage] No existing data for key "${key}", using initial value`)
+        setStoredValue(initialValueRef.current)
       }
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
+      console.error(`[useLocalStorage] Error reading localStorage key "${key}":`, error)
+      setStoredValue(initialValueRef.current)
     } finally {
       setIsLoaded(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
 
   // ============================================
@@ -50,6 +76,7 @@ export function useLocalStorage<T>(
   // ============================================
   const setValue = useCallback(
     (value: T | ((prev: T) => T)): void => {
+      console.log(`[useLocalStorage] setValue called for key: "${key}", value type: ${typeof value}`)
       try {
         setStoredValue(prev => {
           // Permitir pasar una función para actualizar el valor anterior
@@ -58,13 +85,19 @@ export function useLocalStorage<T>(
 
           // Persistir en localStorage solo si estamos en el navegador
           if (typeof window !== 'undefined') {
-            window.localStorage.setItem(key, JSON.stringify(valueToStore))
+            try {
+              console.log(`[useLocalStorage] Saving to localStorage key: "${key}", array length: ${Array.isArray(valueToStore) ? valueToStore.length : 'not array'}`)
+              window.localStorage.setItem(key, JSON.stringify(valueToStore))
+              console.log(`[useLocalStorage] Successfully saved to localStorage key: "${key}"`)
+            } catch (storageError) {
+              console.error(`[useLocalStorage] Error saving to localStorage:`, storageError)
+            }
           }
 
           return valueToStore
         })
       } catch (error) {
-        console.warn(`Error setting localStorage key "${key}":`, error)
+        console.error(`[useLocalStorage] Error setting localStorage key "${key}":`, error)
       }
     },
     [key]

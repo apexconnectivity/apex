@@ -21,7 +21,7 @@ import {
 interface EmpresaModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (empresa: Partial<Empresa>, isNew: boolean) => void
+  onSave: (empresa: Partial<Empresa>, isNew: boolean) => void | Promise<void>
   empresa?: Partial<Empresa> | null
   isSaving?: boolean
   errors?: Record<string, string>
@@ -82,7 +82,7 @@ export function EmpresaModal({
     }
   }, [open, empresa])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLocalErrors({})
 
     if (!formData.nombre || formData.nombre.trim().length < 3) {
@@ -114,7 +114,15 @@ export function EmpresaModal({
       return
     }
 
-    onSave(formData, !isEditing)
+    try {
+      // Esperar a que termine el guardado antes de cerrar
+      await onSave(formData, !isEditing)
+    } catch (error) {
+      console.error('Error guardando empresa:', error)
+      return // No cerrar el modal si hay error
+    }
+
+    // Cerrar el modal solo si el guardado fue exitoso
     onOpenChange(false)
   }
 
@@ -143,12 +151,13 @@ export function EmpresaModal({
       open={open}
       onOpenChange={handleClose}
       size="lg"
+      description={isEditing ? 'Editar los datos de una empresa existente' : 'Crear una nueva empresa en el CRM'}
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
         title={isEditing ? 'Editar Empresa' : 'Nueva Empresa'}
       />
-      
+
       {/* ✅ ModalBody */}
       <ModalBody>
         <div className="space-y-6">
@@ -159,11 +168,10 @@ export function EmpresaModal({
               {tiposDisponibles.map((tipo) => (
                 <label
                   key={tipo}
-                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${
-                    formData.tipo_entidad === tipo
-                      ? 'border-cyan-500 bg-cyan-500/10'
-                      : 'border-slate-700'
-                  }`}
+                  className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer flex-1 ${formData.tipo_entidad === tipo
+                    ? 'border-cyan-500 bg-cyan-500/10'
+                    : 'border-slate-700'
+                    }`}
                 >
                   <input
                     type="radio"
@@ -355,7 +363,7 @@ export function EmpresaModal({
           </div>
         </div>
       </ModalBody>
-      
+
       {/* ✅ ModalFooter */}
       <ModalFooter layout="inline-between">
         <Button variant="outline" className="flex-1" onClick={handleClose}>

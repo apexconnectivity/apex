@@ -9,6 +9,8 @@
 // Keys simples para compatibilidad (valores string)
 export const STORAGE_KEYS = {
   empresas: 'netops_crm_empresas',
+  contactos: 'netops_crm_contactos',
+  documentos: 'netops_crm_documentos',
   usuarios: 'netops_usuarios',
   proyectos: 'netops_proyectos',
   tareas: 'netops_tareas',
@@ -32,6 +34,11 @@ export const STORAGE_KEYS = {
   comprasArchivadas: 'netops_compras_archivadas',
   proveedoresArchivados: 'netops_proveedores_archivados',
   cotizacionesArchivadas: 'netops_cotizaciones_archivadas',
+  // Keys adicionales para módulos
+  historialProyectos: 'netops_proyectos_historial',
+  reuniones: 'netops_calendario_reuniones',
+  subtareas: 'netops_tareas_subtareas',
+  archivos: 'netops_archivos',
 } as const
 
 // Valores iniciales simples
