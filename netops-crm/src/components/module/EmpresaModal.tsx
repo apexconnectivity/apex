@@ -18,6 +18,17 @@ import {
   MONEDAS,
 } from '@/types/crm'
 
+// Validaciones unificadas
+import {
+  validateRequired,
+  validateEmail,
+  validateRFC,
+  validatePhoneMexican,
+  validateURL,
+  validateNumberRange,
+  validateInteger,
+} from '@/lib/validation-utils'
+
 interface EmpresaModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -76,7 +87,8 @@ export function EmpresaModal({
       if (empresa) {
         setFormData({ ...EMPRESA_VACIA, ...empresa })
       } else {
-        setFormData({ ...EMPRESA_VACIA, id: String(Date.now()) })
+        // Nueva empresa - sin ID, se genera al guardar
+        setFormData({ ...EMPRESA_VACIA })
       }
       setLocalErrors({})
     }
@@ -85,33 +97,70 @@ export function EmpresaModal({
   const handleSave = async () => {
     setLocalErrors({})
 
-    if (!formData.nombre || formData.nombre.trim().length < 3) {
-      setLocalErrors({ nombre: 'El nombre es obligatorio (mínimo 3 caracteres)' })
+    // Validar nombre (obligatorio, mínimo 3 caracteres)
+    const nombreValidation = validateRequired(formData.nombre)
+    if (!nombreValidation.isValid) {
+      setLocalErrors({ nombre: nombreValidation.error || 'Error de validación' })
       return
     }
+    if (formData.nombre && formData.nombre.trim().length < 3) {
+      setLocalErrors({ nombre: 'El nombre debe tener al menos 3 caracteres' })
+      return
+    }
+
+    // Validar tipo de entidad (obligatorio)
     if (!formData.tipo_entidad) {
       setLocalErrors({ tipo_entidad: 'Selecciona un tipo' })
       return
     }
-    if (formData.email_principal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_principal)) {
-      setLocalErrors({ email_principal: 'Ingresa un email válido' })
+
+    // Validar email principal
+    const emailValidation = validateEmail(formData.email_principal)
+    if (!emailValidation.isValid) {
+      setLocalErrors({ email_principal: emailValidation.error || 'Email inválido' })
       return
     }
-    if (formData.rfc && formData.rfc.trim().length < 8) {
-      setLocalErrors({ rfc: 'El RFC debe tener al menos 8 caracteres' })
+
+    // Validar RFC (formato mexicano)
+    const rfcValidation = validateRFC(formData.rfc)
+    if (!rfcValidation.isValid) {
+      setLocalErrors({ rfc: rfcValidation.error || 'RFC inválido' })
       return
     }
-    if (formData.telefono_principal && !/^[\d\s\+\-\(\)]+$/.test(formData.telefono_principal)) {
-      setLocalErrors({ telefono_principal: 'Teléfono inválido' })
+
+    // Validar teléfono
+    const phoneValidation = validatePhoneMexican(formData.telefono_principal)
+    if (!phoneValidation.isValid) {
+      setLocalErrors({ telefono_principal: phoneValidation.error || 'Teléfono inválido' })
       return
     }
-    if (formData.sitio_web && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(formData.sitio_web)) {
-      setLocalErrors({ sitio_web: 'URL de sitio web inválida' })
+
+    // Validar sitio web
+    const urlValidation = validateURL(formData.sitio_web)
+    if (!urlValidation.isValid) {
+      setLocalErrors({ sitio_web: urlValidation.error || 'URL inválida' })
       return
     }
-    if (formData.plazo_pago && (formData.plazo_pago < 0 || formData.plazo_pago > 365)) {
-      setLocalErrors({ plazo_pago: 'El plazo debe ser entre 0 y 365 días' })
+
+    // Validar email de facturación
+    const emailFacturacionValidation = validateEmail(formData.email_facturacion)
+    if (!emailFacturacionValidation.isValid) {
+      setLocalErrors({ email_facturacion: emailFacturacionValidation.error || 'Email inválido' })
       return
+    }
+
+    // Validar plazo de pago (0-365 días)
+    if (formData.plazo_pago !== undefined && formData.plazo_pago !== null) {
+      const plazoValidation = validateNumberRange(0, 365)(formData.plazo_pago)
+      if (!plazoValidation.isValid) {
+        setLocalErrors({ plazo_pago: plazoValidation.error || 'Valor fuera de rango' })
+        return
+      }
+      const integerValidation = validateInteger(formData.plazo_pago)
+      if (!integerValidation.isValid) {
+        setLocalErrors({ plazo_pago: integerValidation.error || 'Debe ser entero' })
+        return
+      }
     }
 
     try {
@@ -204,18 +253,45 @@ export function EmpresaModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <SelectWithAdd
-              label="Industria"
-              value={formData.industria || ''}
-              onValueChange={(value) => setFormData({ ...formData, industria: value as any })}
-              optionsType="industrias"
-            />
-            <SelectWithAdd
-              label="Tamaño"
-              value={formData.tamaño || ''}
-              onValueChange={(value) => setFormData({ ...formData, tamaño: value as any })}
-              optionsType="tamanios"
-            />
+            <div className="space-y-2">
+              <Label>Industria</Label>
+              <SelectWithAdd
+                label="Industria"
+                value={formData.industria || ''}
+                onValueChange={(value) => setFormData({ ...formData, industria: value as any })}
+                optionsType="industrias"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tamaño</Label>
+              <SelectWithAdd
+                label="Tamaño"
+                value={formData.tamaño || ''}
+                onValueChange={(value) => setFormData({ ...formData, tamaño: value as any })}
+                optionsType="tamanios"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Origen</Label>
+              <SelectWithAdd
+                label="Origen"
+                value={formData.origen || ''}
+                onValueChange={(value) => setFormData({ ...formData, origen: value as any })}
+                optionsType="origenes"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de Relación</Label>
+              <SelectWithAdd
+                label="Tipo de Relación"
+                value={formData.tipo_relacion || ''}
+                onValueChange={(value) => setFormData({ ...formData, tipo_relacion: value as any })}
+                optionsType="tipos_relacion"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -314,10 +390,11 @@ export function EmpresaModal({
               </div>
               <div className="space-y-2">
                 <Label>Régimen Fiscal</Label>
-                <Input
+                <SelectWithAdd
+                  label="Régimen Fiscal"
                   value={formData.regimen_fiscal || ''}
-                  onChange={(e) => setFormData({ ...formData, regimen_fiscal: e.target.value })}
-                  placeholder="Ej: Persona Moral, Persona Física"
+                  onValueChange={(value) => setFormData({ ...formData, regimen_fiscal: value })}
+                  optionsType="regimenes_fiscales"
                 />
               </div>
               <div className="space-y-2">

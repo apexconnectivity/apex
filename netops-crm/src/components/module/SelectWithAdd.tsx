@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 
-type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto'
+type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto' | 'origenes' | 'tipos_relacion' | 'regimenes_fiscales'
 
 interface SelectWithAddProps {
   label: string
@@ -56,6 +56,29 @@ const OPTIONS_BY_TYPE: Record<OptionType, { label: string; value: string }[]> = 
     { label: 'Administrativo', value: 'Administrativo' },
     { label: 'Gerencial', value: 'Gerencial' },
     { label: 'Directivo', value: 'Directivo' },
+    { label: 'Otro', value: 'Otro' },
+  ],
+  origenes: [
+    { label: 'Web', value: 'Web' },
+    { label: 'Referencia', value: 'Referencia' },
+    { label: 'Llamada en frío', value: 'Llamada en frío' },
+    { label: 'Evento', value: 'Evento' },
+    { label: 'LinkedIn', value: 'LinkedIn' },
+    { label: 'Redes sociales', value: 'Redes sociales' },
+    { label: 'Publicidad', value: 'Publicidad' },
+    { label: 'Otro', value: 'Otro' },
+  ],
+  tipos_relacion: [
+    { label: 'Cliente', value: 'Cliente' },
+    { label: 'Prospecto', value: 'Prospecto' },
+    { label: 'Ex-cliente', value: 'Ex-cliente' },
+  ],
+  regimenes_fiscales: [
+    { label: 'Persona Moral (Régimen General)', value: 'Régimen General de Ley Personas Morales' },
+    { label: 'Persona Física (Actividad Empresarial)', value: 'Actividad Empresarial' },
+    { label: 'Persona Física (Servicios Profesionales)', value: 'Servicios Profesionales' },
+    { label: 'Persona Física (Arrendamiento)', value: 'Arrendamiento' },
+    { label: 'Régimen Simplificado de Confianza', value: 'Régimen Simplificado de Confianza' },
     { label: 'Otro', value: 'Otro' },
   ],
 }
@@ -114,14 +137,18 @@ export function SelectWithAdd({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {showAllOption && (
-            <SelectItem value={showAllOption.value}>{showAllOption.label}</SelectItem>
-          )}
-          {allOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
+          {/* Contenedor con scroll solo para las opciones */}
+          <div className="max-h-60 overflow-y-auto">
+            {showAllOption && (
+              <SelectItem value={showAllOption.value}>{showAllOption.label}</SelectItem>
+            )}
+            {allOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </div>
+          {/* Botón siempre visible, fuera del scroll */}
           <div className="border-t my-1" />
           <div
             className="px-2 py-1.5 text-sm text-cyan-400 cursor-pointer hover:bg-accent rounded"
