@@ -6,6 +6,11 @@ import { useAuth } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/sidebar'
 import { DashboardHeader } from '@/components/dashboard-header'
+import { ProjectModal } from '@/components/module/ProjectModal'
+import { useEmpresas, useContactos, useProyectos } from '@/hooks'
+import { Proyecto } from '@/types/proyectos'
+import { User } from '@/types/auth'
+import { Contacto } from '@/types/crm'
 import {
   LayoutDashboard,
   Building2,
@@ -69,6 +74,57 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Estado para el modal de nuevo proyecto
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
+
+  // Hooks para obtener datos necesarios para el modal de proyectos
+  const [empresas] = useEmpresas()
+  const [contactos] = useContactos()
+  const [proyectos, setProyectos] = useProyectos()
+
+  // Cargar usuarios desde localStorage
+  const [usuarios, setUsuarios] = useState<User[]>([])
+  useEffect(() => {
+    const stored = localStorage.getItem('netops_usuarios')
+    if (stored) {
+      try {
+        setUsuarios(JSON.parse(stored))
+      } catch (e) {
+        console.error('Error loading users:', e)
+      }
+    }
+  }, [])
+
+  // Función para manejar la creación de un nuevo proyecto
+  const handleNewProject = async (proyecto: Partial<Proyecto>, isNew: boolean) => {
+    if (!isNew || !proyecto.nombre) return
+
+    const newProyecto: Proyecto = {
+      id: crypto.randomUUID(),
+      nombre: proyecto.nombre || '',
+      descripcion: proyecto.descripcion || '',
+      empresa_id: proyecto.empresa_id || '',
+      cliente_nombre: proyecto.cliente_nombre || '',
+      responsable_id: proyecto.responsable_id || '',
+      responsable_nombre: proyecto.responsable_nombre || '',
+      contacto_tecnico_id: proyecto.contacto_tecnico_id || '',
+      contacto_tecnico_nombre: proyecto.contacto_tecnico_nombre || '',
+      fase_actual: proyecto.fase_actual || 1,
+      estado: 'activo',
+      moneda: proyecto.moneda || 'USD',
+      monto_estimado: proyecto.monto_estimado || 0,
+      probabilidad_cierre: proyecto.probabilidad_cierre || 20,
+      requiere_compras: proyecto.requiere_compras || false,
+      fecha_estimada_fin: proyecto.fecha_estimada_fin || '',
+      tags: proyecto.tags || [],
+      creado_en: new Date().toISOString(),
+    }
+
+    // Agregar a la lista de proyectos
+    setProyectos([...proyectos, newProyecto])
+    console.log('Proyecto creado desde el header:', newProyecto.nombre)
+  }
+
   useEffect(() => {
     setIsTransitioning(true)
     const timer = setTimeout(() => setIsTransitioning(false), 50)
@@ -123,13 +179,26 @@ export default function DashboardLayout({
         collapsed ? "lg:ml-20" : "lg:ml-72"
       )}>
         {/* Header */}
-        <DashboardHeader />
+        <DashboardHeader
+          onNewProjectClick={() => setIsNewProjectModalOpen(true)}
+        />
 
         {/* Page content */}
         <main className="px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto">
           {children}
         </main>
       </div>
+
+      {/* Modal para nuevo proyecto desde el header */}
+      <ProjectModal
+        open={isNewProjectModalOpen}
+        onOpenChange={setIsNewProjectModalOpen}
+        onSave={handleNewProject}
+        proyecto={null}
+        empresas={empresas}
+        usuarios={usuarios}
+        contactos={contactos}
+      />
     </div>
   )
 }

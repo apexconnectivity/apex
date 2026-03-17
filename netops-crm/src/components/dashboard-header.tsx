@@ -23,9 +23,10 @@ interface BreadcrumbItem {
 interface DashboardHeaderProps {
   showSearch?: boolean
   showNewProject?: boolean
+  onNewProjectClick?: () => void
 }
 
-export function DashboardHeader({ showSearch = true, showNewProject = true }: DashboardHeaderProps) {
+export function DashboardHeader({ showSearch = true, showNewProject = true, onNewProjectClick }: DashboardHeaderProps) {
   const pathname = usePathname()
   const { user } = useAuth()
 
@@ -123,12 +124,10 @@ export function DashboardHeader({ showSearch = true, showNewProject = true }: Da
                 variant="default"
                 size="sm"
                 className="gap-2"
-                asChild
+                onClick={onNewProjectClick}
               >
-                <Link href="/dashboard/proyectos?new=true">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Nuevo Proyecto</span>
-                </Link>
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Nuevo Proyecto</span>
               </Button>
             )}
 
