@@ -86,27 +86,32 @@ export function FilterBar({
 
       {/* Filter Selects */}
       {filters.map((filter) => (
-        <Select
-          key={filter.key}
-          value={values[filter.key] || ''}
-          onValueChange={(value) => onFilterChange(filter.key, value)}
-        >
-          <SelectTrigger
-            className={cn(
-              'h-8 bg-input border-border',
-              filter.width || 'w-40'
-            )}
+        <div key={filter.key} className="flex items-center gap-1">
+          {filter.label && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{filter.label}:</span>
+          )}
+          <Select
+            key={filter.key}
+            value={values[filter.key] || ''}
+            onValueChange={(value) => onFilterChange(filter.key, value)}
           >
-            <SelectValue placeholder={filter.placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {filter.options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger
+              className={cn(
+                'h-8 bg-input border-border',
+                filter.width || 'w-40'
+              )}
+            >
+              <SelectValue placeholder={filter.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {filter.options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       ))}
 
       {/* Clear Filters Button */}

@@ -25,6 +25,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -148,6 +149,7 @@ export default function TareasPage() {
   const [comentarios, setComentarios] = useComentarios()
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [filtroPersona, setFiltroPersona] = useState<string>('todos')
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
@@ -169,6 +171,14 @@ export default function TareasPage() {
 
   const filteredTareas = useMemo(() => {
     return tareas.filter(t => {
+      // Filtro de búsqueda
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchNombre = t.nombre?.toLowerCase().includes(query)
+        const matchDescripcion = t.descripcion?.toLowerCase().includes(query)
+        if (!matchNombre && !matchDescripcion) return false
+      }
+
       if (filtroProyecto !== 'todos' && t.proyecto_id !== filtroProyecto) return false
       if (filtroPersona !== 'todos' && t.responsable_id !== filtroPersona) return false
       if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false
@@ -183,7 +193,7 @@ export default function TareasPage() {
 
       return true
     })
-  }, [tareas, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaDesde, filtroFechaHasta, filtroVencidas])
+  }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaDesde, filtroFechaHasta, filtroVencidas])
 
   const visibleTareas = useMemo(() => {
     if (isAdmin) return filteredTareas
@@ -463,25 +473,82 @@ export default function TareasPage() {
           <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
         </StatGrid>
 
+        {/* Filtros */}
+        <FilterBar
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Buscar tareas..."
+          filters={[
+            {
+              key: 'proyecto',
+              label: 'Proyecto',
+              placeholder: 'Proyecto',
+              options: [
+                { value: 'todos', label: 'Todos' },
+                ...proyectos.map(p => ({ value: p.id, label: p.nombre })),
+              ],
+              width: 'w-40',
+            },
+            {
+              key: 'estado',
+              label: 'Estado',
+              placeholder: 'Estado',
+              options: [
+                { value: 'todos', label: 'Todos' },
+                ...ESTADOS.map(e => ({ value: e, label: e })),
+              ],
+              width: 'w-36',
+            },
+            {
+              key: 'categoria',
+              label: 'Categoría',
+              placeholder: 'Categoría',
+              options: [
+                { value: 'todas', label: 'Todas' },
+                ...CATEGORIAS.map(c => ({ value: c, label: c })),
+              ],
+              width: 'w-36',
+            },
+            {
+              key: 'prioridad',
+              label: 'Prioridad',
+              placeholder: 'Prioridad',
+              options: [
+                { value: 'todas', label: 'Todas' },
+                ...PRIORIDADES.map(p => ({ value: p, label: p })),
+              ],
+              width: 'w-32',
+            },
+          ]}
+          values={{
+            proyecto: filtroProyecto,
+            estado: filtroEstado,
+            categoria: filtroCategoria,
+            prioridad: filtroPrioridad,
+          }}
+          onFilterChange={(key, value) => {
+            if (key === 'proyecto') setFiltroProyecto(value)
+            else if (key === 'estado') setFiltroEstado(value)
+            else if (key === 'categoria') setFiltroCategoria(value)
+            else if (key === 'prioridad') setFiltroPrioridad(value)
+          }}
+          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery}
+          onClearFilters={() => {
+            setSearchQuery('')
+            setFiltroProyecto('todos')
+            setFiltroEstado('todos')
+            setFiltroCategoria('todas')
+            setFiltroPrioridad('todas')
+          }}
+        />
+
+        {/* Filtros adicionales: Persona (admin) y Fechas */}
         <div className="flex flex-wrap gap-2 items-center text-sm">
-          <span className="text-muted-foreground mr-1">Filtros:</span>
-
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground mr-1">Proyecto:</Label>
-            <Select value={filtroProyecto} onValueChange={setFiltroProyecto}>
-              <SelectTrigger className="w-32 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
           {isAdmin && (
             <div className="flex items-center gap-1">
               <Label className="text-xs text-muted-foreground mr-1">Persona:</Label>
               <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-                <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectTrigger className="w-36 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todas</SelectItem>
                   {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
@@ -491,45 +558,12 @@ export default function TareasPage() {
           )}
 
           <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground mr-1">Estado:</Label>
-            <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-              <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todos" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                {ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground mr-1">Categoría:</Label>
-            <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-              <SelectTrigger className="w-28 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todas">Todas</SelectItem>
-                {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground mr-1">Prioridad:</Label>
-            <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-              <SelectTrigger className="w-24 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todas">Todas</SelectItem>
-                {PRIORIDADES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
             <Label className="text-xs text-muted-foreground">Desde:</Label>
             <Input
               type="date"
               value={filtroFechaDesde}
               onChange={(e) => setFiltroFechaDesde(e.target.value)}
-              className="w-28 h-8 bg-input border-border"
+              className="w-32 h-8 bg-input border-border"
             />
           </div>
 

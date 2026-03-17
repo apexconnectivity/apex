@@ -609,6 +609,7 @@ export default function CRMPage() {
         filters={[
           {
             key: 'tipo',
+            label: 'Tipo',
             placeholder: 'Tipo',
             options: [
               { value: 'todos', label: 'Todos los tipos' },
@@ -620,6 +621,7 @@ export default function CRMPage() {
           },
           {
             key: 'industria',
+            label: 'Industria',
             placeholder: 'Industria',
             options: [
               { value: 'todas', label: 'Todas las industrias' },
