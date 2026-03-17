@@ -14,6 +14,7 @@ import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ArchivoCard, FolderSection, UploadModal } from '@/components/module'
 import { useArchivosStorage } from '@/hooks/useArchivosStorage'
 import { Folder, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive, Trash2, Upload } from 'lucide-react'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Archivo, EntidadTipo, Visibilidad } from '@/types/archivos'
 import {
   PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS,
@@ -35,6 +36,7 @@ export default function ArchivosPage() {
 
   const [view, setView] = useState<'todos' | 'empresas' | 'proyectos'>('todos')
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('todas')
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [showUpload, setShowUpload] = useState(false)
   const [archivoAEliminar, setArchivoAEliminar] = useState<Archivo | null>(null)
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['corporativo', 'entregables', 'internos', 'facturas'])
@@ -51,6 +53,8 @@ export default function ArchivosPage() {
   // ============================================================================
   const archivosPorEntidad = useMemo(() => {
     return archivos.filter(a => {
+      // Filtro por búsqueda
+      if (searchQuery && !a.nombre_guardado.toLowerCase().includes(searchQuery.toLowerCase())) return false
       if (view === 'empresas' && a.entidad_tipo !== 'empresa') return false
       if (view === 'proyectos' && a.entidad_tipo !== 'proyecto') return false
       if (selectedEmpresa !== 'todas') {
@@ -59,7 +63,7 @@ export default function ArchivosPage() {
       }
       return true
     })
-  }, [archivos, view, selectedEmpresa])
+  }, [archivos, searchQuery, view, selectedEmpresa])
 
   // ============================================================================
   // Memoized: archivos agrupados por carpeta
@@ -200,6 +204,38 @@ export default function ArchivosPage() {
       </div>
 
       {/* ====================================================================== */}
+      {/* Filtros */}
+      {/* ====================================================================== */}
+      <FilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar archivos..."
+        filters={[
+          {
+            key: 'empresa',
+            label: 'Empresa',
+            placeholder: 'Empresa',
+            options: [
+              { value: 'todas', label: 'Todas' },
+              ...empresas.map(e => ({ value: e.id, label: e.nombre })),
+            ],
+            width: 'w-48',
+          },
+        ]}
+        values={{
+          empresa: selectedEmpresa,
+        }}
+        onFilterChange={(key, value) => {
+          if (key === 'empresa') setSelectedEmpresa(value)
+        }}
+        hasActiveFilters={selectedEmpresa !== 'todas' || !!searchQuery}
+        onClearFilters={() => {
+          setSearchQuery('')
+          setSelectedEmpresa('todas')
+        }}
+      />
+
+      {/* ====================================================================== */}
       {/* Stats */}
       {/* ====================================================================== */}
       <StatGrid cols={5}>
@@ -209,23 +245,6 @@ export default function ArchivosPage() {
         <MiniStat value={stats.tickets} label={STATS_LABELS.tickets} variant="success" showBorder accentColor={STAT_COLORS.tickets} icon={<Ticket className="h-5 w-5" />} />
         <MiniStat value={formatBytes(stats.tamañoTotal)} label={STATS_LABELS.espacioUsado} variant="default" showBorder accentColor={STAT_COLORS.espacio} icon={<HardDrive className="h-5 w-5" />} />
       </StatGrid>
-
-      {/* ====================================================================== */}
-      {/* Filtro por empresa */}
-      {/* ====================================================================== */}
-      {view === 'empresas' && (
-        <div className="flex gap-4">
-          <Select value={selectedEmpresa} onValueChange={setSelectedEmpresa}>
-            <SelectTrigger className="w-64 bg-background"><SelectValue placeholder={FILTER_LABELS.filtrarPorEmpresa} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">{FILTER_LABELS.todasLasEmpresas}</SelectItem>
-              {empresas.map(e => (
-                <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
       {/* ====================================================================== */}
       {/* Lista de archivos por vista */}
