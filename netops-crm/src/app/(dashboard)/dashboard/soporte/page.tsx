@@ -125,7 +125,7 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 
 export default function SoportePage() {
   const { user } = useAuth()
-  const [empresas] = useEmpresas()
+  const [empresas, setEmpresas] = useEmpresas()
   const [proyectos, setProyectos] = useProyectos()
   const [contactos] = useContactos()
   const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
@@ -324,6 +324,11 @@ export default function SoportePage() {
     } as import('@/types/proyectos').Proyecto
 
     setProyectos(prev => [...prev, nuevoProyecto])
+
+    // Guardar en localStorage
+    const stored = localStorage.getItem('netops_proyectos')
+    const existingProyectos: import('@/types/proyectos').Proyecto[] = stored ? JSON.parse(stored) : []
+    localStorage.setItem('netops_proyectos', JSON.stringify([...existingProyectos, nuevoProyecto]))
   }
 
   // Handler para crear empresa desde soporte
@@ -336,6 +341,9 @@ export default function SoportePage() {
       id: String(Date.now()),
       creado_en: now,
     } as import('@/types/crm').Empresa
+
+    // Actualizar estado local
+    setEmpresas(prev => [...prev, nuevaEmpresa])
 
     // Guardar en localStorage
     const stored = localStorage.getItem('netops_empresas')

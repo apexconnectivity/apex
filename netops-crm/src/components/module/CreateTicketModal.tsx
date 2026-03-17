@@ -608,7 +608,19 @@ export function CreateTicketModal({
           /* Caso: No hay contratos para tickets de soporte */
           <div className="text-center py-8">
             <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinContratos}</p>
-            <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
+            <p className="text-sm text-muted-foreground mb-4">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
+            {onCreateProject && (
+              <Button
+                onClick={() => {
+                  onOpenChange(false)
+                  onCreateProject()
+                }}
+                className="flex items-center gap-2"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Crear Proyecto
+              </Button>
+            )}
           </div>
         ) : !hasProyectos && !isClienteMode && ticketData.tipo_origen === 'proyecto' ? (
           /* Caso: No hay proyectos para tickets de proyecto */
