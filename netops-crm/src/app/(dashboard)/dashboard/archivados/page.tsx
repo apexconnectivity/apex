@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleContainer, ModuleHeader } from '@/components/module'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { MiniStat } from '@/components/ui/mini-stat'
 import { useArchivadoStorage } from '@/hooks/useArchivadoStorage'
@@ -23,7 +21,7 @@ import {
   ARCHIVADO_EMPTY, ARCHIVADO_ACCESS
 } from '@/constants/archivado'
 import { type ProyectoCerrado, type ProyectoArchivado, type ConfigArchivado, type Clasificacion } from '@/types/archivado'
-import { Archive, Search, CheckSquare, AlertTriangle } from 'lucide-react'
+import { Archive, CheckSquare, AlertTriangle } from 'lucide-react'
 import { useMemo } from 'react'
 
 export default function ArchivadoPage() {
@@ -139,15 +137,10 @@ export default function ArchivadoPage() {
 
   return (
     <ModuleContainer>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Archive className="h-8 w-8" />
-            {ARCHIVADO_TITULOS.titulo}
-          </h1>
-          <p className="text-muted-foreground">{ARCHIVADO_TITULOS.descripcion}</p>
-        </div>
-      </div>
+      <ModuleHeader
+        title={ARCHIVADO_TITULOS.titulo}
+        description={ARCHIVADO_TITULOS.descripcion}
+      />
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
         <TabsList>

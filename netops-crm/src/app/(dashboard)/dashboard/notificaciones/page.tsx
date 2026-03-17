@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleContainer, ModuleHeader } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ConfiguracionGlobal, EventoNotificacion, LogNotificacion, PreferenciaNotificacion, EVENTOS_NOTIFICACION, getEstadoNotificacionColor } from '@/types/notificaciones'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
@@ -429,22 +429,18 @@ export default function NotificacionesPage() {
 
   return (
     <ModuleContainer>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Bell className="h-8 w-8" />
-            {titulos.titulo}
-          </h1>
-          <p className="text-muted-foreground">{titulos.descripcion}</p>
-        </div>
-        {logs.length === 0 && (
-          <Button variant="outline" onClick={handleAddLog}>
-            <Activity className="h-4 w-4 mr-2" />
-            Generar Log de Prueba
-          </Button>
-        )}
-      </div>
+      <ModuleHeader
+        title={titulos.titulo}
+        description={titulos.descripcion}
+        actions={
+          logs.length === 0 ? (
+            <Button variant="outline" onClick={handleAddLog}>
+              <Activity className="h-4 w-4 mr-2" />
+              Generar Log de Prueba
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Stats */}
       <StatGrid cols={4}>

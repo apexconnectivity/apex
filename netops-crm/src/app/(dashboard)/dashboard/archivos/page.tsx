@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { ArchivoCard, FolderSection, UploadModal } from '@/components/module'
 import { useArchivosStorage } from '@/hooks/useArchivosStorage'
@@ -175,37 +176,28 @@ export default function ArchivosPage() {
 
   return (
     <ModuleContainer>
-      {/* ====================================================================== */}
       {/* Header */}
-      {/* ====================================================================== */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Folder className="h-8 w-8" />
-            {PAGE_TITLE}
-          </h1>
-          <p className="text-muted-foreground">{PAGE_DESCRIPTION}</p>
-        </div>
-        <div className="flex gap-2">
-          <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
-            <TabsList>
-              <TabsTrigger value="todos">{TABS_LABELS.todos}</TabsTrigger>
-              <TabsTrigger value="empresas">{TABS_LABELS.empresas}</TabsTrigger>
-              <TabsTrigger value="proyectos">{TABS_LABELS.proyectos}</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {canUpload && (
+      <ModuleHeader
+        title={PAGE_TITLE}
+        description={PAGE_DESCRIPTION}
+        tabs={[
+          { value: 'todos', label: TABS_LABELS.todos },
+          { value: 'empresas', label: TABS_LABELS.empresas },
+          { value: 'proyectos', label: TABS_LABELS.proyectos }
+        ]}
+        activeTab={view}
+        onTabChange={(v) => setView(v as typeof view)}
+        actions={
+          canUpload && (
             <Button onClick={() => setShowUpload(true)}>
               <Upload className="h-4 w-4 mr-2" />
               {BUTTON_LABELS.subir}
             </Button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
-      {/* ====================================================================== */}
       {/* Filtros */}
-      {/* ====================================================================== */}
       <FilterBar
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}

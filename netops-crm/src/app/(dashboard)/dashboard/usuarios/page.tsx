@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
-import { ModuleContainer, UserModal } from '@/components/module'
+import { ModuleContainer, ModuleHeader, UserModal } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -188,19 +188,16 @@ export default function UsersPage() {
 
   return (
     <ModuleContainer>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{USUARIOS_PAGE.titulo}</h1>
-          <p className="text-muted-foreground mt-1">
-            {USUARIOS_PAGE.descripcion}
-          </p>
-        </div>
-        <Button onClick={() => handleOpenModal()}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          {USUARIOS_PAGE.nuevoUsuario}
-        </Button>
-      </div>
+      <ModuleHeader
+        title={USUARIOS_PAGE.titulo}
+        description={USUARIOS_PAGE.descripcion}
+        actions={
+          <Button onClick={() => handleOpenModal()}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {USUARIOS_PAGE.nuevoUsuario}
+          </Button>
+        }
+      />
 
       {/* Search */}
       <div className="relative max-w-md">

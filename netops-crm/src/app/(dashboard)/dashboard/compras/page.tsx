@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { FilterBar } from '@/components/ui/filter-bar'
@@ -399,16 +400,17 @@ export default function ComprasPage() {
 
   return (
     <ModuleContainer>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <ShoppingCart className="h-8 w-8" />
-            {COMPRAS_TITLE}
-          </h1>
-          <p className="text-muted-foreground">{COMPRAS_DESCRIPTION}</p>
-        </div>
-        {canCreate && <Button onClick={() => setShowNuevaOrden(true)}><Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}</Button>}
-      </div>
+      <ModuleHeader
+        title={COMPRAS_TITLE}
+        description={COMPRAS_DESCRIPTION}
+        actions={
+          canCreate && (
+            <Button onClick={() => setShowNuevaOrden(true)}>
+              <Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}
+            </Button>
+          )
+        }
+      />
 
       <StatGrid cols={4}>
         <MiniStat value={stats.pendientes} label={STAT_PENDIENTES} variant="warning" showBorder icon={<ClipboardList className="h-5 w-5" />} />

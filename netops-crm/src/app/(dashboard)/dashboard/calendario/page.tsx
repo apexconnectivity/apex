@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, TIPOS_SOLICITUD } from '@/types/calendario'
 import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
@@ -445,25 +446,24 @@ export default function CalendarioPage() {
 
   return (
     <ModuleContainer>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Calendar className="h-8 w-8" />
-            Calendario
-          </h1>
-          <p className="text-muted-foreground">Gestión de reuniones y eventos</p>
-        </div>
-        <div className="flex gap-2">
-          <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
-            <TabsList>
-              <TabsTrigger value="calendario"><Grid3X3 className="h-4 w-4 mr-2" />Calendario</TabsTrigger>
-              <TabsTrigger value="lista"><List className="h-4 w-4 mr-2" />Lista</TabsTrigger>
-              <TabsTrigger value="solicitudes"><CalendarDays className="h-4 w-4 mr-2" />Solicitudes</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {canCreate && vista !== 'solicitudes' && <Button onClick={() => setShowNueva(true)}><Plus className="h-4 w-4 mr-2" />Nueva Reunión</Button>}
-        </div>
-      </div>
+      <ModuleHeader
+        title="Calendario"
+        description="Gestión de reuniones y eventos"
+        tabs={[
+          { value: 'calendario', label: 'Calendario' },
+          { value: 'lista', label: 'Lista' },
+          { value: 'solicitudes', label: 'Solicitudes' }
+        ]}
+        activeTab={vista}
+        onTabChange={(v) => setVista(v as typeof vista)}
+        actions={
+          canCreate && vista !== 'solicitudes' && (
+            <Button onClick={() => setShowNueva(true)}>
+              <Plus className="h-4 w-4 mr-2" />Nueva Reunión
+            </Button>
+          )
+        }
+      />
 
       {/* Filtros */}
       <FilterBar
