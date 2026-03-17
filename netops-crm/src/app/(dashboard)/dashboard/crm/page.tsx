@@ -11,6 +11,7 @@ import { CreateContactoModal } from '@/components/module/CreateContactoModal'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { EmpresaModal } from '@/components/module/EmpresaModal'
@@ -601,39 +602,47 @@ export default function CRMPage() {
       )}
 
       {/* Filtros */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar empresas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={tipoFilter} onValueChange={(v) => setTipoFilter(v as TipoEntidad | 'todos')}>
-          <SelectTrigger className="w-40 h-8 bg-input border-border">
-            <SelectValue placeholder="Tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los tipos</SelectItem>
-            <SelectItem value="cliente">Clientes</SelectItem>
-            <SelectItem value="proveedor">Proveedores</SelectItem>
-            <SelectItem value="ambos">Ambos</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={industriaFilter} onValueChange={setIndustriaFilter}>
-          <SelectTrigger className="w-48 h-8 bg-input border-border">
-            <SelectValue placeholder="Industria" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todas">Todas las industrias</SelectItem>
-            {INDUSTRIAS.map(ind => (
-              <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar empresas..."
+        filters={[
+          {
+            key: 'tipo',
+            placeholder: 'Tipo',
+            options: [
+              { value: 'todos', label: 'Todos los tipos' },
+              { value: 'cliente', label: 'Clientes' },
+              { value: 'proveedor', label: 'Proveedores' },
+              { value: 'ambos', label: 'Ambos' },
+            ],
+            width: 'w-40',
+          },
+          {
+            key: 'industria',
+            placeholder: 'Industria',
+            options: [
+              { value: 'todas', label: 'Todas las industrias' },
+              ...INDUSTRIAS.map(ind => ({ value: ind, label: ind })),
+            ],
+            width: 'w-48',
+          },
+        ]}
+        values={{ tipo: tipoFilter, industria: industriaFilter }}
+        onFilterChange={(key, value) => {
+          if (key === 'tipo') {
+            setTipoFilter(value as TipoEntidad | 'todos')
+          } else if (key === 'industria') {
+            setIndustriaFilter(value)
+          }
+        }}
+        hasActiveFilters={tipoFilter !== 'todos' || industriaFilter !== 'todas'}
+        onClearFilters={() => {
+          setSearchQuery('')
+          setTipoFilter('todos')
+          setIndustriaFilter('todas')
+        }}
+      />
 
       {/* Stats */}
       <StatGrid cols={4}>
