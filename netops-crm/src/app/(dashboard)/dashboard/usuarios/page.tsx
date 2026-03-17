@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
-import { ModuleContainer } from '@/components/module'
+import { ModuleContainer, UserModal } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -336,85 +336,14 @@ export default function UsersPage() {
         ))}
       </div>
 
-      {/* User Modal */}
-      {isModalOpen && (
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent size="md">
-            <DialogHeader>
-              <DialogTitle>
-                {editingUser ? USUARIOS_PAGE.editarUsuario : USUARIOS_PAGE.nuevoUsuario}
-              </DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{USUARIOS_PAGE.nombreCompleto}</label>
-                  <Input
-                    value={formData.nombre}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                    placeholder={USUARIOS_PAGE.nombrePlaceholder}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{FORM_LABELS.email}</label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder={USUARIOS_PAGE.emailPlaceholder}
-                    disabled={!!editingUser}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{FORM_LABELS.telefono}</label>
-                  <Input
-                    value={formData.telefono}
-                    onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
-                    placeholder={USUARIOS_PAGE.telefonoPlaceholder}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{USUARIOS_PAGE.roles}</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {INTERNAL_ROLES.map(role => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => handleRoleToggle(role)}
-                        className={cn(
-                          'flex items-center justify-between p-3 rounded-lg border transition-all',
-                          formData.roles.includes(role)
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:border-primary/50'
-                        )}
-                      >
-                        <span className="text-sm">
-                          {ROLE_DEFINITIONS[role]?.label}
-                        </span>
-                        {formData.roles.includes(role) && (
-                          <Check className="h-4 w-4 text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={handleCloseModal} disabled={isLoading}>
-                {BUTTON_LABELS.cancelar}
-              </Button>
-              <Button onClick={handleSave} disabled={isLoading || !formData.nombre || !formData.email || formData.roles.length === 0}>
-                {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {editingUser ? USUARIOS_PAGE.guardarCambios : USUARIOS_PAGE.crearUsuario}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* User Modal - Usando componente reutilizable */}
+      <UserModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        user={editingUser}
+        onSave={handleSave}
+        isSaving={isLoading}
+      />
 
       {/* Confirmation Modal */}
       {isConfirmModalOpen && userToModify && (
