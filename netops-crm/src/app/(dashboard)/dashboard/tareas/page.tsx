@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
+import { useEmpresas } from '@/hooks/useEmpresas'
+import { useContactos } from '@/hooks/useContactos'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
 import { VARIANT_COLORS, STATUS_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
 
@@ -31,7 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Checkbox } from '@/components/ui/checkbox'
 import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
-import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal } from '@/components/module'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal, ProjectModal, EmpresaModal, UserModal } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 
@@ -133,7 +135,15 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
 export default function TareasPage() {
   const { user } = useAuth()
   const [tareas, setTareas] = useTareas()
-  const [proyectos] = useProyectos()
+  const [proyectos, setProyectos] = useProyectos()
+  const [empresas] = useEmpresas()
+  const [contactos] = useContactos()
+  const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
+
+  // Modal nuevo proyecto
+  const [showNewProject, setShowNewProject] = useState(false)
+  const [showNewEmpresa, setShowNewEmpresa] = useState(false)
+  const [showNewUsuario, setShowNewUsuario] = useState(false)
   const [subtareas, setSubtareas] = useSubtareas()
   const [comentarios, setComentarios] = useComentarios()
   const [view, setView] = useState<'kanban' | 'lista'>('kanban')
@@ -207,6 +217,53 @@ export default function TareasPage() {
       estado,
       fecha_completado: estado === 'Completada' ? new Date().toISOString() : undefined
     } : t))
+  }
+
+  // Handler para crear proyecto desde tareas
+  const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
+    if (!isNew || !proyecto.nombre) return
+
+    const now = new Date().toISOString().split('T')[0]
+    const nuevoProyecto: import('@/types/proyectos').Proyecto = {
+      ...proyecto,
+      id: String(Date.now()),
+      creado_en: now,
+    } as import('@/types/proyectos').Proyecto
+
+    setProyectos(prev => [...prev, nuevoProyecto])
+  }
+
+  // Handler para crear empresa desde tareas
+  const handleSaveEmpresa = async (empresa: Partial<import('@/types/crm').Empresa>, isNew: boolean) => {
+    if (!isNew || !empresa.nombre) return
+
+    const now = new Date().toISOString().split('T')[0]
+    const nuevaEmpresa: import('@/types/crm').Empresa = {
+      ...empresa,
+      id: String(Date.now()),
+      creado_en: now,
+    } as import('@/types/crm').Empresa
+
+    // No tenemos setEmpresas aquí, necesitamos agregarlo
+  }
+
+  // Handler para crear usuario desde tareas
+  const handleSaveUsuario = async (user: Partial<import('@/types/auth').User>, isNew: boolean) => {
+    if (!isNew || !user.nombre) return
+
+    const now = new Date().toISOString().split('T')[0]
+    const nuevoUsuario: import('@/types/auth').User = {
+      ...user,
+      id: String(Date.now()),
+      nombre: user.nombre || '',
+      email: user.email || '',
+      roles: user.roles || ['tecnico'],
+      activo: true,
+      creado_en: now,
+      cambiar_password_proximo_login: true,
+    } as import('@/types/auth').User
+
+    setUsuarios(prev => [...prev, nuevoUsuario])
   }
 
   const handleSaveTarea = (data: CreateTaskData) => {
@@ -551,15 +608,18 @@ export default function TareasPage() {
         open={showCreate}
         onOpenChange={setShowCreate}
         proyectos={proyectos}
+        setProyectos={setProyectos}
         usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         onSave={handleSaveTarea}
+        onCreateProject={() => setShowNewProject(true)}
       />
 
       <CreateTaskModal
         open={showEdit}
         onOpenChange={setShowEdit}
         proyectos={proyectos}
+        setProyectos={setProyectos}
         usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         tarea={editingTarea}
@@ -567,6 +627,16 @@ export default function TareasPage() {
         comentarios={editingTarea ? comentarios[editingTarea.id] || [] : []}
         onSave={handleSaveTarea}
         onDelete={handleDeleteTarea}
+      />
+
+      {/* Modal para crear nuevo proyecto */}
+      <ProjectModal
+        open={showNewProject}
+        onOpenChange={setShowNewProject}
+        onSave={handleSaveProyecto}
+        empresas={empresas}
+        usuarios={usuarios}
+        contactos={contactos}
       />
     </>
   )

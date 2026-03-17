@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, X, Trash2, CheckSquare, MessageSquare } from 'lucide-react'
+import { Plus, X, Trash2, CheckSquare, MessageSquare, PlusCircle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
 
@@ -16,6 +16,7 @@ interface CreateTaskModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   proyectos: Proyecto[]
+  setProyectos?: React.Dispatch<React.SetStateAction<Proyecto[]>>
   usuarios: { id: string; nombre: string; rol: string }[]
   currentUser: { id: string; nombre: string }
   tarea?: Tarea | null
@@ -23,6 +24,7 @@ interface CreateTaskModalProps {
   comentarios?: Comentario[]
   onSave: (data: CreateTaskData) => void
   onDelete?: () => void
+  onCreateProject?: () => void
 }
 
 export interface CreateTaskData {
@@ -55,12 +57,12 @@ function TaskFormFields({
         <Label>Proyecto *</Label>
         <Select value={tarea.proyecto_id} onValueChange={(v) => {
           const proyecto = proyectos.find(p => p.id === v)
-          setTarea({ 
-            ...tarea, 
-            proyecto_id: v, 
-            proyecto_nombre: proyecto?.nombre || '', 
-            fase_origen: proyecto?.fase_actual || 1, 
-            fase_nombre: proyecto ? ['Prospecto', 'Diagnóstico', 'Propuesta', 'Implementación', 'Cierre'][proyecto.fase_actual - 1] : 'Prospecto' 
+          setTarea({
+            ...tarea,
+            proyecto_id: v,
+            proyecto_nombre: proyecto?.nombre || '',
+            fase_origen: proyecto?.fase_actual || 1,
+            fase_nombre: proyecto ? ['Prospecto', 'Diagnóstico', 'Propuesta', 'Implementación', 'Cierre'][proyecto.fase_actual - 1] : 'Prospecto'
           })
         }} disabled={disabled}>
           <SelectTrigger className="bg-input border-border"><SelectValue placeholder="Seleccionar proyecto..." /></SelectTrigger>
@@ -72,9 +74,9 @@ function TaskFormFields({
 
       <div>
         <Label>Nombre *</Label>
-        <Input 
-          value={tarea.nombre} 
-          onChange={(e) => setTarea({ ...tarea, nombre: e.target.value })} 
+        <Input
+          value={tarea.nombre}
+          onChange={(e) => setTarea({ ...tarea, nombre: e.target.value })}
           placeholder="Nombre de la tarea"
           disabled={disabled}
         />
@@ -82,9 +84,9 @@ function TaskFormFields({
 
       <div>
         <Label>Descripción</Label>
-        <Textarea 
-          value={tarea.descripcion || ''} 
-          onChange={(e) => setTarea({ ...tarea, descripcion: e.target.value })} 
+        <Textarea
+          value={tarea.descripcion || ''}
+          onChange={(e) => setTarea({ ...tarea, descripcion: e.target.value })}
           placeholder="Descripción opcional"
           rows={3}
           disabled={disabled}
@@ -132,19 +134,19 @@ function TaskFormFields({
 
       <div>
         <Label>Fecha Vencimiento</Label>
-        <Input 
-          type="date" 
-          value={tarea.fecha_vencimiento || ''} 
-          onChange={(e) => setTarea({ ...tarea, fecha_vencimiento: e.target.value })} 
+        <Input
+          type="date"
+          value={tarea.fecha_vencimiento || ''}
+          onChange={(e) => setTarea({ ...tarea, fecha_vencimiento: e.target.value })}
           disabled={disabled}
         />
       </div>
 
       <div className="flex items-center gap-2">
-        <Checkbox 
-          id="asignado_cliente" 
-          checked={tarea.asignado_a_cliente} 
-          onCheckedChange={(checked) => setTarea({ ...tarea, asignado_a_cliente: checked as boolean })} 
+        <Checkbox
+          id="asignado_cliente"
+          checked={tarea.asignado_a_cliente}
+          onCheckedChange={(checked) => setTarea({ ...tarea, asignado_a_cliente: checked as boolean })}
           disabled={disabled}
         />
         <Label htmlFor="asignado_cliente" className="text-sm">Asignar a cliente</Label>
@@ -153,9 +155,9 @@ function TaskFormFields({
       {tarea.asignado_a_cliente && (
         <div>
           <Label>Nombre del contacto cliente</Label>
-          <Input 
-            value={tarea.contacto_cliente_nombre || ''} 
-            onChange={(e) => setTarea({ ...tarea, contacto_cliente_nombre: e.target.value })} 
+          <Input
+            value={tarea.contacto_cliente_nombre || ''}
+            onChange={(e) => setTarea({ ...tarea, contacto_cliente_nombre: e.target.value })}
             placeholder="Nombre del contacto"
             disabled={disabled}
           />
@@ -313,13 +315,15 @@ export function CreateTaskModal({
   open,
   onOpenChange,
   proyectos,
+  setProyectos,
   usuarios,
   currentUser,
   tarea,
   subtareas: existingSubtareas = [],
   comentarios: existingComentarios = [],
   onSave,
-  onDelete
+  onDelete,
+  onCreateProject
 }: CreateTaskModalProps) {
   const isEditMode = !!tarea
 
@@ -449,13 +453,25 @@ export function CreateTaskModal({
       <ModalHeader
         title={isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}
       />
-      
+
       {/* ✅ ModalBody */}
       <ModalBody>
         {!hasProyectos ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">No hay proyectos disponibles.</p>
-            <p className="text-sm text-muted-foreground">Crea un proyecto primero.</p>
+            <p className="text-sm text-muted-foreground mb-4">Crea un proyecto primero.</p>
+            {onCreateProject && (
+              <Button
+                onClick={() => {
+                  onOpenChange(false)
+                  onCreateProject()
+                }}
+                className="flex items-center gap-2"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Crear Proyecto
+              </Button>
+            )}
           </div>
         ) : (
           <>
@@ -482,7 +498,7 @@ export function CreateTaskModal({
           </>
         )}
       </ModalBody>
-      
+
       {/* ✅ ModalFooter */}
       <ModalFooter layout="inline-between">
         {isEditMode && onDelete && (
