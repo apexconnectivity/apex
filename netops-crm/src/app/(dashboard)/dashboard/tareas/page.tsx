@@ -464,15 +464,6 @@ export default function TareasPage() {
           }
         />
 
-        <StatGrid cols={6}>
-          <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor={TAREAS_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
-          <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor={TAREAS_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
-          <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor={TAREAS_STATS_COLORS.enProgreso} icon={<Loader2 className="h-5 w-5" />} />
-          <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor={TAREAS_STATS_COLORS.completadas} icon={<CheckCircle className="h-5 w-5" />} />
-          <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.bloqueadas} icon={<Ban className="h-5 w-5" />} />
-          <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
-        </StatGrid>
-
         {/* Filtros */}
         <FilterBar
           searchValue={searchQuery}
@@ -589,6 +580,16 @@ export default function TareasPage() {
             <X className="h-3 w-3 mr-1" /> Limpiar
           </Button>
         </div>
+
+        {/* Stats */}
+        <StatGrid cols={6}>
+          <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor={TAREAS_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
+          <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor={TAREAS_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
+          <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor={TAREAS_STATS_COLORS.enProgreso} icon={<Loader2 className="h-5 w-5" />} />
+          <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor={TAREAS_STATS_COLORS.completadas} icon={<CheckCircle className="h-5 w-5" />} />
+          <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.bloqueadas} icon={<Ban className="h-5 w-5" />} />
+          <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
+        </StatGrid>
 
         {view === 'kanban' && (
           <div className="-mx-6 px-6 overflow-x-auto">

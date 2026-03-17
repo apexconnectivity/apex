@@ -638,7 +638,7 @@ export default function CRMPage() {
             setIndustriaFilter(value)
           }
         }}
-        hasActiveFilters={tipoFilter !== 'todos' || industriaFilter !== 'todas'}
+        hasActiveFilters={tipoFilter !== 'todos' || industriaFilter !== 'todas' || !!searchQuery}
         onClearFilters={() => {
           setSearchQuery('')
           setTipoFilter('todos')

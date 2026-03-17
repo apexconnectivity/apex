@@ -117,13 +117,13 @@ export function FilterBar({
       {/* Clear Filters Button */}
       {hasActiveFilters && onClearFilters && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground hover:text-foreground"
+          className="h-8 text-xs font-medium text-muted-foreground border-dashed hover:text-foreground hover:border-solid hover:bg-accent"
         >
-          <X className="h-4 w-4 mr-1" />
-          Limpiar
+          <X className="h-3 w-3 mr-1.5" />
+          Limpiar filtros
         </Button>
       )}
     </div>
