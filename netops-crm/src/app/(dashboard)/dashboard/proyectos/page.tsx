@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react'
+import { FilterBar } from '@/components/ui/filter-bar'
+import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban, Search } from 'lucide-react'
 import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel, EmpresaModal, UserModal } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
@@ -80,6 +81,7 @@ export default function ProyectosPage() {
   const [usuarios, setUsuarios] = useState<User[]>(USUARIOS_INTERNOS)
 
   const [view, setView] = useState<'pipeline' | 'cerrados'>('pipeline')
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   // Modal nuevo proyecto
@@ -617,6 +619,16 @@ export default function ProyectosPage() {
           ]}
           activeTab={view}
           onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
+        />
+
+        {/* Filtros */}
+        <FilterBar
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Buscar proyectos..."
+          filters={[]}
+          values={{}}
+          onFilterChange={() => { }}
         />
 
         <StatGrid cols={5}>

@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ModuleContainer, ModuleHeader, UserModal } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import RoleBadge from '@/components/ui/role-badge'
@@ -199,70 +200,41 @@ export default function UsersPage() {
         }
       />
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-        <Input
-          placeholder={USUARIOS_PAGE.buscarPlaceholder}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-8 bg-background/80 border-border/50"
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center text-sm">
-        <span className="text-muted-foreground mr-1">{USUARIOS_PAGE.filtros}</span>
-
-        <div className="flex items-center gap-1">
-          <Label className="text-xs text-muted-foreground mr-1">{USUARIOS_PAGE.estado}</Label>
-          <Select value={filtroEstado} onValueChange={(v) => setFiltroEstado(v as typeof filtroEstado)}>
-            <SelectTrigger className="w-32 h-8 bg-input border-border">
-              <SelectValue placeholder={USUARIOS_PAGE.todos} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">{USUARIOS_PAGE.todos}</SelectItem>
-              <SelectItem value="activo">{USUARIOS_PAGE.activos}</SelectItem>
-              <SelectItem value="inactivo">{USUARIOS_PAGE.inactivos}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Label className="text-xs text-muted-foreground mr-1">{USUARIOS_PAGE.rol}</Label>
-          <Select value={filtroRol} onValueChange={(v) => setFiltroRol(v as typeof filtroRol)}>
-            <SelectTrigger className="w-40 h-8 bg-input border-border">
-              <SelectValue placeholder={USUARIOS_PAGE.todos} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">{USUARIOS_PAGE.todos}</SelectItem>
-              {INTERNAL_ROLES.map(role => (
-                <SelectItem key={role} value={role}>
-                  {ROLE_DEFINITIONS[role]?.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {(filtroEstado !== 'todos' || filtroRol !== 'todos') && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setFiltroEstado('todos')
-              setFiltroRol('todos')
-            }}
-          >
-            <X className="h-3 w-3 mr-1" />
-            {USUARIOS_PAGE.limpiar}
-          </Button>
-        )}
-
-        <span className="text-sm text-muted-foreground ml-auto">
-          {filteredUsers.length} {filteredUsers.length !== 1 ? USUARIOS_PAGE.usuarioPlural : USUARIOS_PAGE.usuarioSingular}
-        </span>
-      </div>
+      {/* Filtros */}
+      <FilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={USUARIOS_PAGE.buscarPlaceholder}
+        filters={[
+          {
+            key: 'estado',
+            label: USUARIOS_PAGE.estado,
+            options: [
+              { value: 'todos', label: USUARIOS_PAGE.todos },
+              { value: 'activo', label: USUARIOS_PAGE.activos },
+              { value: 'inactivo', label: USUARIOS_PAGE.inactivos }
+            ]
+          },
+          {
+            key: 'rol',
+            label: USUARIOS_PAGE.rol,
+            options: [
+              { value: 'todos', label: USUARIOS_PAGE.todos },
+              ...INTERNAL_ROLES.map(role => ({ value: role, label: ROLE_DEFINITIONS[role]?.label }))
+            ]
+          }
+        ]}
+        values={{ estado: filtroEstado, rol: filtroRol }}
+        onFilterChange={(key, value) => {
+          if (key === 'estado') setFiltroEstado(value as typeof filtroEstado)
+          if (key === 'rol') setFiltroRol(value as typeof filtroRol)
+        }}
+        hasActiveFilters={filtroEstado !== 'todos' || filtroRol !== 'todos'}
+        onClearFilters={() => {
+          setFiltroEstado('todos')
+          setFiltroRol('todos')
+        }}
+      />
 
       {/* Users Grid */}
       <div className="grid gap-4">
