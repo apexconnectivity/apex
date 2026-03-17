@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFoo
 import { CreateContactoModal } from '@/components/module/CreateContactoModal'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -19,6 +18,7 @@ import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { EmpresaDetailModal } from '@/components/module/EmpresaDetailModal'
 import { SelectWithAdd } from '@/components/module/SelectWithAdd'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -26,16 +26,8 @@ import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { VARIANT_COLORS, STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Building2,
   Plus,
-  Search,
   Users,
   Mail,
   Phone,
@@ -531,19 +523,18 @@ export default function CRMPage() {
 
   return (
     <ModuleContainer>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{PAGE_TITLE}</h1>
-          <p className="text-muted-foreground">{PAGE_DESCRIPTION}</p>
-        </div>
-        {canEdit && (
-          <Button onClick={handleNewEmpresa}>
-            <Plus className="h-4 w-4 mr-2" />
-            {BUTTON_LABELS.nuevaEmpresa}
-          </Button>
-        )}
-      </div>
+      <ModuleHeader
+        title={PAGE_TITLE}
+        description={PAGE_DESCRIPTION}
+        actions={
+          canEdit && (
+            <Button onClick={handleNewEmpresa}>
+              <Plus className="h-4 w-4 mr-2" />
+              {BUTTON_LABELS.nuevaEmpresa}
+            </Button>
+          )
+        }
+      />
 
       {/* Error general (localStorage) */}
       {errors.general && (
