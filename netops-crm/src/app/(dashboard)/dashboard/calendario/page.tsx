@@ -17,6 +17,7 @@ import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, E
 import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
 import { useEmpresas, useProyectos } from '@/hooks'
 import { Calendar, Clock, User, CalendarDays, CalendarCheck, CalendarX, MapPin, Video, Check, X, Building2, Grid3X3, List, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { FilterBar } from '@/components/ui/filter-bar'
 import {
   PAGE_TITLE,
   PAGE_DESCRIPTION,
@@ -366,13 +367,18 @@ export default function CalendarioPage() {
   const [showNueva, setShowNueva] = useState(false)
   const [selectedReunion, setSelectedReunion] = useState<Reunion | null>(null)
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
+  const [searchQuery, setSearchQuery] = useState<string>('')
 
   const isAdmin = user?.roles.includes('admin')
   const canCreate = isAdmin || user?.roles.includes('tecnico') || user?.roles.includes('comercial')
 
   const filteredReuniones = useMemo(() => {
-    return reuniones.filter(r => filtroProyecto === 'todos' || r.proyecto_id === filtroProyecto)
-  }, [reuniones, filtroProyecto])
+    return reuniones.filter(r => {
+      if (searchQuery && !r.titulo.toLowerCase().includes(searchQuery.toLowerCase())) return false
+      if (filtroProyecto !== 'todos' && r.proyecto_id !== filtroProyecto) return false
+      return true
+    })
+  }, [reuniones, searchQuery, filtroProyecto])
 
   const stats = useMemo(() => ({
     total: filteredReuniones.length,
@@ -459,6 +465,36 @@ export default function CalendarioPage() {
         </div>
       </div>
 
+      {/* Filtros */}
+      <FilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar reuniones..."
+        filters={[
+          {
+            key: 'proyecto',
+            label: 'Proyecto',
+            placeholder: 'Proyecto',
+            options: [
+              { value: 'todos', label: 'Todos' },
+              ...proyectos.map(p => ({ value: p.id, label: p.nombre })),
+            ],
+            width: 'w-48',
+          },
+        ]}
+        values={{
+          proyecto: filtroProyecto,
+        }}
+        onFilterChange={(key, value) => {
+          if (key === 'proyecto') setFiltroProyecto(value)
+        }}
+        hasActiveFilters={filtroProyecto !== 'todos' || !!searchQuery}
+        onClearFilters={() => {
+          setSearchQuery('')
+          setFiltroProyecto('todos')
+        }}
+      />
+
       <StatGrid cols={4}>
         <MiniStat value={stats.total} label="Total reuniones" variant="primary" showBorder accentColor={CALENDAR_STATS_COLORS.total} icon={<CalendarDays className="h-5 w-5" />} />
         <MiniStat value={stats.proximas} label="Próximas" variant="info" showBorder accentColor={CALENDAR_STATS_COLORS.proximas} icon={<Clock className="h-5 w-5" />} />
@@ -469,15 +505,6 @@ export default function CalendarioPage() {
       {vista === 'calendario' && (
         <>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Select value={filtroProyecto} onValueChange={setFiltroProyecto}>
-                <SelectTrigger className="w-64 bg-background"><SelectValue placeholder="Filtrar por proyecto" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los proyectos</SelectItem>
-                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" size="icon" onClick={() => setMesActual(new Date(mesActual.getFullYear(), mesActual.getMonth() - 1, 1))}><ChevronLeft className="h-4 w-4" /></Button>
               <span className="font-semibold text-lg">{mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
