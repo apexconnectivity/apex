@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/hooks'
@@ -148,6 +148,21 @@ export default function CRMPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // Verificar disponibilidad de localStorage al inicio
+  useEffect(() => {
+    try {
+      const testKey = '__localStorage_test__'
+      localStorage.setItem(testKey, testKey)
+      localStorage.removeItem(testKey)
+      console.log('[CRM] localStorage disponible y funcionando')
+    } catch (e) {
+      console.error('[CRM] localStorage no disponible:', e)
+      setErrors({ 
+        general: 'Tu navegador no permite guardar datos en localStorage. Esto puede ser porque estás usando el modo privado o has deshabilitado las cookies. Los datos no se persistirán entre sesiones.' 
+      })
+    }
+  }, [])
+
   // Permisos
   const isAdmin = user?.roles.includes('admin')
   const isComercial = user?.roles.includes('comercial')
@@ -225,9 +240,14 @@ export default function CRMPage() {
 
     if (!isNew) {
       console.log('[CRM] Updating existing empresa')
-      setEmpresas(prev => prev.map(e =>
+      const success = setEmpresas(prev => prev.map(e =>
         e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
       ))
+      if (!success) {
+        setErrors({ general: 'Error al actualizar la empresa en localStorage' })
+        setIsSaving(false)
+        return
+      }
     } else {
       console.log('[CRM] Creating new empresa')
       const newEmpresa = {
@@ -236,11 +256,18 @@ export default function CRMPage() {
         creado_en: now
       } as Empresa
       console.log('[CRM] New empresa to save:', newEmpresa)
-      setEmpresas(prev => {
+      
+      const success = setEmpresas(prev => {
         const updated = [...prev, newEmpresa]
         console.log('[CRM] Updated empresas array, length:', updated.length)
         return updated
       })
+      
+      if (!success) {
+        setErrors({ general: 'Error al guardar la empresa en localStorage. Verifica que el navegador permita localStorage (no modo privado)' })
+        setIsSaving(false)
+        return
+      }
     }
 
     setIsSaving(false)
@@ -251,7 +278,11 @@ export default function CRMPage() {
   // Eliminar empresa
   const handleDeleteEmpresa = (id: string) => {
     if (confirm('¿Estás seguro de eliminar esta empresa?')) {
-      setEmpresas(prev => prev.filter(e => e.id !== id))
+      const success = setEmpresas(prev => prev.filter(e => e.id !== id))
+      if (!success) {
+        console.error('[CRM] Error al eliminar empresa')
+        return
+      }
       setContactos(prev => prev.filter(c => c.empresa_id !== id))
       setSelectedEmpresa(null)
     }
@@ -386,9 +417,13 @@ export default function CRMPage() {
 
   // Notas internas
   const handleSaveNota = (empresaId: string) => {
-    setEmpresas(prev => prev.map(e =>
+    const success = setEmpresas(prev => prev.map(e =>
       e.id === empresaId ? { ...e, notas_internas: notaTemporal } : e
     ))
+    if (!success) {
+      console.error('[CRM] Error al guardar nota')
+      return
+    }
     setNotaEditando(false)
   }
 
@@ -482,6 +517,17 @@ export default function CRMPage() {
           </Button>
         )}
       </div>
+
+      {/* Error general (localStorage) */}
+      {errors.general && (
+        <div className="p-4 rounded-lg border bg-red-500/10 border-red-500/50 text-red-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">Error</span>
+          </div>
+          <p className="mt-1 text-sm">{errors.general}</p>
+        </div>
+      )}
 
       {/* Alertas */}
       {alertas.length > 0 && (

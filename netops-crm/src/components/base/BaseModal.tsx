@@ -194,8 +194,8 @@ export function ModalFooter({
   return (
     <div
       className={cn(
-        "p-6 pt-0 border-t border-border/50",
-        LAYOUT_CLASSES[layout],
+        "p-6 pt-4 border-t border-border/50 flex flex-row items-center gap-2",
+        layout === "inline-between" && "justify-end",
         className
       )}
       {...props}

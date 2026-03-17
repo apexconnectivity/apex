@@ -5,8 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { InlineAddButton } from '@/components/ui/inline-add-button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { InputNumber } from '@/components/ui/input-number'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -17,14 +20,14 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel, EmpresaModal, UserModal } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from '@/types/proyectos'
 import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE, Subtarea } from '@/types/tareas'
 import { Empresa, Contacto, INDUSTRIAS, TAMAÑOS, ORIGENES, TIPOS_RELACION, TipoEntidad, Industria, Origen, TipoRelacion } from '@/types/crm'
-import { User } from '@/types/auth'
+import { User, Role } from '@/types/auth'
 import { useEmpresas, useContactos, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
 import { VARIANT_COLORS, STATUS_COLORS, ARCHIVE_CLASSES } from '@/lib/colors'
 
@@ -140,6 +143,14 @@ export default function ProyectosPage() {
   })
   const [errorsEmpresa, setErrorsEmpresa] = useState<Record<string, string>>({})
   const [isSavingEmpresa, setIsSavingEmpresa] = useState(false)
+
+  // Modal nuevo usuario (para responsable)
+  const [isModalNuevoUsuario, setIsModalNuevoUsuario] = useState(false)
+  const [nuevoUsuario, setNuevoUsuario] = useState<Partial<User>>({
+    roles: ['tecnico'],
+    activo: true,
+  })
+  const [isSavingUsuario, setIsSavingUsuario] = useState(false)
 
   // Check if we should open the new project modal from URL param
   useMemo(() => {
@@ -497,33 +508,57 @@ export default function ProyectosPage() {
     setNuevoProyecto(PROYECTO_VACIO)
   }
 
-  // Guardar nueva empresa
-  const handleSaveEmpresa = async () => {
-    setErrorsEmpresa({})
-
-    if (!nuevaEmpresa?.nombre || nuevaEmpresa.nombre.trim().length < 2) {
-      setErrorsEmpresa({ nombre: 'El nombre es obligatorio' })
-      return
-    }
-
-    setIsSavingEmpresa(true)
-    await new Promise(r => setTimeout(r, 500))
+  // Guardar nueva empresa (compatible con EmpresaModal)
+  const handleSaveEmpresa = async (empresa: Partial<Empresa>, isNew: boolean) => {
+    if (!isNew) return // Solo manejamos creación desde proyectos
 
     const empresaId = String(Date.now())
     const now = new Date().toISOString().split('T')[0]
 
     const empresaCreada: Empresa = {
-      ...nuevaEmpresa,
+      ...empresa,
       id: empresaId,
       creado_en: now,
     } as Empresa
 
-    setEmpresas(prev => [...prev, empresaCreada])
+    const success = setEmpresas(prev => [...prev, empresaCreada])
+    if (!success) {
+      console.error('[Proyectos] Error al guardar empresa en localStorage')
+      return
+    }
+
     setNuevoProyecto({ ...nuevoProyecto, empresa_id: empresaId })
 
-    setIsSavingEmpresa(false)
     setIsModalNuevaEmpresa(false)
-    setNuevaEmpresa({ tipo_entidad: 'cliente', tipo_relacion: 'Cliente' })
+  }
+
+  // Guardar nuevo usuario (compatible con UserModal)
+  const handleSaveUsuario = async (user: Partial<User>, isNew: boolean) => {
+    if (!isNew) return // Solo manejamos creación desde proyectos
+
+    const usuarioId = String(Date.now())
+    const now = new Date().toISOString().split('T')[0]
+
+    const usuarioCreado: User = {
+      ...user,
+      id: usuarioId,
+      nombre: user.nombre || '',
+      email: user.email || '',
+      roles: user.roles || ['tecnico'],
+      activo: true,
+      creado_en: now,
+      cambiar_password_proximo_login: true,
+    } as User
+
+    setUsuarios(prev => [...prev, usuarioCreado])
+    // Seleccionar automáticamente el nuevo usuario como responsable
+    setNuevoProyecto({
+      ...nuevoProyecto,
+      responsable_id: usuarioId,
+      responsable_nombre: usuarioCreado.nombre
+    })
+
+    setIsModalNuevoUsuario(false)
   }
 
   if (!isAdmin && !isComercial && !isTecnico) {
@@ -696,15 +731,11 @@ export default function ProyectosPage() {
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label htmlFor="empresa">Cliente *</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs text-muted-foreground hover:text-foreground"
+              <InlineAddButton
                 onClick={() => setIsModalNuevaEmpresa(true)}
-              >
-                <Building2 className="h-3 w-3 mr-1" />
-                Nueva empresa
-              </Button>
+                icon={Building2}
+                label="Nueva empresa"
+              />
             </div>
             <Select
               value={nuevoProyecto.empresa_id || ''}
@@ -722,8 +753,15 @@ export default function ProyectosPage() {
             {errors.empresa_id && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.empresa_id}</p>}
           </div>
 
-          <div>
-            <Label htmlFor="responsable">Responsable *</Label>
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="responsable">Responsable *</Label>
+              <InlineAddButton
+                onClick={() => setIsModalNuevoUsuario(true)}
+                icon={UserIcon}
+                label="Nuevo usuario"
+              />
+            </div>
             <Select
               value={nuevoProyecto.responsable_id || ''}
               onValueChange={(value) => {
@@ -786,35 +824,18 @@ export default function ProyectosPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="moneda">Moneda *</Label>
-              <Select
-                value={nuevoProyecto.moneda || 'USD'}
-                onValueChange={(value: "USD" | "MXN" | "EUR") => setNuevoProyecto({ ...nuevoProyecto, moneda: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONEDAS.map((m) => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.moneda && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.moneda}</p>}
-            </div>
-            <div>
-              <Label htmlFor="monto">Monto Estimado</Label>
-              <Input
-                id="monto"
-                type="number"
-                value={nuevoProyecto.monto_estimado || ''}
-                onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
-                placeholder="0"
-                className={errors.monto_estimado ? 'border-red-500' : ''}
-              />
-              {errors.monto_estimado && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errors.monto_estimado}</p>}
-            </div>
+            <InputNumber
+              label="Monto Estimado"
+              value={nuevoProyecto.monto_estimado || ''}
+              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, monto_estimado: Number(e.target.value) })}
+              placeholder="0"
+              showCurrency
+              currency={nuevoProyecto.moneda || 'USD'}
+              currencies={MONEDAS}
+              onCurrencyChange={(value) => setNuevoProyecto({ ...nuevoProyecto, moneda: value as 'USD' | 'MXN' | 'EUR' })}
+              error={errors.monto_estimado}
+              className={errors.monto_estimado ? 'border-red-500' : ''}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -844,16 +865,16 @@ export default function ProyectosPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <input
-              id="requiere_compras"
-              type="checkbox"
-              checked={nuevoProyecto.requiere_compras || false}
-              onChange={(e) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: e.target.checked })}
-              className="h-4 w-4 rounded border-gray-300"
-            />
-            <Label htmlFor="requiere_compras" className="text-sm font-normal">
-              Requiere compras
-            </Label>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="requiere_compras"
+                checked={nuevoProyecto.requiere_compras || false}
+                onCheckedChange={(checked) => setNuevoProyecto({ ...nuevoProyecto, requiere_compras: checked === true })}
+              />
+              <Label htmlFor="requiere_compras" className="text-sm font-normal cursor-pointer">
+                Requiere compras
+              </Label>
+            </div>
           </div>
         </ModalBody>
 
@@ -874,160 +895,24 @@ export default function ProyectosPage() {
         </ModalFooter>
       </BaseModal>
 
-      {/* Modal Nueva Empresa */}
-      <BaseModal open={isModalNuevaEmpresa} onOpenChange={setIsModalNuevaEmpresa} size="lg">
-        <ModalHeader title="Nueva Empresa" />
+      {/* Modal Nueva Empresa - usa el mismo componente que CRM */}
+      <EmpresaModal
+        open={isModalNuevaEmpresa}
+        onOpenChange={setIsModalNuevaEmpresa}
+        onSave={handleSaveEmpresa}
+        empresa={null}
+        isSaving={isSavingEmpresa}
+        userRoles={user?.roles || []}
+      />
 
-        <ModalBody className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_nombre">Nombre *</Label>
-              <Input
-                id="emp_nombre"
-                value={nuevaEmpresa.nombre || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, nombre: e.target.value })}
-                placeholder="Razón social"
-                className={errorsEmpresa.nombre ? 'border-red-500' : ''}
-              />
-              {errorsEmpresa.nombre && <p className={`text-xs ${VARIANT_COLORS.danger.valueColor} mt-1`}>{errorsEmpresa.nombre}</p>}
-            </div>
-            <div>
-              <Label htmlFor="emp_tipo">Tipo</Label>
-              <Select
-                value={nuevaEmpresa.tipo_entidad || 'cliente'}
-                onValueChange={(value) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_entidad: value as TipoEntidad })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cliente">Cliente</SelectItem>
-                  <SelectItem value="proveedor">Proveedor</SelectItem>
-                  <SelectItem value="ambos">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_industria">Industria</Label>
-              <Select
-                value={nuevaEmpresa.industria || ''}
-                onValueChange={(value: Industria) => setNuevaEmpresa({ ...nuevaEmpresa, industria: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INDUSTRIAS.map((ind) => (
-                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="emp_tamano">Tamaño</Label>
-              <Select
-                value={nuevaEmpresa.tamaño || ''}
-                onValueChange={(value: "Micro" | "PYME" | "Gran empresa") => setNuevaEmpresa({ ...nuevaEmpresa, tamaño: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAMAÑOS.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_email">Email</Label>
-              <Input
-                id="emp_email"
-                type="email"
-                value={nuevaEmpresa.email_principal || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, email_principal: e.target.value })}
-                placeholder="contacto@empresa.com"
-              />
-            </div>
-            <div>
-              <Label htmlFor="emp_telefono">Teléfono</Label>
-              <Input
-                id="emp_telefono"
-                value={nuevaEmpresa.telefono_principal || ''}
-                onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, telefono_principal: e.target.value })}
-                placeholder="+54 9 11 1234-5678"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="emp_direccion">Dirección</Label>
-            <Input
-              id="emp_direccion"
-              value={nuevaEmpresa.direccion || ''}
-              onChange={(e) => setNuevaEmpresa({ ...nuevaEmpresa, direccion: e.target.value })}
-              placeholder="Dirección completa"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="emp_origen">Origen</Label>
-              <Select
-                value={nuevaEmpresa.origen || ''}
-                onValueChange={(value: Origen) => setNuevaEmpresa({ ...nuevaEmpresa, origen: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ORIGENES.map((o) => (
-                    <SelectItem key={o} value={o}>{o}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="emp_relacion">Relación</Label>
-              <Select
-                value={nuevaEmpresa.tipo_relacion || 'Cliente'}
-                onValueChange={(value: TipoRelacion) => setNuevaEmpresa({ ...nuevaEmpresa, tipo_relacion: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIPOS_RELACION.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button variant="outline" onClick={() => setIsModalNuevaEmpresa(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSaveEmpresa} disabled={isSavingEmpresa}>
-            {isSavingEmpresa ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              'Crear Empresa'
-            )}
-          </Button>
-        </ModalFooter>
-      </BaseModal>
+      {/* Modal Nuevo Usuario - para crear responsable */}
+      <UserModal
+        open={isModalNuevoUsuario}
+        onOpenChange={setIsModalNuevoUsuario}
+        onSave={handleSaveUsuario}
+        user={null}
+        isSaving={isSavingUsuario}
+      />
 
       {/* Modal Cerrar Proyecto */}
       <BaseModal open={isModalCerrar} onOpenChange={setIsModalCerrar} size="md">

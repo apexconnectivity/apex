@@ -9,5 +9,32 @@ import { type Empresa } from '@/types/crm'
 export function useEmpresas() {
   const key = STORAGE_KEYS.empresas
   const initialValue: Empresa[] = []
-  return useLocalStorage<Empresa[]>(key, initialValue)
+  const [empresas, setEmpresas, isLoaded] = useLocalStorage<Empresa[]>(key, initialValue)
+
+  // Función wrapper con manejo de errores mejorado
+  const setEmpresasWithLogging = (
+    value: Empresa[] | ((prev: Empresa[]) => Empresa[])
+  ): boolean => {
+    try {
+      // Verificar si es una función o un valor directo
+      const newValue = typeof value === 'function' 
+        ? value(empresas) 
+        : value
+      
+      // Verificar que el valor sea válido antes de guardar
+      if (!Array.isArray(newValue)) {
+        console.error('[useEmpresas] Valor inválido: no es un array', newValue)
+        return false
+      }
+      
+      setEmpresas(value)
+      console.log(`[useEmpresas] Guardado exitoso. Total empresas: ${newValue.length}`)
+      return true
+    } catch (error) {
+      console.error('[useEmpresas] Error al guardar:', error)
+      return false
+    }
+  }
+
+  return [empresas, setEmpresasWithLogging, isLoaded] as const
 }
