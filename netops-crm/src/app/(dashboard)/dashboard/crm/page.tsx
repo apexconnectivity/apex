@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
+import { type User } from '@/types/auth'
 import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/hooks'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { CreateContactoModal } from '@/components/module/CreateContactoModal'
+import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -129,6 +132,9 @@ export default function CRMPage() {
   const [proyectos, setProyectos] = useProyectos()
   const [tickets, setTickets] = useTickets()
 
+  // Usuarios internos para proyectos
+  const [usuarios, setUsuarios] = useState<User[]>([])
+
   const [searchQuery, setSearchQuery] = useState('')
   const [tipoFilter, setTipoFilter] = useState<TipoEntidad | 'todos'>('todos')
   const [industriaFilter, setIndustriaFilter] = useState<string>('todas')
@@ -137,6 +143,7 @@ export default function CRMPage() {
   const [isModalEmpresa, setIsModalEmpresa] = useState(false)
   const [isModalContacto, setIsModalContacto] = useState(false)
   const [isModalDocumento, setIsModalDocumento] = useState(false)
+  const [isModalNewProject, setIsModalNewProject] = useState(false)
   const [editingEmpresa, setEditingEmpresa] = useState<Partial<Empresa> | null>(null)
   const [editingContacto, setEditingContacto] = useState<Partial<Contacto> | null>(null)
   const [empresaForContacto, setEmpresaForContacto] = useState<Empresa | null>(null)
@@ -154,11 +161,9 @@ export default function CRMPage() {
       const testKey = '__localStorage_test__'
       localStorage.setItem(testKey, testKey)
       localStorage.removeItem(testKey)
-      console.log('[CRM] localStorage disponible y funcionando')
     } catch (e) {
-      console.error('[CRM] localStorage no disponible:', e)
-      setErrors({ 
-        general: 'Tu navegador no permite guardar datos en localStorage. Esto puede ser porque estás usando el modo privado o has deshabilitado las cookies. Los datos no se persistirán entre sesiones.' 
+      setErrors({
+        general: 'Tu navegador no permite guardar datos en localStorage. Esto puede ser porque estás usando el modo privado o has deshabilitado las cookies. Los datos no se persistirán entre sesiones.'
       })
     }
   }, [])
@@ -231,7 +236,6 @@ export default function CRMPage() {
 
   // Guardar empresa
   const handleSaveEmpresa = async (empresa: Partial<Empresa>, isNew: boolean) => {
-    console.log(`[CRM] handleSaveEmpresa called, isNew: ${isNew}, empresa:`, empresa)
     setErrors({})
     setIsSaving(true)
     await new Promise(r => setTimeout(r, 500))
@@ -239,7 +243,6 @@ export default function CRMPage() {
     const now = new Date().toISOString().split('T')[0]
 
     if (!isNew) {
-      console.log('[CRM] Updating existing empresa')
       const success = setEmpresas(prev => prev.map(e =>
         e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
       ))
@@ -249,20 +252,17 @@ export default function CRMPage() {
         return
       }
     } else {
-      console.log('[CRM] Creating new empresa')
       const newEmpresa = {
         ...empresa,
         id: String(Date.now()),
         creado_en: now
       } as Empresa
-      console.log('[CRM] New empresa to save:', newEmpresa)
-      
+
       const success = setEmpresas(prev => {
         const updated = [...prev, newEmpresa]
-        console.log('[CRM] Updated empresas array, length:', updated.length)
         return updated
       })
-      
+
       if (!success) {
         setErrors({ general: 'Error al guardar la empresa en localStorage. Verifica que el navegador permita localStorage (no modo privado)' })
         setIsSaving(false)
@@ -272,7 +272,6 @@ export default function CRMPage() {
 
     setIsSaving(false)
     setEditingEmpresa(null)
-    console.log('[CRM] handleSaveEmpresa completed')
   }
 
   // Eliminar empresa
@@ -280,7 +279,6 @@ export default function CRMPage() {
     if (confirm('¿Estás seguro de eliminar esta empresa?')) {
       const success = setEmpresas(prev => prev.filter(e => e.id !== id))
       if (!success) {
-        console.error('[CRM] Error al eliminar empresa')
         return
       }
       setContactos(prev => prev.filter(c => c.empresa_id !== id))
@@ -489,6 +487,34 @@ export default function CRMPage() {
     setNotaEditando(true)
   }
 
+  // Guardar nuevo proyecto desde el modal de empresa
+  const handleSaveNewProject = async (proyecto: Partial<Proyecto>) => {
+    if (!selectedEmpresa) return
+
+    const nuevoProyecto: Proyecto = {
+      id: crypto.randomUUID(),
+      empresa_id: selectedEmpresa.id,
+      nombre: proyecto.nombre || 'Nuevo Proyecto',
+      descripcion: proyecto.descripcion,
+      fase_actual: proyecto.fase_actual || 1,
+      estado: proyecto.estado || 'activo',
+      fecha_inicio: proyecto.fecha_inicio,
+      fecha_estimada_fin: proyecto.fecha_estimada_fin,
+      moneda: proyecto.moneda || 'MXN',
+      probabilidad_cierre: proyecto.probabilidad_cierre || 20,
+      responsable_id: proyecto.responsable_id || user?.id || '',
+      responsable_nombre: proyecto.responsable_nombre || user?.nombre || '',
+      contacto_tecnico_id: proyecto.contacto_tecnico_id || '',
+      requiere_compras: proyecto.requiere_compras || false,
+      creado_en: new Date().toISOString(),
+      creado_por: user?.id,
+      cliente_nombre: selectedEmpresa.nombre,
+    }
+
+    setProyectos(prev => [...prev, nuevoProyecto])
+    setIsModalNewProject(false)
+  }
+
   if (!canViewClientes && !canViewProveedores) {
     return (
       <AccessDeniedCard
@@ -586,7 +612,7 @@ export default function CRMPage() {
           />
         </div>
         <Select value={tipoFilter} onValueChange={(v) => setTipoFilter(v as TipoEntidad | 'todos')}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-40 h-8 bg-input border-border">
             <SelectValue placeholder="Tipo" />
           </SelectTrigger>
           <SelectContent>
@@ -597,7 +623,7 @@ export default function CRMPage() {
           </SelectContent>
         </Select>
         <Select value={industriaFilter} onValueChange={setIndustriaFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-48 h-8 bg-input border-border">
             <SelectValue placeholder="Industria" />
           </SelectTrigger>
           <SelectContent>
@@ -712,153 +738,34 @@ export default function CRMPage() {
         onNotaChange={setNotaTemporal}
         onSaveNota={() => selectedEmpresa && handleSaveNota(selectedEmpresa.id)}
         onCancelNota={handleCancelNota}
+        showNewProjectModal={isModalNewProject}
+        onNewProject={() => setIsModalNewProject(true)}
+        onCloseNewProject={() => setIsModalNewProject(false)}
+        onSaveNewProject={handleSaveNewProject}
+        usuarios={usuarios}
+        contactosTecnicos={contactos}
+        isSavingProject={isSaving}
       />
 
       {/* Modal de Contacto */}
-      <Dialog open={isModalContacto} onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}>
-        <DialogContent size="lg">
-          <DialogHeader>
-            <DialogTitle>{editingContacto?.id ? CRM_EMPTY.editarContacto : CRM_EMPTY.nuevoContacto} {TABS_LABELS.contactos}</DialogTitle>
-          </DialogHeader>
-          <DialogBody className="p-6 space-y-4">
-            <div className="space-y-2">
-              <Label>Nombre *</Label>
-              <Input
-                value={editingContacto?.nombre || ''}
-                onChange={(e) => setEditingContacto({ ...editingContacto, nombre: e.target.value })}
-                className={errors.nombre ? VARIANT_COLORS.danger.borderColor : ''}
-              />
-              {errors.nombre && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.nombre}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Cargo</Label>
-              <Input
-                value={editingContacto?.cargo || ''}
-                onChange={(e) => setEditingContacto({ ...editingContacto, cargo: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tipo de Contacto *</Label>
-              <Select
-                value={editingContacto?.tipo_contacto || ''}
-                onValueChange={(v) => setEditingContacto({ ...editingContacto, tipo_contacto: v as TipoContacto })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIPOS_CONTACTO.map(tipo => (
-                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input
-                type="email"
-                value={editingContacto?.email || ''}
-                onChange={(e) => setEditingContacto({ ...editingContacto, email: e.target.value })}
-                className={errors.email ? VARIANT_COLORS.danger.borderColor : ''}
-              />
-              {errors.email && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.email}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Teléfono</Label>
-              <Input
-                value={editingContacto?.telefono || ''}
-                onChange={(e) => setEditingContacto({ ...editingContacto, telefono: e.target.value })}
-                className={errors.telefono ? VARIANT_COLORS.danger.borderColor : ''}
-              />
-              {errors.telefono && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.telefono}</p>}
-            </div>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={editingContacto?.es_principal || false}
-                onChange={(e) => setEditingContacto({ ...editingContacto, es_principal: e.target.checked })}
-              />
-              <span className="text-sm">Contacto principal</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={editingContacto?.recibe_facturas || false}
-                onChange={(e) => setEditingContacto({ ...editingContacto, recibe_facturas: e.target.checked })}
-              />
-              <span className="text-sm">Recibe facturas</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={editingContacto?.activo !== false}
-                onChange={(e) => setEditingContacto({ ...editingContacto, activo: e.target.checked })}
-              />
-              <span className="text-sm">Contacto activo</span>
-            </label>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsModalContacto(false); setEditingContacto(null) }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveContacto} disabled={isSaving}>
-              {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateContactoModal
+        open={isModalContacto}
+        onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}
+        onSave={handleSaveContacto}
+        contacto={editingContacto}
+        empresaId={empresaForContacto?.id || ''}
+        isSaving={isSaving}
+        errors={errors}
+      />
 
       {/* Modal de Documento */}
-      <Dialog open={isModalDocumento} onOpenChange={(open) => { if (!open) { setIsModalDocumento(false); setEmpresaForDocumento(null) } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Subir Documento</DialogTitle>
-          </DialogHeader>
-          <DialogBody className="space-y-4">
-            <div className="space-y-2">
-              <Label>Visibilidad</Label>
-              <Select
-                value={newDocumento.visibilidad}
-                onValueChange={(v: 'interno' | 'publico') => setNewDocumento({ ...newDocumento, visibilidad: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="interno">Interno</SelectItem>
-                  <SelectItem value="publico">Público</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Descripción</Label>
-              <Input
-                value={newDocumento.descripcion}
-                onChange={(e) => setNewDocumento({ ...newDocumento, descripcion: e.target.value })}
-                placeholder="Descripción del documento"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Nombre del Archivo</Label>
-              <Input
-                value={newDocumento.nombreArchivo}
-                onChange={(e) => setNewDocumento({ ...newDocumento, nombreArchivo: e.target.value })}
-                placeholder="ej: contrato_2024.pdf"
-              />
-            </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsModalDocumento(false); setEmpresaForDocumento(null) }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveDocumento}>
-              <Upload className="h-4 w-4 mr-2" />
-              Subir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UploadDocumentModal
+        open={isModalDocumento}
+        onOpenChange={(open) => { if (!open) { setIsModalDocumento(false); setEmpresaForDocumento(null) } }}
+        onSave={handleSaveDocumento}
+        entidadId={empresaForDocumento?.id || ''}
+        entidadTipo="empresa"
+      />
     </ModuleContainer>
   )
 }

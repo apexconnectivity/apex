@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, Edit, Trash2, Plus, FileText, Check, X, Upload } from 'lucide-react'
+import { Building2, Edit, Trash2, Plus, FileText, Check, X, Upload, FolderKanban } from 'lucide-react'
 import { BaseModal, ModalHeader, ModalBody } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatusBadge } from './StatusBadge'
+import { ProjectModal } from './ProjectModal'
 import { cn } from '@/lib/utils'
 import type { Empresa, Contacto, Documento } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
+import type { User } from '@/types/auth'
+import type { Contacto as ContactoType } from '@/types/crm'
 import type { Ticket } from '@/types/soporte'
 
 const TIPO_COLORS = {
@@ -54,6 +57,14 @@ interface EmpresaDetailModalProps {
   onNotaChange: (value: string) => void
   onSaveNota: () => void
   onCancelNota: () => void
+  // Props para crear proyecto
+  showNewProjectModal?: boolean
+  onNewProject?: () => void
+  onCloseNewProject?: () => void
+  onSaveNewProject?: (proyecto: Partial<Proyecto>, isNew: boolean) => void | Promise<void>
+  usuarios?: User[]
+  contactosTecnicos?: ContactoType[]
+  isSavingProject?: boolean
 }
 
 /**
@@ -85,6 +96,14 @@ export function EmpresaDetailModal({
   onNotaChange,
   onSaveNota,
   onCancelNota,
+  // Nuevas props
+  showNewProjectModal = false,
+  onNewProject,
+  onCloseNewProject,
+  onSaveNewProject,
+  usuarios = [],
+  contactosTecnicos = [],
+  isSavingProject = false,
 }: EmpresaDetailModalProps) {
   // Si no hay empresa, no renderizar
   if (!empresa) return null
@@ -122,7 +141,7 @@ export function EmpresaDetailModal({
         }
         showBorder={false}
       />
-      
+
       {/* ✅ ModalBody con tabs */}
       <ModalBody>
         <Tabs defaultValue="info" className="w-full">
@@ -293,6 +312,15 @@ export function EmpresaDetailModal({
 
             {/* Tab: Proyectos */}
             <TabsContent value="proyectos" className="mt-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-medium">Proyectos</h3>
+                {canEdit && (
+                  <Button size="sm" onClick={onNewProject}>
+                    <FolderKanban className="h-4 w-4 mr-2" />
+                    Nuevo Proyecto
+                  </Button>
+                )}
+              </div>
               {empresaProyectos.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
                   No hay proyectos asociados
@@ -412,6 +440,27 @@ export function EmpresaDetailModal({
           </div>
         </Tabs>
       </ModalBody>
+
+      {/* Modal para crear nuevo proyecto */}
+      {showNewProjectModal && empresa && (
+        <ProjectModal
+          open={showNewProjectModal}
+          onOpenChange={(open) => !open && onCloseNewProject?.()}
+          onSave={async (proyecto, isNew) => {
+            if (onSaveNewProject) {
+              await onSaveNewProject(proyecto, isNew)
+            }
+          }}
+          proyecto={{
+            empresa_id: empresa.id,
+            cliente_nombre: empresa.nombre,
+          }}
+          empresas={[empresa]}
+          usuarios={usuarios}
+          contactos={contactosTecnicos}
+          isSaving={isSavingProject}
+        />
+      )}
     </BaseModal>
   )
 }
