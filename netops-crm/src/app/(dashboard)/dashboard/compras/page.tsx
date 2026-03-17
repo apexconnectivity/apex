@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogB
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
 import {
   IMPUESTO_TASA, IMPUESTO_LABEL,
@@ -50,12 +51,13 @@ function ProveedoresTab({ proveedores }: { proveedores: Proveedor[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-          <Input placeholder={PLACEHOLDER_BUSCAR_PROVEEDORES} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 pr-8 bg-background/80 border-border/50" />
-        </div>
-      </div>
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        filters={[]}
+        values={{}}
+        onFilterChange={() => { }}
+      />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(proveedor => (
@@ -343,15 +345,26 @@ export default function ComprasPage() {
   const [showNuevaOrden, setShowNuevaOrden] = useState(false)
   const [selectedOrden, setSelectedOrden] = useState<OrdenCompra | null>(null)
   const [filtroEstado, setFiltroEstado] = useLocalStorage<string>('compras_filtro_estado', 'todos')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const isAdmin = user?.roles.includes('admin')
   const isCompras = user?.roles.includes('compras')
   const canCreate = isAdmin || isCompras
 
   const ordenesFiltradas = useMemo(() => {
-    if (filtroEstado === 'todos') return ordenes
-    return ordenes.filter(o => o.estado === filtroEstado)
-  }, [ordenes, filtroEstado])
+    let result = ordenes
+    if (filtroEstado !== 'todos') {
+      result = result.filter(o => o.estado === filtroEstado)
+    }
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(o =>
+        o.numero_oc.toLowerCase().includes(query) ||
+        o.proveedor_nombre.toLowerCase().includes(query)
+      )
+    }
+    return result
+  }, [ordenes, filtroEstado, searchQuery])
 
   const stats = useMemo(() => ({
     pendientes: ordenes.filter(o => o.estado === 'Pendiente aprobación').length,
@@ -460,15 +473,29 @@ export default function ComprasPage() {
 
         <TabsContent value="ordenes">
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                <SelectTrigger className="w-48 bg-background"><SelectValue placeholder={FILTRO_ESTADO} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">{FILTRO_TODOS_ESTADOS}</SelectItem>
-                  {ESTADOS_ORDEN.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterBar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              filters={[
+                {
+                  key: 'estado',
+                  label: FILTRO_ESTADO,
+                  options: [
+                    { value: 'todos', label: FILTRO_TODOS_ESTADOS },
+                    ...ESTADOS_ORDEN.map(e => ({ value: e, label: e }))
+                  ]
+                }
+              ]}
+              values={{ estado: filtroEstado }}
+              onFilterChange={(key, value) => {
+                if (key === 'estado') setFiltroEstado(value)
+              }}
+              hasActiveFilters={filtroEstado !== 'todos' || searchQuery !== ''}
+              onClearFilters={() => {
+                setFiltroEstado('todos')
+                setSearchQuery('')
+              }}
+            />
 
             <div className="space-y-2">
               {ordenesFiltradas.map(orden => (

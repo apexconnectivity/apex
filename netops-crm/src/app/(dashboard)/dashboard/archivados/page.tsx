@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -157,17 +158,13 @@ export default function ArchivadoPage() {
 
         <TabsContent value="cerrados">
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1 max-w-md">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-                <Input
-                  placeholder={ARCHIVADO_FILTROS.buscarProyectos}
-                  value={searchCerrados}
-                  onChange={(e) => setSearchCerrados(e.target.value)}
-                  className="pl-9 pr-8 bg-background/80 border-border/50"
-                />
-              </div>
-            </div>
+            <FilterBar
+              searchValue={searchCerrados}
+              onSearchChange={setSearchCerrados}
+              filters={[]}
+              values={{}}
+              onFilterChange={() => { }}
+            />
 
             {filteredCerrados.length === 0 ? (
               <Card>
@@ -200,25 +197,30 @@ export default function ArchivadoPage() {
             </div>
 
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={ARCHIVADO_FILTROS.buscarProyectosArchivados}
-                  value={searchArchivados}
-                  onChange={(e) => setSearchArchivados(e.target.value)}
-                  className="pl-9 pr-8 bg-background/80 border-border/50"
-                />
-              </div>
-              <Select value={filtroArchivados} onValueChange={(v) => setFiltroArchivados(v as typeof filtroArchivados)}>
-                <SelectTrigger className="w-40 bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">{ARCHIVADO_FILTROS.todos}</SelectItem>
-                  <SelectItem value="completado">{ARCHIVADO_FILTROS.completados}</SelectItem>
-                  <SelectItem value="inconcluso">{ARCHIVADO_FILTROS.inconcluso}</SelectItem>
-                </SelectContent>
-              </Select>
+              <FilterBar
+                searchValue={searchArchivados}
+                onSearchChange={setSearchArchivados}
+                filters={[
+                  {
+                    key: 'clasificacion',
+                    label: 'Clasificación',
+                    options: [
+                      { value: 'todos', label: ARCHIVADO_FILTROS.todos },
+                      { value: 'completado', label: ARCHIVADO_FILTROS.completados },
+                      { value: 'inconcluso', label: ARCHIVADO_FILTROS.inconcluso }
+                    ]
+                  }
+                ]}
+                values={{ clasificacion: filtroArchivados }}
+                onFilterChange={(key, value) => {
+                  if (key === 'clasificacion') setFiltroArchivados(value as typeof filtroArchivados)
+                }}
+                hasActiveFilters={filtroArchivados !== 'todos' || searchArchivados !== ''}
+                onClearFilters={() => {
+                  setFiltroArchivados('todos')
+                  setSearchArchivados('')
+                }}
+              />
             </div>
 
             {filteredArchivados.length === 0 ? (
