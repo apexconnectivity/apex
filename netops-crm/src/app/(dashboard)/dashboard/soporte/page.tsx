@@ -29,6 +29,7 @@ import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
 import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Filter, X, Plus } from 'lucide-react'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 
@@ -146,6 +147,7 @@ export default function SoportePage() {
   const [filtroResponsable, setFiltroResponsable] = useState<string>('todos')
   const [filtroFechaDesde, setFiltroFechaDesde] = useState<string>('')
   const [filtroFechaHasta, setFiltroFechaHasta] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -202,6 +204,8 @@ export default function SoportePage() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter(t => {
+      // Filtro por búsqueda
+      if (searchQuery && !t.titulo.toLowerCase().includes(searchQuery.toLowerCase()) && !t.descripcion.toLowerCase().includes(searchQuery.toLowerCase())) return false
       // Filtro por estado
       if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false
       // Filtro por categoría
@@ -218,7 +222,7 @@ export default function SoportePage() {
       if (filtroFechaHasta && t.fecha_apertura > filtroFechaHasta) return false
       return true
     })
-  }, [tickets, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaDesde, filtroFechaHasta])
+  }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaDesde, filtroFechaHasta])
 
   const ticketsPorEstado = useMemo(() => {
     const r: Record<EstadoTicket, Ticket[]> = { 'Abierto': [], 'En progreso': [], 'Esperando cliente': [], 'Resuelto': [], 'Cerrado': [] }
@@ -393,75 +397,90 @@ export default function SoportePage() {
 
         {view === 'tickets' && (
           <>
-            <StatGrid cols={6}>
-              <MiniStat value={stats.total} label={SOPORTE_STATS.total} variant="primary" showBorder accentColor={SOPORTE_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
-              <MiniStat value={stats.abiertos} label={SOPORTE_STATS.abiertos} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.abiertos} icon={<CircleDot className="h-5 w-5" />} />
-              <MiniStat value={stats.enProgreso} label={SOPORTE_STATS.enProgreso} variant="info" showBorder accentColor={SOPORTE_STATS_COLORS.enProgreso} icon={<Clock className="h-5 w-5" />} />
-              <MiniStat value={stats.resueltos} label={SOPORTE_STATS.resueltos} variant="success" showBorder accentColor={SOPORTE_STATS_COLORS.resueltos} icon={<CheckCircle className="h-5 w-5" />} />
-              <MiniStat value={stats.cerrados} label={SOPORTE_STATS.cerrados} variant="default" showBorder accentColor={SOPORTE_STATS_COLORS.cerrados} icon={<Archive className="h-5 w-5" />} />
-              <MiniStat value={stats.urgentes} label={SOPORTE_STATS.urgentes} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.urgentes} icon={<Siren className="h-5 w-5" />} />
-            </StatGrid>
+            {/* Filtros */}
+            <FilterBar
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder="Buscar tickets..."
+              filters={[
+                {
+                  key: 'cliente',
+                  label: 'Cliente',
+                  placeholder: 'Cliente',
+                  options: [
+                    { value: 'todos', label: 'Todos' },
+                    ...empresas.filter(e => e.tipo_entidad === 'cliente').map(e => ({ value: e.id, label: e.nombre })),
+                  ],
+                  width: 'w-40',
+                },
+                ...(isAdmin ? [{
+                  key: 'responsable',
+                  label: 'Responsable',
+                  placeholder: 'Responsable',
+                  options: [
+                    { value: 'todos', label: 'Todos' },
+                    ...USUARIOS_INTERNOS.map(u => ({ value: u.id, label: u.nombre })),
+                  ],
+                  width: 'w-36',
+                }] : []),
+                {
+                  key: 'estado',
+                  label: 'Estado',
+                  placeholder: 'Estado',
+                  options: [
+                    { value: 'todos', label: 'Todos' },
+                    ...ESTADOS_TICKET.map(e => ({ value: e, label: e })),
+                  ],
+                  width: 'w-36',
+                },
+                {
+                  key: 'categoria',
+                  label: 'Categoría',
+                  placeholder: 'Categoría',
+                  options: [
+                    { value: 'todas', label: 'Todas' },
+                    ...CATEGORIAS_TICKET.map(c => ({ value: c, label: c })),
+                  ],
+                  width: 'w-36',
+                },
+                {
+                  key: 'prioridad',
+                  label: 'Prioridad',
+                  placeholder: 'Prioridad',
+                  options: [
+                    { value: 'todas', label: 'Todas' },
+                    ...PRIORIDADES_TICKET.map(p => ({ value: p, label: p })),
+                  ],
+                  width: 'w-32',
+                },
+              ]}
+              values={{
+                cliente: filtroCliente,
+                responsable: filtroResponsable,
+                estado: filtroEstado,
+                categoria: filtroCategoria,
+                prioridad: filtroPrioridad,
+              }}
+              onFilterChange={(key, value) => {
+                if (key === 'cliente') setFiltroCliente(value)
+                else if (key === 'responsable') setFiltroResponsable(value)
+                else if (key === 'estado') setFiltroEstado(value)
+                else if (key === 'categoria') setFiltroCategoria(value)
+                else if (key === 'prioridad') setFiltroPrioridad(value)
+              }}
+              hasActiveFilters={filtroCliente !== 'todos' || filtroResponsable !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery}
+              onClearFilters={() => {
+                setSearchQuery('')
+                setFiltroCliente('todos')
+                setFiltroResponsable('todos')
+                setFiltroEstado('todos')
+                setFiltroCategoria('todas')
+                setFiltroPrioridad('todas')
+              }}
+            />
 
-            <div className="flex gap-4 items-center">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.cliente}</Label>
-                <Select value={filtroCliente} onValueChange={setFiltroCliente}>
-                  <SelectTrigger className="w-40 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todos} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
-                    {empresas.filter(e => e.tipo_entidad === 'cliente').map(e => <SelectItem key={e.id} value={e.id}>{e.nombre}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {isAdmin && (
-                <div className="flex items-center gap-1">
-                  <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.responsable}</Label>
-                  <Select value={filtroResponsable} onValueChange={setFiltroResponsable}>
-                    <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_FILTROS.todos} /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
-                      {USUARIOS_INTERNOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.estado}</Label>
-                <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todos} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">{SOPORTE_SELECTORES.todos}</SelectItem>
-                    {ESTADOS_TICKET.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.categoria}</Label>
-                <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger className="w-36 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todas} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">{SOPORTE_SELECTORES.todas}</SelectItem>
-                    {CATEGORIAS_TICKET.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground mr-1">{SOPORTE_FILTROS.prioridad}</Label>
-                <Select value={filtroPrioridad} onValueChange={setFiltroPrioridad}>
-                  <SelectTrigger className="w-32 h-8 bg-background"><SelectValue placeholder={SOPORTE_SELECTORES.todas} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">{SOPORTE_SELECTORES.todas}</SelectItem>
-                    {PRIORIDADES_TICKET.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
+            {/* Filtros adicionales: Fechas */}
+            <div className="flex flex-wrap gap-2 items-center text-sm">
               <div className="flex items-center gap-1">
                 <Label className="text-xs text-muted-foreground">{SOPORTE_FILTROS.desde}</Label>
                 <Input
@@ -481,26 +500,19 @@ export default function SoportePage() {
                   className="w-32 h-8 bg-background"
                 />
               </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setFiltroCliente('todos')
-                  setFiltroResponsable('todos')
-                  setFiltroEstado('todos')
-                  setFiltroCategoria('todas')
-                  setFiltroPrioridad('todas')
-                  setFiltroFechaDesde('')
-                  setFiltroFechaHasta('')
-                }}
-                className="h-8 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3 w-3 mr-1" /> {SOPORTE_FILTROS.limpiar}
-              </Button>
-
-              {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}</Button>}
             </div>
+
+            {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}</Button>}
+
+            {/* Stats */}
+            <StatGrid cols={6}>
+              <MiniStat value={stats.total} label={SOPORTE_STATS.total} variant="primary" showBorder accentColor={SOPORTE_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
+              <MiniStat value={stats.abiertos} label={SOPORTE_STATS.abiertos} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.abiertos} icon={<CircleDot className="h-5 w-5" />} />
+              <MiniStat value={stats.enProgreso} label={SOPORTE_STATS.enProgreso} variant="info" showBorder accentColor={SOPORTE_STATS_COLORS.enProgreso} icon={<Clock className="h-5 w-5" />} />
+              <MiniStat value={stats.resueltos} label={SOPORTE_STATS.resueltos} variant="success" showBorder accentColor={SOPORTE_STATS_COLORS.resueltos} icon={<CheckCircle className="h-5 w-5" />} />
+              <MiniStat value={stats.cerrados} label={SOPORTE_STATS.cerrados} variant="default" showBorder accentColor={SOPORTE_STATS_COLORS.cerrados} icon={<Archive className="h-5 w-5" />} />
+              <MiniStat value={stats.urgentes} label={SOPORTE_STATS.urgentes} variant="danger" showBorder accentColor={SOPORTE_STATS_COLORS.urgentes} icon={<Siren className="h-5 w-5" />} />
+            </StatGrid>
 
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
               <div className="-mx-6 px-6 overflow-x-auto">
