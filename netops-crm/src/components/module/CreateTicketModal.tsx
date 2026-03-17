@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Trash2, Ticket, AlertCircle, Info, Calendar } from 'lucide-react'
+import { PlusCircle, Trash2, Ticket, AlertCircle, Info, Calendar } from 'lucide-react'
 import { Ticket as TicketType, ContratoSoporte, CategoriaTicket, PrioridadTicket, EstadoTicket, CATEGORIAS_TICKET, PRIORIDADES_TICKET, ESTADOS_TICKET } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
@@ -21,11 +21,14 @@ interface CreateTicketModalProps {
   contratos: ContratoSoporte[]
   empresas: Empresa[]
   proyectos?: Proyecto[]
+  setProyectos?: React.Dispatch<React.SetStateAction<Proyecto[]>>
   usuarios: { id: string; nombre: string; rol: string }[]
   mode?: TicketModalMode
   ticket?: TicketType | null
   onSave: (data: CreateTicketData) => void
   onDelete?: () => void
+  onCreateProject?: () => void
+  onCreateEmpresa?: () => void
 }
 
 export interface CreateTicketData {
@@ -437,11 +440,14 @@ export function CreateTicketModal({
   contratos,
   empresas,
   proyectos,
+  setProyectos,
   usuarios,
   mode = 'create',
   ticket,
   onSave,
-  onDelete
+  onDelete,
+  onCreateProject,
+  onCreateEmpresa
 }: CreateTicketModalProps) {
   const isEditMode = mode === 'edit'
   const isClienteMode = mode === 'cliente'
@@ -542,6 +548,10 @@ export function CreateTicketModal({
 
   const hasContratos = contratos.filter(c => c.estado === 'Activo').length > 0
   const hasEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos').length > 0
+  const hasProyectos = proyectos && proyectos.filter(p => p.estado === 'activo').length > 0
+
+  // Determinar el tipo de ticket seleccionado (soporte o proyecto)
+  const tipoTicketSeleccionado = ticketData.tipo_origen
 
   const canSave = (() => {
     if (!ticketData.titulo || !ticketData.descripcion) return false
@@ -573,18 +583,50 @@ export function CreateTicketModal({
           </div>
         }
       />
-      
+
       {/* ✅ ModalBody */}
       <ModalBody>
-        {!hasContratos && !isClienteMode ? (
+        {/* Caso: No hay empresas (solo modo interno) */}
+        {!hasEmpresas && !isClienteMode ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinEmpresas}</p>
+            <p className="text-sm text-muted-foreground mb-4">{CREATE_TICKET_MODAL.alertas.crearEmpresaPrimero}</p>
+            {onCreateEmpresa && (
+              <Button
+                onClick={() => {
+                  onOpenChange(false)
+                  onCreateEmpresa()
+                }}
+                className="flex items-center gap-2"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Crear Empresa
+              </Button>
+            )}
+          </div>
+        ) : !hasContratos && !isClienteMode && ticketData.tipo_origen === 'soporte' ? (
+          /* Caso: No hay contratos para tickets de soporte */
           <div className="text-center py-8">
             <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinContratos}</p>
             <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearContratoPrimero}</p>
           </div>
-        ) : !hasEmpresas && !isClienteMode ? (
+        ) : !hasProyectos && !isClienteMode && ticketData.tipo_origen === 'proyecto' ? (
+          /* Caso: No hay proyectos para tickets de proyecto */
           <div className="text-center py-8">
-            <p className="text-muted-foreground">{CREATE_TICKET_MODAL.alertas.sinEmpresas}</p>
-            <p className="text-sm text-muted-foreground">{CREATE_TICKET_MODAL.alertas.crearEmpresaPrimero}</p>
+            <p className="text-muted-foreground">No hay proyectos disponibles.</p>
+            <p className="text-sm text-muted-foreground mb-4">Crea un proyecto primero.</p>
+            {onCreateProject && (
+              <Button
+                onClick={() => {
+                  onOpenChange(false)
+                  onCreateProject()
+                }}
+                className="flex items-center gap-2"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Crear Proyecto
+              </Button>
+            )}
           </div>
         ) : (
           <TicketFormFields
@@ -598,7 +640,7 @@ export function CreateTicketModal({
           />
         )}
       </ModalBody>
-      
+
       {/* ✅ ModalFooter */}
       <ModalFooter layout="inline-between">
         {isEditMode && onDelete && (

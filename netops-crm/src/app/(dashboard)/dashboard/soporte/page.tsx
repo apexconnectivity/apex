@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { useEmpresas, useProyectos } from '@/hooks'
+import { useEmpresas, useProyectos, useContactos } from '@/hooks'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Ticket, ContratoSoporte, ComentarioTicket, EstadoTicket, ESTADOS_TICKET, CategoriaTicket, CATEGORIAS_TICKET, PrioridadTicket, PRIORIDADES_TICKET } from '@/types/soporte'
@@ -12,6 +12,8 @@ import { CreateTicketData } from '@/components/module/CreateTicketModal'
 import { CreateContractData } from '@/components/module/CreateContractModal'
 import { CreateTicketModal } from '@/components/module/CreateTicketModal'
 import { CreateContractModal } from '@/components/module/CreateContractModal'
+import { ProjectModal } from '@/components/module/ProjectModal'
+import { EmpresaModal } from '@/components/module/EmpresaModal'
 import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_SELECTORES } from '@/constants/soporte'
 import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
@@ -124,7 +126,9 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 export default function SoportePage() {
   const { user } = useAuth()
   const [empresas] = useEmpresas()
-  const [proyectos] = useProyectos()
+  const [proyectos, setProyectos] = useProyectos()
+  const [contactos] = useContactos()
+  const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
   const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(STORAGE_KEYS.soporteVista, 'tickets')
   const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(STORAGE_KEYS.contratos, [])
   const [tickets, setTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
@@ -133,6 +137,8 @@ export default function SoportePage() {
   const selected = tickets.find(t => t.id === selectedId) || null
   const [showCreateTicket, setShowCreateTicket] = useState(false)
   const [showCreateContract, setShowCreateContract] = useState(false)
+  const [showNewProject, setShowNewProject] = useState(false)
+  const [showNewEmpresa, setShowNewEmpresa] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
@@ -304,6 +310,37 @@ export default function SoportePage() {
       creado_en: new Date().toISOString(),
     }
     setContratos(prev => [...prev, newContract])
+  }
+
+  // Handler para crear proyecto desde soporte
+  const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
+    if (!isNew || !proyecto.nombre) return
+
+    const now = new Date().toISOString().split('T')[0]
+    const nuevoProyecto: import('@/types/proyectos').Proyecto = {
+      ...proyecto,
+      id: String(Date.now()),
+      creado_en: now,
+    } as import('@/types/proyectos').Proyecto
+
+    setProyectos(prev => [...prev, nuevoProyecto])
+  }
+
+  // Handler para crear empresa desde soporte
+  const handleSaveEmpresa = async (empresa: Partial<import('@/types/crm').Empresa>, isNew: boolean) => {
+    if (!isNew || !empresa.nombre) return
+
+    const now = new Date().toISOString()
+    const nuevaEmpresa: import('@/types/crm').Empresa = {
+      ...empresa,
+      id: String(Date.now()),
+      creado_en: now,
+    } as import('@/types/crm').Empresa
+
+    // Guardar en localStorage
+    const stored = localStorage.getItem('netops_empresas')
+    const existingEmpresas: import('@/types/crm').Empresa[] = stored ? JSON.parse(stored) : []
+    localStorage.setItem('netops_empresas', JSON.stringify([...existingEmpresas, nuevaEmpresa]))
   }
 
   if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion) {
@@ -549,8 +586,11 @@ export default function SoportePage() {
             contratos={contratos}
             empresas={empresas}
             proyectos={proyectos}
+            setProyectos={setProyectos}
             usuarios={USUARIOS_INTERNOS}
             onSave={handleCreateTicket}
+            onCreateProject={() => setShowNewProject(true)}
+            onCreateEmpresa={() => setShowNewEmpresa(true)}
           />
         )}
 
@@ -563,6 +603,24 @@ export default function SoportePage() {
             onSave={handleCreateContract}
           />
         )}
+
+        {/* Modal para crear nuevo proyecto */}
+        <ProjectModal
+          open={showNewProject}
+          onOpenChange={setShowNewProject}
+          onSave={handleSaveProyecto}
+          empresas={empresas}
+          usuarios={usuarios}
+          contactos={contactos}
+        />
+
+        {/* Modal para crear nueva empresa */}
+        <EmpresaModal
+          open={showNewEmpresa}
+          onOpenChange={setShowNewEmpresa}
+          onSave={handleSaveEmpresa}
+          empresa={null}
+        />
       </ModuleContainerWithPanel>
     </>
   )
