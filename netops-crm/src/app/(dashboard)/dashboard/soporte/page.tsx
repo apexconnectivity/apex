@@ -12,7 +12,7 @@ import { CreateTicketData } from '@/components/module/CreateTicketModal'
 import { CreateContractData } from '@/components/module/CreateContractModal'
 import { CreateTicketModal } from '@/components/module/CreateTicketModal'
 import { CreateContractModal } from '@/components/module/CreateContractModal'
-import { ProjectModal } from '@/components/module/ProjectModal'
+import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
 import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_SELECTORES } from '@/constants/soporte'
 import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
@@ -622,7 +622,7 @@ export default function SoportePage() {
         )}
 
         {/* Modal para crear nuevo proyecto */}
-        <ProjectModal
+        <CreateProjectModal
           open={showNewProject}
           onOpenChange={setShowNewProject}
           onSave={handleSaveProyecto}

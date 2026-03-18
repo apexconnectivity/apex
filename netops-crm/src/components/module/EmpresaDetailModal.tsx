@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatusBadge } from './StatusBadge'
-import { ProjectModal } from './ProjectModal'
+import { CreateProjectModal } from './CreateProjectModal'
 import { cn } from '@/lib/utils'
 import type { Empresa, Contacto, Documento } from '@/types/crm'
 import type { Proyecto } from '@/types/proyectos'
@@ -449,7 +449,7 @@ export function EmpresaDetailModal({
 
       {/* Modal para crear nuevo proyecto */}
       {showNewProjectModal && empresa && (
-        <ProjectModal
+        <CreateProjectModal
           open={showNewProjectModal}
           onOpenChange={(open) => !open && onCloseNewProject?.()}
           onSave={async (proyecto, isNew) => {

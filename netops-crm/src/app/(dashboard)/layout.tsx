@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/sidebar'
 import { DashboardHeader } from '@/components/dashboard-header'
-import { ProjectModal } from '@/components/module/ProjectModal'
+import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { useEmpresas, useContactos, useProyectos } from '@/hooks'
 import { Proyecto } from '@/types/proyectos'
 import { User } from '@/types/auth'
@@ -190,7 +190,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Modal para nuevo proyecto desde el header */}
-      <ProjectModal
+      <CreateProjectModal
         open={isNewProjectModalOpen}
         onOpenChange={setIsNewProjectModalOpen}
         onSave={handleNewProject}

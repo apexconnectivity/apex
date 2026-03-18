@@ -18,7 +18,7 @@ import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
 import { UserModal } from './UserModal'
 
-interface ProjectModalProps {
+interface CreateProjectModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (proyecto: Partial<Proyecto>, isNew: boolean) => void | Promise<void>
@@ -48,10 +48,10 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
 }
 
 /**
- * ProjectModal - Modal único para crear/editar proyectos
+ * CreateProjectModal - Modal único para crear/editar proyectos
  * Incluye sub-modales para crear empresa y usuario inline
  */
-export function ProjectModal({
+export function CreateProjectModal({
   open,
   onOpenChange,
   onSave,
@@ -61,7 +61,7 @@ export function ProjectModal({
   contactos,
   isSaving = false,
   errors = {},
-}: ProjectModalProps) {
+}: CreateProjectModalProps) {
   const isEditing = !!proyecto?.id
 
   const [formData, setFormData] = useState<Partial<Proyecto>>(
