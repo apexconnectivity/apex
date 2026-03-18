@@ -16,7 +16,7 @@ import { User } from '@/types/auth'
 import { Contacto, Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
-import { UserModal } from './UserModal'
+import { CreateUserModal } from './CreateUserModal'
 
 interface CreateProjectModalProps {
   open: boolean
@@ -419,7 +419,7 @@ export function CreateProjectModal({
         empresa={null}
       />
 
-      <UserModal
+      <CreateUserModal
         open={showNewUsuario}
         onOpenChange={setShowNewUsuario}
         onSave={handleSaveUsuario}

@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { RotateCcw, Plus, Building2, LayoutGrid, Layers, Lightbulb, PenTool, Bug, Rocket, Loader2, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban, Search } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel, CreateEmpresaModal, UserModal } from '@/components/module'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel, CreateEmpresaModal, CreateUserModal } from '@/components/module'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
@@ -534,7 +534,7 @@ export default function ProyectosPage() {
     setIsModalNuevaEmpresa(false)
   }
 
-  // Guardar nuevo usuario (compatible con UserModal)
+  // Guardar nuevo usuario (compatible con CreateUserModal)
   const handleSaveUsuario = async (user: Partial<User>, isNew: boolean) => {
     if (!isNew) return // Solo manejamos creación desde proyectos
 
@@ -918,7 +918,7 @@ export default function ProyectosPage() {
       />
 
       {/* Modal Nuevo Usuario - para crear responsable */}
-      <UserModal
+      <CreateUserModal
         open={isModalNuevoUsuario}
         onOpenChange={setIsModalNuevoUsuario}
         onSave={handleSaveUsuario}

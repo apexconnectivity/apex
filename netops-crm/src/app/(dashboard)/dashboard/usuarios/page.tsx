@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
-import { ModuleContainer, ModuleHeader, UserModal } from '@/components/module'
+import { ModuleContainer, ModuleHeader, CreateUserModal } from '@/components/module'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
@@ -306,7 +306,7 @@ export default function UsersPage() {
       </div>
 
       {/* User Modal - Usando componente reutilizable */}
-      <UserModal
+      <CreateUserModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         user={editingUser}

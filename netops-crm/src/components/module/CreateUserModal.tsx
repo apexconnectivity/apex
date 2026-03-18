@@ -10,7 +10,7 @@ import { User, Role } from '@/types/auth'
 import { cn } from '@/lib/utils'
 import { ModalVariant } from '@/constants/modales'
 
-interface UserModalProps {
+interface CreateUserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (user: Partial<User>, isNew: boolean) => void | Promise<void>
@@ -32,16 +32,16 @@ const ROLE_LABELS: Record<Role, string> = {
 }
 
 /**
- * UserModal - Modal para crear/editar usuarios
+ * CreateUserModal - Modal para crear/editar usuarios
  */
-export function UserModal({
+export function CreateUserModal({
   open,
   onOpenChange,
   onSave,
   user,
   isSaving = false,
   errors = {},
-}: UserModalProps) {
+}: CreateUserModalProps) {
   const isEditing = !!user?.id
 
   const [formData, setFormData] = useState<Partial<User>>({
