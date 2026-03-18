@@ -20,7 +20,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200",
+      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300",
       className
     )}
     {...props}
@@ -50,7 +50,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 w-full -translate-x-1/2 -translate-y-1/2 bg-background rounded-lg shadow-2xl border border-border/50 animate-in fade-in duration-200 max-h-[85vh] overflow-hidden flex flex-col",
+        "fixed left-[50%] top-[50%] z-50 w-full -translate-x-1/2 -translate-y-1/2 bg-background rounded-lg shadow-2xl border border-border/50 animate-in fade-in duration-300 max-h-[85vh] overflow-hidden flex flex-col",
         sizeClasses[size],
         className
       )}
@@ -61,7 +61,7 @@ const DialogContent = React.forwardRef<
         {description || 'Dialog modal'}
       </DialogPrimitive.Description>
       <div className="flex flex-col h-full max-h-[85vh]">
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-40 hover:opacity-70 transition-opacity focus:outline-none disabled:pointer-events-none z-10">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-40 hover:opacity-70 transition-all duration-300 focus:outline-none disabled:pointer-events-none z-10 hover:scale-110">
           <X className="h-5 w-5" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

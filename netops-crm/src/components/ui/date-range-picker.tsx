@@ -154,8 +154,8 @@ export function DateRangePicker({
     const isSelectingStart = !selectingFrom && !tempRange.to && tempRange.from && date > tempRange.from
 
     return cn(
-      "w-8 h-8 rounded-md text-sm transition-colors",
-      isSelected && "bg-primary text-primary-foreground hover:bg-primary/90",
+      "w-8 h-8 rounded-md text-sm transition-all duration-200 ease-out hover:scale-110 hover:z-10",
+      isSelected && "bg-primary text-primary-foreground hover:bg-primary/90 scale-105",
       isInRange && !isSelected && "bg-primary/20 text-foreground",
       isSelectingStart && "bg-primary/20 text-foreground",
       !isSelected && !isInRange && "hover:bg-accent text-foreground",
@@ -170,19 +170,19 @@ export function DateRangePicker({
         onClick={() => !disabled && setIsOpen(true)}
         disabled={disabled}
         className={cn(
-          "flex items-center gap-2 w-full h-9 px-3 py-2 text-sm rounded-md border border-input bg-background shadow-sm transition-colors",
-          "hover:bg-accent hover:text-accent-foreground",
+          "flex items-center gap-2 w-full h-9 px-3 py-2 text-sm rounded-lg border-2 border-input bg-background shadow-sm transition-all duration-300 ease-out",
+          "hover:border-primary/50 hover:shadow-md hover:scale-[1.01]",
           disabled && "opacity-50 cursor-not-allowed",
-          isOpen && "ring-2 ring-primary ring-offset-2"
+          isOpen && "ring-2 ring-primary ring-offset-2 border-primary/70"
         )}
       >
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className={cn("flex-1 text-left truncate", !value?.from && "text-muted-foreground")}>
+        <Calendar className="h-4 w-4 text-muted-foreground transition-transform duration-300" />
+        <span className={cn("flex-1 text-left truncate transition-colors", !value?.from && "text-muted-foreground")}>
           {displayValue}
         </span>
         {value?.from && (
           <X
-            className="h-3 w-3 text-muted-foreground hover:text-foreground"
+            className="h-3 w-3 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
             onClick={(e) => {
               e.stopPropagation()
               handleClear()
@@ -200,7 +200,7 @@ export function DateRangePicker({
           />
 
           {/* Popover Content */}
-          <div className="absolute top-full left-0 z-50 mt-2 w-80 bg-background rounded-lg shadow-xl border border-border/50">
+          <div className="absolute top-full left-0 z-50 mt-2 w-80 bg-background rounded-xl shadow-xl border border-border/50 animate-in fade-in zoom-in-95 duration-300">
             {/* Quick Options */}
             <div className="p-3 border-b border-border/50">
               <div className="flex flex-wrap gap-1">
@@ -209,7 +209,7 @@ export function DateRangePicker({
                     key={option.label}
                     type="button"
                     onClick={() => handleQuickOption(option.getValue)}
-                    className="px-2 py-1 text-xs rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                    className="px-2 py-1 text-xs rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all duration-200 hover:scale-105"
                   >
                     {option.label}
                   </button>
@@ -222,7 +222,7 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1 rounded-md hover:bg-accent transition-colors"
+                className="p-1 rounded-md hover:bg-accent transition-all duration-200 hover:scale-110"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -232,7 +232,7 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-1 rounded-md hover:bg-accent transition-colors"
+                className="p-1 rounded-md hover:bg-accent transition-all duration-200 hover:scale-110"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

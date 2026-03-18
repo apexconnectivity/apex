@@ -79,12 +79,15 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-r border-slate-800/50 transition-all duration-300 ease-in-out",
+        "fixed left-0 top-0 z-40 h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-r border-slate-800/50 transition-all duration-500 ease-out",
         collapsed ? "w-20" : "w-72"
       )}
     >
       {/* Logo */}
-      <div className="flex h-20 items-center justify-between px-4 border-b border-slate-800/50">
+      <div className={cn(
+        "flex h-20 items-center justify-between px-4 border-b border-slate-800/50 transition-all duration-500 ease-out",
+        collapsed && "px-2 justify-center"
+      )}>
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/25">
             <Zap className="h-5 w-5 text-white" />
@@ -131,24 +134,31 @@ export function Sidebar({
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group",
+                      "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-out group overflow-hidden",
                       isActive
-                        ? "bg-gradient-to-r from-cyan-500/15 to-blue-500/15 text-cyan-400 border-l-3 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.1)]"
-                        : "text-slate-400 hover:text-white hover:bg-slate-800/50 hover:translate-x-0.5"
+                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border-l-3 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)]"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/60 hover:translate-x-1"
                     )}
                   >
+                    {/* Background glow effect on hover */}
+                    {!isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-700/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    )}
                     <div className="relative">
                       <item.icon
                         className={cn(
-                          "h-5 w-5 shrink-0 transition-transform duration-200",
-                          isActive ? "text-cyan-400" : "text-slate-500 group-hover:text-slate-300"
+                          "h-5 w-5 shrink-0 transition-all duration-300",
+                          isActive ? "text-cyan-400 scale-110" : "text-slate-500 group-hover:text-slate-300 group-hover:scale-105"
                         )}
                       />
                       {isActive && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                        <div className="absolute -top-1 -right-1 w-2 h-2">
+                          <div className="absolute inset-0 bg-cyan-400 rounded-full animate-ping opacity-75" />
+                          <div className="absolute inset-0 bg-cyan-400 rounded-full" />
+                        </div>
                       )}
                     </div>
-                    {!collapsed && <span>{item.name}</span>}
+                    {!collapsed && <span className="relative z-10">{item.name}</span>}
                   </Link>
                 )
               })}

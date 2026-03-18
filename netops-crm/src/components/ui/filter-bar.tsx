@@ -82,7 +82,7 @@ export function FilterBar({
     <div className={cn('flex flex-wrap gap-4 items-center', className)}>
       {/* Search Input */}
       <div className="relative flex-1 min-w-[200px] max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-colors duration-300" />
         <Input
           placeholder={searchPlaceholder}
           value={searchValue}
@@ -92,7 +92,7 @@ export function FilterBar({
         {searchValue && (
           <button
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-600 transition-all duration-300 hover:scale-110"
           >
             <X className="h-3 w-3" />
           </button>
@@ -103,7 +103,7 @@ export function FilterBar({
       {selectFilters.map((filter) => (
         <div key={filter.key} className="flex items-center gap-1">
           {filter.label && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{filter.label}:</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap transition-colors">{filter.label}:</span>
           )}
           <Select
             key={filter.key}
@@ -112,7 +112,7 @@ export function FilterBar({
           >
             <SelectTrigger
               className={cn(
-                'h-8 bg-input border-border',
+                'h-8 bg-input border-border transition-all duration-300',
                 filter.width || 'w-40'
               )}
             >
@@ -133,7 +133,7 @@ export function FilterBar({
       {dateFilter && (
         <div className="flex items-center gap-1">
           {dateFilter.label && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{dateFilter.label}:</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap transition-colors">{dateFilter.label}:</span>
           )}
           <DateRangePicker
             value={dateValue}
@@ -150,9 +150,9 @@ export function FilterBar({
           variant="outline"
           size="sm"
           onClick={onClearFilters}
-          className="h-8 text-xs font-medium text-muted-foreground border-dashed hover:text-foreground hover:border-solid hover:bg-accent"
+          className="h-8 text-xs font-medium text-muted-foreground border-dashed hover:text-foreground hover:border-solid hover:bg-accent transition-all duration-300 hover:scale-[1.02]"
         >
-          <X className="h-3 w-3 mr-1.5" />
+          <X className="h-3 w-3 mr-1.5 transition-transform duration-300" />
           Limpiar filtros
         </Button>
       )}
