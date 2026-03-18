@@ -37,11 +37,11 @@ export const STATS_LABELS = {
 // ==========================================
 
 export const STAT_COLORS = {
-  total: 'border-cyan-500/30',
-  empresas: 'border-blue-500/30',
-  proyectos: 'border-amber-500/30',
-  tickets: 'border-emerald-500/30',
-  espacio: 'border-violet-500/30',
+  total: '#06b6d4',       // cyan-500
+  empresas: '#3b82f6',    // blue-500
+  proyectos: '#f59e0b',   // amber-500
+  tickets: '#10b981',     // emerald-500
+  espacio: '#8b5cf6',    // violet-500
 } as const
 
 // ==========================================

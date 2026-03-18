@@ -31,6 +31,7 @@ import {
   PLACEHOLDER_BUSCAR_PROVEEDORES, PLACEHOLDER_SELECCIONAR, PLACEHOLDER_PRODUCTO,
   PLACEHOLDER_CANTIDAD, PLACEHOLDER_PRECIO, PLACEHOLDER_CONDICIONES_PAGO, PLACEHOLDER_NOTAS,
   STAT_PENDIENTES, STAT_ENVIADAS, STAT_RECIBIDAS, STAT_TOTAL_ORDENES,
+  COMPRAS_STATS_COLORS,
   TITULO_NUEVA_ORDEN, TITULO_VER_DETALLES, TITULO_PENDIENTES_APROBACION, TITULO_PENDIENTES_RECEPCION,
   TAB_DASHBOARD, TAB_ORDENES, TAB_PROVEEDORES,
   FILTRO_TODOS_ESTADOS, FILTRO_ESTADO,
@@ -413,10 +414,10 @@ export default function ComprasPage() {
       />
 
       <StatGrid cols={4}>
-        <MiniStat value={stats.pendientes} label={STAT_PENDIENTES} variant="warning" showBorder icon={<ClipboardList className="h-5 w-5" />} />
-        <MiniStat value={stats.enviadas} label={STAT_ENVIADAS} variant="info" showBorder icon={<SendHorizontal className="h-5 w-5" />} />
-        <MiniStat value={stats.recibidas} label={STAT_RECIBIDAS} variant="success" showBorder icon={<PackageCheck className="h-5 w-5" />} />
-        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label={STAT_TOTAL_ORDENES} variant="primary" showBorder icon={<DollarSign className="h-5 w-5" />} />
+        <MiniStat value={stats.pendientes} label={STAT_PENDIENTES} variant="warning" showBorder accentColor={COMPRAS_STATS_COLORS.pendientes} icon={<ClipboardList className="h-5 w-5" />} />
+        <MiniStat value={stats.enviadas} label={STAT_ENVIADAS} variant="info" showBorder accentColor={COMPRAS_STATS_COLORS.enviadas} icon={<SendHorizontal className="h-5 w-5" />} />
+        <MiniStat value={stats.recibidas} label={STAT_RECIBIDAS} variant="success" showBorder accentColor={COMPRAS_STATS_COLORS.recibidas} icon={<PackageCheck className="h-5 w-5" />} />
+        <MiniStat value={`USD ${stats.total.toLocaleString()}`} label={STAT_TOTAL_ORDENES} variant="primary" showBorder accentColor={COMPRAS_STATS_COLORS.total} icon={<DollarSign className="h-5 w-5" />} />
       </StatGrid>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>

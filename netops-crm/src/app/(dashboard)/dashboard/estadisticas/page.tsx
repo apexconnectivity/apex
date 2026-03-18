@@ -725,36 +725,48 @@ function ResumenGeneral({
           label={STATS_LABELS.empresas}
           icon={<Building2 className="h-4 w-4" />}
           variant="primary"
+          showBorder
+          accentColor={CHART_COLORS.primary}
         />
         <MiniStat
           value={proyectos.length}
           label={STATS_LABELS.proyectos}
           icon={<FolderKanban className="h-4 w-4" />}
           variant="info"
+          showBorder
+          accentColor={CHART_COLORS.info}
         />
         <MiniStat
           value={tareas.length}
           label={STATS_LABELS.tareas}
           icon={<CheckSquare className="h-4 w-4" />}
           variant="warning"
+          showBorder
+          accentColor={CHART_COLORS.warning}
         />
         <MiniStat
           value={tickets.length}
           label={STATS_LABELS.tickets}
           icon={<Headphones className="h-4 w-4" />}
           variant="danger"
+          showBorder
+          accentColor={CHART_COLORS.danger}
         />
         <MiniStat
           value={archivos.length}
           label={STATS_LABELS.archivos}
           icon={<FileText className="h-4 w-4" />}
           variant="success"
+          showBorder
+          accentColor={CHART_COLORS.success}
         />
         <MiniStat
           value={reuniones.length}
           label={STATS_LABELS.reuniones}
           icon={<Calendar className="h-4 w-4" />}
           variant="default"
+          showBorder
+          accentColor={CHART_COLORS.neutral}
         />
       </StatGrid>
 
