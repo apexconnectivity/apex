@@ -11,11 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { 
-  Zap, FolderKanban, CheckSquare, Headphones, FileText, 
-  User, LogOut, Bell, Calendar, ChevronRight, Upload, 
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base/BaseModal'
+import {
+  Zap, FolderKanban, CheckSquare, Headphones, FileText,
+  User, LogOut, Bell, Calendar, ChevronRight, Upload,
   ExternalLink, Clock, AlertCircle, MessageSquare, Building2,
   ArrowLeft, Phone, Mail, CheckCircle, XCircle, Eye
 } from 'lucide-react'
@@ -102,7 +102,7 @@ function PortalLogin({ onLogin }: { onLogin: () => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email && password) {
@@ -111,7 +111,7 @@ function PortalLogin({ onLogin }: { onLogin: () => void }) {
       setError('Por favor ingresa tu email y contraseña')
     }
   }
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -143,42 +143,33 @@ function PortalLogin({ onLogin }: { onLogin: () => void }) {
   )
 }
 
-function DetailModal({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  if (!isOpen) return null
+function DetailModal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-background border-border max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        {children}
-      </DialogContent>
-    </Dialog>
+    <BaseModal open={open} onOpenChange={onClose} size="lg" className="max-h-[90vh]">
+      <ModalHeader title={title} />
+      <ModalBody>{children}</ModalBody>
+    </BaseModal>
   )
 }
 
-function NuevoTicketModal({ isOpen, onClose, onCreate }: { 
-  isOpen: boolean
+function NuevoTicketModal({ open, onClose, onCreate }: {
+  open: boolean
   onClose: () => void
   onCreate: (ticket: Omit<TicketCliente, 'id' | 'numero_ticket' | 'creado_por_nombre' | 'fecha_apertura'>) => void
 }) {
   const [ticket, setTicket] = useState({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media' })
-  
+
   const handleCreate = () => {
     if (!ticket.titulo || !ticket.descripcion) return
     onCreate(ticket as any)
     onClose()
     setTicket({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media' })
   }
-  
-  if (!isOpen) return null
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg bg-background border-border">
-        <DialogHeader>
-          <DialogTitle>Nuevo Ticket de Soporte</DialogTitle>
-        </DialogHeader>
+    <BaseModal open={open} onOpenChange={onClose} size="md">
+      <ModalHeader title="Nuevo Ticket de Soporte" />
+      <ModalBody>
         <div className="space-y-4">
           <div>
             <Label>Categoría</Label>
@@ -213,12 +204,12 @@ function NuevoTicketModal({ isOpen, onClose, onCreate }: {
             <Textarea value={ticket.descripcion} onChange={(e) => setTicket({ ...ticket, descripcion: e.target.value })} placeholder="Describe el problema con detalle" rows={4} className="bg-background" />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={!ticket.titulo || !ticket.descripcion}>Enviar Ticket</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button onClick={handleCreate} disabled={!ticket.titulo || !ticket.descripcion}>Enviar Ticket</Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }
 
@@ -231,9 +222,9 @@ function PortalClienteContent() {
   const [selectedTicket, setSelectedTicket] = useState<TicketCliente | null>(null)
   const [tareas, setTareas] = useState<TareaCliente[]>(DEMO_TAREAS)
   const [tickets, setTickets] = useState<TicketCliente[]>(DEMO_TICKETS)
-  
+
   const handleLogin = () => login(DEMO_CLIENTE.email, 'demo')
-  
+
   const handleNewTicket = (ticket: Omit<TicketCliente, 'id' | 'numero_ticket' | 'creado_por_nombre' | 'fecha_apertura'>) => {
     const nuevo: TicketCliente = {
       ...ticket,
@@ -244,30 +235,30 @@ function PortalClienteContent() {
     }
     setTickets(prev => [nuevo, ...prev])
   }
-  
+
   const openProyecto = (proyecto: ProyectoCliente) => {
     setSelectedProyecto(proyecto)
     setVista('proyecto')
   }
-  
+
   const openTarea = (tarea: TareaCliente) => {
     setSelectedTarea(tarea)
     setVista('tarea')
   }
-  
+
   const openTicket = (ticket: TicketCliente) => {
     setSelectedTicket(ticket)
     setVista('ticket')
   }
-  
+
   if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
   if (!user) return <PortalLogin onLogin={handleLogin} />
-  
+
   const tareasPendientes = tareas.filter(t => t.estado === 'Pendiente')
   const ticketsAbiertos = tickets.filter(t => t.estado !== 'Cerrado' && t.estado !== 'Resuelto')
   const tareasProyecto1 = tareas.filter(t => t.proyecto_id === '1')
   const ticketsProyecto1 = tickets.filter(t => t.id !== '4')
-  
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700">
@@ -290,7 +281,7 @@ function PortalClienteContent() {
           </div>
         </div>
       </header>
-      
+
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {vista === 'dashboard' && (
           <>
@@ -298,7 +289,7 @@ function PortalClienteContent() {
               <Building2 className="h-4 w-4" />
               <span>{user.empresa_nombre}</span>
             </div>
-            
+
             <div className="grid md:grid-cols-4 gap-4">
               <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20">
                 <CardContent className="p-4">
@@ -325,7 +316,7 @@ function PortalClienteContent() {
                 </CardContent>
               </Card>
             </div>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Mis Proyectos</CardTitle>
@@ -349,7 +340,7 @@ function PortalClienteContent() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -373,7 +364,7 @@ function PortalClienteContent() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Tickets Recientes</CardTitle>
@@ -401,7 +392,7 @@ function PortalClienteContent() {
             </div>
           </>
         )}
-        
+
         {vista === 'proyecto' && selectedProyecto && (
           <>
             <Button variant="ghost" onClick={() => setVista('dashboard')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver</Button>
@@ -427,7 +418,7 @@ function PortalClienteContent() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Tabs defaultValue="tareas" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="tareas">Tareas ({tareasProyecto1.length})</TabsTrigger>
@@ -435,7 +426,7 @@ function PortalClienteContent() {
                 <TabsTrigger value="archivos">Archivos ({DEMO_ARCHIVOS_PROYECTO.filter(a => a.proyecto_id === selectedProyecto.id).length})</TabsTrigger>
                 <TabsTrigger value="equipo">Equipo</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="tareas">
                 <Card><CardContent className="p-4">
                   <div className="space-y-3">
@@ -453,7 +444,7 @@ function PortalClienteContent() {
                   </div>
                 </CardContent></Card>
               </TabsContent>
-              
+
               <TabsContent value="tickets">
                 <Card><CardContent className="p-4">
                   <div className="space-y-3">
@@ -471,7 +462,7 @@ function PortalClienteContent() {
                   </div>
                 </CardContent></Card>
               </TabsContent>
-              
+
               <TabsContent value="archivos">
                 <Card><CardContent className="p-4">
                   <div className="space-y-2">
@@ -487,7 +478,7 @@ function PortalClienteContent() {
                   </div>
                 </CardContent></Card>
               </TabsContent>
-              
+
               <TabsContent value="equipo">
                 <Card><CardContent className="p-4">
                   <div className="grid md:grid-cols-3 gap-4">
@@ -514,7 +505,7 @@ function PortalClienteContent() {
             </Tabs>
           </>
         )}
-        
+
         {vista === 'tarea' && selectedTarea && (
           <>
             <Button variant="ghost" onClick={() => setVista('proyecto')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver al proyecto</Button>
@@ -542,7 +533,7 @@ function PortalClienteContent() {
             </Card>
           </>
         )}
-        
+
         {vista === 'ticket' && selectedTicket && (
           <>
             <Button variant="ghost" onClick={() => setVista('dashboard')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver</Button>
@@ -572,8 +563,8 @@ function PortalClienteContent() {
           </>
         )}
       </main>
-      
-      <NuevoTicketModal isOpen={showNewTicket} onClose={() => setShowNewTicket(false)} onCreate={handleNewTicket} />
+
+      <NuevoTicketModal open={showNewTicket} onClose={() => setShowNewTicket(false)} onCreate={handleNewTicket} />
     </div>
   )
 }
