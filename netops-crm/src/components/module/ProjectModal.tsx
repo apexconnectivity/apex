@@ -10,11 +10,11 @@ import { Badge } from '@/components/ui/badge'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { InputNumber } from '@/components/ui/input-number'
 import { InlineAddButton } from '@/components/ui/inline-add-button'
-import { Building2, User as UserIcon, Loader2 } from 'lucide-react'
+import { Building2, User as UserIcon, Loader2, CheckSquare } from 'lucide-react'
 import { Proyecto, MONEDAS } from '@/types/proyectos'
-import { Empresa } from '@/types/crm'
 import { User } from '@/types/auth'
-import { Contacto } from '@/types/crm'
+import { Contacto, Empresa } from '@/types/crm'
+import { ModalVariant } from '@/constants/modales'
 import { EmpresaModal } from './EmpresaModal'
 import { UserModal } from './UserModal'
 
@@ -180,10 +180,25 @@ export function ProjectModal({
     console.log('Usuario creado:', newUser.nombre)
   }
 
+  // Determinar variante según modo
+  const variant: ModalVariant = isEditing ? 'edit' : 'create'
+
   return (
     <>
-      <BaseModal open={open} onOpenChange={onOpenChange} size="lg">
-        <ModalHeader title={isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'} />
+      <BaseModal
+        open={open}
+        onOpenChange={onOpenChange}
+        size="lg"
+        variant={variant}
+        showAccentBar
+        isLoading={isSaving}
+        loadingMessage="Guardando proyecto..."
+      >
+        <ModalHeader
+          title={isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+          variant={variant}
+          showIcon
+        />
 
         <ModalBody className="space-y-4">
           {/* Nombre del Proyecto */}
@@ -379,7 +394,7 @@ export function ProjectModal({
           </div>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter variant={variant} showAccent>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>

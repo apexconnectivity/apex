@@ -12,6 +12,7 @@ import { Ticket as TicketType, ContratoSoporte, CategoriaTicket, PrioridadTicket
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
 import { CREATE_TICKET_MODAL } from '@/constants/soporte'
+import { ModalVariant } from '@/constants/modales'
 
 export type TicketModalMode = 'create' | 'edit' | 'cliente'
 
@@ -452,6 +453,9 @@ export function CreateTicketModal({
   const isEditMode = mode === 'edit'
   const isClienteMode = mode === 'cliente'
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditMode ? 'edit' : isClienteMode ? 'view' : 'create'
+
   const [ticketData, setTicketData] = useState<TicketFormData>({
     empresa_id: '',
     empresa_nombre: '',
@@ -571,17 +575,14 @@ export function CreateTicketModal({
       open={open}
       onOpenChange={handleClose}
       size="md"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
-        title={
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Ticket className="h-5 w-5 text-blue-400" />
-            </div>
-            {getModalTitle()}
-          </div>
-        }
+        title={getModalTitle()}
+        variant={variant}
+        showIcon
       />
 
       {/* ✅ ModalBody */}
@@ -654,7 +655,7 @@ export function CreateTicketModal({
       </ModalBody>
 
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         {isEditMode && onDelete && (
           <Button variant="destructive" onClick={onDelete}>
             <Trash2 className="h-4 w-4 mr-2" /> {CREATE_TICKET_MODAL.botones.eliminar}

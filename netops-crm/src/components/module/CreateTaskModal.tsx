@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, X, Trash2, CheckSquare, MessageSquare, PlusCircle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
+import { ModalVariant } from '@/constants/modales'
 
 interface CreateTaskModalProps {
   open: boolean
@@ -443,15 +444,22 @@ export function CreateTaskModal({
   const hasProyectos = proyectos.length > 0
   const canSave = tareaData.nombre && tareaData.proyecto_id && hasProyectos
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditMode ? 'edit' : 'create'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
       size="md"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
         title={isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}
+        variant={variant}
+        showIcon
       />
 
       {/* ✅ ModalBody */}
@@ -500,7 +508,7 @@ export function CreateTaskModal({
       </ModalBody>
 
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         {isEditMode && onDelete && (
           <Button variant="destructive" onClick={onDelete}>
             <Trash2 className="h-4 w-4 mr-2" /> Eliminar

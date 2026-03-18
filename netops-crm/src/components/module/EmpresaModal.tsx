@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +17,7 @@ import {
   METODOS_PAGO,
   MONEDAS,
 } from '@/types/crm'
+import { ModalVariant } from '@/constants/modales'
 
 // Validaciones unificadas
 import {
@@ -195,16 +196,23 @@ export function EmpresaModal({
     tiposDisponibles = ['proveedor', 'ambos']
   }
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditing ? 'edit' : 'create'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={handleClose}
       size="lg"
       description={isEditing ? 'Editar los datos de una empresa existente' : 'Crear una nueva empresa en el CRM'}
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
         title={isEditing ? 'Editar Empresa' : 'Nueva Empresa'}
+        variant={variant}
+        showIcon
       />
 
       {/* ✅ ModalBody */}
@@ -442,7 +450,7 @@ export function EmpresaModal({
       </ModalBody>
 
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>

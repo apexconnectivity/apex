@@ -16,6 +16,7 @@ import {
   ERROR_MESSAGES,
   BUTTON_LABELS,
 } from '@/constants/archivos'
+import { ModalVariant } from '@/constants/modales'
 
 interface EntidadOption {
   id: string
@@ -93,20 +94,22 @@ export default function UploadModal({
 
   const canUpload = file && archivo.entidad_tipo && archivo.entidad_id && file.size <= TAMAÑO_MAXIMO
 
+  // Variante del modal (siempre es create para upload)
+  const variant: ModalVariant = 'create'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={handleClose}
       size="md"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-cyan-400" />
-            {UPLOAD_MODAL.titulo}
-          </span>
-        }
+        title={UPLOAD_MODAL.titulo}
+        variant={variant}
+        showIcon
       />
 
       {/* ✅ ModalBody */}
@@ -251,7 +254,7 @@ export default function UploadModal({
       </ModalBody>
 
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         <Button variant="outline" onClick={handleClose}>
           {BUTTON_LABELS.cancelar}
         </Button>

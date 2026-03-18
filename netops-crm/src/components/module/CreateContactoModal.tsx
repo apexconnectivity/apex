@@ -14,8 +14,9 @@ import {
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Contacto, TipoContacto, TIPOS_CONTACTO } from '@/types/crm'
-import { Loader2 } from 'lucide-react'
+import { Loader2, User } from 'lucide-react'
 import { VARIANT_COLORS } from '@/lib/colors'
+import { ModalVariant } from '@/constants/modales'
 
 interface CreateContactoModalProps {
   open: boolean
@@ -81,9 +82,16 @@ export function CreateContactoModal({
     onOpenChange(false)
   }
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditing ? 'edit' : 'create'
+
   return (
-    <BaseModal open={open} onOpenChange={onOpenChange} size="lg">
-      <ModalHeader title={isEditing ? 'Editar Contacto' : 'Nuevo Contacto'} />
+    <BaseModal open={open} onOpenChange={onOpenChange} size="lg" variant={variant} showAccentBar>
+      <ModalHeader
+        title={isEditing ? 'Editar Contacto' : 'Nuevo Contacto'}
+        variant={variant}
+        showIcon
+      />
 
       <ModalBody className="space-y-4">
         <div className="space-y-2">
@@ -176,7 +184,7 @@ export function CreateContactoModal({
         </div>
       </ModalBody>
 
-      <ModalFooter>
+      <ModalFooter variant={variant}>
         <Button variant="outline" onClick={handleClose}>
           Cancelar
         </Button>
