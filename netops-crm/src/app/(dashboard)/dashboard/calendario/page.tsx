@@ -19,6 +19,7 @@ import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from
 import { useEmpresas, useProyectos } from '@/hooks'
 import { Calendar, Clock, User, CalendarDays, CalendarCheck, CalendarX, MapPin, Video, Check, X, Building2, Grid3X3, List, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   PAGE_TITLE,
   PAGE_DESCRIPTION,
@@ -94,7 +95,7 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios }: {
     proyecto_id: '',
     titulo: '',
     descripcion: '',
-    fecha: '',
+    fecha: undefined as Date | undefined,
     hora_inicio: '',
     duracion: 60,
     tipo: 'Seguimiento' as TipoReunion,
@@ -107,7 +108,8 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios }: {
   const handleCreate = () => {
     if (!reunion.proyecto_id || !reunion.titulo || !reunion.fecha || !reunion.hora_inicio || !reunion.organizador_id) return
 
-    const fechaInicio = new Date(`${reunion.fecha}T${reunion.hora_inicio}:00`)
+    const fechaInicio = new Date(reunion.fecha)
+    fechaInicio.setHours(parseInt(reunion.hora_inicio.split(':')[0]), parseInt(reunion.hora_inicio.split(':')[1]))
     const fechaFin = new Date(fechaInicio.getTime() + reunion.duracion * 60000)
 
     const proyecto = proyectos.find(p => p.id === reunion.proyecto_id)
@@ -132,7 +134,7 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios }: {
       solicitada_por_cliente: false,
     })
     onClose()
-    setReunion({ proyecto_id: '', titulo: '', descripcion: '', fecha: '', hora_inicio: '', duracion: 60, tipo: 'Seguimiento', organizador_id: '', asistentes_internos: [], asistente_cliente_nombre: '', ubicacion: '' })
+    setReunion({ proyecto_id: '', titulo: '', descripcion: '', fecha: undefined, hora_inicio: '', duracion: 60, tipo: 'Seguimiento', organizador_id: '', asistentes_internos: [], asistente_cliente_nombre: '', ubicacion: '' })
   }
 
   if (!isOpen) return null
@@ -169,7 +171,12 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Fecha *</Label>
-              <Input type="date" value={reunion.fecha} onChange={(e) => setReunion({ ...reunion, fecha: e.target.value })} className="bg-background" />
+              <DatePicker
+                value={reunion.fecha}
+                onChange={(date) => setReunion({ ...reunion, fecha: date })}
+                placeholder="Seleccionar fecha"
+                className="bg-background"
+              />
             </div>
             <div>
               <Label>Hora inicio *</Label>

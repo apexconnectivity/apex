@@ -18,6 +18,7 @@ import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { FilterBar } from '@/components/ui/filter-bar'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
 import {
   IMPUESTO_TASA, IMPUESTO_LABEL,
@@ -191,11 +192,21 @@ function NuevaOrdenModal({ isOpen, onClose, onCreate, proyectos, proveedores, us
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label>{LABEL_FECHA_EMISION_REQUERIDA}</Label>
-              <Input type="date" value={orden.fecha_emision} onChange={(e) => setOrden({ ...orden, fecha_emision: e.target.value })} className="bg-background" />
+              <DatePicker
+                value={orden.fecha_emision ? new Date(orden.fecha_emision) : undefined}
+                onChange={(date) => setOrden({ ...orden, fecha_emision: date ? date.toISOString().split('T')[0] : '' })}
+                placeholder="Fecha emisión"
+                className="bg-background"
+              />
             </div>
             <div>
               <Label>{LABEL_ENTREGA_ESTIMADA}</Label>
-              <Input type="date" value={orden.fecha_entrega_estimada} onChange={(e) => setOrden({ ...orden, fecha_entrega_estimada: e.target.value })} className="bg-background" />
+              <DatePicker
+                value={orden.fecha_entrega_estimada ? new Date(orden.fecha_entrega_estimada) : undefined}
+                onChange={(date) => setOrden({ ...orden, fecha_entrega_estimada: date ? date.toISOString().split('T')[0] : '' })}
+                placeholder="Entrega estimada"
+                className="bg-background"
+              />
             </div>
             <div>
               <Label>{LABEL_MONEDA}</Label>
