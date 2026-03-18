@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
@@ -324,26 +324,24 @@ export default function ArchivosPage() {
       {/* ====================================================================== */}
       {/* Diálogo de confirmación de eliminación */}
       {/* ====================================================================== */}
-      <Dialog open={!!archivoAEliminar} onOpenChange={() => setArchivoAEliminar(null)}>
-        <DialogContent size="sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-5 w-5" />
-              {ERROR_MESSAGES.confirmEliminacionTitulo}
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <p className="text-muted-foreground">{ERROR_MESSAGES.confirmEliminacion}</p>
-            {archivoAEliminar && (
-              <p className="mt-2 font-medium text-foreground">{archivoAEliminar.nombre_original}</p>
-            )}
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setArchivoAEliminar(null)}>{BUTTON_LABELS.cancelar}</Button>
-            <Button variant="destructive" onClick={confirmarEliminar}>{BUTTON_LABELS.eliminar}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <BaseModal open={!!archivoAEliminar} onOpenChange={() => setArchivoAEliminar(null)}>
+        <ModalHeader title={
+          <div className="flex items-center gap-2 text-destructive">
+            <Trash2 className="h-5 w-5" />
+            {ERROR_MESSAGES.confirmEliminacionTitulo}
+          </div>
+        } />
+        <ModalBody>
+          <p className="text-muted-foreground">{ERROR_MESSAGES.confirmEliminacion}</p>
+          {archivoAEliminar && (
+            <p className="mt-2 font-medium text-foreground">{archivoAEliminar.nombre_original}</p>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setArchivoAEliminar(null)}>{BUTTON_LABELS.cancelar}</Button>
+          <Button variant="destructive" onClick={confirmarEliminar}>{BUTTON_LABELS.eliminar}</Button>
+        </ModalFooter>
+      </BaseModal>
 
       {/* ====================================================================== */}
       {/* Modal de upload */}
