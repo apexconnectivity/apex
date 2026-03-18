@@ -311,6 +311,5 @@ export function ModalFooter({
   )
 }
 
-// Alias para compatibilidad
-export const ModalSection = ModalBody
-export const ModalActions = ModalFooter
+// Alias para compatibilidad - ahora usamos los helpers de @/components/ui/modal-helpers
+export { ModalBody as ModalSection, ModalFooter as ModalActions }
