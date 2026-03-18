@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { EmpresaModal } from '@/components/module/EmpresaModal'
+import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { EmpresaDetailModal } from '@/components/module/EmpresaDetailModal'
 import { SelectWithAdd } from '@/components/module/SelectWithAdd'
@@ -707,7 +707,7 @@ export default function CRMPage() {
       )}
 
       {/* Modal de Empresa */}
-      <EmpresaModal
+      <CreateEmpresaModal
         open={isModalEmpresa}
         onOpenChange={(open) => { if (!open) { setIsModalEmpresa(false); setEditingEmpresa(null) } }}
         onSave={handleSaveEmpresa}

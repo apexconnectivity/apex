@@ -13,7 +13,7 @@ import { CreateContractData } from '@/components/module/CreateContractModal'
 import { CreateTicketModal } from '@/components/module/CreateTicketModal'
 import { CreateContractModal } from '@/components/module/CreateContractModal'
 import { ProjectModal } from '@/components/module/ProjectModal'
-import { EmpresaModal } from '@/components/module/EmpresaModal'
+import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
 import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_SELECTORES } from '@/constants/soporte'
 import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
@@ -632,7 +632,7 @@ export default function SoportePage() {
         />
 
         {/* Modal para crear nueva empresa */}
-        <EmpresaModal
+        <CreateEmpresaModal
           open={showNewEmpresa}
           onOpenChange={setShowNewEmpresa}
           onSave={handleSaveEmpresa}

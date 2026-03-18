@@ -30,7 +30,7 @@ import {
   validateInteger,
 } from '@/lib/validation-utils'
 
-interface EmpresaModalProps {
+interface CreateEmpresaModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (empresa: Partial<Empresa>, isNew: boolean) => void | Promise<void>
@@ -64,12 +64,12 @@ const EMPRESA_VACIA: Partial<Empresa> = {
 }
 
 /**
- * EmpresaModal - Componente migrado a BaseModal
+ * CreateEmpresaModal - Componente para crear/editar empresas
  * 
  * Antes: usaba Dialog de @/components/ui/dialog
  * Ahora: usa BaseModal + ModalHeader/Body/Footer
  */
-export function EmpresaModal({
+export function CreateEmpresaModal({
   open,
   onOpenChange,
   onSave,
@@ -77,7 +77,7 @@ export function EmpresaModal({
   isSaving = false,
   errors = {},
   userRoles = [],
-}: EmpresaModalProps) {
+}: CreateEmpresaModalProps) {
   const [formData, setFormData] = useState<Partial<Empresa>>(EMPRESA_VACIA)
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
 

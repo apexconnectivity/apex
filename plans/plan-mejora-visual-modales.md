@@ -1,43 +1,8 @@
 # Plan de Mejora Visual del Sistema de Componentes Modales
 
-## 1. Análisis del Estado Actual
+## 1. Propuesta de Paleta de Colores para Modales
 
-### 1.1 Componentes Modales Identificados
-
-| Componente | Ubicación | Uso |
-|------------|-----------|-----|
-| [`BaseModal`](/netops-crm/src/components/base/BaseModal.tsx) | `src/components/base/` | Componente base principal |
-| [`ModalHeader`](/netops-crm/src/components/base/BaseModal.tsx:124) | Subcomponente | Header con título y descripción |
-| [`ModalBody`](/netops-crm/src/components/base/BaseModal.tsx:161) | Subcomponente | Contenido principal |
-| [`ModalFooter`](/netops-crm/src/components/base/BaseModal.tsx:189) | Subcomponente | Acciones del modal |
-| [`Dialog`](/netops-crm/src/components/ui/dialog.tsx) | `src/components/ui/` | Componente UI básico |
-
-### 1.2 Modales de Módulo
-
-| Modal | Archivo | Propósito |
-|-------|--------|-----------|
-| ProjectModal | `src/components/module/ProjectModal.tsx` | Crear/editar proyectos |
-| CreateTicketModal | `src/components/module/CreateTicketModal.tsx` | Crear/editar tickets |
-| CreateTaskModal | `src/components/module/CreateTaskModal.tsx` | Crear/editar tareas |
-| EmpresaModal | `src/components/module/EmpresaModal.tsx` | Crear/editar empresas |
-| CreateContactoModal | `src/components/module/CreateContactoModal.tsx` | Crear/editar contactos |
-| UploadModal | `src/components/module/UploadModal.tsx` | Subir archivos |
-| ConfirmDeleteModal | `src/components/module/ConfirmDeleteModal.tsx` | Confirmar eliminación |
-| DetalleArchivadoModal | `src/components/module/DetalleArchivadoModal.tsx` | Ver detalles de archivado |
-
-### 1.3 Problemas Visuales Identificados
-
-1. **Monocromático**: Los modales son visualmente neutros, sin identidad por tipo
-2. **Sin diferenciación**: No hay distinción visual entre crear/editar/ver detalles
-3. **Footer estándar**: Sin variación según el contexto
-4. **Overlay básico**: Solo `bg-black/50` sin gradiente ni efectos
-5. **Header genérico**: Solo texto sin iconos ni colores distintivos
-
----
-
-## 2. Propuesta de Paleta de Colores para Modales
-
-### 2.1 Sistema de Colores por Tipo de Modal
+### 1.1 Sistema de Colores por Tipo de Modal
 
 ```typescript
 // Tipos de modal con su color distintivo
@@ -107,7 +72,7 @@ const MODAL_TYPE_COLORS = {
 }
 ```
 
-### 2.2 Mapeo de Modales a Colores
+### 1.2 Mapeo de Modales a Colores
 
 | Modal | Tipo | Color Propuesto |
 |-------|------|-----------------|
@@ -124,12 +89,12 @@ const MODAL_TYPE_COLORS = {
 
 ---
 
-## 3. Mejoras de Estilos Propuestas
+## 2. Estilos
 
-### 3.1 Overlay Mejorado
+### 2.1 Overlay
 
 ```typescript
-// En BaseModal.tsx - Animación de overlay mejorada
+// En BaseModal.tsx - Animación de overlay
 const OVERLAY_STYLES = {
   default: "bg-black/60 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
   gradient: "bg-gradient-to-b from-black/70 via-black/50 to-black/70 backdrop-blur-sm",
@@ -140,7 +105,7 @@ const OVERLAY_STYLES = {
 overlayClassName = "bg-gradient-to-b from-black/70 via-black/50 to-black/70 backdrop-blur-md"
 ```
 
-### 3.2 Contenido del Modal con Borde Colorido
+### 2.2 Contenido del Modal con Borde Colorido
 
 ```typescript
 // Borde izquierdo colorido para identificar el tipo
@@ -160,21 +125,21 @@ className={cn(
 )}
 ```
 
-### 3.3 ModalHeader con Icono y Color
+### 2.3 ModalHeader con Icono y Color
 
 ```tsx
-// Nueva interfaz para ModalHeader
+// Interfaz para ModalHeader
 interface ModalHeaderProps {
   title: React.ReactNode
   description?: string
   showBorder?: boolean
   className?: string
-  icon?: React.ReactNode          // NUEVO: icono opcional
+  icon?: React.ReactNode          
   variant?: 'default' | 'create' | 'edit' | 'view' | 'danger' | 'warning' | 'info'
-  showAccentBar?: boolean         // NUEVO: barra lateral de color
+  showAccentBar?: boolean         
 }
 
-// Renderizado mejorado
+// Renderizado
 <div className={cn(
   "flex flex-col space-y-1.5 p-6",
   showBorder && "border-b border-border/50",
@@ -201,13 +166,13 @@ interface ModalHeaderProps {
 </div>
 ```
 
-### 3.4 ModalFooter con Estilos Variables
+### 2.4 ModalFooter con Estilos Variables
 
 ```tsx
 interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   layout?: "stack" | "inline" | "inline-between"
-  variant?: 'default' | 'create' | 'edit' | 'view' | 'danger'  // NUEVO
-  showAccent?: boolean                                          // NUEVO
+  variant?: 'default' | 'create' | 'edit' | 'view' | 'danger' 
+  showAccent?: boolean                                          
 }
 
 // Estilos según variante
@@ -222,16 +187,16 @@ const FOOTER_VARIANTS = {
 
 ---
 
-## 4. Estados Visuales (Abierto, Cerrado, Cargando)
+## 3. Estados Visuales (Abierto, Cerrado, Cargando)
 
-### 4.1 Estado Cargando con Spinner y Overlay
+### 3.1 Estado Cargando con Spinner y Overlay
 
 ```tsx
-// Mejora en BaseModal para estado de carga
+// BaseModal para estado de carga
 interface BaseModalProps {
   // ... existing props
-  isLoading?: boolean              // NUEVO
-  loadingMessage?: string         // NUEVO
+  isLoading?: boolean              
+  loadingMessage?: string        
 }
 
 // Overlay de carga
@@ -247,7 +212,7 @@ interface BaseModalProps {
 )}
 ```
 
-### 4.2 Estado "Guardando" en Footer
+### 3.2 Estado "Guardando" en Footer
 
 ```tsx
 // En ModalFooter
@@ -265,10 +230,10 @@ interface BaseModalProps {
 }
 ```
 
-### 4.3 Transiciones Mejoradas
+### 3.3 Transiciones Mejoradas
 
 ```typescript
-// Animaciones más suaves
+// Animación suave
 const ANIMATION_CLASSES = {
   overlay: "fixed inset-0 z-50 bg-black/60 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200",
   content: "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-0 border bg-background shadow-2xl duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl max-h-[90vh]"
@@ -277,20 +242,9 @@ const ANIMATION_CLASSES = {
 
 ---
 
-## 5. Consideraciones de Accesibilidad
+## 4. Consideraciones de Accesibilidad
 
-### 5.1 Mejoras Propuestas
-
-| Aspecto | Mejora | Implementación |
-|---------|--------|----------------|
-| Focus trap | Mantener foco dentro del modal | Radix ya lo hace por defecto |
-| Focus visible | Anillo de enfoque visible | `focus-visible:ring-2 focus-visible:ring-primary` |
-| Escape key | Cerrar con Escape | Radix ya lo hace (configurable) |
-| Click outside | Cerrar al hacer click fuera | Configurable via `closeOnOverlayClick` |
-| Screen readers | Descripción ARIA | Ya implementado |
-| Reduced motion | Respetar prefers-reduced-motion | Añadir media query |
-
-### 5.2 Código de Accesibilidad
+### 4.1 Código de Accesibilidad
 
 ```tsx
 // En DialogPrimitive.Content
@@ -320,7 +274,7 @@ const ANIMATION_CLASSES = {
 </DialogPrimitive.Content>
 ```
 
-### 5.3 Soporte para Reduced Motion
+### 4.2 Soporte para Reduced Motion
 
 ```css
 /* En globals.css */
@@ -335,39 +289,9 @@ const ANIMATION_CLASSES = {
 
 ---
 
-## 6. Archivos a Modificar
+## 5. Ejemplos de Código para Implementar
 
-### 6.1 Archivos Principales
-
-| Archivo | Cambios |
-|---------|---------|
-| `src/components/base/BaseModal.tsx` | Añadir props de variante, overlay mejorado, estados de carga |
-| `src/constants/modales.ts` (NUEVO) | Definir constantes de colores y tipos de modal |
-
-### 6.2 Actualización de Modales Existentes
-
-| Archivo | Cambios |
-|---------|---------|
-| `src/components/module/ProjectModal.tsx` | Añadir variant="create\|edit" a ModalHeader |
-| `src/components/module/CreateTicketModal.tsx` | Añadir variant="create" a ModalHeader |
-| `src/components/module/CreateTaskModal.tsx` | Añadir variant="create" a ModalHeader |
-| `src/components/module/EmpresaModal.tsx` | Añadir variant="create\|edit" según modo |
-| `src/components/module/CreateContactoModal.tsx` | Añadir variant="create" a ModalHeader |
-| `src/components/module/UploadModal.tsx` | Añadir variant="create" e icono |
-| `src/components/module/ConfirmDeleteModal.tsx` | Añadir variant="danger" |
-
-### 6.3 Nuevos Componentes (Opcional)
-
-| Archivo | Propósito |
-|---------|-----------|
-| `src/components/ui/ModalTypes.ts` | Tipos y constantes de variantes |
-| `src/components/ui/LoadingOverlay.tsx` | Componente de overlay de carga |
-
----
-
-## 7. Ejemplos de Código para Implementar
-
-### 7.1 constants/modales.ts (NUEVO)
+### 5.1 constants/modales.ts (NUEVO)
 
 ```typescript
 /**
@@ -521,7 +445,7 @@ export function getVariantByOperation(operation: 'create' | 'edit' | 'view' | 'd
 }
 ```
 
-### 7.2 BaseModal.tsx Mejorado
+### 5.2 BaseModal.tsx Mejorado
 
 ```tsx
 "use client"
@@ -549,13 +473,13 @@ export interface BaseModalProps {
   // Configuración visual
   size?: ModalSize
   showCloseButton?: boolean
-  variant?: ModalVariant              // NUEVO: variante de color
-  showAccentBar?: boolean            // NUEVO: mostrar barra lateral
-  accentIcon?: React.ReactNode        // NUEVO: icono personalizado
+  variant?: ModalVariant              
+  showAccentBar?: boolean            
+  accentIcon?: React.ReactNode        
 
   // Estados
-  isLoading?: boolean                // NUEVO: estado de carga
-  loadingMessage?: string            // NUEVO: mensaje de carga
+  isLoading?: boolean                
+  loadingMessage?: string            
 
   // Comportamiento
   closeOnOverlayClick?: boolean
@@ -686,7 +610,7 @@ export function BaseModal({
 // Subcomponentes igual que antes...
 ```
 
-### 7.3 ModalHeader Mejorado
+### 5.3 ModalHeader Mejorado
 
 ```tsx
 interface ModalHeaderProps {
@@ -762,43 +686,21 @@ export function ModalHeader({
 
 ---
 
-## 9. Estructura Consistente de Modales (Homologación)
+## 6. Estructura Consistente de Modales (Homologación)
 
-### 9.1 Análisis de Estructura Actual
-
-Al igual que los módulos del dashboard, los modales tienen inconsistencias en su estructura interna. Esta sección establece una guía de estilo uniforme para todos los modales de la aplicación.
-
-| Modal | Archivo | Header | Footer | Separator | Icono |
-|-------|---------|--------|--------|-----------|-------|
-| ProjectModal | `module/ProjectModal.tsx` | Simple | Actions | border-b | No |
-| CreateTicketModal | `module/CreateTicketModal.tsx` | Simple | Actions | border-b | No |
-| CreateTaskModal | `module/CreateTaskModal.tsx` | Simple | Actions | border-b | No |
-| EmpresaModal | `module/EmpresaModal.tsx` | Simple | Actions | border-b | No |
-| CreateContactoModal | `module/CreateContactoModal.tsx` | Simple | Actions | border-b | No |
-| UploadModal | `module/UploadModal.tsx` | Con icono | Actions | border-b | Sí |
-| ConfirmDeleteModal | `module/ConfirmDeleteModal.tsx` | Con icono | Actions | No | Sí |
-
-### 9.2 Problemas Identificados
-
-1. **Header inconsistente**: Algunos tienen icono, otros no
-2. **Footer sin variantes**: Todos usan el mismo estilo
-3. **Separadores variables**: Algunos tienen border, otros no
-4. **Sin sección de metadata**: No hay espacio uniforme para información adicional
-5. **Acciones desalineadas**: Posición不一致 de botones
-
-### 9.3 Estructura Estándar Propuesta
+### 6.1 Estructura Estándar Propuesta
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ [Icono]  [Título]                            [Cerrar X]         │
-│          [Descripción opcional]                               │
+│          [Descripción opcional]                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
+│                                                                 │
 │  [Form Fields]                                                  │
 │  - Input groups con labels                                      │
-│  - Selects con opciones                                        │
+│  - Selects con opciones                                         │
 │  - Textareas para descripciones                                 │
-│                                                                  │
+│                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │ [Metadata Section - opcional]                                   │
 │ Información adicional: fechas, estados, etiquetas               │
@@ -807,7 +709,7 @@ Al igual que los módulos del dashboard, los modales tienen inconsistencias en s
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 9.4 Especificaciones de Estructura
+### 6.2 Especificaciones de Estructura
 
 | Sección | Posición | Especificaciones |
 |---------|----------|------------------|
@@ -815,7 +717,7 @@ Al igual que los módulos del dashboard, los modales tienen inconsistencias en s
 | Body | Centro | Form fields, Grid, Metadata opcional |
 | Footer | Inferior | Acciones, Loading state |
 
-### 9.5 Patrón de Props Uniforme
+### 6.3 Patrón de Props Uniforme
 
 ```typescript
 interface ModalProps<T> {
@@ -830,7 +732,7 @@ interface ModalProps<T> {
 }
 ```
 
-### 9.6 Guía por Tipo de Modal
+### 6.4 Guía por Tipo de Modal
 
 | Tipo | variant | Título | Icono |
 |------|---------|--------|-------|
@@ -838,40 +740,4 @@ interface ModalProps<T> {
 | Editar | `edit` | "Editar {Entidad}" | Edit3 |
 | Ver | `view` | "Detalle {Entidad}" | Eye |
 | Eliminar | `danger` | "Confirmar Eliminación" | AlertTriangle |
-
-### 9.7 Componentes a Crear/Actualizar
-
-| Componente | Acción |
-|------------|--------|
-| BaseModal | Añadir props de variante, loading |
-| ModalHeader | Soporte icono, variante, barra acento |
-| ModalBody | Soporte sección metadata |
-| ModalFooter | Soporte acciones loading |
-| ModalSection | NUEVO - Helper para secciones |
-| ModalActions | NUEVO - Grupo de acciones |
-| ModalField | NUEVO - Label + Input agrupados |
-
 ---
-
-## 10. Resumen de Cambios
-
-| Prioridad | Cambio | Impacto |
-|-----------|--------|---------|
-| Alta | Añadir prop `variant` a BaseModal | Personalización visual |
-| Alta | Crear `constants/modales.ts` | Centraliza configuración |
-| Alta | Definir estructura consistente | Homologación visual |
-| Media | Mejorar overlay con backdrop-blur | UX mejorada |
-| Media | Añadir estado `isLoading` | Feedback de carga |
-| Media | Actualizar todos los modales | Consistencia visual |
-
----
-
-## 11. Próximos Pasos para Implementación
-
-1. **Crear archivo de constantes** - `src/constants/modales.ts`
-2. **Actualizar BaseModal.tsx** - Añadir props de variante y estados
-3. **Actualizar ModalHeader** - Soporte para iconos y colores
-4. **Actualizar ModalFooter** - Variante de estilos
-5. **Crear helpers** - ModalSection, ModalActions, ModalField
-6. **Migrar modales existentes** - Aplicar variantes según tipo
-7. **Probar y validar** - Verificar funcionamiento y accesibilidad

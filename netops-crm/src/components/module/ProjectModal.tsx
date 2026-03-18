@@ -15,7 +15,7 @@ import { Proyecto, MONEDAS } from '@/types/proyectos'
 import { User } from '@/types/auth'
 import { Contacto, Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
-import { EmpresaModal } from './EmpresaModal'
+import { CreateEmpresaModal } from './CreateEmpresaModal'
 import { UserModal } from './UserModal'
 
 interface ProjectModalProps {
@@ -412,7 +412,7 @@ export function ProjectModal({
       </BaseModal>
 
       {/* Sub-modales para crear empresa y usuario inline */}
-      <EmpresaModal
+      <CreateEmpresaModal
         open={showNewEmpresa}
         onOpenChange={setShowNewEmpresa}
         onSave={handleSaveEmpresa}
