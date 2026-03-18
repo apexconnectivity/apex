@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Upload } from 'lucide-react'
+import { ModalVariant } from '@/constants/modales'
 
 interface DocumentoData {
   visibilidad: 'interno' | 'publico'
@@ -74,9 +75,12 @@ export function UploadDocumentModal({
     }
   }
 
+  // Variante del modal
+  const variant: ModalVariant = 'create'
+
   return (
-    <BaseModal open={open} onOpenChange={onOpenChange} size="md">
-      <ModalHeader title={`Subir Documento - ${getEntidadLabel()}`} />
+    <BaseModal open={open} onOpenChange={onOpenChange} size="md" variant={variant} showAccentBar>
+      <ModalHeader title={`Subir Documento - ${getEntidadLabel()}`} variant={variant} showIcon />
 
       <ModalBody className="space-y-4">
         <div className="space-y-2">
@@ -114,7 +118,7 @@ export function UploadDocumentModal({
         </div>
       </ModalBody>
 
-      <ModalFooter>
+      <ModalFooter variant={variant}>
         <Button variant="outline" onClick={handleClose}>
           Cancelar
         </Button>

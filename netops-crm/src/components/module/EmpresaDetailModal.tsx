@@ -15,6 +15,7 @@ import type { Proyecto } from '@/types/proyectos'
 import type { User } from '@/types/auth'
 import type { Contacto as ContactoType } from '@/types/crm'
 import type { Ticket } from '@/types/soporte'
+import { ModalVariant } from '@/constants/modales'
 
 const TIPO_COLORS = {
   cliente: {
@@ -118,11 +119,16 @@ export function EmpresaDetailModal({
   const empresaDocumentos = getDocumentosByEmpresa(empresa.id)
   const empresaProyectos = getProyectosByEmpresa(empresa.id)
 
+  // Variante del modal (view para ver detalles)
+  const variant: ModalVariant = 'view'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
       size="xl"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader

@@ -8,6 +8,7 @@ import { Check } from 'lucide-react'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { User, Role } from '@/types/auth'
 import { cn } from '@/lib/utils'
+import { ModalVariant } from '@/constants/modales'
 
 interface UserModalProps {
   open: boolean
@@ -68,9 +69,12 @@ export function UserModal({
     onOpenChange(false)
   }
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditing ? 'edit' : 'create'
+
   return (
-    <BaseModal open={open} onOpenChange={onOpenChange} size="md">
-      <ModalHeader title={isEditing ? 'Editar Usuario' : 'Nuevo Usuario'} />
+    <BaseModal open={open} onOpenChange={onOpenChange} size="md" variant={variant} showAccentBar>
+      <ModalHeader title={isEditing ? 'Editar Usuario' : 'Nuevo Usuario'} variant={variant} showIcon />
 
       <ModalBody className="space-y-4">
         <div className="space-y-2">
@@ -137,7 +141,7 @@ export function UserModal({
         </div>
       </ModalBody>
 
-      <ModalFooter>
+      <ModalFooter variant={variant}>
         <Button variant="outline" onClick={() => onOpenChange(false)}>
           Cancelar
         </Button>

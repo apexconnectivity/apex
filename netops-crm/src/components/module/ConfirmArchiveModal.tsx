@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { ProyectoCerrado, Clasificacion, getClasificacionColor } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, ARCHIVADO_CLASIFICACION, ARCHIVAR_MODAL } from '@/constants/archivado'
 import { CheckCircle, AlertTriangle, Archive } from 'lucide-react'
+import { ModalVariant } from '@/constants/modales'
 
 interface ConfirmArchiveModalProps {
   proyecto: ProyectoCerrado | null
@@ -23,15 +24,15 @@ interface ConfirmArchiveModalProps {
  * Antes: usaba Dialog de @/components/ui/dialog
  * Ahora: usa BaseModal + ModalHeader/Body/Footer
  */
-export function ConfirmArchiveModal({ 
-  proyecto, 
-  open, 
+export function ConfirmArchiveModal({
+  proyecto,
+  open,
   onOpenChange,
-  onConfirm 
+  onConfirm
 }: ConfirmArchiveModalProps) {
   // Si no hay proyecto, no renderizar
   if (!proyecto) return null
-  
+
   const esCompletado = proyecto.fase_actual === 5 && proyecto.tareas_fase5_completadas === proyecto.tareas_fase5_totales
   const [clasificacion, setClasificacion] = useState<Clasificacion>(esCompletado ? 'completado' : 'inconcluso')
 
@@ -44,22 +45,24 @@ export function ConfirmArchiveModal({
     onOpenChange(false)
   }
 
+  // Variante del modal (warning para acción de archivar)
+  const variant: ModalVariant = 'warning'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={handleClose}
       size="md"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Archive className="h-5 w-5 text-cyan-400" />
-            {ARCHIVAR_MODAL.titulo}
-          </span>
-        }
+        title={ARCHIVAR_MODAL.titulo}
+        variant={variant}
+        showIcon
       />
-      
+
       {/* ✅ ModalBody */}
       <ModalBody>
         <div className="space-y-4">
@@ -103,9 +106,9 @@ export function ConfirmArchiveModal({
           </div>
         </div>
       </ModalBody>
-      
+
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         <Button variant="outline" onClick={handleClose}>
           {ARCHIVADO_BOTONES.cancelar}
         </Button>

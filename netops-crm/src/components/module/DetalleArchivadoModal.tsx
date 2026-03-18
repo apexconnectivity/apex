@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { getClasificacionColor, ProyectoArchivado } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, DETALLE_ARCHIVADO_MODAL, ARCHIVADO_CLASIFICACION } from '@/constants/archivado'
 import { Archive, FileText, Download, Folder, RotateCcw, Trash2, ExternalLink } from 'lucide-react'
+import { ModalVariant } from '@/constants/modales'
 
 interface DetalleArchivadoModalProps {
   proyecto: ProyectoArchivado | null
@@ -21,35 +22,37 @@ interface DetalleArchivadoModalProps {
  * Antes: usaba Dialog de @/components/ui/dialog
  * Ahora: usa BaseModal + ModalHeader/Body
  */
-export function DetalleArchivadoModal({ 
-  proyecto, 
-  open, 
+export function DetalleArchivadoModal({
+  proyecto,
+  open,
   onOpenChange,
-  onRestaurar, 
-  onEliminar 
+  onRestaurar,
+  onEliminar
 }: DetalleArchivadoModalProps) {
   // Si no hay proyecto, no renderizar
   if (!proyecto) return null
-  
+
   const handleClose = () => onOpenChange(false)
+
+  // Variante del modal (view para ver detalles)
+  const variant: ModalVariant = 'view'
 
   return (
     <BaseModal
       open={open}
       onOpenChange={handleClose}
       size="lg"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
-        title={
-          <span className="flex items-center gap-2">
-            <Archive className="h-5 w-5 text-cyan-400" />
-            {DETALLE_ARCHIVADO_MODAL.titulo}
-          </span>
-        }
+        title={DETALLE_ARCHIVADO_MODAL.titulo}
+        variant={variant}
+        showIcon
         showBorder={false}
       />
-      
+
       {/* ✅ ModalBody - Todo el contenido */}
       <ModalBody>
         <div className="space-y-6">

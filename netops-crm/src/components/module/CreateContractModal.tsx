@@ -11,6 +11,7 @@ import { Trash2, FileCheck } from 'lucide-react'
 import { ContratoSoporte as ContratoType, TipoContrato, EstadoContrato, CONTRATOS_TIPOS, CONTRATOS_ESTADOS } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { CREATE_CONTRACT_MODAL } from '@/constants/soporte'
+import { ModalVariant } from '@/constants/modales'
 
 interface CreateContractModalProps {
   open: boolean
@@ -53,8 +54,8 @@ function ContractFormFields({
         <Label>{CREATE_CONTRACT_MODAL.labels.empresa}</Label>
         <Select value={contrato.empresa_id} onValueChange={(v) => {
           const empresa = empresas.find(e => e.id === v)
-          setContrato({ 
-            ...contrato, 
+          setContrato({
+            ...contrato,
             empresa_id: v,
             empresa_nombre: empresa?.nombre || '',
           })
@@ -68,9 +69,9 @@ function ContractFormFields({
 
       <div>
         <Label>{CREATE_CONTRACT_MODAL.labels.nombre}</Label>
-        <Input 
-          value={contrato.nombre} 
-          onChange={(e) => setContrato({ ...contrato, nombre: e.target.value })} 
+        <Input
+          value={contrato.nombre}
+          onChange={(e) => setContrato({ ...contrato, nombre: e.target.value })}
           placeholder={CREATE_CONTRACT_MODAL.placeholders.ejemploNombre}
           disabled={disabled}
         />
@@ -100,19 +101,19 @@ function ContractFormFields({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>{CREATE_CONTRACT_MODAL.labels.fechaInicio}</Label>
-          <Input 
-            type="date" 
-            value={contrato.fecha_inicio} 
-            onChange={(e) => setContrato({ ...contrato, fecha_inicio: e.target.value })} 
+          <Input
+            type="date"
+            value={contrato.fecha_inicio}
+            onChange={(e) => setContrato({ ...contrato, fecha_inicio: e.target.value })}
             disabled={disabled}
           />
         </div>
         <div>
           <Label>{CREATE_CONTRACT_MODAL.labels.fechaFin}</Label>
-          <Input 
-            type="date" 
-            value={contrato.fecha_fin} 
-            onChange={(e) => setContrato({ ...contrato, fecha_fin: e.target.value })} 
+          <Input
+            type="date"
+            value={contrato.fecha_fin}
+            onChange={(e) => setContrato({ ...contrato, fecha_fin: e.target.value })}
             disabled={disabled}
           />
         </div>
@@ -121,19 +122,19 @@ function ContractFormFields({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>{CREATE_CONTRACT_MODAL.labels.montoMensual}</Label>
-          <Input 
-            type="number" 
-            value={contrato.monto_mensual} 
-            onChange={(e) => setContrato({ ...contrato, monto_mensual: parseFloat(e.target.value) || 0 })} 
+          <Input
+            type="number"
+            value={contrato.monto_mensual}
+            onChange={(e) => setContrato({ ...contrato, monto_mensual: parseFloat(e.target.value) || 0 })}
             disabled={disabled}
           />
         </div>
         <div>
           <Label>{CREATE_CONTRACT_MODAL.labels.horasIncluidas}</Label>
-          <Input 
-            type="number" 
-            value={contrato.horas_incluidas_mes} 
-            onChange={(e) => setContrato({ ...contrato, horas_incluidas_mes: parseInt(e.target.value) || 0 })} 
+          <Input
+            type="number"
+            value={contrato.horas_incluidas_mes}
+            onChange={(e) => setContrato({ ...contrato, horas_incluidas_mes: parseInt(e.target.value) || 0 })}
             disabled={disabled}
           />
         </div>
@@ -152,8 +153,8 @@ function ContractFormFields({
         </div>
         <div>
           <Label>{CREATE_CONTRACT_MODAL.labels.tecnicoAsignado}</Label>
-          <Select value={contrato.tecnico_asignado_id || ''} onValueChange={(v) => setContrato({ 
-            ...contrato, 
+          <Select value={contrato.tecnico_asignado_id || ''} onValueChange={(v) => setContrato({
+            ...contrato,
             tecnico_asignado_id: v,
             tecnico_asignado_nombre: tecnicos.find(t => t.id === v)?.nombre
           })} disabled={disabled}>
@@ -167,9 +168,9 @@ function ContractFormFields({
 
       <div>
         <Label>{CREATE_CONTRACT_MODAL.labels.notas}</Label>
-        <Textarea 
-          value={contrato.notas || ''} 
-          onChange={(e) => setContrato({ ...contrato, notas: e.target.value })} 
+        <Textarea
+          value={contrato.notas || ''}
+          onChange={(e) => setContrato({ ...contrato, notas: e.target.value })}
           placeholder={CREATE_CONTRACT_MODAL.placeholders.notasAdicionales}
           rows={2}
           disabled={disabled}
@@ -177,11 +178,11 @@ function ContractFormFields({
       </div>
 
       <div className="flex items-center gap-2">
-        <input 
-          type="checkbox" 
-          id="renovacion" 
-          checked={contrato.renovacion_automatica} 
-          onChange={(e) => setContrato({ ...contrato, renovacion_automatica: e.target.checked })} 
+        <input
+          type="checkbox"
+          id="renovacion"
+          checked={contrato.renovacion_automatica}
+          onChange={(e) => setContrato({ ...contrato, renovacion_automatica: e.target.checked })}
           className="rounded"
           disabled={disabled}
         />
@@ -298,24 +299,24 @@ export function CreateContractModal({
   const hasEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente').length > 0
   const canSave = contratoData.empresa_id && contratoData.nombre && contratoData.fecha_inicio && contratoData.fecha_fin && hasEmpresas
 
+  // Determinar variante del modal según el modo
+  const variant: ModalVariant = isEditMode ? 'edit' : 'create'
+
   return (
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
       size="md"
+      variant={variant}
+      showAccentBar
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
-        title={
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-              <FileCheck className="h-5 w-5 text-green-400" />
-            </div>
-            {isEditMode ? CREATE_CONTRACT_MODAL.tituloEditar : CREATE_CONTRACT_MODAL.tituloCrear}
-          </div>
-        }
+        title={isEditMode ? CREATE_CONTRACT_MODAL.tituloEditar : CREATE_CONTRACT_MODAL.tituloCrear}
+        variant={variant}
+        showIcon
       />
-      
+
       {/* ✅ ModalBody */}
       <ModalBody>
         {!hasEmpresas ? (
@@ -332,9 +333,9 @@ export function CreateContractModal({
           />
         )}
       </ModalBody>
-      
+
       {/* ✅ ModalFooter */}
-      <ModalFooter layout="inline-between">
+      <ModalFooter variant={variant} layout="inline-between">
         {isEditMode && onDelete && (
           <Button variant="destructive" onClick={onDelete}>
             <Trash2 className="h-4 w-4 mr-2" /> {CREATE_CONTRACT_MODAL.botones.eliminar}
