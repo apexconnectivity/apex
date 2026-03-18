@@ -2,6 +2,8 @@
 // Constantes centralizadas para el módulo de Compras
 // ============================================
 
+import { APP_COLORS } from './colors'
+
 // ============================================
 // IMPUESTOS
 // ============================================
@@ -75,14 +77,11 @@ export const STAT_ENVIADAS = 'Enviadas'
 export const STAT_RECIBIDAS = 'Recibidas'
 export const STAT_TOTAL_ORDENES = 'Total en órdenes'
 
-// ============================================
-// COLORES DE ESTADÍSTICAS (MiniStat accentColor)
-// ============================================
 export const COMPRAS_STATS_COLORS = {
-  pendientes: '#f59e0b',   // amber-500 (warning)
-  enviadas: '#3b82f6',     // blue-500 (info)
-  recibidas: '#10b981',   // emerald-500 (success)
-  total: '#06b6d4',        // cyan-500 (primary)
+  pendientes: APP_COLORS.warning,
+  enviadas: APP_COLORS.info,
+  recibidas: APP_COLORS.success,
+  total: APP_COLORS.primary,
 } as const
 
 // ============================================

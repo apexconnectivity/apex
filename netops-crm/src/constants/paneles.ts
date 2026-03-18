@@ -7,6 +7,8 @@
  * import { SIDE_PANEL_VARIANT_COLORS, getSidePanelVariantColor, type SidePanelVariant } from '@/constants/paneles'
  */
 
+import { APP_COLORS } from './colors'
+
 // ============================================================================
 // TIPOS
 // ============================================================================
@@ -44,7 +46,7 @@ export interface SidePanelVariantColors {
  */
 export const SIDE_PANEL_VARIANT_COLORS: Record<SidePanelVariant, SidePanelVariantColors> = {
   project: {
-    primary: '#10b981',
+    primary: APP_COLORS.success,
     light: 'bg-emerald-500/10',
     text: 'text-emerald-400',
     border: 'border-l-emerald-500',
@@ -52,7 +54,7 @@ export const SIDE_PANEL_VARIANT_COLORS: Record<SidePanelVariant, SidePanelVarian
     gradient: 'from-emerald-500/20',
   },
   task: {
-    primary: '#3b82f6',
+    primary: APP_COLORS.info,
     light: 'bg-blue-500/10',
     text: 'text-blue-400',
     border: 'border-l-blue-500',
@@ -60,7 +62,7 @@ export const SIDE_PANEL_VARIANT_COLORS: Record<SidePanelVariant, SidePanelVarian
     gradient: 'from-blue-500/20',
   },
   ticket: {
-    primary: '#f59e0b',
+    primary: APP_COLORS.warning,
     light: 'bg-amber-500/10',
     text: 'text-amber-400',
     border: 'border-l-amber-500',
@@ -68,7 +70,7 @@ export const SIDE_PANEL_VARIANT_COLORS: Record<SidePanelVariant, SidePanelVarian
     gradient: 'from-amber-500/20',
   },
   empresa: {
-    primary: '#06b6d4',
+    primary: APP_COLORS.primary,
     light: 'bg-cyan-500/10',
     text: 'text-cyan-400',
     border: 'border-l-cyan-500',
@@ -76,7 +78,7 @@ export const SIDE_PANEL_VARIANT_COLORS: Record<SidePanelVariant, SidePanelVarian
     gradient: 'from-cyan-500/20',
   },
   default: {
-    primary: '#64748b',
+    primary: APP_COLORS.neutral,
     light: 'bg-slate-500/10',
     text: 'text-slate-400',
     border: 'border-l-slate-500',

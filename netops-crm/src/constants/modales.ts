@@ -7,6 +7,7 @@
  */
 
 import { LucideIcon } from 'lucide-react'
+import { APP_COLORS } from './colors'
 import {
   Plus,
   Edit3,
@@ -81,7 +82,7 @@ export interface ModalVariantColors {
  */
 export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
   default: {
-    primary: '#06b6d4',     // cyan-500
+    primary: APP_COLORS.primary,
     light: 'bg-cyan-500/[0.08]',
     border: 'border-cyan-500/30',
     text: 'text-cyan-400',
@@ -90,7 +91,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-cyan-500',
   },
   create: {
-    primary: '#10b981',     // emerald-500
+    primary: APP_COLORS.success,
     light: 'bg-emerald-500/[0.08]',
     border: 'border-emerald-500/30',
     text: 'text-emerald-400',
@@ -99,7 +100,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-emerald-500',
   },
   edit: {
-    primary: '#3b82f6',    // blue-500
+    primary: APP_COLORS.info,
     light: 'bg-blue-500/[0.08]',
     border: 'border-blue-500/30',
     text: 'text-blue-400',
@@ -108,7 +109,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-blue-500',
   },
   view: {
-    primary: '#06b6d4',    // cyan-500
+    primary: APP_COLORS.primary,
     light: 'bg-cyan-500/[0.08]',
     border: 'border-cyan-500/30',
     text: 'text-cyan-400',
@@ -117,7 +118,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-cyan-500',
   },
   danger: {
-    primary: '#ef4444',    // red-500
+    primary: APP_COLORS.danger,
     light: 'bg-red-500/[0.08]',
     border: 'border-red-500/30',
     text: 'text-red-400',
@@ -126,7 +127,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-red-500',
   },
   warning: {
-    primary: '#f59e0b',    // amber-500
+    primary: APP_COLORS.warning,
     light: 'bg-amber-500/[0.08]',
     border: 'border-amber-500/30',
     text: 'text-amber-400',
@@ -135,7 +136,7 @@ export const MODAL_VARIANT_COLORS: Record<ModalVariant, ModalVariantColors> = {
     ring: 'focus:ring-amber-500',
   },
   info: {
-    primary: '#8b5cf6',    // violet-500
+    primary: APP_COLORS.purple,
     light: 'bg-violet-500/[0.08]',
     border: 'border-violet-500/30',
     text: 'text-violet-400',

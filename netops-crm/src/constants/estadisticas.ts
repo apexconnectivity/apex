@@ -4,36 +4,16 @@
  */
 
 import type { StatVariant } from "@/components/ui/mini-stat"
+import { APP_COLORS, CHART_PALETTE } from "./colors"
 
 // ============================================================================
 // COLORES PARA GRÁFICOS
 // ============================================================================
 
-export const CHART_COLORS = {
-  // Colores principales (usados en la app)
-  primary: '#06b6d4',    // cyan-500
-  success: '#10b981',    // emerald-500
-  warning: '#f59e0b',    // amber-500
-  danger: '#ef4444',      // red-500
-  info: '#3b82f6',        // blue-500
-  purple: '#8b5cf6',     // violet-500
-  neutral: '#6b7280',    // gray-500
-  slate: '#334155',       // slate-700 (para datos vacíos)
-} as const
+export const CHART_COLORS = APP_COLORS
 
-export type ChartColorKey = keyof typeof CHART_COLORS
+export type ChartColorKey = keyof typeof APP_COLORS
 
-// Paleta de colores para gráficos rotativos
-export const CHART_PALETTE = [
-  CHART_COLORS.primary,
-  CHART_COLORS.info,
-  CHART_COLORS.purple,
-  CHART_COLORS.warning,
-  CHART_COLORS.success,
-  CHART_COLORS.danger,
-  '#ec4899', // pink-500
-  '#14b8a6', // teal-500
-] as const
 
 // ============================================================================
 // ETIQUETAS Y TEXTOS

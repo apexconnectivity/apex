@@ -3,6 +3,8 @@
  * Contains all labels, messages, and configuration for the archivos module
  */
 
+import { APP_COLORS } from './colors'
+
 // ==========================================
 // PAGE LABELS
 // ==========================================
@@ -37,11 +39,11 @@ export const STATS_LABELS = {
 // ==========================================
 
 export const STAT_COLORS = {
-  total: '#06b6d4',       // cyan-500
-  empresas: '#3b82f6',    // blue-500
-  proyectos: '#f59e0b',   // amber-500
-  tickets: '#10b981',     // emerald-500
-  espacio: '#8b5cf6',    // violet-500
+  total: APP_COLORS.primary,
+  empresas: APP_COLORS.info,
+  proyectos: APP_COLORS.warning,
+  tickets: APP_COLORS.success,
+  espacio: APP_COLORS.purple,
 } as const
 
 // ==========================================
