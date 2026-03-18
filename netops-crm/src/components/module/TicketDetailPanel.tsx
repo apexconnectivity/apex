@@ -71,9 +71,11 @@ export function TicketDetailPanel({
       onClose={onClose}
       position="right"
       width="w-[400px]"
+      variant="ticket"
     >
       {/* Header */}
       <SidePanelHeader
+        variant="ticket"
         title={ticket.numero_ticket}
         subtitle={ticket.titulo}
       />

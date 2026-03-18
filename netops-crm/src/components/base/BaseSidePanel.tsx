@@ -3,16 +3,17 @@
 import * as React from "react"
 import { X, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getSidePanelVariantColor, type SidePanelVariant } from "@/constants/paneles"
 
 export type SidePanelPosition = "left" | "right"
 
 export interface BaseSidePanelProps {
   // Estado
   isOpen: boolean
-  
+
   // Contenido
   children: React.ReactNode
-  
+
   // Configuración
   position?: SidePanelPosition
   title?: string
@@ -20,15 +21,19 @@ export interface BaseSidePanelProps {
   showBackButton?: boolean
   onBack?: () => void
   onClose: () => void
-  
+
   // Tamaño
   width?: string // ej: "w-1/5", "w-80", "400px"
-  
+
+  // Variante de color
+  variant?: SidePanelVariant
+  showAccentBar?: boolean
+
   // Estilos
   className?: string
   headerClassName?: string
   contentClassName?: string
-  
+
   // Footer persistente
   footer?: React.ReactNode
   showFooterBorder?: boolean
@@ -48,29 +53,35 @@ export function BaseSidePanel({
   onBack,
   onClose,
   width = "w-1/5",
+  variant = "default",
+  showAccentBar = true,
   className,
   headerClassName,
   contentClassName,
   footer,
   showFooterBorder = true
 }: BaseSidePanelProps) {
+  const variantColors = getSidePanelVariantColor(variant)
+
   const positionClasses = {
     left: {
-      container: "rounded-l-xl border-l",
+      container: "rounded-l-xl",
       button: "ml-auto",
     },
     right: {
-      container: "rounded-r-xl border-r",
+      container: "rounded-r-xl",
       button: "ml-auto",
     }
   }
 
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-col h-full overflow-hidden",
         "bg-slate-900/50 border-border",
         positionClasses[position].container,
+        variantColors.border,
+        showAccentBar && "border-l-4",
         width,
         !isOpen && "w-0 overflow-hidden",
         isOpen && "transition-all duration-300 ease-in-out",
@@ -97,7 +108,7 @@ export function BaseSidePanel({
               <h2 className="font-semibold truncate">{title}</h2>
             )}
           </div>
-          
+
           {showCloseButton && (
             <button
               type="button"
@@ -112,7 +123,7 @@ export function BaseSidePanel({
           )}
         </div>
       )}
-      
+
       {/* Body */}
       <div className={cn(
         "flex-1 overflow-y-auto",
@@ -120,10 +131,10 @@ export function BaseSidePanel({
       )}>
         {children}
       </div>
-      
+
       {/* Footer */}
       {footer && (
-        <div 
+        <div
           className={cn(
             "px-4 py-3 shrink-0",
             showFooterBorder && "border-t border-border/50"
@@ -145,6 +156,7 @@ interface SidePanelHeaderProps {
   subtitle?: string
   action?: React.ReactNode
   icon?: React.ReactNode
+  variant?: SidePanelVariant
   className?: string
 }
 
@@ -153,13 +165,16 @@ export function SidePanelHeader({
   subtitle,
   action,
   icon,
+  variant = "default",
   className
 }: SidePanelHeaderProps) {
+  const variantColors = getSidePanelVariantColor(variant)
+
   return (
     <div className={cn("flex items-start justify-between", className)}>
       <div className="flex items-center gap-3 min-w-0">
         {icon && (
-          <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+          <div className={cn("p-2 rounded-lg shrink-0", variantColors.iconBg, variantColors.text)}>
             {icon}
           </div>
         )}
@@ -193,12 +208,12 @@ interface SidePanelSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }
 
-export function SidePanelSection({ 
-  title, 
-  description, 
-  children, 
-  className, 
-  ...props 
+export function SidePanelSection({
+  title,
+  description,
+  children,
+  className,
+  ...props
 }: SidePanelSectionProps) {
   return (
     <div className={cn("space-y-3", className)} {...props}>
@@ -221,11 +236,11 @@ interface SidePanelFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function SidePanelFooter({ children, className, ...props }: SidePanelFooterProps) {
   return (
-    <div 
+    <div
       className={cn(
         "flex items-center gap-2 pt-4 mt-4 border-t border-border/50",
         className
-      )} 
+      )}
       {...props}
     >
       {children}

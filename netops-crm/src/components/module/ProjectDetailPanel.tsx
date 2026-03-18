@@ -96,9 +96,11 @@ export function ProjectDetailPanel({
       onClose={onClose}
       position="right"
       width="w-[400px]"
+      variant="project"
     >
       {/* Header */}
       <SidePanelHeader
+        variant="project"
         icon={
           <div
             className="h-3 w-3 rounded-full"

@@ -128,9 +128,11 @@ export function TaskDetailPanel({
       onClose={onClose}
       position="right"
       width="w-[400px]"
+      variant="task"
     >
       {/* Header */}
       <SidePanelHeader
+        variant="task"
         icon={getEstadoIcon(tarea.estado)}
         title={tarea.nombre}
         subtitle={tarea.proyecto_nombre}
@@ -266,7 +268,7 @@ export function TaskDetailPanel({
                 <p className="text-sm">{c.comentario}</p>
               </div>
             ))}
-            
+
             {/* Input */}
             <div className="flex gap-2 mt-2">
               <Input
