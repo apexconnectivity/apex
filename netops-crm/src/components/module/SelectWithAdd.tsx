@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
+import { ModalVariant } from '@/constants/modales'
 
 type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto' | 'origenes' | 'tipos_relacion' | 'regimenes_fiscales'
 
@@ -168,9 +169,13 @@ export function SelectWithAdd({
         open={isOpen}
         onOpenChange={handleOpenChange}
         size="sm"
+        variant="create"
+        showAccentBar
       >
         <ModalHeader
           title={`Agregar ${label}`}
+          variant="create"
+          showIcon
         />
         <ModalBody>
           <div className="space-y-4">
@@ -187,7 +192,7 @@ export function SelectWithAdd({
             </div>
           </div>
         </ModalBody>
-        <ModalFooter layout="inline-between">
+        <ModalFooter variant="create" layout="inline-between">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancelar
           </Button>
