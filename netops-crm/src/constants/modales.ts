@@ -8,6 +8,7 @@
 
 import { LucideIcon } from 'lucide-react'
 import { APP_COLORS } from './colors'
+import { COMMON_BUTTONS, COMMON_MESSAGES } from './common_text'
 import {
   Plus,
   Edit3,
@@ -251,18 +252,18 @@ export const MODAL_FOOTER_LAYOUTS: Record<ModalFooterLayout, string> = {
  * Etiquetas estándar para modales
  */
 export const MODAL_LABELS = {
-  // Acciones
-  guardar: 'Guardar',
-  cancelar: 'Cancelar',
-  cerrar: 'Cerrar',
-  crear: 'Crear',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
-  actualizar: 'Actualizar',
+  // Acciones - usar constantes comunes
+  guardar: COMMON_BUTTONS.guardar,
+  cancelar: COMMON_BUTTONS.cancelar,
+  cerrar: COMMON_BUTTONS.cerrar,
+  crear: COMMON_BUTTONS.crear,
+  editar: COMMON_BUTTONS.editar,
+  eliminar: COMMON_BUTTONS.eliminar,
+  actualizar: COMMON_BUTTONS.actualizar,
 
   // Estados
-  guardando: 'Guardando...',
-  cargando: 'Cargando...',
+  guardando: COMMON_MESSAGES.guardando,
+  cargando: COMMON_MESSAGES.cargando,
   procesando: 'Procesando...',
 
   // Campos obligatorios
@@ -270,14 +271,14 @@ export const MODAL_LABELS = {
   opcional: 'Opcional',
 
   // Confirmaciones
-  confirmar: 'Confirmar',
-  estasSeguro: '¿Estás seguro?',
-  accionNoReversible: 'Esta acción no se puede deshacer.',
+  confirmar: COMMON_BUTTONS.confirmar,
+  estasSeguro: COMMON_MESSAGES.confirmEliminar,
+  accionNoReversible: COMMON_MESSAGES.accionNoReversible,
 
   // Éxito/Error
-  exitoso: 'Operación exitosa',
-  error: 'Error',
-  errorGuardar: 'Error al guardar los datos',
+  exitoso: COMMON_MESSAGES.guardadoExito,
+  error: COMMON_MESSAGES.errorGuardar,
+  errorGuardar: COMMON_MESSAGES.errorGuardar,
   errorCargar: 'Error al cargar los datos',
 }
 
