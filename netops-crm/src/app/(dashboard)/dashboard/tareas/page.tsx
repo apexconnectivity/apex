@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
+import { DateRange } from '@/components/ui/date-range-picker'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -154,8 +155,7 @@ export default function TareasPage() {
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
-  const [filtroFechaDesde, setFiltroFechaDesde] = useState<string>('')
-  const [filtroFechaHasta, setFiltroFechaHasta] = useState<string>('')
+  const [filtroFechaRange, setFiltroFechaRange] = useState<DateRange>({ from: undefined, to: undefined })
   const [filtroVencidas, setFiltroVencidas] = useState<boolean>(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tareas.find(t => t.id === selectedId) || null
@@ -185,15 +185,22 @@ export default function TareasPage() {
       if (filtroCategoria !== 'todas' && t.categoria !== filtroCategoria) return false
       if (filtroPrioridad !== 'todas' && t.prioridad !== filtroPrioridad) return false
 
-      if (filtroFechaDesde && t.fecha_vencimiento && t.fecha_vencimiento < filtroFechaDesde) return false
-      if (filtroFechaHasta && t.fecha_vencimiento && t.fecha_vencimiento > filtroFechaHasta) return false
+      // Filtro por rango de fecha
+      if (filtroFechaRange.from && t.fecha_vencimiento) {
+        const fechaVencimiento = new Date(t.fecha_vencimiento)
+        if (fechaVencimiento < filtroFechaRange.from) return false
+      }
+      if (filtroFechaRange.to && t.fecha_vencimiento) {
+        const fechaVencimiento = new Date(t.fecha_vencimiento)
+        if (fechaVencimiento > filtroFechaRange.to) return false
+      }
 
       const isOverdue = t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada'
       if (filtroVencidas && !isOverdue) return false
 
       return true
     })
-  }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaDesde, filtroFechaHasta, filtroVencidas])
+  }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaRange, filtroVencidas])
 
   const visibleTareas = useMemo(() => {
     if (isAdmin) return filteredTareas
@@ -413,8 +420,7 @@ export default function TareasPage() {
     setFiltroEstado('todos')
     setFiltroCategoria('todas')
     setFiltroPrioridad('todas')
-    setFiltroFechaDesde('')
-    setFiltroFechaHasta('')
+    setFiltroFechaRange({ from: undefined, to: undefined })
     setFiltroVencidas(false)
   }
 
@@ -510,6 +516,13 @@ export default function TareasPage() {
               ],
               width: 'w-32',
             },
+            {
+              key: 'fecha',
+              type: 'date',
+              label: 'Fecha',
+              placeholder: 'Rango de fechas',
+              width: 'w-64',
+            },
           ]}
           values={{
             proyecto: filtroProyecto,
@@ -517,23 +530,27 @@ export default function TareasPage() {
             categoria: filtroCategoria,
             prioridad: filtroPrioridad,
           }}
+          dateValue={filtroFechaRange}
+          onDateChange={setFiltroFechaRange}
           onFilterChange={(key, value) => {
             if (key === 'proyecto') setFiltroProyecto(value)
             else if (key === 'estado') setFiltroEstado(value)
             else if (key === 'categoria') setFiltroCategoria(value)
             else if (key === 'prioridad') setFiltroPrioridad(value)
           }}
-          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery}
+          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas}
           onClearFilters={() => {
             setSearchQuery('')
             setFiltroProyecto('todos')
             setFiltroEstado('todos')
             setFiltroCategoria('todas')
             setFiltroPrioridad('todas')
+            setFiltroFechaRange({ from: undefined, to: undefined })
+            setFiltroVencidas(false)
           }}
         />
 
-        {/* Filtros adicionales: Persona (admin) y Fechas */}
+        {/* Filtros adicionales: Persona (admin) y Vencidas */}
         <div className="flex flex-wrap gap-2 items-center text-sm">
           {isAdmin && (
             <div className="flex items-center gap-1">
@@ -548,26 +565,6 @@ export default function TareasPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground">Desde:</Label>
-            <Input
-              type="date"
-              value={filtroFechaDesde}
-              onChange={(e) => setFiltroFechaDesde(e.target.value)}
-              className="w-32 h-8 bg-input border-border"
-            />
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Label className="text-xs text-muted-foreground">Hasta:</Label>
-            <Input
-              type="date"
-              value={filtroFechaHasta}
-              onChange={(e) => setFiltroFechaHasta(e.target.value)}
-              className="w-28 h-8 bg-input border-border"
-            />
-          </div>
-
           <label className="flex items-center gap-1.5 cursor-pointer h-8">
             <Checkbox
               checked={filtroVencidas}
@@ -575,10 +572,6 @@ export default function TareasPage() {
             />
             <span className="text-xs text-muted-foreground">Vencidas</span>
           </label>
-
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs text-muted-foreground hover:text-foreground">
-            <X className="h-3 w-3 mr-1" /> Limpiar
-          </Button>
         </div>
 
         {/* Stats */}

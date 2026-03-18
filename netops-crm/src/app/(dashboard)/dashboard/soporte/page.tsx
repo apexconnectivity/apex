@@ -30,6 +30,7 @@ import { StatusBadge } from '@/components/module/StatusBadge'
 import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
 import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Filter, X, Plus } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
+import { DateRange } from '@/components/ui/date-range-picker'
 import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 
@@ -145,8 +146,7 @@ export default function SoportePage() {
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
   const [filtroCliente, setFiltroCliente] = useState<string>('todos')
   const [filtroResponsable, setFiltroResponsable] = useState<string>('todos')
-  const [filtroFechaDesde, setFiltroFechaDesde] = useState<string>('')
-  const [filtroFechaHasta, setFiltroFechaHasta] = useState<string>('')
+  const [filtroFechaRange, setFiltroFechaRange] = useState<DateRange>({ from: undefined, to: undefined })
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [activeId, setActiveId] = useState<string | null>(null)
 
@@ -216,13 +216,18 @@ export default function SoportePage() {
       if (filtroCliente !== 'todos' && t.empresa_id !== filtroCliente && t.contrato_id !== filtroCliente) return false
       // Filtro por responsable
       if (filtroResponsable !== 'todos' && t.responsable_id !== filtroResponsable) return false
-      // Filtro por fecha desde
-      if (filtroFechaDesde && t.fecha_apertura < filtroFechaDesde) return false
-      // Filtro por fecha hasta
-      if (filtroFechaHasta && t.fecha_apertura > filtroFechaHasta) return false
+      // Filtro por rango de fecha
+      if (filtroFechaRange.from && t.fecha_apertura) {
+        const fechaApertura = new Date(t.fecha_apertura)
+        if (fechaApertura < filtroFechaRange.from) return false
+      }
+      if (filtroFechaRange.to && t.fecha_apertura) {
+        const fechaApertura = new Date(t.fecha_apertura)
+        if (fechaApertura > filtroFechaRange.to) return false
+      }
       return true
     })
-  }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaDesde, filtroFechaHasta])
+  }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaRange])
 
   const ticketsPorEstado = useMemo(() => {
     const r: Record<EstadoTicket, Ticket[]> = { 'Abierto': [], 'En progreso': [], 'Esperando cliente': [], 'Resuelto': [], 'Cerrado': [] }
@@ -393,6 +398,13 @@ export default function SoportePage() {
           ]}
           activeTab={view}
           onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
+          actions={
+            canCreate && (
+              <Button onClick={() => setShowCreateTicket(true)}>
+                <Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}
+              </Button>
+            )
+          }
         />
 
         {view === 'tickets' && (
@@ -453,6 +465,13 @@ export default function SoportePage() {
                   ],
                   width: 'w-32',
                 },
+                {
+                  key: 'fecha',
+                  type: 'date',
+                  label: 'Fecha',
+                  placeholder: 'Rango de fechas',
+                  width: 'w-64',
+                },
               ]}
               values={{
                 cliente: filtroCliente,
@@ -461,6 +480,8 @@ export default function SoportePage() {
                 categoria: filtroCategoria,
                 prioridad: filtroPrioridad,
               }}
+              dateValue={filtroFechaRange}
+              onDateChange={setFiltroFechaRange}
               onFilterChange={(key, value) => {
                 if (key === 'cliente') setFiltroCliente(value)
                 else if (key === 'responsable') setFiltroResponsable(value)
@@ -468,7 +489,7 @@ export default function SoportePage() {
                 else if (key === 'categoria') setFiltroCategoria(value)
                 else if (key === 'prioridad') setFiltroPrioridad(value)
               }}
-              hasActiveFilters={filtroCliente !== 'todos' || filtroResponsable !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery}
+              hasActiveFilters={filtroCliente !== 'todos' || filtroResponsable !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from}
               onClearFilters={() => {
                 setSearchQuery('')
                 setFiltroCliente('todos')
@@ -476,33 +497,9 @@ export default function SoportePage() {
                 setFiltroEstado('todos')
                 setFiltroCategoria('todas')
                 setFiltroPrioridad('todas')
+                setFiltroFechaRange({ from: undefined, to: undefined })
               }}
             />
-
-            {/* Filtros adicionales: Fechas */}
-            <div className="flex flex-wrap gap-2 items-center text-sm">
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground">{SOPORTE_FILTROS.desde}</Label>
-                <Input
-                  type="date"
-                  value={filtroFechaDesde}
-                  onChange={(e) => setFiltroFechaDesde(e.target.value)}
-                  className="w-32 h-8 bg-background"
-                />
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-muted-foreground">{SOPORTE_FILTROS.hasta}</Label>
-                <Input
-                  type="date"
-                  value={filtroFechaHasta}
-                  onChange={(e) => setFiltroFechaHasta(e.target.value)}
-                  className="w-32 h-8 bg-background"
-                />
-              </div>
-            </div>
-
-            {canCreate && <Button className="ml-auto" onClick={() => setShowCreateTicket(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}</Button>}
 
             {/* Stats */}
             <StatGrid cols={6}>

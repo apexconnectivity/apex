@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DateRangePicker, type DateRange } from '@/components/ui/date-range-picker'
 import { cn } from '@/lib/utils'
 
 // ============================================
@@ -25,8 +26,12 @@ export interface FilterConfig {
   key: string
   label?: string
   placeholder?: string
-  options: FilterOption[]
+  options?: FilterOption[]
   width?: string
+  type?: 'select' | 'date'
+  dateRange?: {
+    placeholder?: string
+  }
 }
 
 export interface FilterBarProps {
@@ -39,6 +44,10 @@ export interface FilterBarProps {
   filters: FilterConfig[]
   values: Record<string, string>
   onFilterChange: (key: string, value: string) => void
+
+  // Date filter (for date range picker)
+  dateValue?: DateRange
+  onDateChange?: (range: DateRange) => void
 
   // Clear filters
   onClearFilters?: () => void
@@ -59,10 +68,16 @@ export function FilterBar({
   filters,
   values,
   onFilterChange,
+  dateValue,
+  onDateChange,
   onClearFilters,
   hasActiveFilters = false,
   className,
 }: FilterBarProps) {
+  // Separate date filter from select filters
+  const dateFilter = filters.find(f => f.type === 'date')
+  const selectFilters = filters.filter(f => f.type !== 'date')
+
   return (
     <div className={cn('flex flex-wrap gap-4 items-center', className)}>
       {/* Search Input */}
@@ -84,8 +99,8 @@ export function FilterBar({
         )}
       </div>
 
-      {/* Filter Selects */}
-      {filters.map((filter) => (
+      {/* Filter Selects (non-date filters) */}
+      {selectFilters.map((filter) => (
         <div key={filter.key} className="flex items-center gap-1">
           {filter.label && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">{filter.label}:</span>
@@ -104,7 +119,7 @@ export function FilterBar({
               <SelectValue placeholder={filter.placeholder} />
             </SelectTrigger>
             <SelectContent>
-              {filter.options.map((option) => (
+              {filter.options?.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -113,6 +128,21 @@ export function FilterBar({
           </Select>
         </div>
       ))}
+
+      {/* Date Range Filter */}
+      {dateFilter && (
+        <div className="flex items-center gap-1">
+          {dateFilter.label && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{dateFilter.label}:</span>
+          )}
+          <DateRangePicker
+            value={dateValue}
+            onChange={onDateChange}
+            placeholder={dateFilter.placeholder || 'Seleccionar fechas'}
+            className={cn('w-64', dateFilter.width)}
+          />
+        </div>
+      )}
 
       {/* Clear Filters Button */}
       {hasActiveFilters && onClearFilters && (
