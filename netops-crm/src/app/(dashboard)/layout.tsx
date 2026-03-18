@@ -90,7 +90,7 @@ export default function DashboardLayout({
       try {
         setUsuarios(JSON.parse(stored))
       } catch (e) {
-        console.error('Error loading users:', e)
+        // Error al cargar usuarios
       }
     }
   }, [])
@@ -122,7 +122,6 @@ export default function DashboardLayout({
 
     // Agregar a la lista de proyectos
     setProyectos([...proyectos, newProyecto])
-    console.log('Proyecto creado desde el header:', newProyecto.nombre)
   }
 
   useEffect(() => {

@@ -44,26 +44,21 @@ export function useLocalStorage<T>(
 
           // Validar que los datos parseados sean válidos
           if (parsed === null || parsed === undefined) {
-            console.warn(`[useLocalStorage] Invalid data for key "${key}", using initial value`)
             setStoredValue(initialValueRef.current)
           } else if (Array.isArray(parsed) || typeof parsed === 'object') {
             setStoredValue(parsed)
           } else {
-            console.warn(`[useLocalStorage] Unexpected data type for key "${key}", using initial value`)
             setStoredValue(initialValueRef.current)
           }
         } catch (parseError) {
-          console.error(`[useLocalStorage] Failed to parse localStorage key "${key}":`, parseError)
           // Limpiar datos corruptos
           window.localStorage.removeItem(key)
           setStoredValue(initialValueRef.current)
         }
       } else {
-        console.log(`[useLocalStorage] No existing data for key "${key}", using initial value`)
         setStoredValue(initialValueRef.current)
       }
     } catch (error) {
-      console.error(`[useLocalStorage] Error reading localStorage key "${key}":`, error)
       setStoredValue(initialValueRef.current)
     } finally {
       setIsLoaded(true)
@@ -76,7 +71,6 @@ export function useLocalStorage<T>(
   // ============================================
   const setValue = useCallback(
     (value: T | ((prev: T) => T)): void => {
-      console.log(`[useLocalStorage] setValue called for key: "${key}", value type: ${typeof value}`)
       try {
         setStoredValue(prev => {
           // Permitir pasar una función para actualizar el valor anterior
@@ -86,9 +80,7 @@ export function useLocalStorage<T>(
           // Persistir en localStorage solo si estamos en el navegador
           if (typeof window !== 'undefined') {
             try {
-              console.log(`[useLocalStorage] Saving to localStorage key: "${key}", array length: ${Array.isArray(valueToStore) ? valueToStore.length : 'not array'}`)
               window.localStorage.setItem(key, JSON.stringify(valueToStore))
-              console.log(`[useLocalStorage] Successfully saved to localStorage key: "${key}"`)
             } catch (storageError) {
               console.error(`[useLocalStorage] Error saving to localStorage:`, storageError)
             }

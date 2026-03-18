@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Plus, CheckSquare, Calendar, User, AlertCircle, MessageSquare, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
+import { CheckSquare, Calendar, User, AlertCircle, MessageSquare, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ActivityFeed } from '@/components/ui/activity-feed'
+import { SubtaskList } from '@/components/ui/subtask-list'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { Tarea, Subtarea, Comentario, EstadoTarea } from '@/types/tareas'
@@ -49,7 +50,6 @@ export function TaskDetailPanel({
   onAddComentario,
   onEdit,
 }: TaskDetailPanelProps) {
-  const [newSubtarea, setNewSubtarea] = useState('')
   const [editMode, setEditMode] = useState(false)
   const [editedTarea, setEditedTarea] = useState<Tarea | null>(tarea)
 
@@ -66,18 +66,9 @@ export function TaskDetailPanel({
     }
   }
 
-  const handleAddSubtarea = () => {
-    if (newSubtarea.trim()) {
-      onAddSubtarea(newSubtarea.trim())
-      setNewSubtarea('')
-    }
-  }
-
   const handleAddComentario = (comment: string) => {
     onAddComentario(comment)
   }
-
-  const completedSubtareas = subtareas.filter(s => s.completada).length
 
   // Format fecha
   const formatFecha = (fecha?: string) => {
@@ -224,34 +215,15 @@ export function TaskDetailPanel({
         </SidePanelSection>
 
         {/* Subtareas */}
-        <SidePanelSection title={`Subtareas (${completedSubtareas}/${subtareas.length})`}>
-          <div className="space-y-2">
-            {/* Input */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Nueva subtarea..."
-                value={newSubtarea}
-                onChange={(e) => setNewSubtarea(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAddSubtarea() }}
-              />
-              <Button size="icon" variant="outline" onClick={handleAddSubtarea} disabled={!newSubtarea.trim()}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Lista */}
-            {subtareas.map((st) => (
-              <div key={st.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                <Checkbox
-                  checked={st.completada}
-                  onCheckedChange={() => onToggleSubtarea(st.id)}
-                />
-                <span className={`text-sm flex-1 ${st.completada ? 'line-through text-muted-foreground' : ''}`}>
-                  {st.nombre}
-                </span>
-              </div>
-            ))}
-          </div>
+        <SidePanelSection>
+          <SubtaskList
+            subtareas={subtareas}
+            onAdd={onAddSubtarea}
+            onToggle={(id) => onToggleSubtarea(String(id))}
+            placeholder="Nueva subtarea..."
+            title="Subtareas"
+            showProgress={true}
+          />
         </SidePanelSection>
 
         {/* Comentarios */}

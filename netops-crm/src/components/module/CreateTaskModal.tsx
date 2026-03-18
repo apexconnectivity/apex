@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { SubtaskList } from '@/components/ui/subtask-list'
+import { CommentInput } from '@/components/ui/comment-input'
 import { Plus, X, Trash2, CheckSquare, MessageSquare, PlusCircle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
@@ -168,140 +170,6 @@ function TaskFormFields({
   )
 }
 
-function SubtasksSection({
-  subtareas,
-  onAdd,
-  onRemove,
-  onToggle,
-  disabled
-}: {
-  subtareas: { id?: string; nombre: string; completada?: boolean }[]
-  onAdd: (nombre: string) => void
-  onRemove: (index: number) => void
-  onToggle?: (index: number) => void
-  disabled?: boolean
-}) {
-  const [newSubtask, setNewSubtask] = useState('')
-
-  const handleAdd = () => {
-    if (newSubtask.trim()) {
-      onAdd(newSubtask.trim())
-      setNewSubtask('')
-    }
-  }
-
-  const completed = subtareas.filter(s => s.completada).length
-
-  return (
-    <div className="space-y-3 border-t border-border/50 pt-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium text-sm flex items-center gap-2">
-          <CheckSquare className="h-4 w-4 text-muted-foreground" />
-          Subtareas
-        </h3>
-        {subtareas.length > 0 && (
-          <span className="text-xs text-muted-foreground">{completed}/{subtareas.length}</span>
-        )}
-      </div>
-
-      <div className="flex gap-2">
-        <Input
-          placeholder="Nueva subtarea..."
-          value={newSubtask}
-          onChange={(e) => setNewSubtask(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
-          disabled={disabled}
-        />
-        <Button size="icon" variant="outline" onClick={handleAdd} disabled={disabled || !newSubtask.trim()}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {subtareas.length > 0 && (
-        <div className="space-y-1 max-h-[150px] overflow-y-auto">
-          {subtareas.map((st, index) => (
-            <div key={index} className="flex items-center gap-2 text-sm p-2 bg-muted/30 rounded">
-              {onToggle && (
-                <Checkbox
-                  checked={st.completada || false}
-                  onCheckedChange={() => onToggle(index)}
-                />
-              )}
-              <span className={`flex-1 ${st.completada ? 'line-through text-muted-foreground' : ''}`}>
-                {st.nombre}
-              </span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onRemove(index)} disabled={disabled}>
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function CommentsSection({
-  comentarios,
-  onAdd,
-  onRemove,
-  currentUserName,
-  disabled
-}: {
-  comentarios: { id?: string; nombre?: string; comentario: string; usuario_nombre?: string }[]
-  onAdd: (comentario: string) => void
-  onRemove: (index: number) => void
-  currentUserName: string
-  disabled?: boolean
-}) {
-  const [newComment, setNewComment] = useState('')
-
-  const handleAdd = () => {
-    if (newComment.trim()) {
-      onAdd(newComment.trim())
-      setNewComment('')
-    }
-  }
-
-  return (
-    <div className="space-y-3 border-t border-border/50 pt-4">
-      <h3 className="font-medium text-sm flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-muted-foreground" />
-        Comentarios
-      </h3>
-
-      {comentarios.length > 0 && (
-        <div className="space-y-2 max-h-[150px] overflow-y-auto">
-          {comentarios.map((c, index) => (
-            <div key={index} className="bg-muted/30 rounded-lg p-3">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-medium">{c.usuario_nombre || currentUserName}</span>
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => onRemove(index)} disabled={disabled}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-              <p className="text-sm">{c.comentario}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        <Input
-          placeholder="Nuevo comentario..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
-          disabled={disabled}
-        />
-        <Button size="icon" variant="outline" onClick={handleAdd} disabled={disabled || !newComment.trim()}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 // ============================================================================
 // COMPONENTE PRINCIPAL
 // ============================================================================
@@ -425,11 +293,13 @@ export function CreateTaskModal({
     setSubtareas([...subtareas, { nombre, completada: false }])
   }
 
-  const handleRemoveSubtask = (index: number) => {
+  const handleRemoveSubtask = (id: string | number) => {
+    const index = typeof id === 'string' ? parseInt(id, 10) : id
     setSubtareas(subtareas.filter((_, i) => i !== index))
   }
 
-  const handleToggleSubtask = (index: number) => {
+  const handleToggleSubtask = (id: string | number) => {
+    const index = typeof id === 'string' ? parseInt(id, 10) : id
     setSubtareas(subtareas.map((s, i) => i === index ? { ...s, completada: !s.completada } : s))
   }
 
@@ -490,15 +360,19 @@ export function CreateTaskModal({
               usuarios={usuarios}
             />
 
-            <SubtasksSection
+            <SubtaskList
               subtareas={subtareas}
               onAdd={handleAddSubtask}
-              onRemove={handleRemoveSubtask}
-              onToggle={isEditMode ? handleToggleSubtask : undefined}
+              onToggle={handleToggleSubtask}
+              onDelete={handleRemoveSubtask}
+              placeholder="Nueva subtarea..."
+              title="Subtareas"
+              showProgress={true}
+              maxHeight="max-h-[150px]"
             />
 
-            <CommentsSection
-              comentarios={comentarios}
+            <CommentInput
+              comments={comentarios}
               onAdd={handleAddComment}
               onRemove={handleRemoveComment}
               currentUserName={currentUser.nombre}

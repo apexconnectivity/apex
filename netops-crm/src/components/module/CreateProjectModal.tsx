@@ -146,7 +146,6 @@ export function CreateProjectModal({
       contacto_tecnico_id: '',
       contacto_tecnico_nombre: ''
     })
-    console.log('Empresa creada:', newEmpresa.nombre)
   }
 
   // Handler for saving new user
@@ -177,7 +176,6 @@ export function CreateProjectModal({
       responsable_id: newUser.id,
       responsable_nombre: newUser.nombre
     })
-    console.log('Usuario creado:', newUser.nombre)
   }
 
   // Determinar variante según modo
