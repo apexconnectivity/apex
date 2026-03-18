@@ -4,6 +4,7 @@
  */
 
 import { APP_COLORS } from './colors'
+import { COMMON_BUTTONS, COMMON_FILTER_LABELS } from './common_text'
 
 // ==========================================
 // PAGE LABELS
@@ -51,9 +52,8 @@ export const STAT_COLORS = {
 // ==========================================
 
 export const BUTTON_LABELS = {
+  ...COMMON_BUTTONS,
   subir: 'Subir archivo',
-  cancelar: 'Cancelar',
-  eliminar: 'Eliminar',
 } as const
 
 // ==========================================
@@ -61,8 +61,7 @@ export const BUTTON_LABELS = {
 // ==========================================
 
 export const FILTER_LABELS = {
-  filtrarPorEmpresa: 'Filtrar por empresa',
-  todasLasEmpresas: 'Todas las empresas',
+  ...COMMON_FILTER_LABELS,
 } as const
 
 // ==========================================

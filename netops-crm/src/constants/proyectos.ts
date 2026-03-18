@@ -3,6 +3,8 @@
  * Contains all labels, statuses, phases, and configuration for the proyectos module
  */
 
+import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS } from './common_text'
+
 // ==========================================
 // PAGE LABELS
 // ==========================================
@@ -24,11 +26,8 @@ export const TABS_LABELS = {
 // ==========================================
 
 export const BUTTON_LABELS = {
+  ...COMMON_BUTTONS,
   nuevoProyecto: 'Nuevo Proyecto',
-  guardar: 'Guardar',
-  cancelar: 'Cancelar',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
   archivar: 'Archivar',
   cerrar: 'Cerrar Proyecto',
   verDetalles: 'Ver Detalles',
@@ -148,21 +147,21 @@ export const EMPTY_MESSAGES = {
 // ==========================================
 
 export const FORM_LABELS = {
+  ...COMMON_FORM_LABELS,
   nombre: 'Nombre del Proyecto',
-  empresa: 'Empresa',
-  descripcion: 'Descripción',
+  empresa: COMMON_FORM_LABELS.empresa,
+  descripcion: COMMON_FORM_LABELS.descripcion,
   fechaInicio: 'Fecha de Inicio',
   fechaFin: 'Fecha de Fin',
   presupuesto: 'Presupuesto',
   moneda: 'Moneda',
-  responsable: 'Responsable',
+  responsable: COMMON_FORM_LABELS.responsable,
   contactoTecnico: 'Contacto Técnico',
   tipo: 'Tipo de Proyecto',
-  prioridad: 'Prioridad',
+  prioridad: COMMON_FORM_LABELS.prioridad,
   fase: 'Fase Actual',
-  estado: 'Estado',
+  estado: COMMON_FORM_LABELS.estado,
   requiereCompras: 'Requiere Compras',
-  notas: 'Notas',
 } as const
 
 // ==========================================
@@ -170,12 +169,9 @@ export const FORM_LABELS = {
 // ==========================================
 
 export const FILTER_LABELS = {
-  filtrarPorEmpresa: 'Filtrar por empresa',
-  filtrarPorEstado: 'Filtrar por estado',
+  ...COMMON_FILTER_LABELS,
   filtrarPorFase: 'Filtrar por fase',
   filtrarPorResponsable: 'Filtrar por responsable',
-  todasLasEmpresas: 'Todas las empresas',
-  todosLosEstados: 'Todos los estados',
   todasLasFases: 'Todas las fases',
   todosLosResponsables: 'Todos los responsables',
 } as const

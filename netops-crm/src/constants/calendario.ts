@@ -3,6 +3,8 @@
  * Contains all labels, statuses, types, and configuration for the calendario module
  */
 
+import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS, COMMON_DATE_LABELS } from './common_text'
+
 // ==========================================
 // PAGE LABELS
 // ==========================================
@@ -24,15 +26,9 @@ export const TABS_LABELS = {
 // ==========================================
 
 export const BUTTON_LABELS = {
+  ...COMMON_BUTTONS,
   nuevaReunion: 'Nueva Reunión',
   nuevaSolicitud: 'Nueva Solicitud',
-  guardar: 'Guardar',
-  cancelar: 'Cancelar',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
-  aprobar: 'Aprobar',
-  rechazar: 'Rechazar',
-  confirmar: 'Confirmar',
   reagendar: 'Reagendar',
 } as const
 
@@ -41,30 +37,30 @@ export const BUTTON_LABELS = {
 // ==========================================
 
 export const MEETING_STATUS = {
-  programada: { 
-    label: 'Programada', 
-    color: 'text-blue-400', 
-    bg: 'bg-blue-500/15' 
+  programada: {
+    label: 'Programada',
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/15'
   },
-  confirmada: { 
-    label: 'Confirmada', 
-    color: 'text-emerald-400', 
-    bg: 'bg-emerald-500/15' 
+  confirmada: {
+    label: 'Confirmada',
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15'
   },
-  cancelada: { 
-    label: 'Cancelada', 
-    color: 'text-red-400', 
-    bg: 'bg-red-500/15' 
+  cancelada: {
+    label: 'Cancelada',
+    color: 'text-red-400',
+    bg: 'bg-red-500/15'
   },
-  completada: { 
-    label: 'Completada', 
-    color: 'text-slate-400', 
-    bg: 'bg-slate-500/15' 
+  completada: {
+    label: 'Completada',
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/15'
   },
-  reprogramada: { 
-    label: 'Reprogramada', 
-    color: 'text-violet-400', 
-    bg: 'bg-violet-500/15' 
+  reprogramada: {
+    label: 'Reprogramada',
+    color: 'text-violet-400',
+    bg: 'bg-violet-500/15'
   },
 } as const
 
@@ -75,25 +71,25 @@ export type MeetingStatusKey = keyof typeof MEETING_STATUS
 // ==========================================
 
 export const REQUEST_STATUS = {
-  pendiente: { 
-    label: 'Pendiente', 
-    color: 'text-amber-400', 
-    bg: 'bg-amber-500/15' 
+  pendiente: {
+    label: 'Pendiente',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15'
   },
-  aprobada: { 
-    label: 'Aprobada', 
-    color: 'text-emerald-400', 
-    bg: 'bg-emerald-500/15' 
+  aprobada: {
+    label: 'Aprobada',
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15'
   },
-  rechazada: { 
-    label: 'Rechazada', 
-    color: 'text-red-400', 
-    bg: 'bg-red-500/15' 
+  rechazada: {
+    label: 'Rechazada',
+    color: 'text-red-400',
+    bg: 'bg-red-500/15'
   },
-  cancelada: { 
-    label: 'Cancelada', 
-    color: 'text-slate-400', 
-    bg: 'bg-slate-500/15' 
+  cancelada: {
+    label: 'Cancelada',
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/15'
   },
 } as const
 
@@ -104,45 +100,45 @@ export type RequestStatusKey = keyof typeof REQUEST_STATUS
 // ==========================================
 
 export const MEETING_TYPES = {
-  diagnostico: { 
-    label: 'Diagnóstico', 
-    color: 'text-purple-400', 
+  diagnostico: {
+    label: 'Diagnóstico',
+    color: 'text-purple-400',
     bg: 'bg-purple-500/15',
     icon: '🔍'
   },
-  seguimiento: { 
-    label: 'Seguimiento', 
-    color: 'text-blue-400', 
+  seguimiento: {
+    label: 'Seguimiento',
+    color: 'text-blue-400',
     bg: 'bg-blue-500/15',
     icon: '📋'
   },
-  propuesta: { 
-    label: 'Propuesta', 
-    color: 'text-cyan-400', 
+  propuesta: {
+    label: 'Propuesta',
+    color: 'text-cyan-400',
     bg: 'bg-cyan-500/15',
     icon: '📝'
   },
-  cierre: { 
-    label: 'Cierre', 
-    color: 'text-emerald-400', 
+  cierre: {
+    label: 'Cierre',
+    color: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
     icon: '🎯'
   },
-  soporte: { 
-    label: 'Soporte', 
-    color: 'text-orange-400', 
+  soporte: {
+    label: 'Soporte',
+    color: 'text-orange-400',
     bg: 'bg-orange-500/15',
     icon: '🛠️'
   },
-  training: { 
-    label: 'Capacitación', 
-    color: 'text-violet-400', 
+  training: {
+    label: 'Capacitación',
+    color: 'text-violet-400',
     bg: 'bg-violet-500/15',
     icon: '📚'
   },
-  otra: { 
-    label: 'Otra', 
-    color: 'text-slate-400', 
+  otra: {
+    label: 'Otra',
+    color: 'text-slate-400',
     bg: 'bg-slate-500/15',
     icon: '📅'
   },
@@ -204,18 +200,11 @@ export const FORM_LABELS_SOLICITUD = {
 // ==========================================
 
 export const FILTER_LABELS = {
-  filtrarPorTipo: 'Filtrar por tipo',
-  filtrarPorEstado: 'Filtrar por estado',
-  filtrarPorProyecto: 'Filtrar por proyecto',
-  filtrarPorEmpresa: 'Filtrar por empresa',
-  filtrarPorFecha: 'Filtrar por fecha',
-  todosLosTipos: 'Todos los tipos',
-  todosLosEstados: 'Todos los estados',
-  todosLosProyectos: 'Todos los proyectos',
-  todasLasEmpresas: 'Todas las empresas',
-  hoy: 'Hoy',
-  estaSemana: 'Esta semana',
-  proximaSemana: 'Próxima semana',
+  ...COMMON_FILTER_LABELS,
+  ...COMMON_DATE_LABELS,
+  hoy: COMMON_DATE_LABELS.hoy,
+  estaSemana: COMMON_DATE_LABELS.estaSemana,
+  proximaSemana: COMMON_DATE_LABELS.proximaSemana,
   esteMes: 'Este mes',
 } as const
 

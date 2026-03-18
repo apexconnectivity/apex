@@ -3,6 +3,8 @@
  * Contains all labels, statuses, priorities, and configuration for the tareas module
  */
 
+import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS, COMMON_STATUS } from './common_text'
+
 // ==========================================
 // PAGE LABELS
 // ==========================================
@@ -26,11 +28,8 @@ export const TABS_LABELS = {
 // ==========================================
 
 export const BUTTON_LABELS = {
+  ...COMMON_BUTTONS,
   nuevaTarea: 'Nueva Tarea',
-  guardar: 'Guardar',
-  cancelar: 'Cancelar',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
   completar: 'Completar',
   marcarCompleta: 'Marcar como Completada',
   verDetalles: 'Ver Detalles',
@@ -153,18 +152,17 @@ export const EMPTY_MESSAGES = {
 // ==========================================
 
 export const FORM_LABELS = {
+  ...COMMON_FORM_LABELS,
   titulo: 'Título',
-  descripcion: 'Descripción',
-  proyecto: 'Proyecto',
-  empresa: 'Empresa',
-  prioridad: 'Prioridad',
-  categoria: 'Categoría',
-  estado: 'Estado',
+  proyecto: COMMON_FORM_LABELS.proyecto,
+  empresa: COMMON_FORM_LABELS.empresa,
+  prioridad: COMMON_FORM_LABELS.prioridad,
+  categoria: COMMON_FORM_LABELS.categoria,
+  estado: COMMON_FORM_LABELS.estado,
   fechaVencimiento: 'Fecha de Vencimiento',
   fechaCompletado: 'Fecha de Completado',
   asignadaA: 'Asignada a',
   creadaPor: 'Creada por',
-  notas: 'Notas',
 } as const
 
 // ==========================================
@@ -172,15 +170,9 @@ export const FORM_LABELS = {
 // ==========================================
 
 export const FILTER_LABELS = {
-  filtrarPorProyecto: 'Filtrar por proyecto',
-  filtrarPorEmpresa: 'Filtrar por empresa',
-  filtrarPorEstado: 'Filtrar por estado',
-  filtrarPorPrioridad: 'Filtrar por prioridad',
-  filtrarPorCategoria: 'Filtrar por categoría',
-  filtrarPorAsignado: 'Filtrar por asignado',
+  ...COMMON_FILTER_LABELS,
   todosLosProyectos: 'Todos los proyectos',
   todasLasEmpresas: 'Todas las empresas',
-  todosLosEstados: 'Todos los estados',
   todasLasPrioridades: 'Todas las prioridades',
   todasLasCategorias: 'Todas las categorías',
   todosLosAsignados: 'Todos los asignados',

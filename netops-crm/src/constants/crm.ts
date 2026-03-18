@@ -3,6 +3,8 @@
  * Contains all labels, statuses, and configuration for the CRM module
  */
 
+import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS } from './common_text'
+
 // ==========================================
 // PAGE LABELS
 // ==========================================
@@ -25,14 +27,9 @@ export const TABS_LABELS = {
 // ==========================================
 
 export const BUTTON_LABELS = {
+  ...COMMON_BUTTONS,
   nuevaEmpresa: 'Nueva Empresa',
   nuevoContacto: 'Nuevo Contacto',
-  guardar: 'Guardar',
-  cancelar: 'Cancelar',
-  editar: 'Editar',
-  eliminar: 'Eliminar',
-  buscar: 'Buscar',
-  filtrar: 'Filtrar',
 } as const
 
 // ==========================================
@@ -146,11 +143,9 @@ export const EMPTY_MESSAGES = {
 // ==========================================
 
 export const FORM_LABELS = {
-  nombre: 'Nombre',
+  ...COMMON_FORM_LABELS,
   razonSocial: 'Razón Social',
   nit: 'NIT',
-  email: 'Email',
-  telefono: 'Teléfono',
   direccion: 'Dirección',
   ciudad: 'Ciudad',
   pais: 'País',
@@ -160,7 +155,6 @@ export const FORM_LABELS = {
   tipoEntidad: 'Tipo de Entidad',
   relacion: 'Relación',
   cargo: 'Cargo',
-  notas: 'Notas',
 } as const
 
 // ==========================================
@@ -179,12 +173,9 @@ export const COMPANY_SIZES = {
 // ==========================================
 
 export const FILTER_LABELS = {
-  filtrarPorTipo: 'Filtrar por tipo',
+  ...COMMON_FILTER_LABELS,
   filtrarPorIndustria: 'Filtrar por industria',
-  filtrarPorEstado: 'Filtrar por estado',
-  todosLosTipos: 'Todos los tipos',
   todasLasIndustrias: 'Todas las industrias',
-  todosLosEstados: 'Todos los estados',
 } as const
 
 // ==========================================
