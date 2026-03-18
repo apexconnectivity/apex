@@ -2,8 +2,15 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
+import { X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import {
+  ModalVariant,
+  getModalVariantColor,
+  getModalVariantIcon,
+  getOverlayClass,
+  getContentAnimation
+} from "@/constants/modales"
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full"
 
@@ -18,6 +25,15 @@ export interface BaseModalProps {
   // Configuración visual
   size?: ModalSize
   showCloseButton?: boolean
+
+  // Variante de color (nueva)
+  variant?: ModalVariant
+  showAccentBar?: boolean
+  accentIcon?: React.ReactNode
+
+  // Estados de carga (nueva)
+  isLoading?: boolean
+  loadingMessage?: string
 
   // Comportamiento
   closeOnOverlayClick?: boolean
@@ -48,10 +64,10 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
   full: "max-w-[95vw] max-h-[95vh]"
 }
 
-// Animaciones
+// Animaciones mejoradas
 const ANIMATION_CLASSES = {
-  overlay: "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-  content: "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-0 border bg-background shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-xl max-h-[90vh]"
+  overlay: "fixed inset-0 z-50 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200",
+  content: "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-0 bg-background shadow-2xl duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl max-h-[90vh]"
 }
 
 export function BaseModal({
@@ -60,6 +76,11 @@ export function BaseModal({
   children,
   size = "md",
   showCloseButton = true,
+  variant = "default",
+  showAccentBar = false,
+  accentIcon,
+  isLoading = false,
+  loadingMessage,
   closeOnOverlayClick = true,
   closeOnEscape = true,
   disableClose = false,
@@ -70,6 +91,12 @@ export function BaseModal({
   onClose,
   onOpen
 }: BaseModalProps) {
+  // Obtener colores de la variante
+  const variantColors = getModalVariantColor(variant)
+  const VariantIcon = getModalVariantIcon(variant)
+  const IconComponent = accentIcon || VariantIcon
+
+  // Manejo del cambio de estado
   const handleOpenChange = (isOpen: boolean) => {
     if (disableClose && !isOpen) return
     if (!isOpen && onClose) onClose()
@@ -77,17 +104,28 @@ export function BaseModal({
     onOpenChange(isOpen)
   }
 
+  // Clases de overlay según variante
+  const overlayVariantClass = getOverlayClass(variant)
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className={cn(ANIMATION_CLASSES.overlay, overlayClassName)}
+          className={cn(
+            ANIMATION_CLASSES.overlay,
+            overlayVariantClass,
+            overlayClassName
+          )}
           style={{ pointerEvents: closeOnOverlayClick ? "auto" : "none" }}
         />
         <DialogPrimitive.Content
           className={cn(
             ANIMATION_CLASSES.content,
             SIZE_CLASSES[size],
+            // Borde izquierdo colorido si showAccentBar está activo
+            showAccentBar && variantColors.border,
+            // Bordes redondeados mejorados
+            "rounded-2xl",
             contentClassName
           )}
           aria-describedby="modal-description"
@@ -100,10 +138,28 @@ export function BaseModal({
           <DialogPrimitive.Description id="modal-description" className="sr-only">
             {description || 'Dialog modal'}
           </DialogPrimitive.Description>
+
+          {/* Overlay de carga */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className={cn("h-8 w-8 animate-spin", variantColors.text)} />
+                {loadingMessage && (
+                  <p className="text-sm text-muted-foreground">{loadingMessage}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className={cn("flex flex-col max-h-[90vh]", className)}>
-            {/* Botón de cierre */}
+            {/* Botón de cierre mejorado */}
             {showCloseButton && !disableClose && (
-              <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
+              <DialogPrimitive.Close className={cn(
+                "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-all hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10",
+                "hover:bg-muted/50",
+                variantColors.text,
+                "hover:scale-110"
+              )}>
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
@@ -126,23 +182,61 @@ interface ModalHeaderProps {
   description?: string
   showBorder?: boolean
   className?: string
+
+  // Nuevas props de variante
+  variant?: ModalVariant
+  showIcon?: boolean
+  icon?: React.ReactNode
+  showAccentBar?: boolean
 }
 
 export function ModalHeader({
   title,
   description,
   showBorder = true,
-  className
+  className,
+  variant = "default",
+  showIcon = false,
+  icon,
+  showAccentBar = false
 }: ModalHeaderProps) {
+  // Obtener colores de la variante
+  const variantColors = getModalVariantColor(variant)
+  const DefaultIcon = getModalVariantIcon(variant)
+  const IconComponent = icon || (showIcon ? DefaultIcon : null)
+
   return (
     <div
       className={cn(
-        "flex flex-col space-y-1.5 p-6",
+        "relative flex flex-col space-y-1.5 p-6 overflow-hidden",
         showBorder && "border-b border-border/50",
+        // Fondo con gradiente sutil según variante
+        variantColors.light,
+        showAccentBar && "border-l-4",
         className
       )}
+      style={showAccentBar ? { borderLeftColor: variantColors.primary } : undefined}
     >
-      <DialogPrimitive.Title className="text-lg font-semibold leading-none tracking-tight">
+      {/* Barra de acento superior */}
+      {showAccentBar && (
+        <div
+          className="absolute top-0 left-0 right-0 h-1 opacity-50"
+          style={{ background: `linear-gradient(90deg, ${variantColors.primary}, transparent)` }}
+        />
+      )}
+
+      {IconComponent && React.isValidElement(IconComponent) && (
+        <div className={cn("mb-2 p-2 rounded-lg w-fit", variantColors.iconBg)}>
+          {React.cloneElement(IconComponent as React.ReactElement, {
+            className: cn("h-5 w-5", variantColors.text)
+          })}
+        </div>
+      )}
+
+      <DialogPrimitive.Title className={cn(
+        "text-lg font-semibold leading-none tracking-tight",
+        variantColors.text
+      )}>
         {title}
       </DialogPrimitive.Title>
       {description && (
@@ -156,13 +250,17 @@ export function ModalHeader({
 
 interface ModalBodyProps extends React.HTMLAttributes<HTMLDivElement> {
   scrollable?: boolean
+  variant?: ModalVariant
 }
 
 export function ModalBody({
   scrollable = true,
+  variant = "default",
   className,
   ...props
 }: ModalBodyProps) {
+  const variantColors = getModalVariantColor(variant)
+
   return (
     <div
       className={cn(
@@ -178,6 +276,8 @@ export function ModalBody({
 
 interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   layout?: "stack" | "inline" | "inline-between"
+  variant?: ModalVariant
+  showAccent?: boolean
 }
 
 const LAYOUT_CLASSES: Record<NonNullable<ModalFooterProps["layout"]>, string> = {
@@ -188,14 +288,22 @@ const LAYOUT_CLASSES: Record<NonNullable<ModalFooterProps["layout"]>, string> = 
 
 export function ModalFooter({
   layout = "inline",
+  variant = "default",
+  showAccent = false,
   className,
   ...props
 }: ModalFooterProps) {
+  const variantColors = getModalVariantColor(variant)
+
   return (
     <div
       className={cn(
-        "p-6 pt-4 border-t border-border/50 flex flex-row items-center gap-2",
+        "p-6 pt-4 border-t flex flex-row items-center gap-2",
         layout === "inline-between" && "justify-end",
+        // Borde con color según variante si showAccent
+        showAccent ? variantColors.border : "border-border/50",
+        // Fondo sutil según variante
+        showAccent && variantColors.light,
         className
       )}
       {...props}
