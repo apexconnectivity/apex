@@ -13,14 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import RoleBadge from '@/components/ui/role-badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import {
   Select,
   SelectContent,
@@ -316,52 +309,50 @@ export default function UsersPage() {
 
       {/* Confirmation Modal */}
       {isConfirmModalOpen && userToModify && (
-        <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-          <DialogContent size="sm">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {userToModify.action === 'desactivar' ? (
-                  <>
-                    <Trash2 className="h-5 w-5 text-destructive" />
-                    {USUARIOS_PAGE.desactivarUsuario}
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="h-5 w-5 text-green-400" />
-                    {USUARIOS_PAGE.reactivarUsuario}
-                  </>
-                )}
-              </DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <p className="text-sm text-muted-foreground">
-                {userToModify.action === 'desactivar'
-                  ? USUARIOS_PAGE.msgDesactivar
-                  : USUARIOS_PAGE.msgReactivar
-                }
+        <BaseModal open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+          <ModalHeader title={
+            <div className="flex items-center gap-2">
+              {userToModify.action === 'desactivar' ? (
+                <>
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                  {USUARIOS_PAGE.desactivarUsuario}
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-5 w-5 text-green-400" />
+                  {USUARIOS_PAGE.reactivarUsuario}
+                </>
+              )}
+            </div>
+          } />
+          <ModalBody>
+            <p className="text-sm text-muted-foreground">
+              {userToModify.action === 'desactivar'
+                ? USUARIOS_PAGE.msgDesactivar
+                : USUARIOS_PAGE.msgReactivar
+              }
+            </p>
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p className="font-medium">
+                {users.find(u => u.id === userToModify.id)?.nombre}
               </p>
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                <p className="font-medium">
-                  {users.find(u => u.id === userToModify.id)?.nombre}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {users.find(u => u.id === userToModify.id)?.email}
-                </p>
-              </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>
-                {BUTTON_LABELS.cancelar}
-              </Button>
-              <Button
-                variant={userToModify.action === 'desactivar' ? 'destructive' : 'default'}
-                onClick={handleConfirmToggleActive}
-              >
-                {userToModify.action === 'desactivar' ? USUARIOS_PAGE.desactivarUsuario : USUARIOS_PAGE.reactivarUsuario}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <p className="text-sm text-muted-foreground">
+                {users.find(u => u.id === userToModify.id)?.email}
+              </p>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>
+              {BUTTON_LABELS.cancelar}
+            </Button>
+            <Button
+              variant={userToModify.action === 'desactivar' ? 'destructive' : 'default'}
+              onClick={handleConfirmToggleActive}
+            >
+              {userToModify.action === 'desactivar' ? USUARIOS_PAGE.desactivarUsuario : USUARIOS_PAGE.reactivarUsuario}
+            </Button>
+          </ModalFooter>
+        </BaseModal>
       )}
     </ModuleContainer>
   )
