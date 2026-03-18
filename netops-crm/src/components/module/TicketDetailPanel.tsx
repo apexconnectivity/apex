@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ActivityFeed } from '@/components/ui/activity-feed'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { Ticket, ComentarioTicket, EstadoTicket } from '@/types/soporte'
@@ -36,8 +37,7 @@ export function TicketDetailPanel({
   onAddComentario,
   onChangeState,
 }: TicketDetailPanelProps) {
-  const [newComentario, setNewComentario] = useState('')
-  const [esInterno, setEsInterno] = useState(false)
+
 
   const isSlaBreached = ticket?.fecha_limite_respuesta &&
     new Date(ticket.fecha_limite_respuesta) < new Date() &&
@@ -55,12 +55,8 @@ export function TicketDetailPanel({
     })
   }
 
-  const handleAddComentario = () => {
-    if (newComentario.trim()) {
-      onAddComentario(newComentario.trim(), esInterno)
-      setNewComentario('')
-      setEsInterno(false)
-    }
+  const handleAddComentario = (comment: string, isInternal?: boolean) => {
+    onAddComentario(comment, isInternal || false)
   }
 
   if (!ticket) return null
@@ -175,43 +171,25 @@ export function TicketDetailPanel({
         </SidePanelSection>
 
         {/* Comentarios */}
-        <SidePanelSection title={TICKET_COMENTARIOS.titulo}>
-          <div className="space-y-3">
-            {comentarios.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                {TICKET_COMENTARIOS.noHayComentarios}
-              </p>
-            ) : (
-              comentarios.map((c) => (
-                <div key={c.id} className="bg-muted/30 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium">{c.usuario_nombre}</span>
-                    <span className="text-xs text-muted-foreground">{formatFecha(c.fecha)}</span>
-                  </div>
-                  <p className="text-sm">{c.comentario}</p>
-                </div>
-              ))
-            )}
-          </div>
+        <SidePanelSection>
+          <ActivityFeed
+            comments={comentarios}
+            onAddComment={handleAddComentario}
+            placeholder={TICKET_COMENTARIOS.placeholder}
+            submitLabel={TICKET_COMENTARIOS.agregar}
+            showDate
+            showInternalToggle
+            emptyMessage={TICKET_COMENTARIOS.noHayComentarios}
+            title={TICKET_COMENTARIOS.titulo}
+          />
         </SidePanelSection>
       </SidePanelContent>
 
-      {/* Footer con input de comentario */}
+      {/* Footer */}
       <SidePanelFooter>
-        <div className="flex-1 space-y-2">
-          <Input
-            placeholder={TICKET_COMENTARIOS.placeholder}
-            value={newComentario}
-            onChange={(e) => setNewComentario(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleAddComentario() }}
-          />
-          <div className="flex items-center gap-2">
-            <Button size="sm" onClick={handleAddComentario} disabled={!newComentario.trim()}>
-              <MessageSquare className="h-4 w-4 mr-1" />
-              {TICKET_COMENTARIOS.agregar}
-            </Button>
-          </div>
-        </div>
+        <Button variant="outline" onClick={() => onClose()}>
+          Cerrar
+        </Button>
       </SidePanelFooter>
     </BaseSidePanel>
   )

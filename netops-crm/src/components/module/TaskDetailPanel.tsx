@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ActivityFeed } from '@/components/ui/activity-feed'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { Tarea, Subtarea, Comentario, EstadoTarea } from '@/types/tareas'
@@ -49,7 +50,6 @@ export function TaskDetailPanel({
   onEdit,
 }: TaskDetailPanelProps) {
   const [newSubtarea, setNewSubtarea] = useState('')
-  const [newComentario, setNewComentario] = useState('')
   const [editMode, setEditMode] = useState(false)
   const [editedTarea, setEditedTarea] = useState<Tarea | null>(tarea)
 
@@ -73,11 +73,8 @@ export function TaskDetailPanel({
     }
   }
 
-  const handleAddComentario = () => {
-    if (newComentario.trim()) {
-      onAddComentario(newComentario.trim())
-      setNewComentario('')
-    }
+  const handleAddComentario = (comment: string) => {
+    onAddComentario(comment)
   }
 
   const completedSubtareas = subtareas.filter(s => s.completada).length
@@ -258,30 +255,14 @@ export function TaskDetailPanel({
         </SidePanelSection>
 
         {/* Comentarios */}
-        <SidePanelSection title={`Comentarios (${comentarios.length})`}>
-          <div className="space-y-2">
-            {comentarios.map((c) => (
-              <div key={c.id} className="bg-muted/30 rounded-lg p-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-medium">{c.usuario_nombre}</span>
-                </div>
-                <p className="text-sm">{c.comentario}</p>
-              </div>
-            ))}
-
-            {/* Input */}
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Nuevo comentario..."
-                value={newComentario}
-                onChange={(e) => setNewComentario(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAddComentario() }}
-              />
-              <Button size="icon" variant="outline" onClick={handleAddComentario} disabled={!newComentario.trim()}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+        <SidePanelSection>
+          <ActivityFeed
+            comments={comentarios}
+            onAddComment={handleAddComentario}
+            placeholder="Nuevo comentario..."
+            submitLabel="Agregar"
+            showDate={false}
+          />
         </SidePanelSection>
       </SidePanelContent>
 
