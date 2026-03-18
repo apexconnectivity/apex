@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base/BaseModal'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
@@ -96,8 +96,8 @@ function ProveedoresTab({ proveedores }: { proveedores: Proveedor[] }) {
   )
 }
 
-function NuevaOrdenModal({ isOpen, onClose, onCreate, proyectos, proveedores, userName }: {
-  isOpen: boolean
+function NuevaOrdenModal({ open, onClose, onCreate, proyectos, proveedores, userName }: {
+  open: boolean
   onClose: () => void
   onCreate: (orden: Omit<OrdenCompra, 'id' | 'numero_oc' | 'creada_por'>) => void
   proyectos: { id: string; nombre: string }[]
@@ -158,193 +158,181 @@ function NuevaOrdenModal({ isOpen, onClose, onCreate, proyectos, proveedores, us
     setOrden({ proyecto_id: '', proveedor_id: '', fecha_emision: new Date().toISOString().split('T')[0], fecha_entrega_estimada: '', moneda: 'USD', condiciones_pago: '', items: [], notas: '' })
   }
 
-  if (!isOpen) return null
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent size="lg" className="max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>{TITULO_NUEVA_ORDEN}</DialogTitle>
-        </DialogHeader>
-
-        <DialogBody className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>{LABEL_PROYECTO_REQUERIDO}</Label>
-              <Select value={orden.proyecto_id} onValueChange={(v) => setOrden({ ...orden, proyecto_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder={PLACEHOLDER_SELECCIONAR} /></SelectTrigger>
-                <SelectContent>
-                  {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{LABEL_PROVEEDOR_REQUERIDO}</Label>
-              <Select value={orden.proveedor_id} onValueChange={(v) => setOrden({ ...orden, proveedor_id: v })}>
-                <SelectTrigger className="bg-background"><SelectValue placeholder={PLACEHOLDER_SELECCIONAR} /></SelectTrigger>
-                <SelectContent>
-                  {proveedores.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>{LABEL_FECHA_EMISION_REQUERIDA}</Label>
-              <DatePicker
-                value={orden.fecha_emision ? new Date(orden.fecha_emision) : undefined}
-                onChange={(date) => setOrden({ ...orden, fecha_emision: date ? date.toISOString().split('T')[0] : '' })}
-                placeholder="Fecha emisión"
-                className="bg-background"
-              />
-            </div>
-            <div>
-              <Label>{LABEL_ENTREGA_ESTIMADA}</Label>
-              <DatePicker
-                value={orden.fecha_entrega_estimada ? new Date(orden.fecha_entrega_estimada) : undefined}
-                onChange={(date) => setOrden({ ...orden, fecha_entrega_estimada: date ? date.toISOString().split('T')[0] : '' })}
-                placeholder="Entrega estimada"
-                className="bg-background"
-              />
-            </div>
-            <div>
-              <Label>{LABEL_MONEDA}</Label>
-              <Select value={orden.moneda} onValueChange={(v) => setOrden({ ...orden, moneda: v as Moneda })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {MONEDAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+    <BaseModal open={open} onOpenChange={onClose} size="lg" className="max-h-[90vh] overflow-hidden flex flex-col">
+      <ModalHeader title={TITULO_NUEVA_ORDEN} />
+      <ModalBody className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>{LABEL_ITEMS}</Label>
-            <div className="border rounded-lg mt-1">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="p-2 text-left">{TABLE_PRODUCTO}</th>
-                    <th className="p-2 text-right w-20">{TABLE_CANTIDAD}</th>
-                    <th className="p-2 text-right w-24">{TABLE_PRECIO}</th>
-                    <th className="p-2 text-right w-24">{TABLE_TOTAL}</th>
-                    <th className="p-2 w-10"></th>
+            <Label>{LABEL_PROYECTO_REQUERIDO}</Label>
+            <Select value={orden.proyecto_id} onValueChange={(v) => setOrden({ ...orden, proyecto_id: v })}>
+              <SelectTrigger className="bg-background"><SelectValue placeholder={PLACEHOLDER_SELECCIONAR} /></SelectTrigger>
+              <SelectContent>
+                {proyectos.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{LABEL_PROVEEDOR_REQUERIDO}</Label>
+            <Select value={orden.proveedor_id} onValueChange={(v) => setOrden({ ...orden, proveedor_id: v })}>
+              <SelectTrigger className="bg-background"><SelectValue placeholder={PLACEHOLDER_SELECCIONAR} /></SelectTrigger>
+              <SelectContent>
+                {proveedores.map(p => <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label>{LABEL_FECHA_EMISION_REQUERIDA}</Label>
+            <DatePicker
+              value={orden.fecha_emision ? new Date(orden.fecha_emision) : undefined}
+              onChange={(date) => setOrden({ ...orden, fecha_emision: date ? date.toISOString().split('T')[0] : '' })}
+              placeholder="Fecha emisión"
+              className="bg-background"
+            />
+          </div>
+          <div>
+            <Label>{LABEL_ENTREGA_ESTIMADA}</Label>
+            <DatePicker
+              value={orden.fecha_entrega_estimada ? new Date(orden.fecha_entrega_estimada) : undefined}
+              onChange={(date) => setOrden({ ...orden, fecha_entrega_estimada: date ? date.toISOString().split('T')[0] : '' })}
+              placeholder="Entrega estimada"
+              className="bg-background"
+            />
+          </div>
+          <div>
+            <Label>{LABEL_MONEDA}</Label>
+            <Select value={orden.moneda} onValueChange={(v) => setOrden({ ...orden, moneda: v as Moneda })}>
+              <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {MONEDAS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <Label>{LABEL_ITEMS}</Label>
+          <div className="border rounded-lg mt-1">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="p-2 text-left">{TABLE_PRODUCTO}</th>
+                  <th className="p-2 text-right w-20">{TABLE_CANTIDAD}</th>
+                  <th className="p-2 text-right w-24">{TABLE_PRECIO}</th>
+                  <th className="p-2 text-right w-24">{TABLE_TOTAL}</th>
+                  <th className="p-2 w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {orden.items.map(item => (
+                  <tr key={item.id} className="border-t">
+                    <td className="p-2">{item.producto}</td>
+                    <td className="p-2 text-right">{item.cantidad} {item.unidad}</td>
+                    <td className="p-2 text-right">{orden.moneda} {item.precio_unitario.toFixed(2)}</td>
+                    <td className="p-2 text-right">{orden.moneda} {item.total.toFixed(2)}</td>
+                    <td className="p-2"><Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(item.id)}><X className="h-3 w-3" /></Button></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {orden.items.map(item => (
-                    <tr key={item.id} className="border-t">
-                      <td className="p-2">{item.producto}</td>
-                      <td className="p-2 text-right">{item.cantidad} {item.unidad}</td>
-                      <td className="p-2 text-right">{orden.moneda} {item.precio_unitario.toFixed(2)}</td>
-                      <td className="p-2 text-right">{orden.moneda} {item.total.toFixed(2)}</td>
-                      <td className="p-2"><Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(item.id)}><X className="h-3 w-3" /></Button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="p-2 border-t bg-muted/30 flex gap-2">
-                <Input placeholder={PLACEHOLDER_PRODUCTO} value={nuevoItem.producto} onChange={(e) => setNuevoItem({ ...nuevoItem, producto: e.target.value })} className="bg-background flex-1" />
-                <Input type="number" placeholder={PLACEHOLDER_CANTIDAD} value={nuevoItem.cantidad} onChange={(e) => setNuevoItem({ ...nuevoItem, cantidad: parseInt(e.target.value) })} className="bg-background w-20" />
-                <Input type="number" placeholder={PLACEHOLDER_PRECIO} value={nuevoItem.precio_unitario} onChange={(e) => setNuevoItem({ ...nuevoItem, precio_unitario: parseFloat(e.target.value) })} className="bg-background w-24" />
-                <Button onClick={addItem}><Plus className="h-4 w-4" /></Button>
-              </div>
+                ))}
+              </tbody>
+            </table>
+            <div className="p-2 border-t bg-muted/30 flex gap-2">
+              <Input placeholder={PLACEHOLDER_PRODUCTO} value={nuevoItem.producto} onChange={(e) => setNuevoItem({ ...nuevoItem, producto: e.target.value })} className="bg-background flex-1" />
+              <Input type="number" placeholder={PLACEHOLDER_CANTIDAD} value={nuevoItem.cantidad} onChange={(e) => setNuevoItem({ ...nuevoItem, cantidad: parseInt(e.target.value) })} className="bg-background w-20" />
+              <Input type="number" placeholder={PLACEHOLDER_PRECIO} value={nuevoItem.precio_unitario} onChange={(e) => setNuevoItem({ ...nuevoItem, precio_unitario: parseFloat(e.target.value) })} className="bg-background w-24" />
+              <Button onClick={addItem}><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
+        </div>
 
-          <div className="flex justify-end">
-            <div className="text-right space-y-1">
-              <p className="text-sm text-muted-foreground">{LABEL_SUBTOTAL}: {orden.moneda} {subtotal.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">{LABEL_IMPUESTOS} ({IMPUESTO_LABEL}): {orden.moneda} {impuestos.toFixed(2)}</p>
-              <p className="font-bold text-lg">{LABEL_TOTAL}: {orden.moneda} {total.toFixed(2)}</p>
-            </div>
+        <div className="flex justify-end">
+          <div className="text-right space-y-1">
+            <p className="text-sm text-muted-foreground">{LABEL_SUBTOTAL}: {orden.moneda} {subtotal.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">{LABEL_IMPUESTOS} ({IMPUESTO_LABEL}): {orden.moneda} {impuestos.toFixed(2)}</p>
+            <p className="font-bold text-lg">{LABEL_TOTAL}: {orden.moneda} {total.toFixed(2)}</p>
           </div>
+        </div>
 
-          <div>
-            <Label>{LABEL_CONDICIONES_PAGO}</Label>
-            <Input value={orden.condiciones_pago} onChange={(e) => setOrden({ ...orden, condiciones_pago: e.target.value })} placeholder={PLACEHOLDER_CONDICIONES_PAGO} className="bg-background" />
-          </div>
+        <div>
+          <Label>{LABEL_CONDICIONES_PAGO}</Label>
+          <Input value={orden.condiciones_pago} onChange={(e) => setOrden({ ...orden, condiciones_pago: e.target.value })} placeholder={PLACEHOLDER_CONDICIONES_PAGO} className="bg-background" />
+        </div>
 
-          <div>
-            <Label>{LABEL_NOTAS}</Label>
-            <Textarea value={orden.notas} onChange={(e) => setOrden({ ...orden, notas: e.target.value })} placeholder={PLACEHOLDER_NOTAS} rows={2} className="bg-background" />
-          </div>
-        </DialogBody>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>{BOTON_CANCELAR}</Button>
-          <Button variant="outline" onClick={() => handleCreate('Borrador')} disabled={!orden.proyecto_id || !orden.proveedor_id || orden.items.length === 0}><Save className="h-4 w-4 mr-2" />{BOTON_GUARDAR_BORRADOR}</Button>
-          <Button onClick={() => handleCreate('Pendiente aprobación')} disabled={!orden.proyecto_id || !orden.proveedor_id || orden.items.length === 0}><Send className="h-4 w-4 mr-2" />{BOTON_SOLICITAR_APROBACION}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <Label>{LABEL_NOTAS}</Label>
+          <Textarea value={orden.notas} onChange={(e) => setOrden({ ...orden, notas: e.target.value })} placeholder={PLACEHOLDER_NOTAS} rows={2} className="bg-background" />
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="outline" onClick={onClose}>{BOTON_CANCELAR}</Button>
+        <Button variant="outline" onClick={() => handleCreate('Borrador')} disabled={!orden.proyecto_id || !orden.proveedor_id || orden.items.length === 0}><Save className="h-4 w-4 mr-2" />{BOTON_GUARDAR_BORRADOR}</Button>
+        <Button onClick={() => handleCreate('Pendiente aprobación')} disabled={!orden.proyecto_id || !orden.proveedor_id || orden.items.length === 0}><Send className="h-4 w-4 mr-2" />{BOTON_SOLICITAR_APROBACION}</Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }
 
-function DetalleOrdenModal({ orden, onClose, onCambiarEstado }: {
+function DetalleOrdenModal({ open, orden, onClose, onCambiarEstado }: {
+  open: boolean
   orden: OrdenCompra
   onClose: () => void
   onCambiarEstado: (id: string, estado: EstadoOrden) => void
 }) {
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent size="lg" className="max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>{TITULO_VER_DETALLES}</DialogTitle>
-        </DialogHeader>
+    <BaseModal open={open} onOpenChange={onClose} size="lg" className="max-h-[90vh] overflow-hidden flex flex-col">
+      <ModalHeader title={TITULO_VER_DETALLES} />
+      <ModalBody className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Badge className={getOrdenCompraColor(orden.estado)}>{orden.estado}</Badge>
+        </div>
 
-        <DialogBody className="space-y-6">
-          <div className="flex items-center justify-between">
-            <Badge className={getOrdenCompraColor(orden.estado)}>{orden.estado}</Badge>
-          </div>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div><p className="text-muted-foreground">Proyecto</p><p className="font-medium">{orden.proyecto_nombre}</p></div>
+          <div><p className="text-muted-foreground">Proveedor</p><p className="font-medium">{orden.proveedor_nombre}</p></div>
+          <div><p className="text-muted-foreground">Fecha emisión</p><p className="font-medium">{new Date(orden.fecha_emision).toLocaleDateString('es-ES')}</p></div>
+          {orden.fecha_entrega_estimada && <div><p className="text-muted-foreground">Entrega estimada</p><p className="font-medium">{new Date(orden.fecha_entrega_estimada).toLocaleDateString('es-ES')}</p></div>}
+        </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><p className="text-muted-foreground">Proyecto</p><p className="font-medium">{orden.proyecto_nombre}</p></div>
-            <div><p className="text-muted-foreground">Proveedor</p><p className="font-medium">{orden.proveedor_nombre}</p></div>
-            <div><p className="text-muted-foreground">Fecha emisión</p><p className="font-medium">{new Date(orden.fecha_emision).toLocaleDateString('es-ES')}</p></div>
-            {orden.fecha_entrega_estimada && <div><p className="text-muted-foreground">Entrega estimada</p><p className="font-medium">{new Date(orden.fecha_entrega_estimada).toLocaleDateString('es-ES')}</p></div>}
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-2">{LABEL_ITEMS}</h4>
-            <div className="border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
-                  <tr><th className="p-2 text-left">{TABLE_PRODUCTO}</th><th className="p-2 text-right">{TABLE_CANTIDAD}</th><th className="p-2 text-right">{TABLE_PRECIO}</th><th className="p-2 text-right">{TABLE_TOTAL}</th></tr>
-                </thead>
-                <tbody>
-                  {orden.items.map(item => (
-                    <tr key={item.id} className="border-t">
-                      <td className="p-2">{item.producto}</td>
-                      <td className="p-2 text-right">{item.cantidad} {item.unidad}</td>
-                      <td className="p-2 text-right">{orden.moneda} {item.precio_unitario.toFixed(2)}</td>
-                      <td className="p-2 text-right">{orden.moneda} {item.total.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="p-2 border-t bg-muted/30 text-right space-y-1 text-sm">
-                <p>{LABEL_SUBTOTAL}: {orden.moneda} {orden.subtotal.toFixed(2)}</p>
-                <p>{LABEL_IMPUESTOS}: {orden.moneda} {orden.impuestos.toFixed(2)}</p>
-                <p className="font-bold">{LABEL_TOTAL}: {orden.moneda} {orden.total.toFixed(2)}</p>
-              </div>
+        <div>
+          <h4 className="font-medium mb-2">{LABEL_ITEMS}</h4>
+          <div className="border rounded-lg">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr><th className="p-2 text-left">{TABLE_PRODUCTO}</th><th className="p-2 text-right">{TABLE_CANTIDAD}</th><th className="p-2 text-right">{TABLE_PRECIO}</th><th className="p-2 text-right">{TABLE_TOTAL}</th></tr>
+              </thead>
+              <tbody>
+                {orden.items.map(item => (
+                  <tr key={item.id} className="border-t">
+                    <td className="p-2">{item.producto}</td>
+                    <td className="p-2 text-right">{item.cantidad} {item.unidad}</td>
+                    <td className="p-2 text-right">{orden.moneda} {item.precio_unitario.toFixed(2)}</td>
+                    <td className="p-2 text-right">{orden.moneda} {item.total.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="p-2 border-t bg-muted/30 text-right space-y-1 text-sm">
+              <p>{LABEL_SUBTOTAL}: {orden.moneda} {orden.subtotal.toFixed(2)}</p>
+              <p>{LABEL_IMPUESTOS}: {orden.moneda} {orden.impuestos.toFixed(2)}</p>
+              <p className="font-bold">{LABEL_TOTAL}: {orden.moneda} {orden.total.toFixed(2)}</p>
             </div>
           </div>
+        </div>
 
-          {orden.condiciones_pago && <div><p className="text-sm text-muted-foreground">{LABEL_CONDICIONES_PAGO}</p><p className="text-sm">{orden.condiciones_pago}</p></div>}
-        </DialogBody>
+        {orden.condiciones_pago && <div><p className="text-sm text-muted-foreground">{LABEL_CONDICIONES_PAGO}</p><p className="text-sm">{orden.condiciones_pago}</p></div>}
+      </ModalBody>
 
-        <DialogFooter>
-          {orden.estado === 'Borrador' && <Button onClick={() => onCambiarEstado(orden.id, 'Pendiente aprobación')}><Send className="h-4 w-4 mr-2" />{BOTON_SOLICITAR_APROBACION}</Button>}
-          {orden.estado === 'Pendiente aprobación' && <Button onClick={() => onCambiarEstado(orden.id, 'Aprobada')}><CheckCircle className="h-4 w-4 mr-2" />{BOTON_APROBAR}</Button>}
-          {orden.estado === 'Aprobada' && <Button onClick={() => onCambiarEstado(orden.id, 'Enviada')}><Send className="h-4 w-4 mr-2" />{BOTON_ENVIAR}</Button>}
-          {orden.estado === 'Enviada' && <Button onClick={() => onCambiarEstado(orden.id, 'Recibida completa')}><Package className="h-4 w-4 mr-2" />{BOTON_REGISTRAR_RECEPCION}</Button>}
-          {orden.estado !== 'Cancelada' && orden.estado !== 'Recibida completa' && <Button variant="outline" onClick={() => onCambiarEstado(orden.id, 'Cancelada')}><XCircle className="h-4 w-4 mr-2" />{BOTON_CANCELAR}</Button>}
-          <Button variant="outline"><Download className="h-4 w-4 mr-2" />{BOTON_DESCARGAR_PDF}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <ModalFooter>
+        {orden.estado === 'Borrador' && <Button onClick={() => onCambiarEstado(orden.id, 'Pendiente aprobación')}><Send className="h-4 w-4 mr-2" />{BOTON_SOLICITAR_APROBACION}</Button>}
+        {orden.estado === 'Pendiente aprobación' && <Button onClick={() => onCambiarEstado(orden.id, 'Aprobada')}><CheckCircle className="h-4 w-4 mr-2" />{BOTON_APROBAR}</Button>}
+        {orden.estado === 'Aprobada' && <Button onClick={() => onCambiarEstado(orden.id, 'Enviada')}><Send className="h-4 w-4 mr-2" />{BOTON_ENVIAR}</Button>}
+        {orden.estado === 'Enviada' && <Button onClick={() => onCambiarEstado(orden.id, 'Recibida completa')}><Package className="h-4 w-4 mr-2" />{BOTON_REGISTRAR_RECEPCION}</Button>}
+        {orden.estado !== 'Cancelada' && orden.estado !== 'Recibida completa' && <Button variant="outline" onClick={() => onCambiarEstado(orden.id, 'Cancelada')}><XCircle className="h-4 w-4 mr-2" />{BOTON_CANCELAR}</Button>}
+        <Button variant="outline"><Download className="h-4 w-4 mr-2" />{BOTON_DESCARGAR_PDF}</Button>
+      </ModalFooter>
+    </BaseModal>
   )
 }
 
@@ -544,7 +532,7 @@ export default function ComprasPage() {
       </Tabs>
 
       <NuevaOrdenModal
-        isOpen={showNuevaOrden}
+        open={showNuevaOrden}
         onClose={() => setShowNuevaOrden(false)}
         onCreate={handleCreateOrden}
         proyectos={proyectos.map(p => ({ id: p.id, nombre: p.nombre }))}
@@ -552,7 +540,7 @@ export default function ComprasPage() {
         userName={user?.nombre ?? 'Usuario'}
       />
 
-      {selectedOrden && <DetalleOrdenModal orden={selectedOrden} onClose={() => setSelectedOrden(null)} onCambiarEstado={handleCambiarEstado} />}
+      {selectedOrden && <DetalleOrdenModal open={!!selectedOrden} orden={selectedOrden} onClose={() => setSelectedOrden(null)} onCambiarEstado={handleCambiarEstado} />}
     </ModuleContainer>
   )
 }
