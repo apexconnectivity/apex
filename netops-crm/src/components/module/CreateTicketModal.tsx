@@ -23,7 +23,7 @@ interface CreateTicketModalProps {
   empresas: Empresa[]
   proyectos?: Proyecto[]
   setProyectos?: React.Dispatch<React.SetStateAction<Proyecto[]>>
-  usuarios: { id: string; nombre: string; rol: string }[]
+  usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
   mode?: TicketModalMode
   ticket?: TicketType | null
   onSave: (data: CreateTicketData) => void
@@ -46,7 +46,7 @@ type TicketFormData = Omit<TicketType, 'id' | 'numero_ticket' | 'creado_en' | 'c
 function getSuggestedResponsable(
   categoria: CategoriaTicket,
   contratos: ContratoSoporte[],
-  usuarios: { id: string; nombre: string; rol: string }[],
+  usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[],
   empresaId?: string
 ): { id: string; nombre: string } | null {
   const activeContracts = contratos.filter(c => c.estado === 'Activo')
@@ -57,22 +57,25 @@ function getSuggestedResponsable(
       if (contrato?.tecnico_asignado_id && contrato.tecnico_asignado_nombre) {
         return { id: contrato.tecnico_asignado_id, nombre: contrato.tecnico_asignado_nombre }
       }
-      const tecnico = usuarios.find(u => u.rol === 'tecnico' || u.rol === 'admin')
+      const tecnico = usuarios.find(u => 
+        u.rol === 'tecnico' || u.rol === 'admin' || 
+        u.roles?.includes('tecnico') || u.roles?.includes('admin')
+      )
       if (tecnico) return { id: tecnico.id, nombre: tecnico.nombre }
       return null
     }
     case 'Consulta comercial': {
-      const comercial = usuarios.find(u => u.rol === 'comercial')
+      const comercial = usuarios.find(u => u.rol === 'comercial' || u.roles?.includes('comercial'))
       if (comercial) return { id: comercial.id, nombre: comercial.nombre }
       return null
     }
     case 'Facturación': {
-      const facturacion = usuarios.find(u => u.rol === 'facturacion')
+      const facturacion = usuarios.find(u => u.rol === 'facturacion' || u.roles?.includes('facturacion'))
       if (facturacion) return { id: facturacion.id, nombre: facturacion.nombre }
       return null
     }
     case 'Compras': {
-      const compras = usuarios.find(u => u.rol === 'compras')
+      const compras = usuarios.find(u => u.rol === 'compras' || u.roles?.includes('compras'))
       if (compras) return { id: compras.id, nombre: compras.nombre }
       return null
     }
@@ -100,7 +103,7 @@ function TicketFormFields({
   contratos: ContratoSoporte[]
   empresas: Empresa[]
   proyectos?: Proyecto[]
-  usuarios: { id: string; nombre: string; rol: string }[]
+  usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
   mode?: TicketModalMode
   disabled?: boolean
 }) {

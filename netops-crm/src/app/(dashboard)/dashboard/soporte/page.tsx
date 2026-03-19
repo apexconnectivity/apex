@@ -46,14 +46,7 @@ import { DateRange } from '@/components/ui/date-range-picker'
 import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 
-// Lista de usuarios internos (se llenará con datos del módulo de usuarios)
-const USUARIOS_INTERNOS = [
-  { id: '1', nombre: 'Carlos Admin', rol: 'admin' },
-  { id: '2', nombre: 'Laura Pérez', rol: 'comercial' },
-  { id: '3', nombre: 'Juan Técnico', rol: 'tecnico' },
-  { id: '4', nombre: 'María Compras', rol: 'compras' },
-  { id: '5', nombre: 'Ana Facturación', rol: 'facturacion' },
-]
+// USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 
 function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ticket.id })
@@ -109,7 +102,7 @@ export default function SoportePage() {
   const [empresas, setEmpresas] = useEmpresas()
   const [proyectos, setProyectos] = useProyectos()
   const [contactos] = useContactos()
-  const [usuarios, _setUsuarios] = useState<import('@/types/auth').User[]>([])
+  const [usuarios] = useLocalStorage<import('@/types/auth').User[]>(STORAGE_KEYS.usuarios, [])
   const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(STORAGE_KEYS.soporteVista, 'tickets')
   const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(STORAGE_KEYS.contratos, [])
   const [tickets, setTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
@@ -309,16 +302,16 @@ export default function SoportePage() {
     const now = new Date().toISOString().split('T')[0]
     const nuevoProyecto: import('@/types/proyectos').Proyecto = {
       ...proyecto,
-      id: String(Date.now()),
+      id: crypto.randomUUID(),
       creado_en: now,
     } as import('@/types/proyectos').Proyecto
 
     setProyectos(prev => [...prev, nuevoProyecto])
 
-    // Guardar en localStorage
-    const stored = localStorage.getItem('netops_proyectos')
+    // Guardar en localStorage usando constantes estándar
+    const stored = localStorage.getItem(STORAGE_KEYS.proyectos)
     const existingProyectos: import('@/types/proyectos').Proyecto[] = stored ? JSON.parse(stored) : []
-    localStorage.setItem('netops_proyectos', JSON.stringify([...existingProyectos, nuevoProyecto]))
+    localStorage.setItem(STORAGE_KEYS.proyectos, JSON.stringify([...existingProyectos, nuevoProyecto]))
   }
 
   // Handler para crear empresa desde soporte
@@ -328,17 +321,17 @@ export default function SoportePage() {
     const now = new Date().toISOString()
     const nuevaEmpresa: import('@/types/crm').Empresa = {
       ...empresa,
-      id: String(Date.now()),
+      id: crypto.randomUUID(),
       creado_en: now,
     } as import('@/types/crm').Empresa
 
     // Actualizar estado local
     setEmpresas(prev => [...prev, nuevaEmpresa])
 
-    // Guardar en localStorage
-    const stored = localStorage.getItem('netops_empresas')
+    // Guardar en localStorage usando constantes estándar
+    const stored = localStorage.getItem(STORAGE_KEYS.empresas)
     const existingEmpresas: import('@/types/crm').Empresa[] = stored ? JSON.parse(stored) : []
-    localStorage.setItem('netops_empresas', JSON.stringify([...existingEmpresas, nuevaEmpresa]))
+    localStorage.setItem(STORAGE_KEYS.empresas, JSON.stringify([...existingEmpresas, nuevaEmpresa]))
   }
 
   if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion) {
@@ -412,7 +405,7 @@ export default function SoportePage() {
                   placeholder: 'Responsable',
                   options: [
                     { value: 'todos', label: 'Todos' },
-                    ...USUARIOS_INTERNOS.map(u => ({ value: u.id, label: u.nombre })),
+                    ...usuarios.map(u => ({ value: u.id, label: u.nombre })),
                   ],
                   width: 'w-36',
                 }] : []),
@@ -585,7 +578,7 @@ export default function SoportePage() {
             empresas={empresas}
             proyectos={proyectos}
             setProyectos={setProyectos}
-            usuarios={USUARIOS_INTERNOS}
+            usuarios={usuarios}
             onSave={handleCreateTicket}
             onCreateProject={() => setShowNewProject(true)}
             onCreateEmpresa={() => setShowNewEmpresa(true)}
@@ -597,7 +590,7 @@ export default function SoportePage() {
             open={showCreateContract}
             onOpenChange={setShowCreateContract}
             empresas={empresas}
-            usuarios={USUARIOS_INTERNOS}
+            usuarios={usuarios}
             onSave={handleCreateContract}
           />
         )}

@@ -80,7 +80,7 @@ export function BaseModal({
   accentIcon,
   isLoading = false,
   loadingMessage,
-  closeOnOverlayClick = true,
+  closeOnOverlayClick = false,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   closeOnEscape = true,
   disableClose = false,

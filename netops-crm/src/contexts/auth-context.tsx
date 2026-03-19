@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { User, hasPermission, canAccessModule, isInternalUser } from '@/types/auth'
+import { STORAGE_KEYS } from '@/constants/storage'
 
 // ============================================================================
 // CONFIGURACIÓN DE DEMO
@@ -66,18 +67,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Usar usuario bootstrap para login inicial
-      // TODO: Implementar usuarios en localStorage desde módulo de Usuarios
-      const foundUser = email.toLowerCase() === BOOTSTRAP_USER.email.toLowerCase() ? BOOTSTRAP_USER : null
+      // Buscar en usuarios dinámicos (localStorage)
+      const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
+      const users: User[] = storedUsers ? JSON.parse(storedUsers) : []
+      
+      let foundUser = email.toLowerCase() === BOOTSTRAP_USER.email.toLowerCase() ? BOOTSTRAP_USER : null
+      
+      if (!foundUser) {
+        foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null
+      }
 
       if (!foundUser) {
         throw new Error('Email o contraseña incorrectos')
       }
 
       // En una app real, verificaríamos el hash de la contraseña
-      // Por ahora, cualquier contraseña que coincida con DEMO_PASSWORD funciona
-      if (password !== DEMO_PASSWORD) {
+      // Por ahora, cualquier contraseña que coincida con DEMO_PASSWORD funciona para el admin
+      // Para otros usuarios, aceptamos cualquier contraseña no vacía en modo demo
+      if (foundUser.roles.includes('admin') && password !== DEMO_PASSWORD) {
         throw new Error('Email o contraseña incorrectos')
+      }
+      
+      if (!password) {
+        throw new Error('La contraseña es requerida')
       }
 
       // Update last access

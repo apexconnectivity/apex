@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,8 @@ import {
   Tamaño,
   Origen,
   TipoRelacion,
+  TipoContrato,
+  TIPOS_CONTRATO,
   MetodoPago,
   METODOS_PAGO,
 } from '@/types/crm'
@@ -47,6 +49,7 @@ const EMPRESA_VACIA: Partial<Empresa> = {
   tamaño: undefined,
   origen: undefined,
   tipo_relacion: 'Cliente',
+  tipo_contrato: 'Ninguno',
   telefono_principal: '',
   email_principal: '',
   sitio_web: '',
@@ -80,6 +83,8 @@ export function CreateEmpresaModal({
 }: CreateEmpresaModalProps) {
   const [formData, setFormData] = useState<Partial<Empresa>>(EMPRESA_VACIA)
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
+  const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
+  const isSubmittingRef = React.useRef(false)
 
   const isEditing = !!empresa?.id
 
@@ -96,72 +101,100 @@ export function CreateEmpresaModal({
   }, [open, empresa])
 
   const handleSave = async () => {
-    setLocalErrors({})
+    // Bloqueo sincrónico: si ya hay un submit en curso, ignorar
+    if (isSubmittingRef.current || isSaving) return
+    isSubmittingRef.current = true
+    setIsSubmittingLocal(true)
 
-    // Validar nombre (obligatorio, mínimo 3 caracteres)
+    // Recopilar TODOS los errores de validación en un solo objeto
+    const validationErrors: Record<string, string> = {}
+
+    // Nombre (obligatorio, mínimo 3 caracteres)
     const nombreValidation = validateRequired(formData.nombre)
     if (!nombreValidation.isValid) {
-      setLocalErrors({ nombre: nombreValidation.error || 'Error de validación' })
-      return
-    }
-    if (formData.nombre && formData.nombre.trim().length < 3) {
-      setLocalErrors({ nombre: 'El nombre debe tener al menos 3 caracteres' })
-      return
+      validationErrors.nombre = nombreValidation.error || 'Campo obligatorio'
+    } else if (formData.nombre && formData.nombre.trim().length < 3) {
+      validationErrors.nombre = 'El nombre debe tener al menos 3 caracteres'
     }
 
-    // Validar tipo de entidad (obligatorio)
+    // Razón Social (obligatorio)
+    const razonValidation = validateRequired(formData.razon_social)
+    if (!razonValidation.isValid) {
+      validationErrors.razon_social = razonValidation.error || 'Campo obligatorio'
+    }
+
+    // Tipo de entidad (obligatorio)
     if (!formData.tipo_entidad) {
-      setLocalErrors({ tipo_entidad: 'Selecciona un tipo' })
-      return
+      validationErrors.tipo_entidad = 'Selecciona un sector (Cliente/Proveedor/Ambos)'
     }
 
-    // Validar email principal
-    const emailValidation = validateEmail(formData.email_principal)
-    if (!emailValidation.isValid) {
-      setLocalErrors({ email_principal: emailValidation.error || 'Email inválido' })
-      return
+    // Tipo de Relación (obligatorio)
+    if (!formData.tipo_relacion) {
+      validationErrors.tipo_relacion = 'Selecciona un tipo de relación'
     }
 
-    // Validar RFC (formato mexicano)
-    const rfcValidation = validateRFC(formData.rfc)
-    if (!rfcValidation.isValid) {
-      setLocalErrors({ rfc: rfcValidation.error || 'RFC inválido' })
-      return
+    // Teléfono (obligatorio)
+    const phoneReqValidation = validateRequired(formData.telefono_principal)
+    if (!phoneReqValidation.isValid) {
+      validationErrors.telefono_principal = phoneReqValidation.error || 'Campo obligatorio'
+    } else {
+      const phoneValidation = validatePhoneMexican(formData.telefono_principal)
+      if (!phoneValidation.isValid) {
+        validationErrors.telefono_principal = phoneValidation.error || 'Teléfono inválido'
+      }
     }
 
-    // Validar teléfono
-    const phoneValidation = validatePhoneMexican(formData.telefono_principal)
-    if (!phoneValidation.isValid) {
-      setLocalErrors({ telefono_principal: phoneValidation.error || 'Teléfono inválido' })
-      return
+    // Email principal (solo si se proporcionó)
+    if (formData.email_principal && formData.email_principal.trim() !== '') {
+      const emailValidation = validateEmail(formData.email_principal)
+      if (!emailValidation.isValid) {
+        validationErrors.email_principal = emailValidation.error || 'Email inválido'
+      }
     }
 
-    // Validar sitio web
-    const urlValidation = validateURL(formData.sitio_web)
-    if (!urlValidation.isValid) {
-      setLocalErrors({ sitio_web: urlValidation.error || 'URL inválida' })
-      return
+    // RFC (solo si se proporcionó)
+    if (formData.rfc && formData.rfc.trim() !== '') {
+      const rfcValidation = validateRFC(formData.rfc)
+      if (!rfcValidation.isValid) {
+        validationErrors.rfc = rfcValidation.error || 'RFC inválido'
+      }
     }
 
-    // Validar email de facturación
-    const emailFacturacionValidation = validateEmail(formData.email_facturacion)
-    if (!emailFacturacionValidation.isValid) {
-      setLocalErrors({ email_facturacion: emailFacturacionValidation.error || 'Email inválido' })
-      return
+    // Sitio web (solo si se proporcionó)
+    if (formData.sitio_web && formData.sitio_web.trim() !== '') {
+      const urlValidation = validateURL(formData.sitio_web)
+      if (!urlValidation.isValid) {
+        validationErrors.sitio_web = urlValidation.error || 'URL inválida'
+      }
     }
 
-    // Validar plazo de pago (0-365 días)
+    // Email de facturación (solo si se proporcionó)
+    if (formData.email_facturacion && formData.email_facturacion.trim() !== '') {
+      const emailFacturacionValidation = validateEmail(formData.email_facturacion)
+      if (!emailFacturacionValidation.isValid) {
+        validationErrors.email_facturacion = emailFacturacionValidation.error || 'Email inválido'
+      }
+    }
+
+    // Plazo de pago (0-365 días, solo si se proporcionó)
     if (formData.plazo_pago !== undefined && formData.plazo_pago !== null) {
       const plazoValidation = validateNumberRange(0, 365)(formData.plazo_pago)
       if (!plazoValidation.isValid) {
-        setLocalErrors({ plazo_pago: plazoValidation.error || 'Valor fuera de rango' })
-        return
+        validationErrors.plazo_pago = plazoValidation.error || 'Valor fuera de rango'
+      } else {
+        const integerValidation = validateInteger(formData.plazo_pago)
+        if (!integerValidation.isValid) {
+          validationErrors.plazo_pago = integerValidation.error || 'Debe ser entero'
+        }
       }
-      const integerValidation = validateInteger(formData.plazo_pago)
-      if (!integerValidation.isValid) {
-        setLocalErrors({ plazo_pago: integerValidation.error || 'Debe ser entero' })
-        return
-      }
+    }
+
+    // Si hay errores de validación, mostrarlos y desbloquear
+    if (Object.keys(validationErrors).length > 0) {
+      setLocalErrors(validationErrors)
+      isSubmittingRef.current = false
+      setIsSubmittingLocal(false)
+      return
     }
 
     try {
@@ -169,10 +202,14 @@ export function CreateEmpresaModal({
       await onSave(formData, !isEditing)
     } catch (error) {
       console.error('Error guardando empresa:', error)
+      isSubmittingRef.current = false
+      setIsSubmittingLocal(false)
       return // No cerrar el modal si hay error
     }
 
-    // Cerrar el modal solo si el guardado fue exitoso
+    // Desbloquear y cerrar el modal solo si el guardado fue exitoso
+    isSubmittingRef.current = false
+    setIsSubmittingLocal(false)
     onOpenChange(false)
   }
 
@@ -292,13 +329,26 @@ export function CreateEmpresaModal({
               />
             </div>
             <div className="space-y-2">
-              <Label>Tipo de Relación</Label>
+              <Label>Tipo de Relación *</Label>
               <SelectWithAdd
                 label="Tipo de Relación"
                 value={formData.tipo_relacion || ''}
                 onValueChange={(value) => setFormData({ ...formData, tipo_relacion: value as TipoRelacion })}
                 optionsType="tipos_relacion"
               />
+              {allErrors.tipo_relacion && <p className="text-red-500 text-sm">{allErrors.tipo_relacion}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de Contrato</Label>
+              <select
+                value={formData.tipo_contrato || 'Ninguno'}
+                onChange={(e) => setFormData({ ...formData, tipo_contrato: e.target.value as TipoContrato })}
+                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {TIPOS_CONTRATO.map((tipo) => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -371,12 +421,14 @@ export function CreateEmpresaModal({
             <h3 className="font-semibold mb-3">Datos de Facturación</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Razón Social</Label>
+                <Label>Razón Social *</Label>
                 <Input
                   value={formData.razon_social || ''}
                   onChange={(e) => setFormData({ ...formData, razon_social: e.target.value })}
                   placeholder="Razón social oficial"
+                  className={allErrors.razon_social ? 'border-red-500' : ''}
                 />
+                {allErrors.razon_social && <p className="text-red-500 text-sm">{allErrors.razon_social}</p>}
               </div>
               <div className="space-y-2">
                 <Label>RFC</Label>
@@ -454,8 +506,8 @@ export function CreateEmpresaModal({
         <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button className="flex-1" onClick={handleSave} disabled={isSaving}>
-          {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving || isSubmittingLocal}>
+          {(isSaving || isSubmittingLocal) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           Guardar
         </Button>
       </ModalFooter>

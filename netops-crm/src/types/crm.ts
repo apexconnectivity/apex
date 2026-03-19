@@ -32,6 +32,8 @@ export type { Moneda }
 
 export type VisibilidadDocumento = 'interno' | 'publico'
 
+export type TipoContrato = 'Proyecto' | 'Soporte' | 'Ambos' | 'Ninguno'
+
 export interface Empresa {
   id: string
   tipo_entidad: TipoEntidad
@@ -40,6 +42,7 @@ export interface Empresa {
   tamaño?: Tamaño
   origen?: Origen
   tipo_relacion?: TipoRelacion
+  tipo_contrato?: TipoContrato
   telefono_principal?: string
   email_principal?: string
   sitio_web?: string
@@ -107,3 +110,5 @@ export const TIPOS_CONTACTO: TipoContacto[] = [
 export const METODOS_PAGO: MetodoPago[] = ['Transferencia', 'Tarjeta', 'Efectivo', 'Cheque', 'Otro']
 
 export const TIPOS_ENTIDAD: TipoEntidad[] = ['cliente', 'proveedor', 'ambos']
+
+export const TIPOS_CONTRATO: TipoContrato[] = ['Proyecto', 'Soporte', 'Ambos', 'Ninguno']

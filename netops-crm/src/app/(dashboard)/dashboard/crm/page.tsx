@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
 import { useEmpresas, useContactos, useProyectos, useTareas, useDocumentos } from '@/hooks'
@@ -12,6 +13,7 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
+import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
@@ -61,6 +63,7 @@ import {
   VALIDATION_ERRORS,
   ACCESS_MESSAGES,
 } from '@/constants/crm'
+import { STORAGE_KEYS } from '@/constants/storage'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
@@ -92,8 +95,8 @@ export default function CRMPage() {
   const [proyectos, setProyectos] = useProyectos()
   const [tickets] = useTareas()
 
-  // Usuarios internos para proyectos
-  const [usuarios, _setUsuarios] = useState<User[]>([])
+  // Usuarios
+  const [usuarios, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
 
   // ============================================
   // ESTADOS DE BÚSQUEDA Y FILTROS (agrupados)
@@ -122,6 +125,7 @@ export default function CRMPage() {
     empresaForContacto: null as Empresa | null,
     empresaForDocumento: null as Empresa | null,
     notaEditando: false,
+    empresaToDelete: null as string | null,
   })
 
   const {
@@ -135,6 +139,7 @@ export default function CRMPage() {
     empresaForContacto,
     empresaForDocumento,
     notaEditando,
+    empresaToDelete,
   } = uiState
 
   // Setters agrupados para UI
@@ -176,6 +181,10 @@ export default function CRMPage() {
 
   const setNotaEditando = useCallback((editando: boolean) => {
     setUiState(prev => ({ ...prev, notaEditando: editando }))
+  }, [])
+
+  const setEmpresaToDelete = useCallback((id: string | null) => {
+    setUiState(prev => ({ ...prev, empresaToDelete: id }))
   }, [])
 
   // Estado de nota temporal
@@ -220,7 +229,7 @@ export default function CRMPage() {
 
   const handleNewContacto = useCallback((empresa: Empresa) => {
     setEmpresaForContacto(empresa)
-    setEditingContacto({ ...CONTACTO_VACIO, id: String(Date.now()), empresa_id: empresa.id })
+    setEditingContacto({ ...CONTACTO_VACIO, empresa_id: empresa.id })
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalContacto(true)
@@ -429,18 +438,44 @@ export default function CRMPage() {
   // ============================================
 
   const handleDeleteEmpresa = useCallback((id: string) => {
-    if (confirm('¿Estás seguro de eliminar esta empresa?')) {
-      const success = setEmpresas(prev => prev.filter(e => e.id !== id))
-      if (!success) {
-        return
-      }
-      setContactos(prev => prev.filter(c => c.empresa_id !== id))
+    setEmpresaToDelete(id)
+  }, [setEmpresaToDelete])
+
+  const confirmDeleteEmpresa = useCallback(() => {
+    if (empresaToDelete) {
+      setEmpresas(prev => prev.filter(e => e.id !== empresaToDelete))
+      setContactos(prev => prev.filter(c => c.empresa_id !== empresaToDelete))
       setSelectedEmpresa(null)
+      setEmpresaToDelete(null)
     }
-  }, []) // No deps - setters are stable
+  }, [empresaToDelete, setEmpresas, setContactos, setSelectedEmpresa, setEmpresaToDelete])
 
   const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
     setErrors({})
+    
+    // Validación de duplicados
+    const newErrors: Record<string, string> = {}
+    
+    const nombre = (empresa.nombre || '').trim().toLowerCase()
+    if (empresas.some(e => e.id !== empresa.id && e.nombre?.trim().toLowerCase() === nombre)) {
+      newErrors.nombre = 'Ya existe una empresa con este nombre'
+    }
+
+    const rfc = (empresa.rfc || '').trim().toUpperCase()
+    if (rfc && empresas.some(e => e.id !== empresa.id && e.rfc?.trim().toUpperCase() === rfc)) {
+      newErrors.rfc = 'Ya existe una empresa con este RFC'
+    }
+
+    const razonSocial = (empresa.razon_social || '').trim().toLowerCase()
+    if (razonSocial && empresas.some(e => e.id !== empresa.id && e.razon_social?.trim().toLowerCase() === razonSocial)) {
+      newErrors.razon_social = 'Ya existe una empresa con esta razón social'
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      throw new Error('Validación de duplicados fallida')
+    }
+
     setIsSaving(true)
 
     try {
@@ -448,37 +483,30 @@ export default function CRMPage() {
       const now = new Date().toISOString().split('T')[0]
 
       if (!isNew) {
-        const success = setEmpresas(prev => prev.map(e =>
+        setEmpresas(prev => prev.map(e =>
           e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
         ))
-        if (!success) {
-          setErrors({ general: 'Error al actualizar la empresa en localStorage' })
-          setIsSaving(false)
-          return
-        }
       } else {
+        const id = crypto.randomUUID()
         const newEmpresa = {
           ...empresa,
-          id: String(Date.now()),
+          id,
           creado_en: now
         } as Empresa
 
-        const success = setEmpresas(prev => [...prev, newEmpresa])
-        if (!success) {
-          setErrors({ general: 'Error al guardar la empresa en localStorage. Verifica que el navegador permita localStorage (no modo privado)' })
-          setIsSaving(false)
-          return
-        }
+        setEmpresas(prev => [...prev, newEmpresa])
       }
 
       setEditingEmpresa(null)
+      setIsModalEmpresa(false)
+      console.log('[CRM] Empresa guardada correctamente')
     } catch (error) {
       console.error('[CRM] Error al guardar empresa:', error)
       setErrors({ general: 'Error al guardar la empresa. Intenta de nuevo.' })
     } finally {
       setIsSaving(false)
     }
-  }, []) // No deps - setters are stable
+  }, [setEmpresas, setEditingEmpresa, setIsModalEmpresa, setErrors])
 
   const handleDeleteContacto = useCallback((id: string) => {
     if (confirm('¿Estás seguro de eliminar este contacto?')) {
@@ -495,9 +523,9 @@ export default function CRMPage() {
     try {
       await new Promise(r => setTimeout(r, 500))
       const nuevoDoc = {
-        id: String(Date.now()),
+        id: crypto.randomUUID(),
         empresa_id: empresaId,
-        archivo_id: `arch${Date.now()}`,
+        archivo_id: `arch_${crypto.randomUUID()}`,
         visibilidad,
         descripcion,
         subido_por: user?.nombre || 'Usuario',
@@ -537,81 +565,107 @@ export default function CRMPage() {
     }
   }, [empresaForDocumento, newDocumento, handleUploadDocumento])
 
-  const handleSaveContacto = useCallback(async () => {
+  const handleSaveContacto = useCallback(async (contactoData: Partial<Contacto>, isNew: boolean) => {
     setErrors({})
+    console.log('[CRM] Iniciando guardado de contacto:', { contactoData, isNew })
 
-    // Capture current values
-    const currentEditingContacto = editingContacto
-
-    if (!currentEditingContacto?.nombre || currentEditingContacto.nombre.trim().length < 2) {
+    // Validaciones
+    if (!contactoData.nombre || contactoData.nombre.trim().length < 2) {
       setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
       return
     }
-    if (!currentEditingContacto?.email) {
+    if (!contactoData.email) {
       setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
       return
     }
-    if (currentEditingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEditingContacto.email)) {
+    if (contactoData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactoData.email)) {
       setErrors({ email: VALIDATION_ERRORS.emailInvalido })
       return
     }
-    const emailExists = contactos.some(c => c.email.toLowerCase() === currentEditingContacto?.email?.toLowerCase() && c.id !== currentEditingContacto?.id)
+    
+    // El chequeo de email duplicado lo hacemos contra el estado actual 'contactos'
+    const emailExists = contactos.some(c => c.email.toLowerCase() === contactoData.email?.toLowerCase() && c.id !== contactoData.id)
     if (emailExists) {
       setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
       return
-    }
-    if (!currentEditingContacto?.tipo_contacto) {
-      setErrors({ tipo_contacto: VALIDATION_ERRORS.tipoContactoRequerido })
-      return
-    }
-    if (currentEditingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(currentEditingContacto.telefono)) {
-      setErrors({ telefono: VALIDATION_ERRORS.telefonoInvalido })
-      return
-    }
-
-    let _updatedContactos = [...contactos]
-    if (currentEditingContacto.es_principal) {
-      _updatedContactos = _updatedContactos.map(c =>
-        c.empresa_id === currentEditingContacto.empresa_id ? { ...c, es_principal: false } : c
-      )
     }
 
     setIsSaving(true)
     try {
       await new Promise(r => setTimeout(r, 500))
+      
+      const now = new Date().toISOString()
+      const contactoId = isNew ? crypto.randomUUID() : contactoData.id!
 
-      if (contactos.find(c => c.id === currentEditingContacto?.id)) {
-        setContactos(prev => prev.map(c =>
-          c.id === currentEditingContacto?.id ? { ...c, ...currentEditingContacto } as Contacto : c
-        ))
-      } else {
-        setContactos(prev => [...prev, {
-          ...currentEditingContacto,
-          id: String(Date.now()),
-          creado_en: new Date().toISOString().split('T')[0]
-        } as Contacto])
+      // 1. Guardar el contacto
+      setContactos(prev => {
+        let updated = [...prev]
+        
+        // Manejar contacto principal si se marcó este
+        if (contactoData.es_principal) {
+          updated = updated.map(c =>
+            c.empresa_id === contactoData.empresa_id ? { ...c, es_principal: false } : c
+          )
+        }
+
+        if (!isNew) {
+          return updated.map(c =>
+            c.id === contactoId ? { ...c, ...contactoData } as Contacto : c
+          )
+        } else {
+          const nuevoContacto = {
+            ...contactoData,
+            id: contactoId,
+            creado_en: now.split('T')[0]
+          } as Contacto
+          return [...updated, nuevoContacto]
+        }
+      })
+
+      // 2. Si es nuevo, generar el usuario automáticamente para el portal
+      if (isNew) {
+        console.log('[CRM] Generando usuario para el contacto...')
+        setUsuarios(prev => {
+          // Solo crear si no existe un usuario con ese email (evitar duplicados en usuarios)
+          if (prev.some(u => u.email.toLowerCase() === contactoData.email?.toLowerCase())) {
+            console.log('[CRM] El usuario ya existe, omitiendo creación')
+            return prev
+          }
+          
+          const nuevoUsuario: User = {
+            id: crypto.randomUUID(),
+            email: contactoData.email || '',
+            nombre: contactoData.nombre || '',
+            telefono: contactoData.telefono,
+            activo: true,
+            creado_en: now,
+            cambiar_password_proximo_login: true,
+            roles: ['cliente'],
+            empresa_id: contactoData.empresa_id
+          }
+          console.log('[CRM] Nuevo usuario creado:', nuevoUsuario)
+          return [...prev, nuevoUsuario]
+        })
       }
 
       setIsModalContacto(false)
       setEditingContacto(null)
       setEmpresaForContacto(null)
+      console.log('[CRM] Contacto y usuario procesados correctamente')
     } catch (error) {
       console.error('[CRM] Error al guardar contacto:', error)
+      setErrors({ general: 'Error al procesar el guardado' })
     } finally {
       setIsSaving(false)
     }
-  }, [contactos]) // Only contactos is needed for validation
+  }, [contactos, setContactos, setUsuarios, setIsModalContacto, setEditingContacto, setEmpresaForContacto, setErrors, setIsSaving])
 
   // Notas internas
   const handleSaveNota = useCallback((empresaId: string) => {
     const currentNotaTemporal = notaTemporal
-    const success = setEmpresas(prev => prev.map(e =>
+    setEmpresas(prev => prev.map(e =>
       e.id === empresaId ? { ...e, notas_internas: currentNotaTemporal } : e
     ))
-    if (!success) {
-      console.error('[CRM] Error al guardar nota')
-      return
-    }
     setNotaEditando(false)
   }, [notaTemporal, setEmpresas, setNotaEditando])
 
@@ -908,6 +962,31 @@ export default function CRMPage() {
         entidadId={empresaForDocumento?.id || ''}
         entidadTipo="empresa"
       />
+
+      {/* Custom Modal Delete Confirmation */}
+      <BaseModal
+        open={!!empresaToDelete}
+        onOpenChange={(open) => !open && setEmpresaToDelete(null)}
+        size="md"
+        description="Esta acción elminará la empresa y todos sus contactos asociados permanentemente."
+        variant="danger"
+        showAccentBar
+      >
+        <ModalHeader title="Eliminar Empresa" variant="danger" showIcon />
+        <ModalBody>
+          <p>
+            ¿Estás seguro de que deseas eliminar esta empresa? Los contactos vinculados a la misma también serán desvinculados o eliminados. Esta operación no se puede deshacer. 
+          </p>
+        </ModalBody>
+        <ModalFooter variant="danger" layout="inline-between">
+          <Button variant="outline" className="flex-1" onClick={() => setEmpresaToDelete(null)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" className="flex-1" onClick={confirmDeleteEmpresa}>
+            Eliminar
+          </Button>
+        </ModalFooter>
+      </BaseModal>
     </ModuleContainer>
   )
 }

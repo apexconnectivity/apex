@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { ClienteUsuario } from '@/types/portal'
+import { STORAGE_KEYS } from '@/constants/storage'
+import { User } from '@/types/auth'
 
 interface AuthContextType {
   user: ClienteUsuario | null
@@ -42,10 +44,37 @@ export function PortalAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     if (email && password) {
-      const user = DEMO_CLIENTE
-      setUser(user)
-      localStorage.setItem('portal_user', JSON.stringify(user))
-      return true
+      // Buscar en el mismo almacenamiento que el resto de la app
+      const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
+      const users: User[] = storedUsers ? JSON.parse(storedUsers) : []
+      
+      const foundUser = users.find(u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.roles.includes('cliente') && 
+        u.activo
+      )
+
+      if (foundUser) {
+        // Buscar el nombre de la empresa real
+        const storedEmpresas = localStorage.getItem(STORAGE_KEYS.empresas)
+        const empresas: import('@/types/crm').Empresa[] = storedEmpresas ? JSON.parse(storedEmpresas) : []
+        const empresa = empresas.find(e => e.id === foundUser.empresa_id)
+
+        // En modo demo aceptamos cualquier contraseña para clientes existentes
+        const portalUser: ClienteUsuario = {
+          id: foundUser.id,
+          email: foundUser.email,
+          nombre: foundUser.nombre,
+          rol: 'cliente',
+          empresa_id: foundUser.empresa_id || '',
+          empresa_nombre: empresa?.nombre || 'Mi Empresa',
+          telefono: foundUser.telefono
+        }
+        
+        setUser(portalUser)
+        localStorage.setItem('portal_user', JSON.stringify(portalUser))
+        return true
+      }
     }
     return false
   }

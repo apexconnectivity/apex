@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -44,13 +44,28 @@ export function CreateUserModal({
 }: CreateUserModalProps) {
   const isEditing = !!user?.id
 
+  // Form data is now managed inside CreateUserModal
   const [formData, setFormData] = useState<Partial<User>>({
-    nombre: user?.nombre || '',
-    email: user?.email || '',
-    telefono: user?.telefono || '',
-    roles: user?.roles || [],
-    activo: user?.activo ?? true,
+    nombre: '',
+    email: '',
+    telefono: '',
+    roles: [],
+    activo: true,
   })
+
+  // Sincronizar estado interno cuando cambia el usuario prop o se abre el modal
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        id: user?.id,
+        nombre: user?.nombre || '',
+        email: user?.email || '',
+        telefono: user?.telefono || '',
+        roles: user?.roles || [],
+        activo: user?.activo ?? true,
+      })
+    }
+  }, [user, open])
 
   const handleRoleToggle = (role: Role) => {
     setFormData(prev => ({
@@ -66,7 +81,7 @@ export function CreateUserModal({
       return
     }
     await onSave(formData, !isEditing)
-    onOpenChange(false)
+    // El cierre lo maneja UsersPage via open/onOpenChange
   }
 
   // Determinar variante del modal según el modo

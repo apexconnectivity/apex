@@ -41,14 +41,6 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Form state
-  const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
-    telefono: '',
-    roles: [] as Role[],
-  })
-
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
@@ -75,20 +67,8 @@ export default function UsersPage() {
   const handleOpenModal = (user?: User) => {
     if (user) {
       setEditingUser(user)
-      setFormData({
-        nombre: user.nombre,
-        email: user.email,
-        telefono: user.telefono || '',
-        roles: [...user.roles],
-      })
     } else {
       setEditingUser(null)
-      setFormData({
-        nombre: '',
-        email: '',
-        telefono: '',
-        roles: [],
-      })
     }
     setIsModalOpen(true)
   }
@@ -98,27 +78,30 @@ export default function UsersPage() {
     setEditingUser(null)
   }
 
-  const handleSave = async () => {
+  const handleSave = async (data: Partial<User>, isNew: boolean) => {
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      if (editingUser) {
+      if (!isNew && editingUser) {
         // Update existing user
         setUsers(prev => prev.map(u =>
           u.id === editingUser.id
-            ? { ...u, ...formData }
+            ? { ...u, ...data }
             : u
         ))
       } else {
         // Create new user
         const newUser: User = {
-          id: String(Date.now()),
-          ...formData,
+          id: crypto.randomUUID(),
+          nombre: data.nombre || '',
+          email: data.email || '',
+          telefono: data.telefono || '',
+          roles: data.roles || [],
           activo: true,
           creado_en: new Date().toISOString().split('T')[0],
-          cambiar_password_proximo_login: false,
-        }
+          cambiar_password_proximo_login: true,
+        } as User
         setUsers(prev => [...prev, newUser])
       }
 

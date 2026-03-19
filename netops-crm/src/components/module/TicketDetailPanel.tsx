@@ -64,7 +64,7 @@ export function TicketDetailPanel({
       isOpen={isOpen}
       onClose={onClose}
       position="right"
-      width="w-[400px]"
+      width="w-[500px]"
       variant="ticket"
     >
       {/* Header */}

@@ -39,7 +39,7 @@ export const ModuleContainerWithPanel = React.memo(function ModuleContainerWithP
   }, [onClosePanel, onClose])
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full px-6 py-6">
+    <div className="flex h-[calc(100vh-8rem)] w-full px-6 py-6 overflow-hidden">
       {/* Contenido principal */}
       <div className="flex-1 min-w-0 overflow-y-auto rounded-xl bg-slate-900/50">
         <div className={cn("space-y-6 p-6", className)}>
@@ -47,17 +47,8 @@ export const ModuleContainerWithPanel = React.memo(function ModuleContainerWithP
         </div>
       </div>
       
-      {/* Panel lateral usando BaseSidePanel */}
-      <BaseSidePanel
-        isOpen={panelOpen}
-        onClose={handleClose}
-        title={panelTitle}
-        position="right"
-        width={panelWidth}
-        showCloseButton={true}
-      >
-        {panel}
-      </BaseSidePanel>
+      {/* Renderizar el panel directamente (ya viene envuelto en BaseSidePanel) */}
+      {panel}
     </div>
   )
 })

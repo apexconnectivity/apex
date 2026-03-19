@@ -17,7 +17,7 @@ interface CreateContractModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   empresas: Empresa[]
-  usuarios: { id: string; nombre: string; rol: string }[]
+  usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
   contrato?: ContratoType | null
   onSave: (data: CreateContractData) => void
   onDelete?: () => void
@@ -42,11 +42,14 @@ function ContractFormFields({
   contrato: Omit<ContratoType, 'id' | 'creado_en'>
   setContrato: React.Dispatch<React.SetStateAction<Omit<ContratoType, 'id' | 'creado_en'>>>
   empresas: Empresa[]
-  usuarios: { id: string; nombre: string; rol: string }[]
+  usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
   disabled?: boolean
 }) {
   const clientEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente')
-  const tecnicos = usuarios.filter(u => u.rol === 'tecnico' || u.rol === 'admin')
+  const tecnicos = usuarios.filter(u => 
+    u.rol === 'tecnico' || u.rol === 'admin' || 
+    u.roles?.includes('tecnico') || u.roles?.includes('admin')
+  )
 
   return (
     <div className="space-y-4">

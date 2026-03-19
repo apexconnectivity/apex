@@ -17,6 +17,7 @@ export interface User {
   ultimo_acceso?: string
   cambiar_password_proximo_login: boolean
   roles: Role[]
+  empresa_id?: string // ID de la empresa a la que pertenece si es rol cliente
 }
 
 export interface RoleDefinition {

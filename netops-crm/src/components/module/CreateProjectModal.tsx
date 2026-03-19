@@ -17,6 +17,7 @@ import { Contacto, Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
 import { CreateUserModal } from './CreateUserModal'
+import { STORAGE_KEYS } from '@/constants/storage'
 
 interface CreateProjectModalProps {
   open: boolean
@@ -118,26 +119,23 @@ export function CreateProjectModal({
     if (!isNew) return
 
     const newEmpresa: Empresa = {
+      ...empresaData,
       id: crypto.randomUUID(),
-      nombre: empresaData.nombre || '',
-      telefono_principal: empresaData.telefono_principal || '',
-      email_principal: empresaData.email_principal || '',
-      direccion: empresaData.direccion || '',
-      sitio_web: empresaData.sitio_web || '',
-      industria: empresaData.industria || undefined,
       creado_en: new Date().toISOString(),
       tipo_entidad: 'cliente',
-    }
+    } as Empresa
+
     const updatedEmpresas = [...localEmpresas, newEmpresa]
     setLocalEmpresas(updatedEmpresas)
 
-    // Save to localStorage
-    const stored = localStorage.getItem('netops_empresas')
+    // Save to localStorage using standard keys
+    const stored = localStorage.getItem(STORAGE_KEYS.empresas)
     const existingEmpresas: Empresa[] = stored ? JSON.parse(stored) : []
-    localStorage.setItem('netops_empresas', JSON.stringify([...existingEmpresas, newEmpresa]))
+    localStorage.setItem(STORAGE_KEYS.empresas, JSON.stringify([...existingEmpresas, newEmpresa]))
 
     setShowNewEmpresa(false)
-    // Select the new empresa
+    
+    // Select the new empresa automatically
     setFormData({
       ...formData,
       empresa_id: newEmpresa.id,
@@ -152,24 +150,24 @@ export function CreateProjectModal({
     if (!isNew) return
 
     const newUser: User = {
+      ...userData,
       id: crypto.randomUUID(),
-      email: userData.email || '',
-      nombre: userData.nombre || '',
-      roles: userData.roles || ['tecnico'],
       activo: true,
       creado_en: new Date().toISOString(),
       cambiar_password_proximo_login: false,
-    }
+    } as User
+
     const updatedUsers = [...localUsuarios, newUser]
     setLocalUsuarios(updatedUsers)
 
-    // Save to localStorage
-    const stored = localStorage.getItem('netops_users')
+    // Save to localStorage using standard keys
+    const stored = localStorage.getItem(STORAGE_KEYS.usuarios)
     const existingUsers: User[] = stored ? JSON.parse(stored) : []
-    localStorage.setItem('netops_users', JSON.stringify([...existingUsers, newUser]))
+    localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([...existingUsers, newUser]))
 
     setShowNewUsuario(false)
-    // Select the new user
+    
+    // Select the new user automatically
     setFormData({
       ...formData,
       responsable_id: newUser.id,

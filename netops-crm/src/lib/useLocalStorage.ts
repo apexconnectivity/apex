@@ -26,11 +26,55 @@ export function useLocalStorage<T>(
   // Usar ref para mantener el valor inicial sin causar re-renders
   const initialValueRef = useRef(initialValue)
   
-  // Ref para evitar actualizaciones en cadena
-  const isUpdatingRef = useRef(false)
-  
   // Ref para guardar el valor anterior y evitar actualizaciones innecesarias
   const prevValueRef = useRef<string | null>(null)
+
+  // Ref para indicar que ESTA instancia está escribiendo, y así ignorar
+  // el evento de sincronización que ella misma dispara
+  const isWritingRef = useRef(false)
+
+  // ============================================
+  // Efecto para escuchar cambios de OTRAS tabs (StorageEvent)
+  // y de OTRAS instancias del hook en la misma tab (CustomEvent)
+  // ============================================
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // StorageEvent solo se dispara desde OTRAS tabs, así que no hay riesgo
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === key && event.newValue) {
+        try {
+          const parsed = JSON.parse(event.newValue) as T
+          setStoredValue(parsed)
+          prevValueRef.current = event.newValue
+        } catch {
+          // Ignorar errores de parseo
+        }
+      }
+    }
+
+    // CustomEvent se dispara dentro de la misma tab.
+    // Solo reaccionar si NO fue esta instancia la que lo disparó.
+    const handleCustomSync = (event: CustomEvent<{ key: string; value: string }>) => {
+      if (event.detail.key === key && !isWritingRef.current) {
+        try {
+          const parsed = JSON.parse(event.detail.value) as T
+          setStoredValue(parsed)
+          prevValueRef.current = event.detail.value
+        } catch {
+          // Ignorar errores de parseo
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('local-storage-sync', handleCustomSync as EventListener)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('local-storage-sync', handleCustomSync as EventListener)
+    }
+  }, [key])
 
   // ============================================
   // Efecto para cargar el valor inicial - solo se ejecuta una vez por key
@@ -46,17 +90,14 @@ export function useLocalStorage<T>(
       if (item) {
         try {
           const parsed = JSON.parse(item) as T
+          prevValueRef.current = item
 
-          // Validar que los datos parseados sean válidos
-          if (parsed === null || parsed === undefined) {
-            setStoredValue(initialValueRef.current)
-          } else if (Array.isArray(parsed) || typeof parsed === 'object') {
+          if (parsed !== null && parsed !== undefined) {
             setStoredValue(parsed)
           } else {
             setStoredValue(initialValueRef.current)
           }
         } catch {
-          // Limpiar datos corruptos
           window.localStorage.removeItem(key)
           setStoredValue(initialValueRef.current)
         }
@@ -75,25 +116,26 @@ export function useLocalStorage<T>(
   // ============================================
   const setValue = useCallback(
     (value: T | ((prev: T) => T)): void => {
-      // Evitar actualizaciones si ya estamos en medio de una actualización
-      if (isUpdatingRef.current) return
-      
-      isUpdatingRef.current = true
-      
       try {
         setStoredValue(prev => {
-          // Permitir pasar una función para actualizar el valor anterior
-          const valueToStore =
-            value instanceof Function ? value(prev) : value
+          const valueToStore = value instanceof Function ? value(prev) : value
 
-          // Persistir en localStorage solo si estamos en el navegador
           if (typeof window !== 'undefined') {
             try {
-              // Solo guardar si el valor realmente cambió
               const newValueStr = JSON.stringify(valueToStore)
               if (newValueStr !== prevValueRef.current) {
                 window.localStorage.setItem(key, newValueStr)
                 prevValueRef.current = newValueStr
+                
+                // Marcar que ESTA instancia está escribiendo para que
+                // su propio listener ignore el evento
+                isWritingRef.current = true
+                window.dispatchEvent(
+                  new CustomEvent('local-storage-sync', {
+                    detail: { key, value: newValueStr }
+                  })
+                )
+                isWritingRef.current = false
               }
             } catch (storageError) {
               console.error(`[useLocalStorage] Error saving to localStorage:`, storageError)
@@ -104,11 +146,6 @@ export function useLocalStorage<T>(
         })
       } catch (error) {
         console.error(`[useLocalStorage] Error setting localStorage key "${key}":`, error)
-      } finally {
-        // Resetear el flag en el siguiente tick para permitir nuevas actualizaciones
-        setTimeout(() => {
-          isUpdatingRef.current = false
-        }, 0)
       }
     },
     [key]
