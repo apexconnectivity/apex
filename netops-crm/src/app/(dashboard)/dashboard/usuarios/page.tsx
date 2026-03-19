@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
@@ -72,6 +72,35 @@ export default function UsersPage() {
 
     return matchesSearch && matchesEstado && matchesRol
   })
+
+  // Agrupar usuarios internos y empresas clientes
+  const { internalUsers, uniqueCompanies } = useMemo(() => {
+    const internal = filteredUsers.filter(u => !u.roles.includes('cliente'))
+    const clients = filteredUsers.filter(u => u.roles.includes('cliente'))
+    
+    const companyMap = new Map()
+    clients.forEach(u => {
+      if (u.empresa_id) {
+        if (!companyMap.has(u.empresa_id)) {
+          const empresa = empresas.find(e => e.id === u.empresa_id)
+          companyMap.set(u.empresa_id, {
+            id: u.empresa_id,
+            nombre: empresa?.nombre || 'Empresa Desconocida',
+            contactosCount: 0,
+            activeUsers: 0
+          })
+        }
+        const stats = companyMap.get(u.empresa_id)
+        stats.contactosCount++
+        if (u.activo) stats.activeUsers++
+      }
+    })
+    
+    return {
+      internalUsers: internal,
+      uniqueCompanies: Array.from(companyMap.values()) as { id: string; nombre: string; contactosCount: number; activeUsers: number }[]
+    }
+  }, [filteredUsers, empresas])
 
   const handleOpenModal = (user?: User) => {
     if (user) {
@@ -227,86 +256,142 @@ export default function UsersPage() {
       />
 
       {/* Users Grid */}
-      <div className="grid gap-4">
-        {filteredUsers.map((user) => (
-          <Card key={user.id} className={cn('hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5', !user.activo ? 'opacity-60' : '')}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(user.nombre)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{user.nombre}</h3>
-                      {!user.activo && (
-                        <Badge variant="secondary" className="text-xs">
-                          {USUARIOS_PAGE.inactivo}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {user.email}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {user.telefono}
-                      </span>
-                      {user.empresa_id && (
-                        <span className="flex items-center gap-1 text-primary">
-                          <Building2 className="h-3 w-3" />
-                          {empresas.find(e => e.id === user.empresa_id)?.nombre || 'Empresa no encontrada'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+      <div className="space-y-8">
+        {/* Sección Equipo Interno */}
+        {internalUsers.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Equipo NetOps
+            </h2>
+            <div className="grid gap-4">
+              {internalUsers.map((user: User) => (
+                <Card key={user.id} className={cn('hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5', !user.activo ? 'opacity-60' : '')}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {getInitials(user.nombre)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{user.nombre}</h3>
+                            {!user.activo && (
+                              <Badge variant="secondary" className="text-xs">
+                                {USUARIOS_PAGE.inactivo}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {user.email}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {user.telefono}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="flex gap-1">
-                    {user.roles.map(role => (
-                      <RoleBadge key={role} role={role} className="text-xs" />
-                    ))}
-                  </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex gap-1">
+                        {user.roles.map((role: Role) => (
+                          <RoleBadge key={role} role={role} className="text-xs" />
+                        ))}
+                      </div>
 
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenModal(user)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRequestToggleActive(user)}
-                      className={user.activo ? 'hover:text-red-400' : 'hover:text-green-400'}
-                    >
-                        {user.activo ? (
-                          <Shield className="h-4 w-4" />
-                        ) : (
-                          <Shield className="h-4 w-4 opacity-50" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRequestDelete(user)}
-                        className="hover:text-red-500 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenModal(user)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRequestToggleActive(user)}
+                            className={user.activo ? 'hover:text-red-400' : 'hover:text-green-400'}
+                          >
+                            {user.activo ? (
+                              <Shield className="h-4 w-4" />
+                            ) : (
+                              <Shield className="h-4 w-4 opacity-50" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRequestDelete(user)}
+                            className="hover:text-red-500 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sección Empresas / Clientes */}
+        {uniqueCompanies.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Directorios de Clientes
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {uniqueCompanies.map((emp: any) => (
+                <Card 
+                  key={emp.id} 
+                  className="cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group border-border/50 bg-muted/10"
+                  onClick={() => {
+                    setSelectedEmpresaId(emp.id)
+                    setIsManageContactsOpen(true)
+                  }}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <Building2 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold truncate text-foreground group-hover:text-primary transition-colors">{emp.nombre}</h3>
+                        <p className="text-xs text-muted-foreground">{emp.contactosCount} {emp.contactosCount === 1 ? 'contacto registrado' : 'contactos registrados'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs pt-4 border-t border-border/5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="text-muted-foreground">{emp.activeUsers} usuarios activos</span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1 hover:bg-primary/10 hover:text-primary">
+                        Gestionar Directorio
+                        <Pencil className="h-3 w-3" />
                       </Button>
                     </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {internalUsers.length === 0 && uniqueCompanies.length === 0 && (
+          <div className="py-20 text-center border-2 border-dashed rounded-2xl">
+            <p className="text-muted-foreground">No se encontraron usuarios o empresas con los filtros actuales.</p>
+          </div>
+        )}
       </div>
 
       {/* User Modal - Usando componente reutilizable */}
