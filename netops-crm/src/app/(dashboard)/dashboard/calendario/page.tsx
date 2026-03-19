@@ -18,7 +18,7 @@ import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION } from '@/types/calendario'
 import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
 import { useProyectos } from '@/hooks'
-import { ManageCompanyModal } from '@/components/module/ManageCompanyModal'
+import { ManageContactsModal } from '@/components/module/ManageContactsModal'
 import { Contacto } from '@/types/crm'
 import {
   Calendar,
@@ -676,7 +676,7 @@ export default function CalendarioPage() {
       />
 
       {isManageCompanyOpen && activeEmpresaId && (
-        <ManageCompanyModal 
+        <ManageContactsModal 
           isOpen={isManageCompanyOpen}
           onClose={() => setIsManageCompanyOpen(false)}
           empresaId={activeEmpresaId}

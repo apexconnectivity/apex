@@ -6,6 +6,7 @@ import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleContainer, ModuleHeader, CreateUserModal } from '@/components/module'
+import { ManageContactsModal } from '@/components/module/ManageContactsModal'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
@@ -45,6 +46,9 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  
+  const [isManageContactsOpen, setIsManageContactsOpen] = useState(false)
+  const [selectedEmpresaId, setSelectedEmpresaId] = useState<string | null>(null)
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -71,6 +75,11 @@ export default function UsersPage() {
 
   const handleOpenModal = (user?: User) => {
     if (user) {
+      if (user.roles.includes('cliente') && user.empresa_id) {
+        setSelectedEmpresaId(user.empresa_id)
+        setIsManageContactsOpen(true)
+        return
+      }
       setEditingUser(user)
     } else {
       setEditingUser(null)
@@ -406,6 +415,14 @@ export default function UsersPage() {
             </Button>
           </ModalFooter>
         </BaseModal>
+      )}
+
+      {isManageContactsOpen && selectedEmpresaId && (
+        <ManageContactsModal 
+          isOpen={isManageContactsOpen}
+          onClose={() => setIsManageContactsOpen(false)}
+          empresaId={selectedEmpresaId}
+        />
       )}
     </ModuleContainer>
   )

@@ -24,14 +24,14 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-interface ManageCompanyModalProps {
+interface ManageContactsModalProps {
   isOpen: boolean
   onClose: () => void
   empresaId: string
   isReadOnly?: boolean
 }
 
-export function ManageCompanyModal({ isOpen, onClose, empresaId, isReadOnly = false }: ManageCompanyModalProps) {
+export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = false }: ManageContactsModalProps) {
   const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, [])
   const [contactos, setContactos] = useLocalStorage<Contacto[]>(STORAGE_KEYS.contactos, [])
   const [usuarios, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])

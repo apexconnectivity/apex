@@ -13,7 +13,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { STATUS_COLORS } from '@/lib/colors'
-import { ManageCompanyModal } from '@/components/module/ManageCompanyModal'
+import { ManageContactsModal } from '@/components/module/ManageContactsModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Empresa } from '@/types/crm'
@@ -194,7 +194,7 @@ export function DashboardHeader({ showSearch = true, showNewProject = true, onNe
       </div>
       
       {isCliente && empresa && (
-        <ManageCompanyModal 
+        <ManageContactsModal 
           isOpen={isCompanyModalOpen} 
           onClose={() => setIsCompanyModalOpen(false)} 
           empresaId={empresa.id} 
