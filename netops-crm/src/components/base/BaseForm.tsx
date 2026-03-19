@@ -370,7 +370,7 @@ export function BaseForm<T extends Record<string, any>>({
   const [formData, setFormData] = useState<Partial<T>>(values || defaultValues || {})
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
   
-  // Ref para tracking del último valor синхронизированный
+  // Ref para tracking del último valor sincronizado
   const prevValuesRef = React.useRef<string | undefined>(undefined)
   
   // Actualizar cuando cambian los valores externos (usando stringify para comparación estable)
@@ -386,43 +386,35 @@ export function BaseForm<T extends Record<string, any>>({
     }
   }, [values])
   
-  // Manejar cambio de campo
-  const handleChange = useCallback((field: string, value: unknown) => {
-    const newData = { ...formData, [field]: value }
-    setFormData(newData)
-    
-    if (localErrors[field]) {
-      setLocalErrors(prev => {
-        const next = { ...prev }
-        delete next[field]
-        return next
-      })
-    }
-    
-    onChange?.(newData)
-  }, [formData, localErrors, onChange])
-  
-  // Proporcionar contexto
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _contextValue = useMemo(() => ({
-    values: formData,
-    errors: { ...errors, ...localErrors } as FormErrors,
-    onChange: handleChange,
-    status,
-    layout,
-    columns
-  }), [formData, errors, localErrors, status, layout, columns, handleChange])
+  // Manejar cambio de campo - usar useCallback estable que no cause re-renders innecesarios
+  const handleChange = React.useCallback((field: string, value: unknown) => {
+    setFormData(prevData => {
+      const newData = { ...prevData, [field]: value }
+      
+      // Validación local sin causar re-render adicional
+      if (localErrors[field]) {
+        setLocalErrors(prevErrors => {
+          const next = { ...prevErrors }
+          delete next[field]
+          return next
+        })
+      }
+      
+      // Notificar al padre fuera del callback de setState
+      if (onChange) {
+        // Usar timeout para evitar batching de React
+        setTimeout(() => onChange(newData), 0)
+      }
+      
+      return newData
+    })
+  }, [localErrors, onChange])
   
   // Manejar submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = React.useCallback((e: React.FormEvent) => {
     e.preventDefault()
-    
-    try {
-      await onSubmit(formData as T)
-    } catch (error) {
-      console.error("Form submission error:", error)
-    }
-  }
+    onSubmit(formData as T)
+  }, [formData, onSubmit])
   
   // Grid classes para layout horizontal
   const horizontalGridClasses: Record<2 | 3 | 4, string> = {

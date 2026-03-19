@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -64,6 +64,9 @@ export function CreateProjectModal({
 }: CreateProjectModalProps) {
   const isEditing = !!proyecto?.id
 
+  // Usar ref para trackear el estado abierto sin causar re-renders
+  const isOpenRef = useRef(false)
+  
   const [formData, setFormData] = useState<Partial<Proyecto>>(
     proyecto || PROYECTO_VACIO
   )
@@ -71,26 +74,22 @@ export function CreateProjectModal({
   // State for sub-modals
   const [showNewEmpresa, setShowNewEmpresa] = useState(false)
   const [showNewUsuario, setShowNewUsuario] = useState(false)
+  
+  // Estado local para empresas y usuarios - se inicializa y actualiza solo cuando cambia open
   const [localEmpresas, setLocalEmpresas] = useState<Empresa[]>(empresas)
   const [localUsuarios, setLocalUsuarios] = useState<User[]>(usuarios)
 
-  // Sync with props when they change
+  // Reset form when modal opens - usar ref para evitar bucles
   useEffect(() => {
-    setLocalEmpresas(empresas)
-  }, [empresas])
-
-  useEffect(() => {
-    setLocalUsuarios(usuarios)
-  }, [usuarios])
-
-  // Reset form when opening for new project
-  useEffect(() => {
-    if (open && !proyecto) {
-      setFormData(PROYECTO_VACIO)
-    } else if (proyecto) {
-      setFormData(proyecto)
+    if (open && !isOpenRef.current) {
+      isOpenRef.current = true
+      setFormData(proyecto || PROYECTO_VACIO)
+      setLocalEmpresas(empresas)
+      setLocalUsuarios(usuarios)
+    } else if (!open) {
+      isOpenRef.current = false
     }
-  }, [open, proyecto])
+  }, [open, proyecto, empresas, usuarios])
 
   // Filtrar empresas clientes
   const empresasClientes = localEmpresas.filter(e => e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos' || !e.tipo_entidad)

@@ -224,13 +224,14 @@ export function CreateTaskModal({
       return
     }
 
-    if (initializedRef.current && tarea?.id) {
+    // Solo inicializar si es la primera vez que se abre o si cambió la tarea
+    if (initializedRef.current) {
       return
     }
 
     initializedRef.current = true
 
-    if (tarea && isEditMode) {
+    if (tarea && tarea.id) {
       setTareaData({
         proyecto_id: tarea.proyecto_id,
         proyecto_nombre: tarea.proyecto_nombre,
@@ -269,7 +270,7 @@ export function CreateTaskModal({
       setSubtareas([])
       setComentarios([])
     }
-  }, [open, tarea, existingSubtareas, existingComentarios, isEditMode])
+  }, [open, tarea])
 
   const handleSave = () => {
     if (!tareaData.nombre || !tareaData.proyecto_id) return

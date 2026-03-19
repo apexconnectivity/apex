@@ -25,10 +25,15 @@ export function useLocalStorage<T>(
 
   // Usar ref para mantener el valor inicial sin causar re-renders
   const initialValueRef = useRef(initialValue)
-  initialValueRef.current = initialValue
+  
+  // Ref para evitar actualizaciones en cadena
+  const isUpdatingRef = useRef(false)
+  
+  // Ref para guardar el valor anterior y evitar actualizaciones innecesarias
+  const prevValueRef = useRef<string | null>(null)
 
   // ============================================
-  // Efecto para cargar el valor inicial
+  // Efecto para cargar el valor inicial - solo se ejecuta una vez por key
   // ============================================
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -63,13 +68,18 @@ export function useLocalStorage<T>(
     } finally {
       setIsLoaded(true)
     }
-  }, [key, initialValue])
+  }, [key])
 
   // ============================================
   // Función para actualizar el valor
   // ============================================
   const setValue = useCallback(
     (value: T | ((prev: T) => T)): void => {
+      // Evitar actualizaciones si ya estamos en medio de una actualización
+      if (isUpdatingRef.current) return
+      
+      isUpdatingRef.current = true
+      
       try {
         setStoredValue(prev => {
           // Permitir pasar una función para actualizar el valor anterior
@@ -79,7 +89,12 @@ export function useLocalStorage<T>(
           // Persistir en localStorage solo si estamos en el navegador
           if (typeof window !== 'undefined') {
             try {
-              window.localStorage.setItem(key, JSON.stringify(valueToStore))
+              // Solo guardar si el valor realmente cambió
+              const newValueStr = JSON.stringify(valueToStore)
+              if (newValueStr !== prevValueRef.current) {
+                window.localStorage.setItem(key, newValueStr)
+                prevValueRef.current = newValueStr
+              }
             } catch (storageError) {
               console.error(`[useLocalStorage] Error saving to localStorage:`, storageError)
             }
@@ -89,6 +104,11 @@ export function useLocalStorage<T>(
         })
       } catch (error) {
         console.error(`[useLocalStorage] Error setting localStorage key "${key}":`, error)
+      } finally {
+        // Resetear el flag en el siguiente tick para permitir nuevas actualizaciones
+        setTimeout(() => {
+          isUpdatingRef.current = false
+        }, 0)
       }
     },
     [key]

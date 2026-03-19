@@ -136,7 +136,7 @@ export default function SoportePage() {
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
-  }, [setActiveId])
+  }, []) // No deps - setters are stable
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -144,6 +144,7 @@ export default function SoportePage() {
 
     if (!over) return
 
+    // Find the ticket at the time of drag end
     const activeTicket = tickets.find(t => t.id === active.id)
     if (!activeTicket) return
 
@@ -168,7 +169,7 @@ export default function SoportePage() {
         fecha_primera_respuesta: t.fecha_primera_respuesta || new Date().toISOString(),
       } : t))
     }
-  }, [tickets, setTickets, setActiveId])
+  }, [tickets, setTickets]) // Only tickets and setTickets needed
 
   const isAdmin = user?.roles.includes('admin')
   const isTecnico = user?.roles.includes('tecnico')

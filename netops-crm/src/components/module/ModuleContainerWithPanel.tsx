@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { BaseSidePanel } from '@/components/base'
 
@@ -17,9 +17,9 @@ interface ModuleContainerWithPanelProps {
  * ModuleContainerWithPanel - Contenedor con panel lateral
  * 
  * Usa BaseSidePanel para el panel lateral.
- * Mantiene el comportamiento actual: panel que se desliza desde el lado derecho.
+ * Usa React.memo para evitar re-renders innecesarios.
  */
-export function ModuleContainerWithPanel({ 
+export const ModuleContainerWithPanel = React.memo(function ModuleContainerWithPanel({ 
   children, 
   panel, 
   panelOpen,
@@ -29,8 +29,14 @@ export function ModuleContainerWithPanel({
   panelWidth = "w-1/5",
   className 
 }: ModuleContainerWithPanelProps) {
-  // Usar onClosePanel si está disponible, si no usar onClose
-  const handleClose = onClosePanel || onClose
+  // Usar useCallback para estabilidad de la función de cierre
+  const handleClose = useCallback(() => {
+    if (onClosePanel) {
+      onClosePanel()
+    } else if (onClose) {
+      onClose()
+    }
+  }, [onClosePanel, onClose])
 
   return (
     <div className="flex h-[calc(100vh-8rem)] w-full px-6 py-6">
@@ -44,7 +50,7 @@ export function ModuleContainerWithPanel({
       {/* Panel lateral usando BaseSidePanel */}
       <BaseSidePanel
         isOpen={panelOpen}
-        onClose={handleClose || (() => {})}
+        onClose={handleClose}
         title={panelTitle}
         position="right"
         width={panelWidth}
@@ -54,4 +60,4 @@ export function ModuleContainerWithPanel({
       </BaseSidePanel>
     </div>
   )
-}
+})

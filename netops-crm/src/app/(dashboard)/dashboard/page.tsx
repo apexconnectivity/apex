@@ -1,13 +1,15 @@
 "use client"
 
+import { Suspense } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas, useProyectos, useTareas, useTickets, useContactos } from '@/hooks'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
-import { DashboardStats, RecentActivity, UpcomingTasks } from "@/components/dashboard-stats"
+import { DashboardStats, RecentActivity, UpcomingTasks, DashboardStatsSkeleton, ActivitySkeleton, TasksSkeleton } from "@/components/dashboard-stats"
 import { ProjectPipeline } from "@/components/pipeline"
 import { WelcomeHeader } from "@/components/welcome-header"
 import { AccessDeniedCard } from "@/components/ui/access-denied-card"
 import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
 import { DASHBOARD_STATS, ACCESS_MESSAGES } from '@/constants/dashboard'
 import { STATS_LABELS } from '@/constants/estadisticas'
@@ -113,19 +115,23 @@ export default function DashboardPage() {
     <ModuleContainer>
       <WelcomeHeader />
 
-      {/* Stats - varies by role */}
-      <DashboardStats />
+      {/* Stats Section con Suspense */}
+      <Suspense fallback={<DashboardStatsSkeleton />}>
+        <DashboardStats />
+      </Suspense>
 
-      {/* Pipeline - solo admin y tecnico ven proyectos */}
+      {/* Pipeline Section con Suspense */}
       {canAccessModule('proyectos') && (
-        <ProjectPipeline
-          showAllPhases={isAdmin}
-          showCommercialPhases={isComercial}
-          showAssignedOnly={isTecnico}
-        />
+        <Suspense fallback={<Skeleton className="h-64" />}>
+          <ProjectPipeline
+            showAllPhases={isAdmin}
+            showCommercialPhases={isComercial}
+            showAssignedOnly={isTecnico}
+          />
+        </Suspense>
       )}
 
-      {/* CRM - solo comerciales y admin */}
+      {/* CRM Stats - solo comerciales y admin */}
       {isAdmin && (
         <StatGrid cols={2}>
           <MiniStat
@@ -147,19 +153,23 @@ export default function DashboardPage() {
         </StatGrid>
       )}
 
-      {/* Bottom section - filtered by role */}
+      {/* Bottom section - filtered by role con Suspense */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivity
-          empresas={empresas}
-          proyectos={proyectos}
-          tareas={tareas}
-          tickets={tickets}
-        />
-        {(isAdmin || isTecnico) && (
-          <UpcomingTasks
-            tareas={tareas}
+        <Suspense fallback={<ActivitySkeleton />}>
+          <RecentActivity
+            empresas={empresas}
             proyectos={proyectos}
+            tareas={tareas}
+            tickets={tickets}
           />
+        </Suspense>
+        {(isAdmin || isTecnico) && (
+          <Suspense fallback={<TasksSkeleton />}>
+            <UpcomingTasks
+              tareas={tareas}
+              proyectos={proyectos}
+            />
+          </Suspense>
         )}
       </div>
     </ModuleContainer>

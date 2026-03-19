@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/sidebar'
@@ -69,10 +69,7 @@ export default function DashboardLayout({
 }) {
   const { user, logout, canAccessModule, isLoading } = useAuth()
   const router = useRouter()
-  const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_isTransitioning, setIsTransitioning] = useState(false)
 
   // Estado para el modal de nuevo proyecto
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
@@ -80,11 +77,12 @@ export default function DashboardLayout({
   // Hooks para obtener datos necesarios para el modal de proyectos
   const [empresas] = useEmpresas()
   const [contactos] = useContactos()
-  const [proyectos, setProyectos] = useProyectos()
+  const [_proyectos, setProyectos] = useProyectos()
 
   // Cargar usuarios desde localStorage
   const [usuarios, setUsuarios] = useState<User[]>([])
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const stored = localStorage.getItem('netops_usuarios')
     if (stored) {
       try {
@@ -121,14 +119,8 @@ export default function DashboardLayout({
     }
 
     // Agregar a la lista de proyectos
-    setProyectos([...proyectos, newProyecto])
+    setProyectos((prev: Proyecto[]) => [...prev, newProyecto])
   }
-
-  useEffect(() => {
-    setIsTransitioning(true)
-    const timer = setTimeout(() => setIsTransitioning(false), 50)
-    return () => clearTimeout(timer)
-  }, [pathname])
 
   const handleLogout = () => {
     logout()

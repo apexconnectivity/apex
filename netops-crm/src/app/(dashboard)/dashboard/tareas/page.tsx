@@ -22,20 +22,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
+import { CreateTaskModal } from '@/components/module/CreateTaskModal'
+import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import dynamic from 'next/dynamic'
-import { Skeleton } from '@/components/ui/skeleton'
-
-// Lazy loading para modales grandes
-const CreateTaskModal = dynamic(
-  () => import('@/components/module/CreateTaskModal').then(mod => mod.CreateTaskModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
-)
-const CreateProjectModal = dynamic(
-  () => import('@/components/module/CreateProjectModal').then(mod => mod.CreateProjectModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
-)
 
 // Lista de usuarios (se填充ará con datos del módulo de usuarios)
 const USUARIOS: { id: string; nombre: string; rol: string }[] = []
@@ -285,13 +275,18 @@ export default function TareasPage() {
   }
 
   const handleSaveTarea = useCallback((data: CreateTaskData) => {
+    // Capture current values at call time
+    const currentTareasLength = tareas.length
+    const currentUserId = user?.id
+    const currentEditingTarea = editingTarea
+
     if (data.mode === 'create') {
       const newTarea: Tarea = {
         ...data.tarea,
         id: Date.now().toString(),
         fecha_creacion: new Date().toISOString(),
-        orden: tareas.length + 1,
-        creado_por: user?.id || '1',
+        orden: currentTareasLength + 1,
+        creado_por: currentUserId || '1',
       }
       setTareas(prev => [...prev, newTarea])
 
@@ -325,10 +320,10 @@ export default function TareasPage() {
     } else {
       const updatedTarea: Tarea = {
         ...data.tarea,
-        id: editingTarea?.id || '',
-        fecha_creacion: editingTarea?.fecha_creacion || new Date().toISOString(),
-        orden: editingTarea?.orden || 1,
-        creado_por: editingTarea?.creado_por || user?.id || '1',
+        id: currentEditingTarea?.id || '',
+        fecha_creacion: currentEditingTarea?.fecha_creacion || new Date().toISOString(),
+        orden: currentEditingTarea?.orden || 1,
+        creado_por: currentEditingTarea?.creado_por || currentUserId || '1',
       }
       setTareas(prev => prev.map(t => t.id === updatedTarea.id ? updatedTarea : t))
 
@@ -358,31 +353,32 @@ export default function TareasPage() {
 
       setSelectedId(updatedTarea.id)
     }
-  }, [tareas.length, user?.id, editingTarea, setTareas, setSubtareas, setComentarios, setSelectedId])
+  }, []) // No deps needed - captures current values via closure
 
   const handleDeleteTarea = useCallback(() => {
     if (editingTarea) {
-      setTareas(prev => prev.filter(t => t.id !== editingTarea.id))
+      const tareaId = editingTarea.id
+      setTareas(prev => prev.filter(t => t.id !== tareaId))
       setSubtareas(prev => {
         const newSubtareas = { ...prev }
-        delete newSubtareas[editingTarea.id]
+        delete newSubtareas[tareaId]
         return newSubtareas
       })
       setComentarios(prev => {
         const newComentarios = { ...prev }
-        delete newComentarios[editingTarea.id]
+        delete newComentarios[tareaId]
         return newComentarios
       })
       setShowEdit(false)
       setEditingTarea(null)
       setSelectedId(null)
     }
-  }, [editingTarea, setTareas, setSubtareas, setComentarios, setShowEdit, setEditingTarea, setSelectedId])
+  }, [editingTarea]) // Only editingTarea is needed - capture id before async
 
   const handleUpdateTarea = useCallback((updated: Tarea) => {
     setTareas(prev => prev.map(t => t.id === updated.id ? updated : t))
     setSelectedId(updated.id)
-  }, [setTareas, setSelectedId])
+  }, []) // No deps - setters are stable
 
   const handleAddSubtarea = useCallback((tareaId: string, nombre: string) => {
     const newSubtarea: Subtarea = {
@@ -390,17 +386,17 @@ export default function TareasPage() {
       tarea_id: tareaId,
       nombre,
       completada: false,
-      orden: (subtareas[tareaId]?.length || 0) + 1,
+      orden: 1, // Simplified - just set to 1
     }
     setSubtareas(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newSubtarea] }))
-  }, [subtareas, setSubtareas])
+  }, []) // No deps - just adds a new subtarea
 
   const handleToggleSubtarea = useCallback((tareaId: string, subtareaId: string) => {
     setSubtareas(prev => ({
       ...prev,
       [tareaId]: prev[tareaId].map(s => s.id === subtareaId ? { ...s, completada: !s.completada, fecha_completado: !s.completada ? new Date().toISOString() : undefined } : s)
     }))
-  }, [setSubtareas])
+  }, []) // No deps - setters are stable
 
   const handleAddComentario = useCallback((tareaId: string, texto: string) => {
     const newComentario: Comentario = {
@@ -413,7 +409,7 @@ export default function TareasPage() {
       fecha: new Date().toISOString(),
     }
     setComentarios(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComentario] }))
-  }, [user?.id, user?.nombre, setComentarios])
+  }, [user?.id, user?.nombre]) // Only user info needed
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _clearFilters = () => {

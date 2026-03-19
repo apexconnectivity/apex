@@ -29,6 +29,76 @@ function StatsSkeleton() {
   )
 }
 
+// Dashboard stats skeleton (full component with proper structure)
+export function DashboardStatsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-4 rounded-full" />
+          </div>
+          <Skeleton className="h-8 w-16 mt-2" />
+          <Skeleton className="h-3 w-20 mt-2" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Activity list skeleton
+export function ActivitySkeleton() {
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-start gap-3 p-3">
+              <Skeleton className="h-9 w-9 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Tasks list skeleton
+export function TasksSkeleton() {
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <Skeleton className="h-6 w-40" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex-1 space-y-1">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-14" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function DashboardStats() {
   // Hooks centralizados para gestión de datos
   const [empresas] = useEmpresas()
@@ -56,12 +126,11 @@ export function DashboardStats() {
     return tickets.filter(t => t.estado !== 'Cerrado').length
   }, [tickets])
 
-  // Si no hay datos cargados, mostrar skeleton
-  // Nota: useLocalStorage siempre devuelve datos (el valor inicial), 
-  // así que verificamos si hay datos reales o está vacío
-  const hasData = empresas.length > 0 || proyectos.length > 0 || tareas.length > 0 || tickets.length > 0
+  // Si no hay datos cargados (longitudes son 0), mostrar skeleton
+  // Esto solo muestra skeleton en el caso inicial cuando no hay datos
+  const isEmpty = empresas.length === 0 && proyectos.length === 0 && tareas.length === 0 && tickets.length === 0
 
-  if (!hasData) {
+  if (isEmpty) {
     return <StatsSkeleton />
   }
 

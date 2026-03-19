@@ -3,9 +3,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
-import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/hooks'
+import { useEmpresas, useContactos, useProyectos, useTareas, useDocumentos } from '@/hooks'
 import { Card, CardContent } from '@/components/ui/card'
-import { CreateContactoModal } from '@/components/module/CreateContactoModal'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
@@ -18,14 +17,21 @@ import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// Lazy loading para modales grandes
+// Lazy loading para modales grandes con preload
 const CreateEmpresaModal = dynamic(
   () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+  // @ts-ignore - preload is supported in Next.js 14 but types are not updated
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
+)
+const CreateContactoModal = dynamic(
+  () => import('@/components/module/CreateContactoModal').then(mod => mod.CreateContactoModal),
+  // @ts-ignore
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
 const EmpresaDetailModal = dynamic(
   () => import('@/components/module/EmpresaDetailModal').then(mod => mod.EmpresaDetailModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+  // @ts-ignore
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
 import {
   Building2,
@@ -79,11 +85,12 @@ const CONTACTO_VACIO: Partial<Contacto> = {
 export default function CRMPage() {
   const { user } = useAuth()
 
+  // Hooks individuales para cada tipo de dato
   const [empresas, setEmpresas] = useEmpresas()
   const [contactos, setContactos] = useContactos()
   const [documentos, setDocumentos] = useDocumentos()
   const [proyectos, setProyectos] = useProyectos()
-  const [tickets, _setTickets] = useTickets()
+  const [tickets] = useTareas()
 
   // Usuarios internos para proyectos
   const [usuarios, _setUsuarios] = useState<User[]>([])
@@ -183,6 +190,7 @@ export default function CRMPage() {
 
   // Handler para actualizar filtros
   const handleFilterChange = useCallback((key: string, value: string) => {
+    // Actualización inmediata del input
     setSearchState(prev => {
       if (key === 'tipo') return { ...prev, tipo: value as TipoEntidad | 'todos' }
       if (key === 'industria') return { ...prev, industria: value }
@@ -201,14 +209,14 @@ export default function CRMPage() {
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalEmpresa(true)
-  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
+  }, []) // No deps - setters are stable
 
   const handleEditEmpresa = useCallback((empresa: Empresa) => {
     setEditingEmpresa({ ...empresa })
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalEmpresa(true)
-  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
+  }, []) // No deps - setters are stable
 
   const handleNewContacto = useCallback((empresa: Empresa) => {
     setEmpresaForContacto(empresa)
@@ -216,14 +224,15 @@ export default function CRMPage() {
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalContacto(true)
-  }, [setEmpresaForContacto, setEditingContacto, setErrors, setSelectedEmpresa, setIsModalContacto])
+  }, []) // No deps - setters are stable
 
   const handleEditContacto = useCallback((contacto: Contacto) => {
+    const empresa = empresas.find(e => e.id === contacto.empresa_id) || null
     setEditingContacto({ ...contacto })
-    setEmpresaForContacto(empresas.find(e => e.id === contacto.empresa_id) || null)
+    setEmpresaForContacto(empresa)
     setErrors({})
     setIsModalContacto(true)
-  }, [empresas, setEditingContacto, setEmpresaForContacto, setErrors, setIsModalContacto])
+  }, [empresas]) // Only empresas is needed - look it up once
 
   // Verificar disponibilidad de localStorage al inicio
   useEffect(() => {
@@ -267,6 +276,7 @@ export default function CRMPage() {
       if (!canViewClientes && e.tipo_entidad === 'cliente') return false
       if (!canViewProveedores && (e.tipo_entidad === 'proveedor' || e.tipo_entidad === 'ambos')) return false
 
+      // Filtrado simple sin valores deferidos
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
         if (!e.nombre.toLowerCase().includes(q) &&
@@ -347,12 +357,21 @@ export default function CRMPage() {
   // ============================================
   // MEMOIZACIÓN: Estadísticas
   // ============================================
-  const empresaStats = useMemo(() => ({
-    total: empresas.length,
-    clientes: empresas.filter(e => e.tipo_entidad === 'cliente').length,
-    proveedores: empresas.filter(e => e.tipo_entidad === 'proveedor').length,
-    contactosTotal: contactos.length,
-  }), [empresas, contactos])
+  const empresaStats = useMemo(() => {
+    // Optimizado: una sola iteración para contar clientes y proveedores
+    let clientesCount = 0
+    let proveedoresCount = 0
+    for (const e of empresas) {
+      if (e.tipo_entidad === 'cliente') clientesCount++
+      else if (e.tipo_entidad === 'proveedor') proveedoresCount++
+    }
+    return {
+      total: empresas.length,
+      clientes: clientesCount,
+      proveedores: proveedoresCount,
+      contactosTotal: contactos.length,
+    }
+  }, [empresas, contactos])
 
   // ============================================
   // MEMOIZACIÓN: Alertas
@@ -418,7 +437,7 @@ export default function CRMPage() {
       setContactos(prev => prev.filter(c => c.empresa_id !== id))
       setSelectedEmpresa(null)
     }
-  }, [setEmpresas, setContactos, setSelectedEmpresa])
+  }, []) // No deps - setters are stable
 
   const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
     setErrors({})
@@ -459,13 +478,13 @@ export default function CRMPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [setEmpresas, setEditingEmpresa, setErrors, setIsSaving])
+  }, []) // No deps - setters are stable
 
   const handleDeleteContacto = useCallback((id: string) => {
     if (confirm('¿Estás seguro de eliminar este contacto?')) {
       setContactos(prev => prev.filter(c => c.id !== id))
     }
-  }, [setContactos])
+  }, []) // No deps - setters are stable
 
   const handleUploadDocumento = useCallback(async (
     empresaId: string,
@@ -502,7 +521,7 @@ export default function CRMPage() {
     setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
     setSelectedEmpresa(null)
     setIsModalDocumento(true)
-  }, [setEmpresaForDocumento, setNewDocumento, setSelectedEmpresa, setIsModalDocumento])
+  }, []) // No deps - setters are stable
 
   const handleSaveDocumento = useCallback(async () => {
     if (!empresaForDocumento || !newDocumento.descripcion.trim() || !newDocumento.nombreArchivo.trim()) {
@@ -516,41 +535,44 @@ export default function CRMPage() {
     } catch (error) {
       console.error('[CRM] Error al guardar documento:', error)
     }
-  }, [empresaForDocumento, newDocumento, handleUploadDocumento, setIsModalDocumento, setEmpresaForDocumento, setNewDocumento])
+  }, [empresaForDocumento, newDocumento, handleUploadDocumento])
 
   const handleSaveContacto = useCallback(async () => {
     setErrors({})
 
-    if (!editingContacto?.nombre || editingContacto.nombre.trim().length < 2) {
+    // Capture current values
+    const currentEditingContacto = editingContacto
+
+    if (!currentEditingContacto?.nombre || currentEditingContacto.nombre.trim().length < 2) {
       setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
       return
     }
-    if (!editingContacto?.email) {
+    if (!currentEditingContacto?.email) {
       setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
       return
     }
-    if (editingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingContacto.email)) {
+    if (currentEditingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEditingContacto.email)) {
       setErrors({ email: VALIDATION_ERRORS.emailInvalido })
       return
     }
-    const emailExists = contactos.some(c => c.email.toLowerCase() === editingContacto?.email?.toLowerCase() && c.id !== editingContacto?.id)
+    const emailExists = contactos.some(c => c.email.toLowerCase() === currentEditingContacto?.email?.toLowerCase() && c.id !== currentEditingContacto?.id)
     if (emailExists) {
       setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
       return
     }
-    if (!editingContacto?.tipo_contacto) {
+    if (!currentEditingContacto?.tipo_contacto) {
       setErrors({ tipo_contacto: VALIDATION_ERRORS.tipoContactoRequerido })
       return
     }
-    if (editingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(editingContacto.telefono)) {
+    if (currentEditingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(currentEditingContacto.telefono)) {
       setErrors({ telefono: VALIDATION_ERRORS.telefonoInvalido })
       return
     }
 
     let _updatedContactos = [...contactos]
-    if (editingContacto.es_principal) {
+    if (currentEditingContacto.es_principal) {
       _updatedContactos = _updatedContactos.map(c =>
-        c.empresa_id === editingContacto.empresa_id ? { ...c, es_principal: false } : c
+        c.empresa_id === currentEditingContacto.empresa_id ? { ...c, es_principal: false } : c
       )
     }
 
@@ -558,13 +580,13 @@ export default function CRMPage() {
     try {
       await new Promise(r => setTimeout(r, 500))
 
-      if (contactos.find(c => c.id === editingContacto?.id)) {
+      if (contactos.find(c => c.id === currentEditingContacto?.id)) {
         setContactos(prev => prev.map(c =>
-          c.id === editingContacto?.id ? { ...c, ...editingContacto } as Contacto : c
+          c.id === currentEditingContacto?.id ? { ...c, ...currentEditingContacto } as Contacto : c
         ))
       } else {
         setContactos(prev => [...prev, {
-          ...editingContacto,
+          ...currentEditingContacto,
           id: String(Date.now()),
           creado_en: new Date().toISOString().split('T')[0]
         } as Contacto])
@@ -578,12 +600,13 @@ export default function CRMPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [editingContacto, contactos, setErrors, setIsSaving, setContactos, setIsModalContacto, setEditingContacto, setEmpresaForContacto])
+  }, [contactos]) // Only contactos is needed for validation
 
   // Notas internas
   const handleSaveNota = useCallback((empresaId: string) => {
+    const currentNotaTemporal = notaTemporal
     const success = setEmpresas(prev => prev.map(e =>
-      e.id === empresaId ? { ...e, notas_internas: notaTemporal } : e
+      e.id === empresaId ? { ...e, notas_internas: currentNotaTemporal } : e
     ))
     if (!success) {
       console.error('[CRM] Error al guardar nota')
@@ -596,21 +619,24 @@ export default function CRMPage() {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(false)
-  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
+  }, [empresas, selectedEmpresa?.id]) // Only needs empresas and selectedEmpresa for lookup
 
   const openNotaEdit = useCallback(() => {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(true)
-  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
+  }, [empresas, selectedEmpresa?.id]) // Only needs empresas and selectedEmpresa for lookup
 
   // Guardar nuevo proyecto
   const handleSaveNewProject = useCallback(async (proyecto: Partial<Proyecto>) => {
     if (!selectedEmpresa) return
 
+    const currentSelectedEmpresa = selectedEmpresa
+    const currentUser = user
+
     const nuevoProyecto: Proyecto = {
       id: crypto.randomUUID(),
-      empresa_id: selectedEmpresa.id,
+      empresa_id: currentSelectedEmpresa.id,
       nombre: proyecto.nombre || 'Nuevo Proyecto',
       descripcion: proyecto.descripcion,
       fase_actual: proyecto.fase_actual || 1,
@@ -619,18 +645,18 @@ export default function CRMPage() {
       fecha_estimada_fin: proyecto.fecha_estimada_fin,
       moneda: proyecto.moneda || 'MXN',
       probabilidad_cierre: proyecto.probabilidad_cierre || 20,
-      responsable_id: proyecto.responsable_id || user?.id || '',
-      responsable_nombre: proyecto.responsable_nombre || user?.nombre || '',
+      responsable_id: proyecto.responsable_id || currentUser?.id || '',
+      responsable_nombre: proyecto.responsable_nombre || currentUser?.nombre || '',
       contacto_tecnico_id: proyecto.contacto_tecnico_id || '',
       requiere_compras: proyecto.requiere_compras || false,
       creado_en: new Date().toISOString(),
-      creado_por: user?.id,
-      cliente_nombre: selectedEmpresa.nombre,
+      creado_por: currentUser?.id,
+      cliente_nombre: currentSelectedEmpresa.nombre,
     }
 
     setProyectos(prev => [...prev, nuevoProyecto])
     setIsModalNewProject(false)
-  }, [selectedEmpresa, user, setProyectos, setIsModalNewProject])
+  }, [user]) // Only user needed for user?.id and user?.nombre
 
   if (!canViewClientes && !canViewProveedores) {
     return (

@@ -49,13 +49,26 @@ export default function ArchivosPage() {
     })
   }, [archivos, searchQuery, view, selectedEmpresa])
 
-  const stats = useMemo(() => ({
-    total: archivos.length,
-    empresas: archivos.filter(a => a.entidad_tipo === 'empresa').length,
-    proyectos: archivos.filter(a => a.entidad_tipo === 'proyecto').length,
-    tickets: archivos.filter(a => a.entidad_tipo === 'ticket').length,
-    tamañoTotal: archivos.reduce((acc, a) => acc + a.tamaño_bytes, 0),
-  }), [archivos])
+  const stats = useMemo(() => {
+    // Optimizado: una sola iteración para contar por tipo
+    let empresasCount = 0
+    let proyectosCount = 0
+    let ticketsCount = 0
+    let tamañoTotal = 0
+    for (const a of archivos) {
+      tamañoTotal += a.tamaño_bytes
+      if (a.entidad_tipo === 'empresa') empresasCount++
+      else if (a.entidad_tipo === 'proyecto') proyectosCount++
+      else if (a.entidad_tipo === 'ticket') ticketsCount++
+    }
+    return {
+      total: archivos.length,
+      empresas: empresasCount,
+      proyectos: proyectosCount,
+      tickets: ticketsCount,
+      tamañoTotal,
+    }
+  }, [archivos])
 
   if (loading) {
     return (
@@ -135,8 +148,8 @@ export default function ArchivosPage() {
             <CardContent className="p-8 text-center">
               <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {view === 'empresas' 
-                  ? EMPTY_MESSAGES.noDocumentosEmpresas 
+                {view === 'empresas'
+                  ? EMPTY_MESSAGES.noDocumentosEmpresas
                   : EMPTY_MESSAGES.noArchivosProyectos}
               </p>
             </CardContent>

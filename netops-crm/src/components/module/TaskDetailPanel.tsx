@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ActivityFeed } from '@/components/ui/activity-feed'
@@ -47,14 +47,19 @@ export function TaskDetailPanel({
   onAddComentario,
   onEdit,
 }: TaskDetailPanelProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_editMode, setEditMode] = useState(false)
   const [editedTarea, setEditedTarea] = useState<Tarea | null>(tarea)
 
-  // Update editedTarea when tarea changes
-  if (tarea && (!editedTarea || editedTarea.id !== tarea.id)) {
-    setEditedTarea(tarea)
-    setEditMode(false)
-  }
+  // ✅ CORRECCIÓN: Usar useEffect para sincronizar estado con props
+  // Esto evita el bucle infinito de setState durante render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (tarea) {
+      setEditedTarea(tarea)
+      setEditMode(false)
+    }
+  }, [tarea])
 
   const handleSave = () => {
     if (editedTarea) {

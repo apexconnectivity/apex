@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { RotateCcw, Plus, Building2, Layers, Lightbulb, PenTool, Bug, Rocket, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban, Loader2 } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ModuleContainerWithPanel } from '@/components/module'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -31,6 +31,10 @@ const CreateEmpresaModal = dynamic(
 )
 const CreateUserModal = dynamic(
   () => import('@/components/module/CreateUserModal').then(mod => mod.CreateUserModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const ProjectDetailPanel = dynamic(
+  () => import('@/components/module/ProjectDetailPanel').then(mod => mod.ProjectDetailPanel),
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
@@ -113,7 +117,7 @@ export default function ProyectosPage() {
   // Historial de proyectos - persistido en localStorage
   const [historialProyectos, setHistorialProyectos] = useHistorialProyectos()
 
-  // Función para agregar evento al historial
+  // Función para agregar evento al historial - sin dependencias problematicas
   const agregarHistorial = useCallback((
     proyectoId: string,
     tipo: HistorialProyecto['tipo_evento'],
@@ -127,7 +131,7 @@ export default function ProyectosPage() {
       tipo_evento: tipo,
       descripcion,
       fecha: new Date().toISOString(),
-      usuario_nombre: 'Usuario Actual', // TODO: obtener del contexto de auth
+      usuario_nombre: 'Usuario Actual',
       datos_anteriores: datosAnteriores,
       datos_nuevos: datosNuevos,
     }
@@ -136,7 +140,7 @@ export default function ProyectosPage() {
       ...prev,
       [proyectoId]: [nuevoEvento, ...(prev[proyectoId] || [])]
     }))
-  }, [setHistorialProyectos])
+  }, []) // Sin dependencias - setHistorialProyectos es estable del hook
 
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
@@ -161,7 +165,7 @@ export default function ProyectosPage() {
   const [_isSavingUsuario, setIsSavingUsuario] = useState(false)
 
   // Check if we should open the new project modal from URL param
-  useMemo(() => {
+  useEffect(() => {
     if (searchParams.get('new') === 'true') {
       setIsModalNuevo(true)
     }
@@ -174,8 +178,17 @@ export default function ProyectosPage() {
   const canClose = isAdmin
 
   // Filtrar usuarios internos (admin y técnico) para selector de responsable
-  const responsablesPosibles = usuarios.filter(u =>
-    u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
+  const responsablesPosibles = useMemo(() =>
+    usuarios.filter(u =>
+      u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
+    ),
+    [usuarios]
+  )
+
+  // Optimizado: empresas clientes para selector (filter + map en useMemo)
+  const empresasClientes = useMemo(() =>
+    empresas.filter(e => e.tipo_entidad === 'cliente'),
+    [empresas]
   )
 
   // Filtrar contactos de la empresa seleccionada para el selector de contacto técnico
@@ -246,80 +259,84 @@ export default function ProyectosPage() {
   }, [proyectos, tareas])
 
   const handleFase = useCallback((id: string, fase: number) => {
-    const proyecto = proyectos.find(p => p.id === id)
-    if (!proyecto) return
+    // Buscar el proyecto en el estado actual
+    setProyectos(prev => {
+      const proyecto = prev.find(p => p.id === id)
+      if (!proyecto) return prev
 
-    // Verificar permisos de movimiento de fases según rol
-    if (isComercial && fase > 3) {
-      alert('Como comercial solo puedes mover proyectos hasta la fase 3 (Propuesta)')
-      return
-    }
-    if (isTecnico && fase < 4) {
-      alert('Como técnico solo puedes mover proyectos a partir de la fase 4 (Implementación)')
-      return
-    }
-
-    const faseAnterior = proyecto?.fase_actual
-    const faseAnteriorNombre = fasesEditando.find(f => f.id === faseAnterior)?.nombre
-    const faseNuevaNombre = fasesEditando.find(f => f.id === fase)?.nombre
-
-    setProyectos(prev => prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p))
-
-    // Registrar en historial
-    if (proyecto && faseAnteriorNombre && faseNuevaNombre) {
-      agregarHistorial(
-        id,
-        'cambio_fase',
-        `Cambió de fase "${faseAnteriorNombre}" a "${faseNuevaNombre}"`,
-        { fase_actual: faseAnterior },
-        { fase_actual: fase }
-      )
-    }
-
-    // Crear tareas desde plantilla al entrar a una nueva fase
-    if (proyecto && fase > (faseAnterior || 0)) {
-      const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
-      if (plantillas.length > 0) {
-        // Primero,收集 todas las tareas nuevas para obtener sus IDs
-        const tareasCreadas: Tarea[] = []
-
-        plantillas.forEach((plantilla, index) => {
-          const fechaVencimiento = new Date()
-          fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
-
-          // Crear la tarea
-          const tareaId = crypto.randomUUID()
-          const nuevaTarea: Tarea = {
-            id: tareaId,
-            proyecto_id: proyecto.id,
-            proyecto_nombre: proyecto.nombre,
-            fase_origen: fase,
-            fase_nombre: faseNuevaNombre || `Fase ${fase}`,
-            categoria: plantilla.categoria,
-            nombre: plantilla.nombre,
-            descripcion: plantilla.descripcion,
-            prioridad: plantilla.prioridad,
-            estado: 'Pendiente' as EstadoTarea,
-            fecha_creacion: new Date().toISOString().split('T')[0],
-            fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
-            orden: index + 1,
-            creado_por: 'Sistema',
-            asignado_a_cliente: plantilla.requiere_cliente,
-            subtareas: plantilla.subtareas.map((sub, subIndex) => ({
-              id: crypto.randomUUID(),
-              tarea_id: tareaId,
-              nombre: sub.nombre,
-              completada: false,
-              orden: subIndex + 1,
-            })),
-          }
-          tareasCreadas.push(nuevaTarea)
-        })
-
-        setTareas(prev => [...prev, ...tareasCreadas])
+      // Verificar permisos de movimiento de fases según rol
+      if (isComercial && fase > 3) {
+        alert('Como comercial solo puedes mover proyectos hasta la fase 3 (Propuesta)')
+        return prev
       }
-    }
-  }, [proyectos, isComercial, isTecnico, fasesEditando, setProyectos, setTareas, agregarHistorial])
+      if (isTecnico && fase < 4) {
+        alert('Como técnico solo puedes mover proyectos a partir de la fase 4 (Implementación)')
+        return prev
+      }
+
+      const faseAnterior = proyecto.fase_actual
+      const faseAnteriorNombre = fasesEditando.find(f => f.id === faseAnterior)?.nombre
+      const faseNuevaNombre = fasesEditando.find(f => f.id === fase)?.nombre
+
+      // Registrar en historial
+      if (faseAnteriorNombre && faseNuevaNombre) {
+        agregarHistorial(
+          id,
+          'cambio_fase',
+          `Cambió de fase "${faseAnteriorNombre}" a "${faseNuevaNombre}"`,
+          { fase_actual: faseAnterior },
+          { fase_actual: fase }
+        )
+      }
+
+      // Crear tareas desde plantilla al entrar a una nueva fase
+      if (fase > (faseAnterior || 0)) {
+        const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
+        if (plantillas.length > 0) {
+          const tareasCreadas: Tarea[] = []
+
+          plantillas.forEach((plantilla, index) => {
+            const fechaVencimiento = new Date()
+            fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
+
+            const tareaId = crypto.randomUUID()
+            const nuevaTarea: Tarea = {
+              id: tareaId,
+              proyecto_id: proyecto.id,
+              proyecto_nombre: proyecto.nombre,
+              fase_origen: fase,
+              fase_nombre: faseNuevaNombre || `Fase ${fase}`,
+              categoria: plantilla.categoria,
+              nombre: plantilla.nombre,
+              descripcion: plantilla.descripcion,
+              prioridad: plantilla.prioridad,
+              estado: 'Pendiente' as EstadoTarea,
+              fecha_creacion: new Date().toISOString().split('T')[0],
+              fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
+              orden: index + 1,
+              creado_por: 'Sistema',
+              asignado_a_cliente: plantilla.requiere_cliente,
+              subtareas: plantilla.subtareas.map((sub, subIndex) => ({
+                id: crypto.randomUUID(),
+                tarea_id: tareaId,
+                nombre: sub.nombre,
+                completada: false,
+                orden: subIndex + 1,
+              })),
+            }
+            tareasCreadas.push(nuevaTarea)
+          })
+
+          // Agregar tareas después de actualizar proyectos
+          setTimeout(() => {
+            setTareas(prev => [...prev, ...tareasCreadas])
+          }, 0)
+        }
+      }
+
+      return prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p)
+    })
+  }, [isComercial, isTecnico, fasesEditando, setTareas])
 
   const handleCerrar = useCallback((proyecto: Proyecto) => {
     setProyectoACerrar(proyecto)
@@ -327,23 +344,20 @@ export default function ProyectosPage() {
     setNotasCierre('')
     setErrorsCierre({})
     setIsModalCerrar(true)
-  }, [setProyectoACerrar, setMotivoCierre, setNotasCierre, setErrorsCierre, setIsModalCerrar])
+  }, []) // Sin dependencias problematicas
 
   const confirmarCerrar = useCallback(() => {
-    setErrorsCierre({})
-
-    // Validar motivo obligatorio
+    if (!proyectoACerrar) return
+    
     if (!motivoCierre || motivoCierre.trim().length < 5) {
       setErrorsCierre({ motivo_cierre: VALIDATION_ERRORS.motivoCierre })
       return
     }
 
-    if (!proyectoACerrar) return
-
     setIsClosing(true)
 
-    // Cerrar el proyecto
     const faseActualNombre = fasesEditando.find(f => f.id === proyectoACerrar.fase_actual)?.nombre
+
     setProyectos(prev => prev.map(p => p.id === proyectoACerrar.id ? {
       ...p,
       estado: 'cerrado',
@@ -351,7 +365,6 @@ export default function ProyectosPage() {
       motivo_cierre: motivoCierre
     } : p))
 
-    // Registrar en historial
     agregarHistorial(
       proyectoACerrar.id,
       'cierre',
@@ -363,7 +376,7 @@ export default function ProyectosPage() {
     setIsClosing(false)
     setIsModalCerrar(false)
     setProyectoACerrar(null)
-  }, [motivoCierre, proyectoACerrar, fasesEditando, setProyectos, agregarHistorial, setIsClosing, setIsModalCerrar, setProyectoACerrar])
+  }, [motivoCierre, proyectoACerrar, fasesEditando])
 
   const handleReabrir = useCallback((id: string) => {
     const proyecto = proyectos.find(p => p.id === id)
@@ -390,67 +403,81 @@ export default function ProyectosPage() {
     const todasCompletadas = tareasFase5.length > 0 && tareasFase5.every(t => t.estado === 'Completada')
     setClasificacionArchivo(todasCompletadas ? 'completado' : 'inconcluso')
     setIsModalArchivar(true)
-  }, [tareas, setProyectoAArchivar, setClasificacionArchivo, setIsModalArchivar])
+  }, [tareas]) // Only tareas is needed - setters are stable
 
   const confirmarArchivar = useCallback(() => {
     if (!proyectoAArchivar) return
 
     setIsArchiving(true)
 
+    // Capturar valores actuales antes de las operaciones async
+    const proyectoId = proyectoAArchivar.id
+    const clasificacion = clasificacionArchivo
+
     // Simular archivado: eliminar el proyecto de la lista
-    setProyectos(prev => prev.filter(p => p.id !== proyectoAArchivar.id))
+    setProyectos(prev => prev.filter(p => p.id !== proyectoId))
 
     // Registrar en historial
     agregarHistorial(
-      proyectoAArchivar.id,
+      proyectoId,
       'archivado',
-      `Proyecto archivado como "${clasificacionArchivo}"`,
+      `Proyecto archivado como "${clasificacion}"`,
       { estado: 'cerrado' },
-      { estado: 'archivado', clasificacion: clasificacionArchivo }
+      { estado: 'archivado', clasificacion }
     )
 
-    setIsArchiving(false)
-    setIsModalArchivar(false)
-    setProyectoAArchivar(null)
-  }, [proyectoAArchivar, clasificacionArchivo, setProyectos, agregarHistorial, setIsArchiving, setIsModalArchivar, setProyectoAArchivar])
+    // Resetear estados
+    setTimeout(() => {
+      setIsArchiving(false)
+      setIsModalArchivar(false)
+      setProyectoAArchivar(null)
+    }, 100)
+  }, [proyectoAArchivar, clasificacionArchivo, setProyectos, agregarHistorial])
 
   // Abrir modal para nuevo proyecto
   const handleNewProyecto = useCallback(() => {
     setNuevoProyecto({ ...PROYECTO_VACIO, id: String(Date.now()) })
     setErrors({})
     setIsModalNuevo(true)
-  }, [setNuevoProyecto, setErrors, setIsModalNuevo])
+  }, []) // No deps needed - setters are stable references
 
-  // Guardar nuevo proyecto
+  // Guardar nuevo proyecto - usa refs para evitar dependencias problematicas
   const handleSaveProyecto = useCallback(async () => {
+    // Capturar valores actuales al momento de la llamada
+    const currentNuevoProyecto = nuevoProyecto
+    const currentEmpresas = empresas
+    const currentUsuarios = usuarios
+    const currentContactos = contactos
+    const currentFasesEditando = fasesEditando
+
     setErrors({})
 
     // Validaciones
-    if (!nuevoProyecto?.nombre || nuevoProyecto.nombre.trim().length < 3) {
+    if (!currentNuevoProyecto?.nombre || currentNuevoProyecto.nombre.trim().length < 3) {
       setErrors({ nombre: VALIDATION_ERRORS.nombreProyecto })
       return
     }
-    if (!nuevoProyecto?.empresa_id) {
+    if (!currentNuevoProyecto?.empresa_id) {
       setErrors({ empresa_id: VALIDATION_ERRORS.empresaRequerida })
       return
     }
-    if (!nuevoProyecto?.responsable_id) {
+    if (!currentNuevoProyecto?.responsable_id) {
       setErrors({ responsable_id: VALIDATION_ERRORS.responsableRequerido })
       return
     }
-    if (!nuevoProyecto?.contacto_tecnico_id) {
+    if (!currentNuevoProyecto?.contacto_tecnico_id) {
       setErrors({ contacto_tecnico_id: VALIDATION_ERRORS.contactoTecnicoRequerido })
       return
     }
-    if (!nuevoProyecto?.moneda) {
+    if (!currentNuevoProyecto?.moneda) {
       setErrors({ moneda: VALIDATION_ERRORS.monedaRequerida })
       return
     }
-    if (nuevoProyecto.monto_estimado && nuevoProyecto.monto_estimado < 0) {
+    if (currentNuevoProyecto.monto_estimado && currentNuevoProyecto.monto_estimado < 0) {
       setErrors({ monto_estimado: VALIDATION_ERRORS.montoNegativo })
       return
     }
-    if (nuevoProyecto.probabilidad_cierre && (nuevoProyecto.probabilidad_cierre < 0 || nuevoProyecto.probabilidad_cierre > 100)) {
+    if (currentNuevoProyecto.probabilidad_cierre && (currentNuevoProyecto.probabilidad_cierre < 0 || currentNuevoProyecto.probabilidad_cierre > 100)) {
       setErrors({ probabilidad_cierre: VALIDATION_ERRORS.probabilidadInvalida })
       return
     }
@@ -459,14 +486,15 @@ export default function ProyectosPage() {
     try {
       await new Promise(r => setTimeout(r, 500))
 
-      const empresa = empresas.find(e => e.id === nuevoProyecto.empresa_id)
-      const responsable = usuarios.find(u => u.id === nuevoProyecto.responsable_id)
-      const contactoTecnico = contactos.find(c => c.id === nuevoProyecto.contacto_tecnico_id)
+      const empresa = currentEmpresas.find(e => e.id === currentNuevoProyecto.empresa_id)
+      const responsable = currentUsuarios.find(u => u.id === currentNuevoProyecto.responsable_id)
+      const contactoTecnico = currentContactos.find(c => c.id === currentNuevoProyecto.contacto_tecnico_id)
       const now = new Date().toISOString().split('T')[0]
+      const proyectoId = String(Date.now())
 
       setProyectos(prev => [...prev, {
-        ...nuevoProyecto,
-        id: String(Date.now()),
+        ...currentNuevoProyecto,
+        id: proyectoId,
         cliente_nombre: empresa?.nombre,
         responsable_nombre: responsable?.nombre,
         contacto_tecnico_nombre: contactoTecnico?.nombre,
@@ -474,8 +502,8 @@ export default function ProyectosPage() {
       } as Proyecto])
 
       // Crear tareas desde plantilla para la fase inicial del proyecto
-      const faseInicial = nuevoProyecto.fase_actual || 1
-      const faseNombre = fasesEditando.find(f => f.id === faseInicial)?.nombre || `Fase ${faseInicial}`
+      const faseInicial = currentNuevoProyecto.fase_actual || 1
+      const faseNombre = currentFasesEditando.find(f => f.id === faseInicial)?.nombre || `Fase ${faseInicial}`
       const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === faseInicial)
 
       if (plantillas.length > 0) {
@@ -486,8 +514,8 @@ export default function ProyectosPage() {
           const tareaId = crypto.randomUUID()
           return {
             id: tareaId,
-            proyecto_id: String(Date.now()),
-            proyecto_nombre: nuevoProyecto.nombre || 'Nuevo Proyecto',
+            proyecto_id: proyectoId,
+            proyecto_nombre: currentNuevoProyecto.nombre || 'Nuevo Proyecto',
             fase_origen: faseInicial,
             fase_nombre: faseNombre,
             categoria: plantilla.categoria,
@@ -519,7 +547,7 @@ export default function ProyectosPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [nuevoProyecto, empresas, usuarios, contactos, fasesEditando, setProyectos, setTareas, setErrors, setIsSaving, setIsModalNuevo, setNuevoProyecto])
+  }, []) // No deps needed - captures current values via closure
 
   // Guardar nueva empresa (compatible con CreateEmpresaModal)
   const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
@@ -540,10 +568,10 @@ export default function ProyectosPage() {
       return
     }
 
-    setNuevoProyecto({ ...nuevoProyecto, empresa_id: empresaId })
+    setNuevoProyecto(prev => ({ ...prev, empresa_id: empresaId }))
 
     setIsModalNuevaEmpresa(false)
-  }, [setEmpresas, setNuevoProyecto, nuevoProyecto, setIsModalNuevaEmpresa])
+  }, []) // No deps needed - setters are stable
 
   // Guardar nuevo usuario (compatible con CreateUserModal)
   const handleSaveUsuario = useCallback(async (user: Partial<User>, isNew: boolean) => {
@@ -565,14 +593,14 @@ export default function ProyectosPage() {
 
     setUsuarios(prev => [...prev, usuarioCreado])
     // Seleccionar automáticamente el nuevo usuario como responsable
-    setNuevoProyecto({
-      ...nuevoProyecto,
+    setNuevoProyecto(prev => ({
+      ...prev,
       responsable_id: usuarioId,
       responsable_nombre: usuarioCreado.nombre
-    })
+    }))
 
     setIsModalNuevoUsuario(false)
-  }, [setUsuarios, setNuevoProyecto, nuevoProyecto, setIsModalNuevoUsuario])
+  }, []) // No deps needed - setters are stable
 
   if (!isAdmin && !isComercial && !isTecnico) {
     return (
@@ -769,7 +797,7 @@ export default function ProyectosPage() {
                 <SelectValue placeholder="Selecciona una empresa" />
               </SelectTrigger>
               <SelectContent>
-                {empresas.filter(e => e.tipo_entidad === 'cliente').map((empresa) => (
+                {empresasClientes.map((empresa) => (
                   <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>
                 ))}
               </SelectContent>
