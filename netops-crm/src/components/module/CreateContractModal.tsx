@@ -282,7 +282,7 @@ export function CreateContractModal({
         notas: '',
       })
     }
-  }, [open])
+  }, [open, contrato, isEditMode])
 
   const handleSave = () => {
     if (!contratoData.empresa_id || !contratoData.nombre || !contratoData.fecha_inicio || !contratoData.fecha_fin) return

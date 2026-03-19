@@ -98,7 +98,7 @@ export function Sidebar({
                 APEX Connectivity
               </span>
               <span className="text-[10px] text-slate-400 italic">
-                "La seguridad no es un error"
+                &quot;La seguridad no es un error&quot;
               </span>
             </div>
           )}

@@ -28,10 +28,11 @@ export function ConfirmDeleteModal({
   onOpenChange,
   onConfirm
 }: ConfirmDeleteModalProps) {
+  // useState DEBE ir antes de cualquier conditional return
+  const [confirmText, setConfirmText] = useState('')
+
   // Si no hay proyecto, no renderizar
   if (!proyecto) return null
-
-  const [confirmText, setConfirmText] = useState('')
 
   const isConfirmed = confirmText === 'ELIMINAR'
 

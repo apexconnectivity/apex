@@ -350,7 +350,7 @@ function GestionSolicitudes({ solicitudes, onAprobar, onRechazar }: {
                   <p><strong>Solicitante:</strong> {sol.contacto_solicitante_nombre}</p>
                   <p><strong>Fecha:</strong> {sol.fecha_solicitada} a las {sol.hora_solicitada} ({sol.duracion} min)</p>
                   <p><strong>Motivo:</strong> {sol.motivo}</p>
-                  {sol.comentarios && <p className="text-muted-foreground"><i>"{sol.comentarios}"</i></p>}
+                  {sol.comentarios && <p className="text-muted-foreground"><i>&quot;{sol.comentarios}&quot;</i></p>}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => onAprobar(sol)}><Check className="h-4 w-4 mr-1" />Aprobar y agendar</Button>

@@ -944,7 +944,7 @@ export default function ProyectosPage() {
 
         <ModalBody className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            El proyecto <span className="font-semibold text-foreground">{proyectoACerrar?.nombre}</span> pasará a estado "Cerrado" y desaparecerá del pipeline.
+            El proyecto <span className="font-semibold text-foreground">{proyectoACerrar?.nombre}</span> pasar&aacute; a estado &quot;Cerrado&quot; y desaparecer&aacute; del pipeline.
           </p>
 
           <div>

@@ -268,7 +268,7 @@ export function CreateTaskModal({
       setSubtareas([])
       setComentarios([])
     }
-  }, [open])
+  }, [open, tarea, existingSubtareas, existingComentarios, isEditMode])
 
   const handleSave = () => {
     if (!tareaData.nombre || !tareaData.proyecto_id) return

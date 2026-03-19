@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -41,10 +42,11 @@ export function ImageUpload({
               sizeClasses.container
             )}
           >
-            <img
+            <Image
               src={value}
               alt={label}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           </div>
           <Button

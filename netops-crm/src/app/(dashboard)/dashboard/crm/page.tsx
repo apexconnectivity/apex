@@ -295,13 +295,13 @@ export default function CRMPage() {
   const canEdit = isAdmin || isComercial || isCompras
   const canUploadDocuments = isAdmin || isComercial || isCompras
 
-  // Simulación: IDs de empresas asignadas al técnico (en producción vendría de proyectos)
-  const empresasAsignadasTecnico = isTecnico ? ['1', '3'] : []
-
   // ============================================
   // MEMOIZACIÓN: Filtrado de empresas
   // ============================================
   const filteredEmpresas = useMemo(() => {
+    // Simulación: IDs de empresas asignadas al técnico (en producción vendría de proyectos)
+    const empresasAsignadasTecnico = isTecnico ? ['1', '3'] : []
+
     return empresas.filter(e => {
       // Restricción de técnicos: solo ven clientes de proyectos asignados
       if (isTecnico && e.tipo_entidad === 'cliente') {
@@ -321,7 +321,7 @@ export default function CRMPage() {
       if (industriaFilter !== 'todas' && e.industria !== industriaFilter) return false
       return true
     })
-  }, [empresas, isTecnico, empresasAsignadasTecnico, canViewClientes, canViewProveedores, searchQuery, tipoFilter, industriaFilter])
+  }, [empresas, isTecnico, canViewClientes, canViewProveedores, searchQuery, tipoFilter, industriaFilter])
 
   // ============================================
   // MEMOIZACIÓN: Índices para getters rápidos

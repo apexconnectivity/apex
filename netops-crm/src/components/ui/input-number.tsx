@@ -54,7 +54,7 @@ export function InputNumber({
   id,
   ...props
 }: InputNumberProps) {
-  const inputId = id || React.useId()
+  const inputId = React.useId()
 
   return (
     <div className={cn("space-y-2", containerClassName)}>
@@ -62,7 +62,7 @@ export function InputNumber({
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Input
-            id={inputId}
+            id={id || inputId}
             type="number"
             className={cn(
               showCurrency && "pr-20",

@@ -90,7 +90,7 @@ export function DatePicker({
     if (value && !isSameDay(value, currentMonth)) {
       setCurrentMonth(new Date(value.getFullYear(), value.getMonth(), 1))
     }
-  }, [value])
+  }, [value, currentMonth])
 
   const displayValue = value ? formatDate(value) : placeholder
 

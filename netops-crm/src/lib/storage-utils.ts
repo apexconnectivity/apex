@@ -356,6 +356,7 @@ export function createStorageSyncHook<K extends StorageKeys>(key: K) {
     const [isLoaded, setIsLoaded] = useState(false)
 
     // Cargar valor inicial
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
       const item = localStorage.getItem(key)
       if (item) {
@@ -366,25 +367,27 @@ export function createStorageSyncHook<K extends StorageKeys>(key: K) {
         }
       }
       setIsLoaded(true)
-    }, [key, initialValue])
+    }, [initialValue])
 
     // Suscribir a cambios de otras tabs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
       return subscribeToStorageChanges((changedKey, newValue) => {
         if (changedKey === key) {
           setValue(newValue as StorageDataMap[K])
         }
       })
-    }, [key])
+    }, [])
 
     // Función para actualizar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateValue = useCallback((newValue: StorageDataMap[K] | ((prev: StorageDataMap[K]) => StorageDataMap[K])) => {
       setValue(prev => {
         const valueToStore = newValue instanceof Function ? newValue(prev) : newValue
         localStorage.setItem(key, JSON.stringify(valueToStore))
         return valueToStore
       })
-    }, [key])
+    }, [])
 
     return { value, setValue: updateValue, isLoaded }
   }

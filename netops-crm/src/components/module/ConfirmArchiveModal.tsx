@@ -30,11 +30,12 @@ export function ConfirmArchiveModal({
   onOpenChange,
   onConfirm
 }: ConfirmArchiveModalProps) {
+  // Determinar clasificación inicial ANTES del conditional return
+  const esCompletado = proyecto && proyecto.fase_actual === 5 && proyecto.tareas_fase5_completadas === proyecto.tareas_fase5_totales
+  const [clasificacion, setClasificacion] = useState<Clasificacion>(esCompletado ? 'completado' : 'inconcluso')
+
   // Si no hay proyecto, no renderizar
   if (!proyecto) return null
-
-  const esCompletado = proyecto.fase_actual === 5 && proyecto.tareas_fase5_completadas === proyecto.tareas_fase5_totales
-  const [clasificacion, setClasificacion] = useState<Clasificacion>(esCompletado ? 'completado' : 'inconcluso')
 
   const handleConfirm = () => {
     onConfirm(clasificacion)

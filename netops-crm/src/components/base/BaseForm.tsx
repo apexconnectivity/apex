@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import type { FormErrors } from "@/types/common"
@@ -385,7 +385,7 @@ export function BaseForm<T extends Record<string, any>>({
   }, [values])
   
   // Manejar cambio de campo
-  const handleChange = (field: string, value: unknown) => {
+  const handleChange = useCallback((field: string, value: unknown) => {
     const newData = { ...formData, [field]: value }
     setFormData(newData)
     
@@ -398,7 +398,7 @@ export function BaseForm<T extends Record<string, any>>({
     }
     
     onChange?.(newData)
-  }
+  }, [formData, localErrors, onChange])
   
   // Proporcionar contexto
   const contextValue = useMemo(() => ({
@@ -408,7 +408,7 @@ export function BaseForm<T extends Record<string, any>>({
     status,
     layout,
     columns
-  }), [formData, errors, localErrors, status, layout, columns])
+  }), [formData, errors, localErrors, status, layout, columns, handleChange])
   
   // Manejar submit
   const handleSubmit = async (e: React.FormEvent) => {
