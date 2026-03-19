@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InputPhone } from '@/components/ui/input-phone'
 import { Label } from '@/components/ui/label'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { SelectWithAdd } from './SelectWithAdd'
@@ -15,9 +16,7 @@ import {
   Origen,
   TipoRelacion,
   TipoContrato,
-  TIPOS_CONTRATO,
   MetodoPago,
-  METODOS_PAGO,
 } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 
@@ -26,7 +25,6 @@ import {
   validateRequired,
   validateEmail,
   validateRFC,
-  validatePhoneMexican,
   validateURL,
   validateNumberRange,
   validateInteger,
@@ -133,14 +131,15 @@ export function CreateEmpresaModal({
       validationErrors.tipo_relacion = 'Selecciona un tipo de relación'
     }
 
-    // Teléfono (obligatorio)
+    // Teléfono (obligatorio) - el InputPhone ya filtra caracteres no válidos
     const phoneReqValidation = validateRequired(formData.telefono_principal)
     if (!phoneReqValidation.isValid) {
       validationErrors.telefono_principal = phoneReqValidation.error || 'Campo obligatorio'
     } else {
-      const phoneValidation = validatePhoneMexican(formData.telefono_principal)
-      if (!phoneValidation.isValid) {
-        validationErrors.telefono_principal = phoneValidation.error || 'Teléfono inválido'
+      // Verificar que tenga al menos 10 dígitos (formato xx xxxx xxxx)
+      const digits = formData.telefono_principal?.replace(/\s/g, '') || ''
+      if (digits.length < 10) {
+        validationErrors.telefono_principal = 'El teléfono debe tener 10 dígitos'
       }
     }
 
@@ -340,30 +339,24 @@ export function CreateEmpresaModal({
             </div>
             <div className="space-y-2">
               <Label>Tipo de Contrato</Label>
-              <select
+              <SelectWithAdd
+                label="Tipo de Contrato"
                 value={formData.tipo_contrato || 'Ninguno'}
-                onChange={(e) => setFormData({ ...formData, tipo_contrato: e.target.value as TipoContrato })}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {TIPOS_CONTRATO.map((tipo) => (
-                  <option key={tipo} value={tipo}>{tipo}</option>
-                ))}
-              </select>
+                onValueChange={(value) => setFormData({ ...formData, tipo_contrato: value as TipoContrato })}
+                optionsType="tipos_contrato"
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Teléfono</Label>
-              <Input
+              <InputPhone
                 value={formData.telefono_principal || ''}
-                onChange={(e) => setFormData({ ...formData, telefono_principal: e.target.value })}
-                placeholder="Ej: +54 9 11 1234-5678"
-                className={allErrors.telefono_principal ? 'border-red-500' : ''}
+                onChange={(value) => setFormData({ ...formData, telefono_principal: value })}
+                placeholder="55 1234 5678"
+                error={allErrors.telefono_principal}
               />
-              {allErrors.telefono_principal && (
-                <p className="text-red-500 text-sm">{allErrors.telefono_principal}</p>
-              )}
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
@@ -468,16 +461,12 @@ export function CreateEmpresaModal({
               </div>
               <div className="space-y-2">
                 <Label>Método de Pago</Label>
-                <select
+                <SelectWithAdd
+                  label="Método de Pago"
                   value={formData.metodo_pago || ''}
-                  onChange={(e) => setFormData({ ...formData, metodo_pago: e.target.value as MetodoPago })}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Seleccionar método</option>
-                  {METODOS_PAGO.map((metodo) => (
-                    <option key={metodo} value={metodo}>{metodo}</option>
-                  ))}
-                </select>
+                  onValueChange={(value) => setFormData({ ...formData, metodo_pago: value as MetodoPago })}
+                  optionsType="metodos_pago"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Plazo de Pago (días)</Label>

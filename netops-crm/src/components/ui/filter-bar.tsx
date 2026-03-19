@@ -100,34 +100,41 @@ export function FilterBar({
       </div>
 
       {/* Filter Selects (non-date filters) */}
-      {selectFilters.map((filter) => (
-        <div key={filter.key} className="flex items-center gap-1">
-          {filter.label && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap transition-colors">{filter.label}:</span>
-          )}
-          <Select
-            key={filter.key}
-            value={values[filter.key] || ''}
-            onValueChange={(value) => onFilterChange(filter.key, value)}
-          >
-            <SelectTrigger
-              className={cn(
-                'h-8 bg-input border-border transition-all duration-300',
-                filter.width || 'w-40'
-              )}
+      {selectFilters.map((filter) => {
+        const currentValue = values[filter.key] || ''
+        const currentOption = filter.options?.find(opt => opt.value === currentValue)
+
+        return (
+          <div key={filter.key} className="flex items-center gap-1">
+            {filter.label && (
+              <span className="text-xs text-muted-foreground whitespace-nowrap transition-colors">{filter.label}:</span>
+            )}
+            <Select
+              key={filter.key}
+              value={currentValue}
+              onValueChange={(value) => onFilterChange(filter.key, value)}
             >
-              <SelectValue placeholder={filter.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {filter.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      ))}
+              <SelectTrigger
+                className={cn(
+                  'h-8 bg-input border-border transition-all duration-300',
+                  filter.width || 'w-40'
+                )}
+              >
+                <SelectValue>
+                  {currentOption?.label || filter.placeholder || 'Seleccionar'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {filter.options?.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )
+      })}
 
       {/* Date Range Filter */}
       {dateFilter && (

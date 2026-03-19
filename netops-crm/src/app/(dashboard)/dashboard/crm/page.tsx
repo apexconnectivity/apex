@@ -218,14 +218,14 @@ export default function CRMPage() {
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalEmpresa(true)
-  }, []) // No deps - setters are stable
+  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
 
   const handleEditEmpresa = useCallback((empresa: Empresa) => {
     setEditingEmpresa({ ...empresa })
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalEmpresa(true)
-  }, []) // No deps - setters are stable
+  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
 
   const handleNewContacto = useCallback((empresa: Empresa) => {
     setEmpresaForContacto(empresa)
@@ -233,7 +233,7 @@ export default function CRMPage() {
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalContacto(true)
-  }, []) // No deps - setters are stable
+  }, [setEmpresaForContacto, setEditingContacto, setErrors, setSelectedEmpresa, setIsModalContacto])
 
   const handleEditContacto = useCallback((contacto: Contacto) => {
     const empresa = empresas.find(e => e.id === contacto.empresa_id) || null
@@ -241,7 +241,7 @@ export default function CRMPage() {
     setEmpresaForContacto(empresa)
     setErrors({})
     setIsModalContacto(true)
-  }, [empresas]) // Only empresas is needed - look it up once
+  }, [empresas, setEditingContacto, setEmpresaForContacto, setErrors, setIsModalContacto])
 
   // Verificar disponibilidad de localStorage al inicio
   useEffect(() => {
@@ -452,10 +452,10 @@ export default function CRMPage() {
 
   const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
     setErrors({})
-    
+
     // Validación de duplicados
     const newErrors: Record<string, string> = {}
-    
+
     const nombre = (empresa.nombre || '').trim().toLowerCase()
     if (empresas.some(e => e.id !== empresa.id && e.nombre?.trim().toLowerCase() === nombre)) {
       newErrors.nombre = 'Ya existe una empresa con este nombre'
@@ -506,13 +506,13 @@ export default function CRMPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [setEmpresas, setEditingEmpresa, setIsModalEmpresa, setErrors])
+  }, [empresas, setEmpresas, setEditingEmpresa, setIsModalEmpresa, setErrors])
 
   const handleDeleteContacto = useCallback((id: string) => {
     if (confirm('¿Estás seguro de eliminar este contacto?')) {
       setContactos(prev => prev.filter(c => c.id !== id))
     }
-  }, []) // No deps - setters are stable
+  }, [setContactos])
 
   const handleUploadDocumento = useCallback(async (
     empresaId: string,
@@ -549,7 +549,7 @@ export default function CRMPage() {
     setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
     setSelectedEmpresa(null)
     setIsModalDocumento(true)
-  }, []) // No deps - setters are stable
+  }, [setEmpresaForDocumento, setNewDocumento, setSelectedEmpresa, setIsModalDocumento])
 
   const handleSaveDocumento = useCallback(async () => {
     if (!empresaForDocumento || !newDocumento.descripcion.trim() || !newDocumento.nombreArchivo.trim()) {
@@ -563,7 +563,7 @@ export default function CRMPage() {
     } catch (error) {
       console.error('[CRM] Error al guardar documento:', error)
     }
-  }, [empresaForDocumento, newDocumento, handleUploadDocumento])
+  }, [empresaForDocumento, newDocumento, handleUploadDocumento, setIsModalDocumento, setEmpresaForDocumento, setNewDocumento])
 
   const handleSaveContacto = useCallback(async (contactoData: Partial<Contacto>, isNew: boolean) => {
     setErrors({})
@@ -582,7 +582,7 @@ export default function CRMPage() {
       setErrors({ email: VALIDATION_ERRORS.emailInvalido })
       return
     }
-    
+
     // El chequeo de email duplicado lo hacemos contra el estado actual 'contactos'
     const emailExists = contactos.some(c => c.email.toLowerCase() === contactoData.email?.toLowerCase() && c.id !== contactoData.id)
     if (emailExists) {
@@ -593,14 +593,14 @@ export default function CRMPage() {
     setIsSaving(true)
     try {
       await new Promise(r => setTimeout(r, 500))
-      
+
       const now = new Date().toISOString()
       const contactoId = isNew ? crypto.randomUUID() : contactoData.id!
 
       // 1. Guardar el contacto
       setContactos(prev => {
         let updated = [...prev]
-        
+
         // Manejar contacto principal si se marcó este
         if (contactoData.es_principal) {
           updated = updated.map(c =>
@@ -626,7 +626,7 @@ export default function CRMPage() {
       setUsuarios(prev => {
         const email = contactoData.email || ''
         const existingUserIndex = prev.findIndex(u => u.email.toLowerCase() === email.toLowerCase())
-        
+
         if (existingUserIndex !== -1) {
           // Actualizar usuario existente si los datos cambiaron
           const updatedUsers = [...prev]
@@ -654,7 +654,7 @@ export default function CRMPage() {
           console.log('[CRM] Nuevo usuario creado:', nuevoUsuario)
           return [...prev, nuevoUsuario]
         }
-        
+
         return prev
       })
 
@@ -683,13 +683,13 @@ export default function CRMPage() {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(false)
-  }, [empresas, selectedEmpresa?.id]) // Only needs empresas and selectedEmpresa for lookup
+  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
 
   const openNotaEdit = useCallback(() => {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(true)
-  }, [empresas, selectedEmpresa?.id]) // Only needs empresas and selectedEmpresa for lookup
+  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
 
   // Guardar nuevo proyecto
   const handleSaveNewProject = useCallback(async (proyecto: Partial<Proyecto>) => {
@@ -720,7 +720,7 @@ export default function CRMPage() {
 
     setProyectos(prev => [...prev, nuevoProyecto])
     setIsModalNewProject(false)
-  }, [user]) // Only user needed for user?.id and user?.nombre
+  }, [user, selectedEmpresa, setProyectos, setIsModalNewProject])
 
   if (!canViewClientes && !canViewProveedores) {
     return (
@@ -817,7 +817,7 @@ export default function CRMPage() {
             label: 'Tipo',
             placeholder: 'Tipo',
             options: [
-              { value: 'todos', label: 'Todos los tipos' },
+              { value: 'todos', label: 'Todos' },
               { value: 'cliente', label: 'Clientes' },
               { value: 'proveedor', label: 'Proveedores' },
               { value: 'ambos', label: 'Ambos' },
@@ -829,7 +829,7 @@ export default function CRMPage() {
             label: 'Industria',
             placeholder: 'Industria',
             options: [
-              { value: 'todas', label: 'Todas las industrias' },
+              { value: 'todas', label: 'Todas' },
               ...INDUSTRIAS.map(ind => ({ value: ind, label: ind })),
             ],
             width: 'w-48',
@@ -985,7 +985,7 @@ export default function CRMPage() {
         <ModalHeader title="Eliminar Empresa" variant="danger" showIcon />
         <ModalBody>
           <p>
-            ¿Estás seguro de que deseas eliminar esta empresa? Los contactos vinculados a la misma también serán desvinculados o eliminados. Esta operación no se puede deshacer. 
+            ¿Estás seguro de que deseas eliminar esta empresa? Los contactos vinculados a la misma también serán desvinculados o eliminados. Esta operación no se puede deshacer.
           </p>
         </ModalBody>
         <ModalFooter variant="danger" layout="inline-between">

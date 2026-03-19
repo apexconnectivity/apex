@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 
-type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto' | 'origenes' | 'tipos_relacion' | 'regimenes_fiscales'
+type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto' | 'origenes' | 'tipos_relacion' | 'regimenes_fiscales' | 'tipos_contrato' | 'metodos_pago'
 
 interface SelectWithAddProps {
   label: string
@@ -81,6 +81,19 @@ const OPTIONS_BY_TYPE: Record<OptionType, { label: string; value: string }[]> = 
     { label: 'Régimen Simplificado de Confianza', value: 'Régimen Simplificado de Confianza' },
     { label: 'Otro', value: 'Otro' },
   ],
+  tipos_contrato: [
+    { label: 'Ninguno', value: 'Ninguno' },
+    { label: 'Proyecto', value: 'Proyecto' },
+    { label: 'Soporte', value: 'Soporte' },
+    { label: 'Ambos', value: 'Ambos' },
+  ],
+  metodos_pago: [
+    { label: 'Transferencia', value: 'Transferencia' },
+    { label: 'Tarjeta', value: 'Tarjeta' },
+    { label: 'Efectivo', value: 'Efectivo' },
+    { label: 'Cheque', value: 'Cheque' },
+    { label: 'Otro', value: 'Otro' },
+  ],
 }
 
 /**
@@ -138,7 +151,7 @@ export function SelectWithAdd({
         </SelectTrigger>
         <SelectContent>
           {/* Contenedor con scroll solo para las opciones */}
-          <div className="max-h-60 overflow-y-auto">
+          <div className="max-h-60 overflow-y-auto overflow-x-hidden">
             {showAllOption && (
               <SelectItem value={showAllOption.value}>{showAllOption.label}</SelectItem>
             )}
