@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,19 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { RotateCcw, Plus, Building2, Layers, Lightbulb, PenTool, Bug, Rocket, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban, Loader2 } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel, CreateEmpresaModal, CreateUserModal } from '@/components/module'
+import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ProjectDetailPanel, ModuleContainerWithPanel } from '@/components/module'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Lazy loading para modales grandes
+const CreateEmpresaModal = dynamic(
+  () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const CreateUserModal = dynamic(
+  () => import('@/components/module/CreateUserModal').then(mod => mod.CreateUserModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
@@ -102,7 +114,7 @@ export default function ProyectosPage() {
   const [historialProyectos, setHistorialProyectos] = useHistorialProyectos()
 
   // Función para agregar evento al historial
-  const agregarHistorial = (
+  const agregarHistorial = useCallback((
     proyectoId: string,
     tipo: HistorialProyecto['tipo_evento'],
     descripcion: string,
@@ -124,7 +136,7 @@ export default function ProyectosPage() {
       ...prev,
       [proyectoId]: [nuevoEvento, ...(prev[proyectoId] || [])]
     }))
-  }
+  }, [setHistorialProyectos])
 
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
@@ -233,7 +245,7 @@ export default function ProyectosPage() {
     return r
   }, [proyectos, tareas])
 
-  const handleFase = (id: string, fase: number) => {
+  const handleFase = useCallback((id: string, fase: number) => {
     const proyecto = proyectos.find(p => p.id === id)
     if (!proyecto) return
 
@@ -307,17 +319,17 @@ export default function ProyectosPage() {
         setTareas(prev => [...prev, ...tareasCreadas])
       }
     }
-  }
+  }, [proyectos, isComercial, isTecnico, fasesEditando, setProyectos, setTareas, agregarHistorial])
 
-  const handleCerrar = (proyecto: Proyecto) => {
+  const handleCerrar = useCallback((proyecto: Proyecto) => {
     setProyectoACerrar(proyecto)
     setMotivoCierre('')
     setNotasCierre('')
     setErrorsCierre({})
     setIsModalCerrar(true)
-  }
+  }, [setProyectoACerrar, setMotivoCierre, setNotasCierre, setErrorsCierre, setIsModalCerrar])
 
-  const confirmarCerrar = () => {
+  const confirmarCerrar = useCallback(() => {
     setErrorsCierre({})
 
     // Validar motivo obligatorio
@@ -351,9 +363,9 @@ export default function ProyectosPage() {
     setIsClosing(false)
     setIsModalCerrar(false)
     setProyectoACerrar(null)
-  }
+  }, [motivoCierre, proyectoACerrar, fasesEditando, setProyectos, agregarHistorial, setIsClosing, setIsModalCerrar, setProyectoACerrar])
 
-  const handleReabrir = (id: string) => {
+  const handleReabrir = useCallback((id: string) => {
     const proyecto = proyectos.find(p => p.id === id)
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, estado: 'activo', motivo_cierre: undefined, fecha_cierre: undefined } : p))
 
@@ -368,9 +380,9 @@ export default function ProyectosPage() {
         { estado: 'activo' }
       )
     }
-  }
+  }, [proyectos, fasesEditando, setProyectos, agregarHistorial])
 
-  const handleArchivar = (proyecto: Proyecto) => {
+  const handleArchivar = useCallback((proyecto: Proyecto) => {
     setProyectoAArchivar(proyecto)
     // Clasificación automática según RN-PRO-16
     // Si está en fase 5 y todas las tareas de fase 5 completadas -> completado
@@ -378,9 +390,9 @@ export default function ProyectosPage() {
     const todasCompletadas = tareasFase5.length > 0 && tareasFase5.every(t => t.estado === 'Completada')
     setClasificacionArchivo(todasCompletadas ? 'completado' : 'inconcluso')
     setIsModalArchivar(true)
-  }
+  }, [tareas, setProyectoAArchivar, setClasificacionArchivo, setIsModalArchivar])
 
-  const confirmarArchivar = () => {
+  const confirmarArchivar = useCallback(() => {
     if (!proyectoAArchivar) return
 
     setIsArchiving(true)
@@ -400,17 +412,17 @@ export default function ProyectosPage() {
     setIsArchiving(false)
     setIsModalArchivar(false)
     setProyectoAArchivar(null)
-  }
+  }, [proyectoAArchivar, clasificacionArchivo, setProyectos, agregarHistorial, setIsArchiving, setIsModalArchivar, setProyectoAArchivar])
 
   // Abrir modal para nuevo proyecto
-  const handleNewProyecto = () => {
+  const handleNewProyecto = useCallback(() => {
     setNuevoProyecto({ ...PROYECTO_VACIO, id: String(Date.now()) })
     setErrors({})
     setIsModalNuevo(true)
-  }
+  }, [setNuevoProyecto, setErrors, setIsModalNuevo])
 
   // Guardar nuevo proyecto
-  const handleSaveProyecto = async () => {
+  const handleSaveProyecto = useCallback(async () => {
     setErrors({})
 
     // Validaciones
@@ -507,10 +519,10 @@ export default function ProyectosPage() {
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [nuevoProyecto, empresas, usuarios, contactos, fasesEditando, setProyectos, setTareas, setErrors, setIsSaving, setIsModalNuevo, setNuevoProyecto])
 
   // Guardar nueva empresa (compatible con CreateEmpresaModal)
-  const handleSaveEmpresa = async (empresa: Partial<Empresa>, isNew: boolean) => {
+  const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
     if (!isNew) return // Solo manejamos creación desde proyectos
 
     const empresaId = String(Date.now())
@@ -531,10 +543,10 @@ export default function ProyectosPage() {
     setNuevoProyecto({ ...nuevoProyecto, empresa_id: empresaId })
 
     setIsModalNuevaEmpresa(false)
-  }
+  }, [setEmpresas, setNuevoProyecto, nuevoProyecto, setIsModalNuevaEmpresa])
 
   // Guardar nuevo usuario (compatible con CreateUserModal)
-  const handleSaveUsuario = async (user: Partial<User>, isNew: boolean) => {
+  const handleSaveUsuario = useCallback(async (user: Partial<User>, isNew: boolean) => {
     if (!isNew) return // Solo manejamos creación desde proyectos
 
     const usuarioId = String(Date.now())
@@ -560,7 +572,7 @@ export default function ProyectosPage() {
     })
 
     setIsModalNuevoUsuario(false)
-  }
+  }, [setUsuarios, setNuevoProyecto, nuevoProyecto, setIsModalNuevoUsuario])
 
   if (!isAdmin && !isComercial && !isTecnico) {
     return (

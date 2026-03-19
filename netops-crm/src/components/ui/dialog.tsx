@@ -54,6 +54,9 @@ const DialogContent = React.forwardRef<
         sizeClasses[size],
         className
       )}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
       aria-describedby="dialog-description"
       {...props}
     >
@@ -61,9 +64,12 @@ const DialogContent = React.forwardRef<
         {description || 'Dialog modal'}
       </DialogPrimitive.Description>
       <div className="flex flex-col h-full max-h-[85vh]">
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-40 hover:opacity-70 transition-all duration-300 focus:outline-none disabled:pointer-events-none z-10 hover:scale-110">
+        <DialogPrimitive.Close
+          className="absolute right-4 top-4 rounded-sm opacity-40 hover:opacity-70 transition-all duration-300 focus:outline-none disabled:pointer-events-none z-10 hover:scale-110"
+          aria-label="Cerrar"
+        >
           <X className="h-5 w-5" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Cerrar</span>
         </DialogPrimitive.Close>
         {children}
       </div>
@@ -92,6 +98,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
+    id="dialog-title"
     className={cn(
       "text-lg font-medium text-foreground/90",
       className

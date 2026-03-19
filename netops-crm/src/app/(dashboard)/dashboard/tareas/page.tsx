@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useContactos } from '@/hooks/useContactos'
@@ -21,9 +21,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
-import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal, CreateProjectModal } from '@/components/module'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Lazy loading para modales grandes
+const CreateTaskModal = dynamic(
+  () => import('@/components/module/CreateTaskModal').then(mod => mod.CreateTaskModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const CreateProjectModal = dynamic(
+  () => import('@/components/module/CreateProjectModal').then(mod => mod.CreateProjectModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
 
 // Lista de usuarios (se填充ará con datos del módulo de usuarios)
 const USUARIOS: { id: string; nombre: string; rol: string }[] = []
@@ -213,13 +225,13 @@ export default function TareasPage() {
     overdue: visibleTareas.filter(t => t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada').length,
   }), [visibleTareas])
 
-  const handleStatusChange = (id: string, estado: EstadoTarea) => {
+  const handleStatusChange = useCallback((id: string, estado: EstadoTarea) => {
     setTareas(prev => prev.map(t => t.id === id ? {
       ...t,
       estado,
       fecha_completado: estado === 'Completada' ? new Date().toISOString() : undefined
     } : t))
-  }
+  }, [setTareas])
 
   // Handler para crear proyecto desde tareas
   const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
@@ -272,7 +284,7 @@ export default function TareasPage() {
     setUsuarios(prev => [...prev, _nuevoUsuario])
   }
 
-  const handleSaveTarea = (data: CreateTaskData) => {
+  const handleSaveTarea = useCallback((data: CreateTaskData) => {
     if (data.mode === 'create') {
       const newTarea: Tarea = {
         ...data.tarea,
@@ -346,9 +358,9 @@ export default function TareasPage() {
 
       setSelectedId(updatedTarea.id)
     }
-  }
+  }, [tareas.length, user?.id, editingTarea, setTareas, setSubtareas, setComentarios, setSelectedId])
 
-  const handleDeleteTarea = () => {
+  const handleDeleteTarea = useCallback(() => {
     if (editingTarea) {
       setTareas(prev => prev.filter(t => t.id !== editingTarea.id))
       setSubtareas(prev => {
@@ -365,14 +377,14 @@ export default function TareasPage() {
       setEditingTarea(null)
       setSelectedId(null)
     }
-  }
+  }, [editingTarea, setTareas, setSubtareas, setComentarios, setShowEdit, setEditingTarea, setSelectedId])
 
-  const handleUpdateTarea = (updated: Tarea) => {
+  const handleUpdateTarea = useCallback((updated: Tarea) => {
     setTareas(prev => prev.map(t => t.id === updated.id ? updated : t))
     setSelectedId(updated.id)
-  }
+  }, [setTareas, setSelectedId])
 
-  const handleAddSubtarea = (tareaId: string, nombre: string) => {
+  const handleAddSubtarea = useCallback((tareaId: string, nombre: string) => {
     const newSubtarea: Subtarea = {
       id: Date.now().toString(),
       tarea_id: tareaId,
@@ -381,16 +393,16 @@ export default function TareasPage() {
       orden: (subtareas[tareaId]?.length || 0) + 1,
     }
     setSubtareas(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newSubtarea] }))
-  }
+  }, [subtareas, setSubtareas])
 
-  const handleToggleSubtarea = (tareaId: string, subtareaId: string) => {
+  const handleToggleSubtarea = useCallback((tareaId: string, subtareaId: string) => {
     setSubtareas(prev => ({
       ...prev,
       [tareaId]: prev[tareaId].map(s => s.id === subtareaId ? { ...s, completada: !s.completada, fecha_completado: !s.completada ? new Date().toISOString() : undefined } : s)
     }))
-  }
+  }, [setSubtareas])
 
-  const handleAddComentario = (tareaId: string, texto: string) => {
+  const handleAddComentario = useCallback((tareaId: string, texto: string) => {
     const newComentario: Comentario = {
       id: Date.now().toString(),
       tarea_id: tareaId,
@@ -401,7 +413,7 @@ export default function TareasPage() {
       fecha: new Date().toISOString(),
     }
     setComentarios(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComentario] }))
-  }
+  }, [user?.id, user?.nombre, setComentarios])
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _clearFilters = () => {

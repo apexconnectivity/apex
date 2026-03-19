@@ -1,22 +1,29 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { type AsyncStatus, type AsyncState as AsyncStateType } from '@/types/async'
 
 /**
- * Estado resultante de una operación async
+ * Estado para el hook useAsync
+ * Incluye isLoading para compatibilidad hacia atrás
  */
-export interface AsyncState<T> {
-  data: T | null
+export interface AsyncState<T> extends AsyncStateType<T> {
   isLoading: boolean
-  error: Error | null
 }
 
 /**
  * Resultado del hook useAsync
  */
 export interface UseAsyncReturn<T> extends AsyncState<T> {
+  /** Estado status para uso con AsyncStatus */
+  status: AsyncStatus
+  /** Función para ejecutar la operación async */
   execute: () => Promise<void>
+  /** Función para cancelar la operación en curso */
+  abort: () => void
+  /** Función para resetear el estado */
   reset: () => void
+  /** Función para establecer data manualmente */
   setData: (data: T) => void
 }
 
@@ -48,7 +55,7 @@ export interface UseAsyncOptions<T> {
  * @example
  * ```tsx
  * function MiComponente({ userId }: { userId: string }) {
- *   const { data, isLoading, error, execute, reset } = useAsync({
+ *   const { data, isLoading, error, execute, reset, abort } = useAsync({
  *     asyncFunction: async () => {
  *       const res = await fetch(`/api/users/${userId}`)
  *       return res.json()
@@ -67,13 +74,26 @@ export interface UseAsyncOptions<T> {
  *   return <UserProfile user={data} />
  * }
  * ```
- * 
+ *
  * @example Con ejecución inmediata
  * ```tsx
  * const { data } = useAsync({
  *   asyncFunction: () => fetchUsers(),
  *   immediate: true // Se ejecuta al montar
  * })
+ * ```
+ *
+ * @example Con AbortController (para cancelación manual)
+ * ```tsx
+ * const { data, abort } = useAsync({
+ *   asyncFunction: async () => {
+ *     const res = await fetch(`/api/users/${id}`)
+ *     return res.json()
+ *   }
+ * })
+ * 
+ * // Para cancelar manualmente
+ * abort()
  * ```
  */
 export function useAsync<T>({
@@ -84,51 +104,128 @@ export function useAsync<T>({
   onError,
 }: UseAsyncOptions<T>): UseAsyncReturn<T> {
   const [state, setState] = useState<AsyncState<T>>({
+    status: 'idle',
     data: null,
-    isLoading: immediate, // Si immediate es true, ya está cargando
+    isLoading: immediate,
     error: null,
   })
 
+  // Ref para rastrear si el componente está montado
+  const isMountedRef = useRef(true)
+  // Ref para el AbortController
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Cleanup al desmontar el componente
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+      // Cancelar cualquier operación en curso
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+        abortControllerRef.current = null
+      }
+    }
+  }, [])
+
   const execute = useCallback(async () => {
+    // Cancelar cualquier operación anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Crear nuevo AbortController
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     // Resetear error
-    setState(prev => ({ ...prev, error: null }))
+    setState(prev => ({ ...prev, status: 'loading', error: null }))
 
     // Indicar que empezamos
     setState(prev => ({ ...prev, isLoading: true }))
     onStart?.()
 
     try {
+      // Verificar si está montado antes de actualizar estado
+      if (!isMountedRef.current) {
+        return
+      }
+
       const result = await asyncFunction()
-      setState({ data: result, isLoading: false, error: null })
+
+      // Verificar nuevamente después de await
+      if (!isMountedRef.current) {
+        return
+      }
+
+      // Ignorar si fue abortado
+      if (controller.signal.aborted) {
+        return
+      }
+
+      setState({ status: 'success', data: result, isLoading: false, error: null })
       onSuccess?.(result)
     } catch (error) {
+      // Ignorar errores de AbortError
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+
+      // Verificar si está montado antes de actualizar
+      if (!isMountedRef.current) {
+        return
+      }
+
       const err = error instanceof Error ? error : new Error(String(error))
-      setState({ data: null, isLoading: false, error: err })
+      setState({ status: 'error', data: null, isLoading: false, error: err })
       onError?.(err)
+    } finally {
+      // Limpiar referencia del controller solo si es el mismo
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
     }
   }, [asyncFunction, onStart, onSuccess, onError])
 
+  // Función para cancelar manualmente
+  const abort = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    // Actualizar estado para reflejar que ya no está cargando
+    setState(prev => ({ ...prev, isLoading: false }))
+  }, [])
+
   const reset = useCallback(() => {
-    setState({ data: null, isLoading: false, error: null })
+    // Cancelar cualquier operación en curso
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setState({ status: 'idle', data: null, isLoading: false, error: null })
   }, [])
 
   const setData = useCallback((data: T) => {
-    setState({ data, isLoading: false, error: null })
+    setState({ status: 'success', data, isLoading: false, error: null })
   }, [])
 
   // Ejecutar inmediatamente si está configurado
-  // Esto se hace fuera del render inicial
-  const [hasExecuted, setHasExecuted] = useState(false)
-  
-  if (immediate && !hasExecuted) {
-    setHasExecuted(true)
-    // Usar setTimeout para evitar updating while rendering
-    setTimeout(() => execute(), 0)
-  }
+  useEffect(() => {
+    if (immediate) {
+      const timer = setTimeout(() => {
+        execute()
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [immediate])
 
   return {
     ...state,
     execute,
+    abort,
     reset,
     setData,
   }
@@ -177,7 +274,7 @@ export function useAsyncRetry<T>(
         return await fn()
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
-        
+
         if (attempt < retries) {
           onRetry?.(attempt + 1)
           await delay(retryDelay * (attempt + 1)) // Backoff exponencial

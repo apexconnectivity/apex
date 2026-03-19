@@ -1,17 +1,34 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useEmpresas, useProyectos, useContactos } from '@/hooks'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
+
 import { Ticket, ContratoSoporte, ComentarioTicket, EstadoTicket, ESTADOS_TICKET, CATEGORIAS_TICKET, PRIORIDADES_TICKET } from '@/types/soporte'
-import { CreateTicketData } from '@/components/module/CreateTicketModal'
-import { CreateContractData } from '@/components/module/CreateContractModal'
-import { CreateTicketModal } from '@/components/module/CreateTicketModal'
-import { CreateContractModal } from '@/components/module/CreateContractModal'
-import { CreateProjectModal } from '@/components/module/CreateProjectModal'
-import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
+import type { CreateTicketData } from '@/components/module/CreateTicketModal'
+import type { CreateContractData } from '@/components/module/CreateContractModal'
+
+// Lazy loading para modales grandes
+const CreateTicketModal = dynamic(
+  () => import('@/components/module/CreateTicketModal').then(mod => mod.CreateTicketModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const CreateContractModal = dynamic(
+  () => import('@/components/module/CreateContractModal').then(mod => mod.CreateContractModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const CreateProjectModal = dynamic(
+  () => import('@/components/module/CreateProjectModal').then(mod => mod.CreateProjectModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const CreateEmpresaModal = dynamic(
+  () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
 import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
 import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
@@ -117,11 +134,11 @@ export default function SoportePage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
-  }
+  }, [setActiveId])
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
 
@@ -151,11 +168,7 @@ export default function SoportePage() {
         fecha_primera_respuesta: t.fecha_primera_respuesta || new Date().toISOString(),
       } : t))
     }
-  }
-
-  const getTicketsByEstado = (estado: EstadoTicket) => {
-    return filteredTickets.filter(t => t.estado === estado)
-  }
+  }, [tickets, setTickets, setActiveId])
 
   const isAdmin = user?.roles.includes('admin')
   const isTecnico = user?.roles.includes('tecnico')
@@ -190,6 +203,10 @@ export default function SoportePage() {
       return true
     })
   }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaRange])
+
+  const getTicketsByEstado = useCallback((estado: EstadoTicket) => {
+    return filteredTickets.filter(t => t.estado === estado)
+  }, [filteredTickets])
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const ticketsPorEstado = useMemo(() => {

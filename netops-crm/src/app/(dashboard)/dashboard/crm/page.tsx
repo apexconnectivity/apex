@@ -10,13 +10,23 @@ import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
-import { EmpresaCard } from '@/components/module/EmpresaCard'
-import { EmpresaDetailModal } from '@/components/module/EmpresaDetailModal'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
+import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
+import dynamic from 'next/dynamic'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Lazy loading para modales grandes
+const CreateEmpresaModal = dynamic(
+  () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
+const EmpresaDetailModal = dynamic(
+  () => import('@/components/module/EmpresaDetailModal').then(mod => mod.EmpresaDetailModal),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
+)
 import {
   Building2,
   Plus,
