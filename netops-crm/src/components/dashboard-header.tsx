@@ -10,8 +10,14 @@ import {
   ChevronRight,
   Bell,
   Plus,
+  Building2,
 } from 'lucide-react'
 import { STATUS_COLORS } from '@/lib/colors'
+import { ManageCompanyModal } from '@/components/module/ManageCompanyModal'
+import { STORAGE_KEYS } from '@/constants/storage'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import { Empresa } from '@/types/crm'
+import { useState } from 'react'
 
 interface BreadcrumbItem {
   label: string
@@ -28,6 +34,11 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ showSearch = true, showNewProject = true, onNewProjectClick }: DashboardHeaderProps) {
   const pathname = usePathname()
   const { user } = useAuth()
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false)
+  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, [])
+
+  const empresa = user?.empresa_id ? empresas.find(e => e.id === user.empresa_id) : null
+  const isCliente = user?.roles.includes('cliente')
 
   // Generar breadcrumbs basados en la ruta
   const getBreadcrumbs = (): BreadcrumbItem[] => {
@@ -142,31 +153,53 @@ export function DashboardHeader({ showSearch = true, showNewProject = true, onNe
             </Button>
 
             {user && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2 h-10 px-2"
-                asChild
-              >
-                <Link href="/dashboard/perfil">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" />
-                    <AvatarFallback className="text-xs">
-                      {getInitials(user.nombre)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:flex flex-col items-start">
-                    <span className="text-sm font-medium">{user.nombre.split(' ')[0]}</span>
-                    <Badge variant="secondary" className="h-5 text-[10px] px-1.5">
-                      {getRoleLabel(user.roles[0])}
-                    </Badge>
-                  </div>
-                </Link>
-              </Button>
+              <div className="flex flex-col items-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 h-10 px-2 group overflow-hidden"
+                  asChild
+                >
+                  <Link href="/dashboard/perfil">
+                    <Avatar className="h-8 w-8 ring-2 ring-transparent group-hover:ring-primary/20 transition-all shadow-sm">
+                      <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" />
+                      <AvatarFallback className="text-xs bg-slate-800 text-slate-200">
+                        {getInitials(user.nombre)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:flex flex-col items-start min-w-[80px]">
+                      <span className="text-sm font-semibold truncate max-w-[120px]">{user.nombre.split(' ')[0]}</span>
+                      <Badge variant="secondary" className="h-4 text-[9px] uppercase tracking-tighter px-1.5 bg-primary/10 text-primary border-primary/20">
+                        {getRoleLabel(user.roles[0])}
+                      </Badge>
+                    </div>
+                  </Link>
+                </Button>
+                
+                {isCliente && empresa && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 gap-1 opacity-80 hover:opacity-100 font-medium tracking-tight animate-in fade-in duration-500"
+                    onClick={() => setIsCompanyModalOpen(true)}
+                  >
+                    <Building2 className="h-3 w-3" />
+                    {empresa.nombre}
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </div>
       </div>
+      
+      {isCliente && empresa && (
+        <ManageCompanyModal 
+          isOpen={isCompanyModalOpen} 
+          onClose={() => setIsCompanyModalOpen(false)} 
+          empresaId={empresa.id} 
+        />
+      )}
     </header>
   )
 }

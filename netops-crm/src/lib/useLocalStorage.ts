@@ -18,49 +18,73 @@ export function useLocalStorage<T>(
   key: string,
   initialValue: T
 ): readonly [T, (value: T | ((prev: T) => T)) => void, boolean] {
-  // Estado para almacenar el valor
-  const [storedValue, setStoredValue] = useState<T>(initialValue)
-  // Estado para indicar si ya se cargó desde localStorage
+  // Estado para almacenar el valor con inicialización perezosa (lazy)
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') return initialValue
+
+    try {
+      const item = window.localStorage.getItem(key)
+      if (item) {
+        const parsed = JSON.parse(item) as T
+        // prevValueRef.current will be set below, but we can set it here too for consistency
+        // with the initial read.
+        // However, prevValueRef is a ref, so it's not available yet at this point of declaration.
+        // It will be initialized after this useState call.
+        // For now, we'll rely on the explicit initialization below.
+        return parsed ?? initialValue
+      }
+      return initialValue
+    } catch (error) {
+      console.error(`[useLocalStorage] Error reading key "${key}":`, error)
+      return initialValue
+    }
+  })
+
+  // Estado para indicar si ya se cargó (útil para SSR)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Usar ref para mantener el valor inicial sin causar re-renders
-  const initialValueRef = useRef(initialValue)
-  
   // Ref para guardar el valor anterior y evitar actualizaciones innecesarias
   const prevValueRef = useRef<string | null>(null)
+  // Initialize prevValueRef based on the initial read
+  if (typeof window !== 'undefined' && !prevValueRef.current) {
+    prevValueRef.current = window.localStorage.getItem(key)
+  }
 
-  // Ref para indicar que ESTA instancia está escribiendo, y así ignorar
-  // el evento de sincronización que ella misma dispara
+  // Ref para indicar que ESTA instancia está escribiendo
   const isWritingRef = useRef(false)
 
   // ============================================
-  // Efecto para escuchar cambios de OTRAS tabs (StorageEvent)
-  // y de OTRAS instancias del hook en la misma tab (CustomEvent)
+  // Efectos de sincronización y carga inicial (SSR support)
   // ============================================
   useEffect(() => {
+    setIsLoaded(true)
+    
     if (typeof window === 'undefined') return
 
-    // StorageEvent solo se dispara desde OTRAS tabs, así que no hay riesgo
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === key && event.newValue) {
+    const handleCustomSync = (event: CustomEvent<{ key: string; value: string }>) => {
+      if (event.detail.key === key && !isWritingRef.current) {
         try {
-          const parsed = JSON.parse(event.newValue) as T
-          setStoredValue(parsed)
-          prevValueRef.current = event.newValue
+          const parsed = JSON.parse(event.detail.value) as T
+          // Usar setTimeout para evitar el error "Cannot update a component while rendering a different component"
+          // cuando varias instancias del hook reaccionan al mismo evento.
+          setTimeout(() => {
+            setStoredValue(parsed)
+            prevValueRef.current = event.detail.value
+          }, 0)
         } catch {
           // Ignorar errores de parseo
         }
       }
     }
 
-    // CustomEvent se dispara dentro de la misma tab.
-    // Solo reaccionar si NO fue esta instancia la que lo disparó.
-    const handleCustomSync = (event: CustomEvent<{ key: string; value: string }>) => {
-      if (event.detail.key === key && !isWritingRef.current) {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === key && event.newValue) {
         try {
-          const parsed = JSON.parse(event.detail.value) as T
-          setStoredValue(parsed)
-          prevValueRef.current = event.detail.value
+          const parsed = JSON.parse(event.newValue) as T
+          setTimeout(() => {
+            setStoredValue(parsed)
+            prevValueRef.current = event.newValue
+          }, 0)
         } catch {
           // Ignorar errores de parseo
         }
@@ -73,41 +97,6 @@ export function useLocalStorage<T>(
     return () => {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('local-storage-sync', handleCustomSync as EventListener)
-    }
-  }, [key])
-
-  // ============================================
-  // Efecto para cargar el valor inicial - solo se ejecuta una vez por key
-  // ============================================
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoaded(true)
-      return
-    }
-
-    try {
-      const item = window.localStorage.getItem(key)
-      if (item) {
-        try {
-          const parsed = JSON.parse(item) as T
-          prevValueRef.current = item
-
-          if (parsed !== null && parsed !== undefined) {
-            setStoredValue(parsed)
-          } else {
-            setStoredValue(initialValueRef.current)
-          }
-        } catch {
-          window.localStorage.removeItem(key)
-          setStoredValue(initialValueRef.current)
-        }
-      } else {
-        setStoredValue(initialValueRef.current)
-      }
-    } catch {
-      setStoredValue(initialValueRef.current)
-    } finally {
-      setIsLoaded(true)
     }
   }, [key])
 

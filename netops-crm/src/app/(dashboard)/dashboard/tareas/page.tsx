@@ -190,15 +190,24 @@ export default function TareasPage() {
   }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaRange, filtroVencidas])
 
   const visibleTareas = useMemo(() => {
+    // Si es admin, ve todo el universo filtrado por los criterios de búsqueda (filteredTareas)
     if (isAdmin) return filteredTareas
 
+    // Si es cliente, solo ve tareas de SUS proyectos
+    if (user?.roles.includes('cliente')) {
+      const myProjectIds = proyectos.filter(p => p.empresa_id === user.empresa_id).map(p => p.id)
+      return filteredTareas.filter(t => myProjectIds.includes(t.proyecto_id))
+    }
+
+    // Para otros roles internos (técnico, comercial, etc)
     return filteredTareas.filter(t => {
       const isOwnTask = t.responsable_id === user?.id
+      // Los técnicos deben ver también las tareas de proyectos donde son responsables aunque no sea su tarea individual? 
+      // Por ahora mantenemos la lógica de isOwnTask || isClientTask
       const isClientTask = t.asignado_a_cliente
-
       return isOwnTask || isClientTask
     })
-  }, [filteredTareas, isAdmin, user?.id])
+  }, [filteredTareas, isAdmin, user, proyectos])
 
   const tareasPorEstado = useMemo(() => {
     const r: Record<EstadoTarea, Tarea[]> = { 'Pendiente': [], 'En progreso': [], 'Completada': [], 'Bloqueada': [] }
@@ -422,7 +431,7 @@ export default function TareasPage() {
     setFiltroVencidas(false)
   }
 
-  if (!isAdmin && !isComercial && !isTecnico && !isCompras) {
+  if (!isAdmin && !isComercial && !isTecnico && !isCompras && !user?.roles.includes('cliente')) {
     return (
       <Card className="m-4 p-8 text-center">
         <CardContent className="flex flex-col items-center gap-4">

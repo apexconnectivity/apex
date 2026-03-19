@@ -112,7 +112,6 @@ export function CreateUserModal({
             value={formData.email || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             placeholder="juan@empresa.com"
-            disabled={isEditing}
             className={errors.email ? 'border-red-500' : ''}
           />
           {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}

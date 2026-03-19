@@ -21,6 +21,8 @@ import {
   Shield,
   Mail,
   Phone,
+  AlertTriangle,
+  Building2,
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
 import { cn } from '@/lib/utils'
@@ -30,16 +32,19 @@ import { USUARIOS_PAGE, BUTTON_LABELS } from '@/constants/auth'
 const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
 
 export default function UsersPage() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, updateUser } = useAuth()
   const [users, setUsers] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
+  const [empresas] = useLocalStorage<any[]>(STORAGE_KEYS.empresas, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activo' | 'inactivo'>('todos')
   const [filtroRol, setFiltroRol] = useState<'todos' | Role>('todos')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [userToModify, setUserToModify] = useState<{ id: string; action: 'activar' | 'desactivar' } | null>(null)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -85,11 +90,17 @@ export default function UsersPage() {
 
       if (!isNew && editingUser) {
         // Update existing user
+        const updatedData = { ...editingUser, ...data }
         setUsers(prev => prev.map(u =>
           u.id === editingUser.id
-            ? { ...u, ...data }
+            ? updatedData
             : u
         ))
+
+        // Si es el usuario actual, actualizar la sesión también
+        if (editingUser.id === currentUser?.id) {
+          updateUser(data)
+        }
       } else {
         // Create new user
         const newUser: User = {
@@ -130,6 +141,22 @@ export default function UsersPage() {
     ))
     setIsConfirmModalOpen(false)
     setUserToModify(null)
+  }
+
+  const handleRequestDelete = (user: User) => {
+    if (user.id === currentUser?.id) {
+      alert("No puedes eliminar tu propia cuenta mientras estés en sesión.")
+      return
+    }
+    setUserToDelete(user)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!userToDelete) return
+    setUsers(prev => prev.filter(u => u.id !== userToDelete.id))
+    setIsDeleteModalOpen(false)
+    setUserToDelete(null)
   }
 
   if (currentUser?.roles[0] !== 'admin') {
@@ -220,6 +247,12 @@ export default function UsersPage() {
                         <Phone className="h-3 w-3" />
                         {user.telefono}
                       </span>
+                      {user.empresa_id && (
+                        <span className="flex items-center gap-1 text-primary">
+                          <Building2 className="h-3 w-3" />
+                          {empresas.find(e => e.id === user.empresa_id)?.nombre || 'Empresa no encontrada'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -245,13 +278,21 @@ export default function UsersPage() {
                       onClick={() => handleRequestToggleActive(user)}
                       className={user.activo ? 'hover:text-red-400' : 'hover:text-green-400'}
                     >
-                      {user.activo ? (
+                        {user.activo ? (
+                          <Shield className="h-4 w-4" />
+                        ) : (
+                          <Shield className="h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRequestDelete(user)}
+                        className="hover:text-red-500 hover:bg-red-500/10"
+                      >
                         <Trash2 className="h-4 w-4" />
-                      ) : (
-                        <KeyRound className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+                      </Button>
+                    </div>
                 </div>
               </div>
             </CardContent>
@@ -311,6 +352,57 @@ export default function UsersPage() {
               onClick={handleConfirmToggleActive}
             >
               {userToModify.action === 'desactivar' ? USUARIOS_PAGE.desactivarUsuario : USUARIOS_PAGE.reactivarUsuario}
+            </Button>
+          </ModalFooter>
+        </BaseModal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && userToDelete && (
+        <BaseModal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen} variant="danger">
+          <ModalHeader title={
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              <span>Cuidado: Eliminación Permanente</span>
+            </div>
+          } variant="danger" />
+          <ModalBody>
+            <div className="space-y-4">
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-200">
+                <p className="text-sm font-medium items-center flex gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Esta acción no se puede deshacer
+                </p>
+                <p className="text-xs mt-1 opacity-80">
+                  El usuario <strong>{userToDelete.nombre}</strong> perderá el acceso a la plataforma y toda su configuración personal será eliminada.
+                </p>
+              </div>
+              
+              <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-slate-800 text-xs">
+                      {getInitials(userToDelete.nombre)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">{userToDelete.nombre}</p>
+                    <p className="text-xs text-muted-foreground">{userToDelete.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                ¿Estás seguro de que deseas eliminar definitivamente a este usuario?
+              </p>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Eliminar Definitivamente
             </Button>
           </ModalFooter>
         </BaseModal>

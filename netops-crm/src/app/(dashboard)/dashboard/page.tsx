@@ -37,14 +37,22 @@ export default function DashboardPage() {
 
   // Si es cliente, mostrar portal del cliente
   if (isCliente) {
+    const misProyectos = proyectos.filter(p => p.empresa_id === user?.empresa_id)
+    const misTareas = tareas.filter(t => misProyectos.some(p => p.id === t.proyecto_id))
+    const misTickets = tickets.filter(t => t.empresa_id === user?.empresa_id)
+    const misDocumentos = [] // Pendiente conectar con hook de documentos si existe
+    
+    const tareasPendientes = misTareas.filter(t => t.estado !== 'Completada')
+    const ticketsAbiertos = misTickets.filter(t => t.estado !== 'Cerrado' && t.estado !== 'Resuelto')
+
     return (
       <ModuleContainer>
         <WelcomeHeader />
 
-        {/* Portal del Cliente - Vista simplificada */}
+        {/* Portal del Cliente - Vista real filtrada */}
         <StatGrid cols={4}>
           <MiniStat
-            value={1}
+            value={misProyectos.length}
             label={DASHBOARD_STATS.proyectoActivo}
             valueColor={VARIANT_COLORS.primary.valueColor}
             icon={<FolderKanban className="h-6 w-6" />}
@@ -54,7 +62,7 @@ export default function DashboardPage() {
           />
 
           <MiniStat
-            value={3}
+            value={tareasPendientes.length}
             label={DASHBOARD_STATS.tareasPendientes}
             valueColor={VARIANT_COLORS.success.valueColor}
             icon={<CheckSquare className="h-6 w-6" />}
@@ -64,7 +72,7 @@ export default function DashboardPage() {
           />
 
           <MiniStat
-            value={2}
+            value={ticketsAbiertos.length}
             label={DASHBOARD_STATS.ticketsAbiertos}
             valueColor={VARIANT_COLORS.warning.valueColor}
             icon={<Headphones className="h-6 w-6" />}
@@ -74,7 +82,7 @@ export default function DashboardPage() {
           />
 
           <MiniStat
-            value={5}
+            value={0} // Placeholder para documentos
             label={DASHBOARD_STATS.documentos}
             valueColor={VARIANT_COLORS.purple.valueColor}
             icon={<Building2 className="h-6 w-6" />}
@@ -86,14 +94,14 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentActivity
-            empresas={empresas}
-            proyectos={proyectos}
-            tareas={tareas}
-            tickets={tickets}
+            empresas={empresas.filter(e => e.id === user?.empresa_id)}
+            proyectos={misProyectos}
+            tareas={misTareas}
+            tickets={misTickets}
           />
           <UpcomingTasks
-            tareas={tareas}
-            proyectos={proyectos}
+            tareas={tareasPendientes}
+            proyectos={misProyectos}
           />
         </div>
       </ModuleContainer>

@@ -23,6 +23,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  updateUser: (updatedData: Partial<User>) => Promise<void>
   hasPermission: (module: string, action: 'canView' | 'canCreate' | 'canEdit' | 'canDelete') => boolean
   canAccessModule: (module: string) => boolean
   isInternalUser: () => boolean
@@ -113,6 +114,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('apex_user')
   }, [])
 
+  const updateUser = useCallback(async (updatedData: Partial<User>) => {
+    if (!user) return
+
+    const updatedUser = { ...user, ...updatedData }
+    
+    // Update local state and current session storage
+    setUser(updatedUser)
+    localStorage.setItem('apex_user', JSON.stringify(updatedUser))
+
+    // Update global users list in localStorage
+    const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
+    if (storedUsers) {
+      const users: User[] = JSON.parse(storedUsers)
+      const index = users.findIndex(u => u.id === user.id)
+      if (index !== -1) {
+        users[index] = { ...users[index], ...updatedData }
+        localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(users))
+      }
+    }
+  }, [user])
+
   const checkPermission = useCallback((module: string, action: 'canView' | 'canCreate' | 'canEdit' | 'canDelete') => {
     return hasPermission(user, module, action)
   }, [user])
@@ -133,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         login,
         logout,
+        updateUser,
         hasPermission: checkPermission,
         canAccessModule: checkModuleAccess,
         isInternalUser: checkInternalUser,

@@ -148,9 +148,14 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
   cliente: {
     name: 'cliente',
     label: 'Cliente',
-    description: 'Portal del cliente',
+    description: 'Portal del cliente con acceso restringido',
     es_interno: false,
     modules: [
+      { module: 'dashboard', canView: true, canCreate: false, canEdit: false, canDelete: false },
+      { module: 'proyectos', canView: true, canCreate: false, canEdit: false, canDelete: false },
+      { module: 'tareas', canView: true, canCreate: false, canEdit: false, canDelete: false },
+      { module: 'soporte', canView: true, canCreate: true, canEdit: true, canDelete: false },
+      { module: 'calendario', canView: true, canCreate: true, canEdit: true, canDelete: false },
       { module: 'portal', canView: true, canCreate: true, canEdit: false, canDelete: false },
     ],
   },

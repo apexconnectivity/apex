@@ -169,10 +169,16 @@ export default function SoportePage() {
   const isComercial = user?.roles.includes('comercial')
   const isCompras = user?.roles.includes('compras')
   const isFacturacion = user?.roles.includes('facturacion')
-  const canCreate = isAdmin || isTecnico || isComercial || isCompras || isFacturacion
+  const isCliente = user?.roles.includes('cliente')
+  const canCreate = isAdmin || isTecnico || isComercial || isCompras || isFacturacion || isCliente
 
   const filteredTickets = useMemo(() => {
     return tickets.filter(t => {
+      // Filtro por empresa para clientes (aislamiento de datos)
+      if (user?.roles.includes('cliente')) {
+        if (t.empresa_id !== user.empresa_id) return false
+      }
+
       // Filtro por búsqueda
       if (searchQuery && !t.titulo.toLowerCase().includes(searchQuery.toLowerCase()) && !t.descripcion.toLowerCase().includes(searchQuery.toLowerCase())) return false
       // Filtro por estado
@@ -181,7 +187,7 @@ export default function SoportePage() {
       if (filtroCategoria !== 'todas' && t.categoria !== filtroCategoria) return false
       // Filtro por prioridad
       if (filtroPrioridad !== 'todas' && t.prioridad !== filtroPrioridad) return false
-      // Filtro por cliente/empresa
+      // Filtro por cliente/empresa (en el dropdown de filtros)
       if (filtroCliente !== 'todos' && t.empresa_id !== filtroCliente && t.contrato_id !== filtroCliente) return false
       // Filtro por responsable
       if (filtroResponsable !== 'todos' && t.responsable_id !== filtroResponsable) return false
@@ -196,7 +202,16 @@ export default function SoportePage() {
       }
       return true
     })
-  }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaRange])
+  }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaRange, user])
+
+  const visibleContratos = useMemo(() => {
+    return contratos.filter(c => {
+      if (user?.roles.includes('cliente')) {
+        return c.empresa_id === user.empresa_id
+      }
+      return true
+    })
+  }, [contratos, user])
 
   const getTicketsByEstado = useCallback((estado: EstadoTicket) => {
     return filteredTickets.filter(t => t.estado === estado)
@@ -334,7 +349,7 @@ export default function SoportePage() {
     localStorage.setItem(STORAGE_KEYS.empresas, JSON.stringify([...existingEmpresas, nuevaEmpresa]))
   }
 
-  if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion) {
+  if (!isAdmin && !isTecnico && !isComercial && !isCompras && !isFacturacion && !user?.roles.includes('cliente')) {
     return (
       <Card className="m-4 p-8 text-center">
         <CardContent className="flex flex-col items-center gap-4">
@@ -529,7 +544,7 @@ export default function SoportePage() {
             </div>
 
             <div className="grid gap-4">
-              {contratos.map(contrato => (
+              {visibleContratos.map(contrato => (
                 <Card key={contrato.id} className="hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">

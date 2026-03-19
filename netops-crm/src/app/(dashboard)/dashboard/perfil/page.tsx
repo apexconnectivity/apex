@@ -22,15 +22,25 @@ import {
 import { ROLE_DEFINITIONS } from '@/types/auth'
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   // Profile form
   const [profileData, setProfileData] = useState({
-    nombre: user?.nombre || '',
-    telefono: user?.telefono || '',
+    nombre: '',
+    telefono: '',
+  })
+
+  // Sync profile data when user changes
+  useState(() => {
+    if (user) {
+      setProfileData({
+        nombre: user.nombre,
+        telefono: user.telefono || '',
+      })
+    }
   })
 
   // Password form
@@ -47,17 +57,28 @@ export default function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const getInitials = (name: string) => {
+    if (!name) return '??'
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
   const handleSaveProfile = async () => {
-    setIsSaving(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setSaveMessage({ type: 'success', text: 'Perfil actualizado correctamente' })
-    setIsSaving(false)
-    setIsEditing(false)
+    try {
+      setIsSaving(true)
+      
+      // Llamar a AuthContext para actualizar los datos reales
+      await updateUser({
+        nombre: profileData.nombre,
+        telefono: profileData.telefono
+      })
 
-    setTimeout(() => setSaveMessage(null), 3000)
+      setSaveMessage({ type: 'success', text: 'Perfil actualizado correctamente' })
+      setIsEditing(false)
+    } catch (err) {
+      setSaveMessage({ type: 'error', text: 'No se pudo actualizar el perfil' })
+    } finally {
+      setIsSaving(false)
+      setTimeout(() => setSaveMessage(null), 3000)
+    }
   }
 
   const handleChangePassword = async () => {
@@ -74,13 +95,20 @@ export default function ProfilePage() {
     }
 
     setIsSaving(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    setPasswordMessage({ type: 'success', text: 'Contraseña actualizada correctamente' })
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    setIsSaving(false)
-
-    setTimeout(() => setPasswordMessage(null), 3000)
+    
+    // Simulación de cambio de contraseña
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      // En una app real llamaríamos a un endpoint de cambio de pass
+      
+      setPasswordMessage({ type: 'success', text: 'Contraseña actualizada correctamente' })
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    } catch (err) {
+      setPasswordMessage({ type: 'error', text: 'Error al cambiar la contraseña' })
+    } finally {
+      setIsSaving(false)
+      setTimeout(() => setPasswordMessage(null), 3000)
+    }
   }
 
   if (!user) return null

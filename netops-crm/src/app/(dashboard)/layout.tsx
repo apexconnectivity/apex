@@ -131,7 +131,9 @@ export default function DashboardLayout({
   const filteredNavigation = navigation.map(section => ({
     ...section,
     items: section.items.filter(item => {
-      if (item.adminOnly && user?.roles[0] !== 'admin') return false
+      if (item.adminOnly && !user?.roles.includes('admin')) return false
+      // No mostrar estadísticas a clientes
+      if (item.name === "Estadísticas" && user?.roles.includes('cliente')) return false
       return canAccessModule(item.module)
     })
   })).filter(section => section.items.length > 0)
@@ -172,6 +174,7 @@ export default function DashboardLayout({
         {/* Header */}
         <DashboardHeader
           onNewProjectClick={() => setIsNewProjectModalOpen(true)}
+          showNewProject={user?.roles.includes('admin')}
         />
 
         {/* Page content */}

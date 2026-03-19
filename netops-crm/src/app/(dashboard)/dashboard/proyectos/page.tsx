@@ -178,6 +178,12 @@ export default function ProyectosPage() {
     const r: Record<number, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
     const filtered = proyectos.filter(p => {
       if (p.estado !== 'activo') return false
+      
+      // Filtro por empresa para clientes
+      if (user?.roles.includes('cliente')) {
+        return p.empresa_id === user.empresa_id
+      }
+      
       if (isAdmin) return true
       if (isComercial) return p.fase_actual <= 3
       if (isTecnico) return p.fase_actual >= 4
@@ -185,9 +191,17 @@ export default function ProyectosPage() {
     })
     filtered.forEach(p => { if (r[p.fase_actual]) r[p.fase_actual].push(p) })
     return r
-  }, [proyectos, isAdmin, isComercial, isTecnico])
+  }, [proyectos, isAdmin, isComercial, isTecnico, user])
 
-  const proyectosCerrados = useMemo(() => proyectos.filter(p => p.estado === 'cerrado'), [proyectos])
+  const proyectosCerrados = useMemo(() => {
+    return proyectos.filter(p => {
+      if (p.estado !== 'cerrado') return false
+      if (user?.roles.includes('cliente')) {
+        return p.empresa_id === user.empresa_id
+      }
+      return true
+    })
+  }, [proyectos, user])
 
   const infoTareasPorProyecto = useMemo(() => {
     const r: Record<string, any> = {}
@@ -354,7 +368,7 @@ export default function ProyectosPage() {
   // Pero como CreateProjectModal ya importa CreateEmpresaModal y CreateUserModal, solo necesitamos pasarle las listas base.
 
 
-  if (!isAdmin && !isComercial && !isTecnico) return <AccessDeniedCard icon={FolderKanban} />
+  if (!isAdmin && !isComercial && !isTecnico && !user?.roles.includes('cliente')) return <AccessDeniedCard icon={FolderKanban} />
 
   const selected = proyectos.find(p => p.id === selectedId)
 
@@ -369,9 +383,9 @@ export default function ProyectosPage() {
               proyecto={selected}
               tareas={tareas}
               historial={historialProyectos[selected.id] || []}
-              onCerrar={handleCerrar}
-              onArchivar={handleArchivar}
-              canClose={canClose}
+              onCerrar={isAdmin ? handleCerrar : undefined}
+              onArchivar={isAdmin ? handleArchivar : undefined}
+              canClose={isAdmin}
             />
           ) : null
         }
@@ -382,10 +396,12 @@ export default function ProyectosPage() {
           description="Pipeline de proyectos"
           actions={
             <>
-              <Button variant="outline" size="sm" onClick={() => setIsModalConfigFases(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Configurar Fases
-              </Button>
+              {isAdmin && (
+                <Button variant="outline" size="sm" onClick={() => setIsModalConfigFases(true)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurar Fases
+                </Button>
+              )}
               {canMovePhases && (
                 <Button onClick={handleNewProyecto}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -396,7 +412,7 @@ export default function ProyectosPage() {
           }
           tabs={[
             { value: 'pipeline', label: 'Pipeline' },
-            { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length }
+            ...(!user?.roles.includes('cliente') ? [{ value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length }] : [])
           ]}
           activeTab={view}
           onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}

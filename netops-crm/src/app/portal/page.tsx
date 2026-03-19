@@ -17,8 +17,16 @@ import {
   Zap, FolderKanban, Headphones, FileText,
   User, LogOut, Upload,
   ExternalLink, Clock, AlertCircle, Building2,
-  ArrowLeft, Phone, Mail, CheckCircle
+  ArrowLeft, Phone, Mail, CheckCircle, Calendar, Plus
 } from 'lucide-react'
+import { STORAGE_KEYS } from '@/constants/storage'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import { Empresa, Contacto } from '@/types/crm'
+import { Proyecto } from '@/types/proyectos'
+import { Tarea } from '@/types/tareas'
+import { Ticket } from '@/types/soporte'
+import { SolicitudReunion } from '@/types/calendario'
+import { FASES } from '@/types/proyectos'
 
 // Tipo para datos del formulario de ticket
 type TicketFormData = Pick<TicketCliente, 'titulo' | 'descripcion' | 'categoria' | 'prioridad' | 'estado'>
@@ -207,58 +215,163 @@ function NuevoTicketModal({ open, onClose, onCreate }: {
   )
 }
 
-function PortalClienteContent() {
-  const { user, login, logout, isLoading } = usePortalAuth()
-  const [vista, setVista] = useState<VistaPortal>('dashboard')
-  const [showNewTicket, setShowNewTicket] = useState(false)
-  const [selectedProyecto, setSelectedProyecto] = useState<ProyectoCliente | null>(null)
-  const [selectedTarea, setSelectedTarea] = useState<TareaCliente | null>(null)
-  const [selectedTicket, setSelectedTicket] = useState<TicketCliente | null>(null)
-  const [tareas, _setTareas] = useState<TareaCliente[]>(DEMO_TAREAS)
-  const [tickets, setTickets] = useState<TicketCliente[]>(DEMO_TICKETS)
+function SolicitarReunionModal({ open, onClose, onSolicitar, proyectos }: {
+  open: boolean
+  onClose: () => void
+  onSolicitar: (reunion: Partial<SolicitudReunion>) => void
+  proyectos: Proyecto[]
+}) {
+  const [reunion, setReunion] = useState<Partial<SolicitudReunion>>({
+    proyecto_id: '',
+    fecha_solicitada: new Date().toISOString().split('T')[0],
+    hora_solicitada: '10:00',
+    duracion: 30,
+    motivo: '',
+    comentarios: ''
+  })
 
-  const handleLogin = () => login(DEMO_CLIENTE.email, 'demo')
-
-  const handleNewTicket = (ticket: Omit<TicketCliente, 'id' | 'numero_ticket' | 'creado_por_nombre' | 'fecha_apertura'>) => {
-    const nuevo: TicketCliente = {
-      ...ticket,
-      id: Date.now().toString(),
-      numero_ticket: `TK-${new Date().getFullYear()}-${String(tickets.length + 1).padStart(3, '0')}`,
-      creado_por_nombre: user?.nombre || 'Cliente',
-      fecha_apertura: new Date().toISOString(),
-    }
-    setTickets(prev => [nuevo, ...prev])
+  const handleSubmit = () => {
+    if (!reunion.proyecto_id || !reunion.motivo) return
+    onSolicitar(reunion)
+    onClose()
   }
 
-  const openProyecto = (proyecto: ProyectoCliente) => {
+  return (
+    <BaseModal open={open} onOpenChange={onClose} size="md">
+      <ModalHeader title="Solicitar Reunión de Seguimiento" />
+      <ModalBody className="space-y-4">
+        <div>
+          <Label>Proyecto Asociado</Label>
+          <Select value={reunion.proyecto_id} onValueChange={(v) => setReunion({ ...reunion, proyecto_id: v, proyecto_nombre: proyectos.find(p => p.id === v)?.nombre })}>
+            <SelectTrigger className="bg-background"><SelectValue placeholder="Selecciona un proyecto" /></SelectTrigger>
+            <SelectContent>
+              {proyectos.map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.nombre}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Fecha Sugerida</Label>
+            <Input type="date" value={reunion.fecha_solicitada} onChange={(e) => setReunion({ ...reunion, fecha_solicitada: e.target.value })} />
+          </div>
+          <div>
+            <Label>Hora Sugerida</Label>
+            <Input type="time" value={reunion.hora_solicitada} onChange={(e) => setReunion({ ...reunion, hora_solicitada: e.target.value })} />
+          </div>
+        </div>
+        <div>
+          <Label>Motivo / Asunto</Label>
+          <Input value={reunion.motivo} onChange={(e) => setReunion({ ...reunion, motivo: e.target.value })} placeholder="Ej: Revisión de avance semanal" />
+        </div>
+        <div>
+          <Label>Comentarios Adicionales</Label>
+          <Textarea value={reunion.comentarios} onChange={(e) => setReunion({ ...reunion, comentarios: e.target.value })} placeholder="Alguna nota o detalle para el equipo" />
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button onClick={handleSubmit} disabled={!reunion.proyecto_id || !reunion.motivo}>Enviar Solicitud</Button>
+      </ModalFooter>
+    </BaseModal>
+  )
+}
+
+function PortalClienteContent() {
+  const { user, login, logout, isLoading: isAuthLoading } = usePortalAuth()
+  const [vista, setVista] = useState<VistaPortal>('dashboard')
+  const [showNewTicket, setShowNewTicket] = useState(false)
+  const [showNewMeeting, setShowNewMeeting] = useState(false)
+  const [selectedProyecto, setSelectedProyecto] = useState<Proyecto | null>(null)
+  const [selectedTarea, setSelectedTarea] = useState<Tarea | null>(null)
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
+
+  // Cargar datos reales de localStorage
+  const [allProyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, [])
+  const [allTareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, [])
+  const [allTickets, setAllTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
+  const [allDocumentos] = useLocalStorage<any[]>(STORAGE_KEYS.documentos, [])
+  const [_allReuniones, setAllReuniones] = useLocalStorage<SolicitudReunion[]>(STORAGE_KEYS.reuniones as any, [])
+
+  // Filtrar datos por la empresa del cliente
+  const misProyectos = allProyectos.filter(p => p.empresa_id === user?.empresa_id)
+  const misTareas = allTareas.filter(t => misProyectos.some(p => p.id === t.proyecto_id))
+  const misTickets = allTickets.filter(t => t.empresa_id === user?.empresa_id)
+  const misDocumentos = allDocumentos.filter(d => d.empresa_id === user?.empresa_id || d.visibilidad === 'publico')
+
+  const tareasPendientes = misTareas.filter(t => t.estado !== 'Completada')
+  const ticketsAbiertos = misTickets.filter(t => t.estado !== 'Cerrado' && t.estado !== 'Resuelto')
+  
+  // Filtrado específico para el proyecto seleccionado
+  const tareasDelProyecto = selectedProyecto ? misTareas.filter(t => t.proyecto_id === selectedProyecto.id) : []
+  const ticketsDelProyecto = selectedProyecto ? misTickets.filter(t => (t as any).proyecto_id === selectedProyecto.id) : []
+  const documentosDelProyecto = selectedProyecto ? misDocumentos.filter(d => d.proyecto_id === selectedProyecto.id) : []
+
+  const handleLogin = () => {
+    const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
+    const users = storedUsers ? JSON.parse(storedUsers) : []
+    const firstClient = users.find((u: any) => u.roles.includes('cliente'))
+    if (firstClient) {
+      login(firstClient.email, 'demo')
+    } else {
+      login('cliente@empresa.com', 'demo')
+    }
+  }
+
+  const handleCreateTicket = (ticketData: Omit<Ticket, 'id' | 'numero_ticket' | 'creado_por_id' | 'creado_por_nombre' | 'fecha_apertura' | 'ultima_actualizacion'>) => {
+    const nuevo: Ticket = {
+      ...ticketData,
+      id: crypto.randomUUID(),
+      numero_ticket: `TK-${new Date().getFullYear()}-${String(allTickets.length + 1).padStart(3, '0')}`,
+      creado_por_id: user?.id || 'cliente',
+      creado_por_nombre: user?.nombre || 'Cliente',
+      fecha_apertura: new Date().toISOString(),
+      ultima_actualizacion: new Date().toISOString(),
+      empresa_id: user?.empresa_id || '',
+      comentarios_count: 0
+    } as any
+    setAllTickets(prev => [nuevo, ...prev])
+  }
+
+  const handleSolicitarReunion = (reunionData: Partial<SolicitudReunion>) => {
+    const nueva: SolicitudReunion = {
+      ...reunionData,
+      id: crypto.randomUUID(),
+      contacto_solicitante_id: user?.id || '',
+      contacto_solicitante_nombre: user?.nombre || '',
+      empresa_nombre: user?.empresa_nombre || '',
+      estado: 'Pendiente',
+      fecha_solicitud: new Date().toISOString()
+    } as any
+    setAllReuniones(prev => [nueva, ...prev])
+    console.log('[Portal] Solicitud de reunión enviada:', nueva)
+  }
+
+  const openProyecto = (proyecto: Proyecto) => {
     setSelectedProyecto(proyecto)
     setVista('proyecto')
   }
 
-  const openTarea = (tarea: TareaCliente) => {
+  const openTarea = (tarea: Tarea) => {
     setSelectedTarea(tarea)
     setVista('tarea')
   }
 
-  const openTicket = (ticket: TicketCliente) => {
+  const openTicket = (ticket: Ticket) => {
     setSelectedTicket(ticket)
     setVista('ticket')
   }
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+  if (isAuthLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
   if (!user) return <PortalLogin onLogin={handleLogin} />
-
-  const tareasPendientes = tareas.filter(t => t.estado === 'Pendiente')
-  const ticketsAbiertos = tickets.filter(t => t.estado !== 'Cerrado' && t.estado !== 'Resuelto')
-  const tareasProyecto1 = tareas.filter(t => t.proyecto_id === '1')
-  const ticketsProyecto1 = tickets.filter(t => t.id !== '4')
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-slate-900 border-b border-white/10 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <div className="h-9 w-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -278,7 +391,7 @@ function PortalClienteContent() {
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {vista === 'dashboard' && (
-          <>
+          <div className="space-y-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 className="h-4 w-4" />
               <span>{user.empresa_nombre}</span>
@@ -288,13 +401,13 @@ function PortalClienteContent() {
               <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-cyan-500 mb-2"><FolderKanban className="h-5 w-5" /><span className="text-sm font-medium">Proyectos Activos</span></div>
-                  <p className="text-3xl font-bold">{DEMO_PROYECTOS.length}</p>
+                  <p className="text-3xl font-bold">{misProyectos.length}</p>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-amber-500 mb-2"><AlertCircle className="h-5 w-5" /><span className="text-sm font-medium">Tareas Pendientes</span></div>
-                  <p className="text-3xl font-bold">{tareasPendientes.length}</p>
+                  <div className="flex items-center gap-2 text-amber-500 mb-2"><Calendar className="h-5 w-5" /><span className="text-sm font-medium">Citas / Reuniones</span></div>
+                  <Button variant="ghost" size="sm" className="w-full text-xs h-8 border border-amber-500/20 hover:bg-amber-500/20" onClick={() => setShowNewMeeting(true)}>Agendar Ahora</Button>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20">
@@ -306,31 +419,41 @@ function PortalClienteContent() {
               <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-green-500 mb-2"><FileText className="h-5 w-5" /><span className="text-sm font-medium">Documentos</span></div>
-                  <p className="text-3xl font-bold">{DEMO_DOCUMENTOS.length}</p>
+                  <p className="text-3xl font-bold">{misDocumentos.length}</p>
                 </CardContent>
               </Card>
             </div>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Mis Proyectos</CardTitle>
+                <CardTitle className="text-lg">Mis Proyectos y Avances</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
-                  {DEMO_PROYECTOS.map(proyecto => (
-                    <div key={proyecto.id} className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => openProyecto(proyecto)}>
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold">{proyecto.nombre}</h3>
-                          <p className="text-sm text-muted-foreground">Fase {proyecto.fase_actual}: {proyecto.fase_nombre}</p>
+                  {misProyectos.length > 0 ? misProyectos.map(proyecto => {
+                    // Calcular progreso basado en tareas si está disponible
+                    const tareasProyecto = misTareas.filter(t => t.proyecto_id === proyecto.id)
+                    const completadas = tareasProyecto.filter(t => t.estado === 'Completada').length
+                    const total = tareasProyecto.length
+                    const progresoCalculado = total > 0 ? Math.round((completadas / total) * 100) : 0
+
+                    return (
+                      <div key={proyecto.id} className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => openProyecto(proyecto)}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold">{proyecto.nombre}</h3>
+                            <p className="text-sm text-muted-foreground">Estado: {proyecto.estado || 'Activo'}</p>
+                          </div>
+                          <Badge variant="outline">{progresoCalculado}%</Badge>
                         </div>
-                        <Badge variant="outline">{proyecto.progreso}%</Badge>
+                        <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-500" style={{ width: `${progresoCalculado}%` }} />
+                        </div>
                       </div>
-                      <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
-                        <div className="h-full bg-cyan-500" style={{ width: `${proyecto.progreso}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  }) : (
+                    <div className="text-center py-8 text-muted-foreground">No tienes proyectos activos actualmente</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -361,70 +484,91 @@ function PortalClienteContent() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg">Tickets Recientes</CardTitle>
-                  <Button size="sm" onClick={() => setShowNewTicket(true)}>Nuevo</Button>
+                  <CardTitle className="text-lg">Soporte y Tickets</CardTitle>
+                  <Button size="sm" onClick={() => setShowNewTicket(true)} className="gap-2"><Plus className="h-4 w-4" /> Nuevo</Button>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {ticketsAbiertos.slice(0, 5).map(ticket => (
+                    {ticketsAbiertos.length > 0 ? ticketsAbiertos.slice(0, 5).map(ticket => (
                       <div key={ticket.id} className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted" onClick={() => openTicket(ticket)}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <p className="font-medium flex items-center gap-2 text-sm">
                               <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
-                              <span>{getPrioridadIcon(ticket.prioridad)}</span>
+                              {ticket.prioridad === 'Alta' || ticket.prioridad === 'Urgente' ? <AlertCircle className="h-3 w-3 text-red-500" /> : <Clock className="h-3 w-3 text-slate-400" />}
                             </p>
                             <p className="text-sm truncate">{ticket.titulo}</p>
                           </div>
                           <Badge className={getTicketEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-4 text-xs text-muted-foreground">No tienes tickets abiertos. Todo al día.</div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </>
+          </div>
         )}
 
         {vista === 'proyecto' && selectedProyecto && (
-          <>
+          <div className="space-y-6">
             <Button variant="ghost" onClick={() => setVista('dashboard')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver</Button>
             <Card className="border-l-4 border-l-cyan-500">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-2xl">{selectedProyecto.nombre}</CardTitle>
-                    <p className="text-muted-foreground">Fase {selectedProyecto.fase_actual}: {selectedProyecto.fase_nombre}</p>
-                  </div>
-                  <Badge variant="outline" className="text-lg">{selectedProyecto.progreso}%</Badge>
+                  {(() => {
+                    const fase = FASES.find(f => f.id === selectedProyecto.fase_actual)
+                    const total = tareasDelProyecto.length
+                    const completadas = tareasDelProyecto.filter(t => t.estado === 'Completada').length
+                    const progreso = total > 0 ? Math.round((completadas / total) * 100) : 0
+                    
+                    return (
+                      <>
+                        <div>
+                          <CardTitle className="text-2xl">{selectedProyecto.nombre}</CardTitle>
+                          <p className="text-muted-foreground">Fase {selectedProyecto.fase_actual}: {fase?.nombre || 'Activo'}</p>
+                        </div>
+                        <Badge variant="outline" className="text-lg">{progreso}%</Badge>
+                      </>
+                    )
+                  })()}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="w-full bg-muted h-3 rounded-full overflow-hidden mb-6">
-                  <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500" style={{ width: `${selectedProyecto.progreso}%` }} />
-                </div>
+                {(() => {
+                  const total = tareasDelProyecto.length
+                  const completadas = tareasDelProyecto.filter(t => t.estado === 'Completada').length
+                  const progreso = total > 0 ? Math.round((completadas / total) * 100) : 0
+                  
+                  return (
+                    <div className="w-full bg-muted h-3 rounded-full overflow-hidden mb-6">
+                      <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500" style={{ width: `${progreso}%` }} />
+                    </div>
+                  )
+                })()}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div><p className="text-sm text-muted-foreground">Inicio</p><p className="font-medium">{new Date(selectedProyecto.fecha_inicio).toLocaleDateString('es-ES')}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Fin estimado</p><p className="font-medium">{new Date(selectedProyecto.fecha_estimada_fin).toLocaleDateString('es-ES')}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Responsable</p><p className="font-medium">{selectedProyecto.responsable_nombre}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Próximo hito</p><p className="font-medium">{selectedProyecto.proximo_hito}</p></div>
+                  <div><p className="text-sm text-muted-foreground">Inicio</p><p className="font-medium">{selectedProyecto.fecha_inicio ? new Date(selectedProyecto.fecha_inicio).toLocaleDateString('es-ES') : 'N/A'}</p></div>
+                  <div><p className="text-sm text-muted-foreground">Fin estimado</p><p className="font-medium">{selectedProyecto.fecha_estimada_fin ? new Date(selectedProyecto.fecha_estimada_fin).toLocaleDateString('es-ES') : 'Pendiente'}</p></div>
+                  <div><p className="text-sm text-muted-foreground">Responsable</p><p className="font-medium">{selectedProyecto.responsable_nombre || 'Asignando...'}</p></div>
+                  <div><p className="text-sm text-muted-foreground">Estado</p><p className="font-medium capitalize">{selectedProyecto.estado}</p></div>
                 </div>
               </CardContent>
             </Card>
 
             <Tabs defaultValue="tareas" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="tareas">Tareas ({tareasProyecto1.length})</TabsTrigger>
-                <TabsTrigger value="tickets">Tickets ({ticketsProyecto1.length})</TabsTrigger>
-                <TabsTrigger value="archivos">Archivos ({DEMO_ARCHIVOS_PROYECTO.filter(a => a.proyecto_id === selectedProyecto.id).length})</TabsTrigger>
-                <TabsTrigger value="equipo">Equipo</TabsTrigger>
+              <TabsList className="bg-muted/50 p-1">
+                <TabsTrigger value="tareas" className="data-[state=active]:bg-background">Tareas ({tareasDelProyecto.length})</TabsTrigger>
+                <TabsTrigger value="tickets" className="data-[state=active]:bg-background">Tickets ({ticketsDelProyecto.length})</TabsTrigger>
+                <TabsTrigger value="archivos" className="data-[state=active]:bg-background">Archivos ({documentosDelProyecto.length})</TabsTrigger>
+                <TabsTrigger value="equipo" className="data-[state=active]:bg-background">Equipo</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tareas">
                 <Card><CardContent className="p-4">
                   <div className="space-y-3">
-                    {tareasProyecto1.map(tarea => (
+                    {tareasDelProyecto.length > 0 ? tareasDelProyecto.map(tarea => (
                       <div key={tarea.id} className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => openTarea(tarea)}>
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-2">
@@ -434,7 +578,9 @@ function PortalClienteContent() {
                           <Badge variant="outline" className="text-xs">{tarea.estado}</Badge>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-muted-foreground text-sm">No hay tareas registradas en este proyecto</div>
+                    )}
                   </div>
                 </CardContent></Card>
               </TabsContent>
@@ -442,7 +588,7 @@ function PortalClienteContent() {
               <TabsContent value="tickets">
                 <Card><CardContent className="p-4">
                   <div className="space-y-3">
-                    {ticketsProyecto1.map(ticket => (
+                    {ticketsDelProyecto.length > 0 ? ticketsDelProyecto.map(ticket => (
                       <div key={ticket.id} className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => openTicket(ticket)}>
                         <div className="flex items-start justify-between">
                           <div>
@@ -452,7 +598,9 @@ function PortalClienteContent() {
                           <Badge className={getTicketEstadoColor(ticket.estado)}>{ticket.estado}</Badge>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-muted-foreground text-sm">No hay tickets vinculados a este proyecto</div>
+                    )}
                   </div>
                 </CardContent></Card>
               </TabsContent>
@@ -460,7 +608,7 @@ function PortalClienteContent() {
               <TabsContent value="archivos">
                 <Card><CardContent className="p-4">
                   <div className="space-y-2">
-                    {DEMO_ARCHIVOS_PROYECTO.filter(a => a.proyecto_id === selectedProyecto.id).map(archivo => (
+                    {documentosDelProyecto.length > 0 ? documentosDelProyecto.map(archivo => (
                       <div key={archivo.id} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
@@ -468,40 +616,27 @@ function PortalClienteContent() {
                         </div>
                         <Button variant="ghost" size="sm"><ExternalLink className="h-3 w-3" /></Button>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-muted-foreground text-sm">No hay documentos compartidos en este proyecto</div>
+                    )}
                   </div>
                 </CardContent></Card>
               </TabsContent>
 
               <TabsContent value="equipo">
                 <Card><CardContent className="p-4">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {DEMO_EQUIPO.map(miembro => (
-                      <div key={miembro.id} className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="h-10 w-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                            <User className="h-5 w-5 text-cyan-500" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{miembro.nombre}</p>
-                            <p className="text-xs text-muted-foreground">{miembro.cargo}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3 w-3" />{miembro.email}</p>
-                          <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3 w-3" />{miembro.telefono}</p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    <Building2 className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                    El equipo asignado se mostrará aquí cuando el proyecto inicie fase de ejecución.
                   </div>
                 </CardContent></Card>
               </TabsContent>
             </Tabs>
-          </>
+          </div>
         )}
 
         {vista === 'tarea' && selectedTarea && (
-          <>
+          <div className="space-y-6">
             <Button variant="ghost" onClick={() => setVista('proyecto')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver al proyecto</Button>
             <Card>
               <CardHeader>
@@ -525,11 +660,11 @@ function PortalClienteContent() {
                 </div>
               </CardContent>
             </Card>
-          </>
+          </div>
         )}
 
         {vista === 'ticket' && selectedTicket && (
-          <>
+          <div className="space-y-6">
             <Button variant="ghost" onClick={() => setVista('dashboard')} className="mb-4"><ArrowLeft className="h-4 w-4 mr-2" />Volver</Button>
             <Card>
               <CardHeader>
@@ -554,11 +689,21 @@ function PortalClienteContent() {
                 <div><p className="text-sm text-muted-foreground mb-1">Descripción</p><p className="text-sm bg-muted/50 p-3 rounded-lg">{selectedTicket.descripcion}</p></div>
               </CardContent>
             </Card>
-          </>
+          </div>
         )}
       </main>
 
-      <NuevoTicketModal open={showNewTicket} onClose={() => setShowNewTicket(false)} onCreate={handleNewTicket} />
+      <NuevoTicketModal 
+        open={showNewTicket} 
+        onClose={() => setShowNewTicket(false)} 
+        onCreate={handleCreateTicket as any} 
+      />
+      <SolicitarReunionModal 
+        open={showNewMeeting} 
+        onClose={() => setShowNewMeeting(false)} 
+        onSolicitar={handleSolicitarReunion} 
+        proyectos={misProyectos as any} 
+      />
     </div>
   )
 }

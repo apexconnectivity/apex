@@ -100,9 +100,14 @@ export function BaseModal({
   // Manejo del cambio de estado
   const handleOpenChange = (isOpen: boolean) => {
     if (disableClose && !isOpen) return
-    if (!isOpen && onClose) onClose()
-    if (isOpen && onOpen) onOpen()
-    onOpenChange(isOpen)
+    
+    // Usar setTimeout para mover la actualización de estado fuera del ciclo de renderizado
+    // y así evitar errores de "Cannot update a component while rendering a different component"
+    setTimeout(() => {
+      if (!isOpen && onClose) onClose()
+      if (isOpen && onOpen) onOpen()
+      onOpenChange(isOpen)
+    }, 0)
   }
 
   // Clases de overlay según variante

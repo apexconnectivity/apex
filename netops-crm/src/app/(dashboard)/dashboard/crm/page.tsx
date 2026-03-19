@@ -622,19 +622,27 @@ export default function CRMPage() {
         }
       })
 
-      // 2. Si es nuevo, generar el usuario automáticamente para el portal
-      if (isNew) {
-        console.log('[CRM] Generando usuario para el contacto...')
-        setUsuarios(prev => {
-          // Solo crear si no existe un usuario con ese email (evitar duplicados en usuarios)
-          if (prev.some(u => u.email.toLowerCase() === contactoData.email?.toLowerCase())) {
-            console.log('[CRM] El usuario ya existe, omitiendo creación')
-            return prev
+      // 2. Sincronizar con el usuario asociado si ya existe o crear uno nuevo
+      setUsuarios(prev => {
+        const email = contactoData.email || ''
+        const existingUserIndex = prev.findIndex(u => u.email.toLowerCase() === email.toLowerCase())
+        
+        if (existingUserIndex !== -1) {
+          // Actualizar usuario existente si los datos cambiaron
+          const updatedUsers = [...prev]
+          updatedUsers[existingUserIndex] = {
+            ...updatedUsers[existingUserIndex],
+            nombre: contactoData.nombre || updatedUsers[existingUserIndex].nombre,
+            telefono: contactoData.telefono || updatedUsers[existingUserIndex].telefono,
+            // Mantener roles y otros campos
           }
-          
+          console.log('[CRM] Usuario existente actualizado:', updatedUsers[existingUserIndex])
+          return updatedUsers
+        } else if (isNew) {
+          // Crear nuevo si es nuevo contacto
           const nuevoUsuario: User = {
             id: crypto.randomUUID(),
-            email: contactoData.email || '',
+            email: email,
             nombre: contactoData.nombre || '',
             telefono: contactoData.telefono,
             activo: true,
@@ -645,8 +653,10 @@ export default function CRMPage() {
           }
           console.log('[CRM] Nuevo usuario creado:', nuevoUsuario)
           return [...prev, nuevoUsuario]
-        })
-      }
+        }
+        
+        return prev
+      })
 
       setIsModalContacto(false)
       setEditingContacto(null)
