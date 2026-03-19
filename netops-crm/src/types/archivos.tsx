@@ -78,6 +78,7 @@ export const getFileIcon = (mimeType: string): ReactNode => {
   if (mimeType.includes('pdf')) return <FileText className="h-5 w-5" aria-hidden="true" />
   if (mimeType.includes('word') || mimeType.includes('document')) return <FileText className="h-5 w-5" aria-hidden="true" />
   if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return <FileSpreadsheet className="h-5 w-5" aria-hidden="true" />
+  // eslint-disable-next-line jsx-a11y/alt-text
   if (mimeType.includes('image')) return <Image className="h-5 w-5" aria-hidden="true" />
   if (mimeType.includes('text')) return <FileText className="h-5 w-5" aria-hidden="true" />
   return <Folder className="h-5 w-5" aria-hidden="true" />

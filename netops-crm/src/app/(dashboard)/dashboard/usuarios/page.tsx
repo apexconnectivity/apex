@@ -6,43 +6,25 @@ import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleContainer, ModuleHeader, CreateUserModal } from '@/components/module'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { RoleBadge } from '@/components/ui/role-badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   UserPlus,
-  Search,
   Pencil,
   Trash2,
   KeyRound,
   Shield,
   Mail,
   Phone,
-  Check,
-  Loader2,
-  X
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
-import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { cn } from '@/lib/utils'
-import { USUARIOS_PAGE, BUTTON_LABELS, FORM_LABELS, USER_STATUS } from '@/constants/auth'
-
-// ============================================================================
-// Tipos locales para el formulario
-// ============================================================================
-type UserFormData = Pick<User, 'nombre' | 'email' | 'telefono' | 'roles'>
+import { USUARIOS_PAGE, BUTTON_LABELS } from '@/constants/auth'
 
 // Roles internos disponibles
 const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
@@ -114,15 +96,6 @@ export default function UsersPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingUser(null)
-  }
-
-  const handleRoleToggle = (role: Role) => {
-    setFormData(prev => ({
-      ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role]
-    }))
   }
 
   const handleSave = async () => {

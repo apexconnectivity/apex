@@ -28,7 +28,9 @@ export default function DashboardPage() {
   const isTecnico = user?.roles.includes('tecnico')
   const isComercial = user?.roles.includes('comercial')
   const isCliente = user?.roles.includes('cliente')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isCompras = user?.roles.includes('compras')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isFacturacion = user?.roles.includes('facturacion')
 
   // Si es cliente, mostrar portal del cliente

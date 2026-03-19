@@ -1,13 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { CheckSquare, Calendar, User, AlertCircle, MessageSquare, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
+import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { ActivityFeed } from '@/components/ui/activity-feed'
 import { SubtaskList } from '@/components/ui/subtask-list'
 import { StatusBadge } from '@/components/module/StatusBadge'
@@ -40,7 +35,9 @@ export function TaskDetailPanel({
   isOpen,
   onClose,
   tarea,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   proyectos,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   usuarios,
   subtareas,
   comentarios,
@@ -50,7 +47,7 @@ export function TaskDetailPanel({
   onAddComentario,
   onEdit,
 }: TaskDetailPanelProps) {
-  const [editMode, setEditMode] = useState(false)
+  const [_editMode, setEditMode] = useState(false)
   const [editedTarea, setEditedTarea] = useState<Tarea | null>(tarea)
 
   // Update editedTarea when tarea changes
@@ -95,7 +92,8 @@ export function TaskDetailPanel({
   }
 
   // Get estado text class
-  const getEstadoClase = (estado: EstadoTarea) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _getEstadoClase = (estado: EstadoTarea) => {
     switch (estado) {
       case 'Completada':
         return 'line-through text-muted-foreground'

@@ -47,7 +47,8 @@ export function ModalField({
   children,
   ...props
 }: ModalFieldProps) {
-  const variantColors = getModalVariantColor(variant)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _variantColors = getModalVariantColor(variant)
 
   return (
     <div className={cn("space-y-2", className)} {...props}>
@@ -62,8 +63,10 @@ export function ModalField({
       )}
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ? React.cloneElement(child as React.ReactElement<any>, {
             disabled,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...(error && { className: cn((child as React.ReactElement<any>).props.className, "border-destructive") })
           })
           : child
@@ -164,7 +167,8 @@ export function ModalActions({
   children,
   ...props
 }: ModalActionsProps) {
-  const variantColors = getModalVariantColor(variant)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _variantColors = getModalVariantColor(variant)
 
   return (
     <div

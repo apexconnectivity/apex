@@ -30,15 +30,6 @@ function getCanalIconComponent(canal: string) {
   }
 }
 
-// Función para obtener el color del icono según el tipo de canal
-function getCanalBgColor(canal: string): string {
-  switch (canal) {
-    case 'slack': return 'bg-primary' // Usando token del theme
-    case 'email': return 'bg-blue-500' // Token de color estándar de Tailwind
-    default: return 'bg-muted'
-  }
-}
-
 function ConfiguracionGlobalTab({ config, onUpdate }: { config: ConfiguracionGlobal; onUpdate: (c: ConfiguracionGlobal) => void }) {
   const [local, setLocal] = useState(config)
   const { titulos, canales, sla, resumen, webhook, botones } = NOTIFICACIONES_TEXTS.configGlobal
@@ -329,6 +320,7 @@ function MisPreferenciasTab({ preferencia, onUpdate }: { preferencia: Preferenci
                 <Button
                   key={opcion.value}
                   variant={local.canal_preferido === opcion.value ? 'default' : 'outline'}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setLocal({ ...local, canal_preferido: opcion.value as any })}
                   className="flex-1"
                 >
@@ -393,7 +385,7 @@ export default function NotificacionesPage() {
 
   // Usar localStorage para persistir los datos
   const [config, setConfig] = useLocalStorage<ConfiguracionGlobal>(NOTIFICACIONES_STORAGE_KEYS.config, CONFIG_INICIAL)
-  const [eventos, setEventos] = useLocalStorage<EventoNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.eventos, EVENTOS_NOTIFICACION)
+  const [eventos, _setEventos] = useLocalStorage<EventoNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.eventos, EVENTOS_NOTIFICACION)
   const [logs, setLogs] = useLocalStorage<LogNotificacion[]>(NOTIFICACIONES_STORAGE_KEYS.config, [])
   const [preferencia, setPreferencia] = useLocalStorage<PreferenciaNotificacion>(NOTIFICACIONES_STORAGE_KEYS.preferencia, PREFERENCIA_INICIAL)
   const [vista, setVista] = useLocalStorage<'config' | 'eventos' | 'logs' | 'mispreferencias'>(NOTIFICACIONES_STORAGE_KEYS.vista, 'config')

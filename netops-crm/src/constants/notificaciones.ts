@@ -3,7 +3,7 @@
  * Todos los textos hardcodeados deben estar aquí para facilitar mantenimiento e internacionalización
  */
 
-import type { ConfiguracionGlobal, LogNotificacion, PreferenciaNotificacion, EventoNotificacion } from '@/types/notificaciones'
+import type { ConfiguracionGlobal, PreferenciaNotificacion } from '@/types/notificaciones'
 
 // ============================================
 // TÍTULOS Y DESCRIPCIONES

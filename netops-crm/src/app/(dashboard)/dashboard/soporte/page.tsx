@@ -5,22 +5,17 @@ import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useEmpresas, useProyectos, useContactos } from '@/hooks'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { Ticket, ContratoSoporte, ComentarioTicket, EstadoTicket, ESTADOS_TICKET, CategoriaTicket, CATEGORIAS_TICKET, PrioridadTicket, PRIORIDADES_TICKET } from '@/types/soporte'
+import { Ticket, ContratoSoporte, ComentarioTicket, EstadoTicket, ESTADOS_TICKET, CATEGORIAS_TICKET, PRIORIDADES_TICKET } from '@/types/soporte'
 import { CreateTicketData } from '@/components/module/CreateTicketModal'
 import { CreateContractData } from '@/components/module/CreateContractModal'
 import { CreateTicketModal } from '@/components/module/CreateTicketModal'
 import { CreateContractModal } from '@/components/module/CreateContractModal'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
-import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_FILTROS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS, SOPORTE_SELECTORES } from '@/constants/soporte'
+import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
 import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ModuleCard } from '@/components/module/ModuleCard'
 import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWithPanel'
@@ -28,11 +23,11 @@ import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
-import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Filter, X, Plus } from 'lucide-react'
+import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Plus } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
-import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 
 // Lista de usuarios internos (se llenará con datos del módulo de usuarios)
 const USUARIOS_INTERNOS = [
@@ -49,10 +44,10 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
   const isSlaWarning = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && !ticket.fecha_primera_respuesta
   const isSlaBreached = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && ticket.estado !== 'Resuelto' && ticket.estado !== 'Cerrado'
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     transition,
-  }
+  } : undefined
 
   return (
     <div ref={setNodeRef} style={style} className={isDragging ? 'opacity-50' : ''}>
@@ -92,45 +87,12 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
   )
 }
 
-function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }) {
-  const isSlaWarning = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && !ticket.fecha_primera_respuesta
-  const isSlaBreached = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && ticket.estado !== 'Resuelto' && ticket.estado !== 'Cerrado'
-
-  return (
-    <ModuleCard onClick={onClick} noPadding>
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
-          {isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('error').text}`} />}
-          {isSlaWarning && <AlertCircle className={`h-4 w-4 ${getStatusColor('warning').text}`} />}
-        </div>
-        <h4 className="font-semibold text-sm line-clamp-2">{ticket.titulo}</h4>
-        <p className="text-xs text-muted-foreground truncate">{ticket.contrato_nombre}</p>
-        <div className="flex flex-wrap gap-1.5">
-          <StatusBadge status={ticket.categoria} type="categoria" />
-          <StatusBadge status={ticket.prioridad} type="prioridad" />
-        </div>
-        {ticket.responsable_nombre && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <User className="h-3 w-3" />
-            <span>{ticket.responsable_nombre}</span>
-          </div>
-        )}
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          <span>{new Date(ticket.fecha_apertura).toLocaleDateString('es-ES')}</span>
-        </div>
-      </CardContent>
-    </ModuleCard>
-  )
-}
-
 export default function SoportePage() {
   const { user } = useAuth()
   const [empresas, setEmpresas] = useEmpresas()
   const [proyectos, setProyectos] = useProyectos()
   const [contactos] = useContactos()
-  const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
+  const [usuarios, _setUsuarios] = useState<import('@/types/auth').User[]>([])
   const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(STORAGE_KEYS.soporteVista, 'tickets')
   const [contratos, setContratos] = useLocalStorage<ContratoSoporte[]>(STORAGE_KEYS.contratos, [])
   const [tickets, setTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
@@ -229,6 +191,7 @@ export default function SoportePage() {
     })
   }, [tickets, searchQuery, filtroEstado, filtroCategoria, filtroPrioridad, filtroCliente, filtroResponsable, filtroFechaRange])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const ticketsPorEstado = useMemo(() => {
     const r: Record<EstadoTicket, Ticket[]> = { 'Abierto': [], 'En progreso': [], 'Esperando cliente': [], 'Resuelto': [], 'Cerrado': [] }
     filteredTickets.forEach(t => { if (r[t.estado]) r[t.estado].push(t) })

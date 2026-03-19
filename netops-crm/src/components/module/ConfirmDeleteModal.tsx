@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProyectoArchivado } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, ELIMINAR_MODAL } from '@/constants/archivado'
-import { AlertCircle, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 
 interface ConfirmDeleteModalProps {
   proyecto: ProyectoArchivado | null

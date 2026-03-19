@@ -52,6 +52,7 @@ export function SubtaskList({
   onToggle,
   onDelete,
   placeholder = 'Nueva subtarea...',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   submitLabel = 'Agregar',
   emptyMessage = 'No hay subtareas',
   title = 'Subtareas',

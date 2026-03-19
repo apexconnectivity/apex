@@ -12,9 +12,6 @@ import {
   User,
   Lock,
   Bell,
-  Mail,
-  Phone,
-  Calendar,
   Save,
   Loader2,
   Eye,
@@ -22,10 +19,10 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react'
-import { Role, ROLE_DEFINITIONS } from '@/types/auth'
+import { ROLE_DEFINITIONS } from '@/types/auth'
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)

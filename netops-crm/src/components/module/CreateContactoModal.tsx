@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Contacto, TipoContacto, TIPOS_CONTACTO } from '@/types/crm'
-import { Loader2, User } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { VARIANT_COLORS } from '@/lib/colors'
 import { ModalVariant } from '@/constants/modales'
 

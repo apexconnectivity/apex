@@ -19,7 +19,7 @@ import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Proveedor, OrdenCompra, Cotizacion, Producto, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
+import { Proveedor, OrdenCompra, ItemOrden, EstadoOrden, Moneda, MONEDAS, ESTADOS_ORDEN } from '@/types/compras'
 import {
   IMPUESTO_TASA, IMPUESTO_LABEL,
   COMPRAS_TITLE, COMPRAS_DESCRIPTION,
@@ -29,7 +29,7 @@ import {
   LABEL_ENTREGA_ESTIMADA, LABEL_MONEDA, LABEL_ITEMS, LABEL_CONDICIONES_PAGO, LABEL_NOTAS,
   LABEL_SUBTOTAL, LABEL_IMPUESTOS, LABEL_TOTAL,
   TABLE_PRODUCTO, TABLE_CANTIDAD, TABLE_PRECIO, TABLE_TOTAL,
-  PLACEHOLDER_BUSCAR_PROVEEDORES, PLACEHOLDER_SELECCIONAR, PLACEHOLDER_PRODUCTO,
+  PLACEHOLDER_SELECCIONAR, PLACEHOLDER_PRODUCTO,
   PLACEHOLDER_CANTIDAD, PLACEHOLDER_PRECIO, PLACEHOLDER_CONDICIONES_PAGO, PLACEHOLDER_NOTAS,
   STAT_PENDIENTES, STAT_ENVIADAS, STAT_RECIBIDAS, STAT_TOTAL_ORDENES,
   COMPRAS_STATS_COLORS,
@@ -41,10 +41,11 @@ import {
 import { getOrdenCompraColor } from '@/lib/colors'
 import { useProyectos } from '@/hooks'
 import {
-  ShoppingCart, Plus, Package, FileText, Truck, CheckCircle, XCircle,
-  Clock, AlertTriangle, Search, Filter, DollarSign, Calendar,
-  Building2, Mail, Phone, Star, Save, Send, Download, Trash2,
-  ChevronRight, Eye, Edit, X, ClipboardList, SendHorizontal, PackageCheck
+  Plus, Package, Truck, CheckCircle, XCircle,
+  AlertTriangle, DollarSign,
+  Star, Save, Send, Download,
+  ChevronRight, ClipboardList, SendHorizontal, PackageCheck, X,
+  Mail, Phone
 } from 'lucide-react'
 
 // ============================================
@@ -345,8 +346,7 @@ function DetalleOrdenModal({ open, orden, onClose, onCambiarEstado }: {
 export default function ComprasPage() {
   const { user } = useAuth()
   const [ordenes, setOrdenes] = useLocalStorage<OrdenCompra[]>(STORAGE_KEYS.compras, [])
-  const [proveedores, setProveedores] = useLocalStorage<Proveedor[]>(STORAGE_KEYS.proveedores, [])
-  const [cotizaciones] = useLocalStorage<Cotizacion[]>(STORAGE_KEYS.cotizaciones, [])
+  const [proveedores, _setProveedores] = useLocalStorage<Proveedor[]>(STORAGE_KEYS.proveedores, [])
   const [proyectos] = useProyectos()
   const [vista, setVista] = useLocalStorage<'dashboard' | 'ordenes' | 'proveedores'>(STORAGE_KEYS.comprasVista, 'dashboard')
   const [showNuevaOrden, setShowNuevaOrden] = useState(false)

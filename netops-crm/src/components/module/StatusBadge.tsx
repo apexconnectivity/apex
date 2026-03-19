@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge, BadgeProps } from '@/components/ui/badge'
-import { normalizeKey, getTaskStatusColor, getPriorityColor, getCategoryColor, getStatusColor, STATUS_COLORS, type StatusColorKey } from '@/lib/colors'
+import { normalizeKey, getTaskStatusColor, getPriorityColor, getCategoryColor, getStatusColor, STATUS_COLORS } from '@/lib/colors'
 
 type StatusType =
   | 'estado'

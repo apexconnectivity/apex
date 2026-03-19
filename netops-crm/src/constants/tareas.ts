@@ -3,7 +3,7 @@
  * Contains all labels, statuses, priorities, and configuration for the tareas module
  */
 
-import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS, COMMON_STATUS } from './common_text'
+import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS } from './common_text'
 
 // ==========================================
 // PAGE LABELS

@@ -1,25 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { useProyectos } from "@/lib/data"
 import type { Proyecto } from "@/types/proyectos"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ModuleCard } from "@/components/module/ModuleCard"
 import { PIPELINE_FASE_COLORS } from "@/lib/colors"
 import {
-  FolderKanban,
-  MoreHorizontal,
   Calendar,
   DollarSign,
-  Users,
   TrendingUp,
   Target,
-  Clock,
 } from "lucide-react"
 
 // Tipos locales para el componente

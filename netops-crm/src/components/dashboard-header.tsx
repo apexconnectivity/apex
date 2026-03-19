@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +9,6 @@ import Link from 'next/link'
 import {
   ChevronRight,
   Bell,
-  Zap,
   Plus,
 } from 'lucide-react'
 import { STATUS_COLORS } from '@/lib/colors'
@@ -26,6 +24,7 @@ interface DashboardHeaderProps {
   onNewProjectClick?: () => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function DashboardHeader({ showSearch = true, showNewProject = true, onNewProjectClick }: DashboardHeaderProps) {
   const pathname = usePathname()
   const { user } = useAuth()

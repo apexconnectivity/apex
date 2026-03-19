@@ -83,17 +83,23 @@ export function useSafeCallback() {
    * @returns Promise que se rechaza si el componente se desmonta
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const safeAsync = useCallback(<T extends (...args: any[]) => Promise<any>>(
-    callback: T,
-  ): ((...args: Parameters<T>) => Promise<any>) => {
-    return async (...args: Parameters<T>): Promise<any> => {
-      if (!isMountedRef.current) {
-        console.warn('[useSafeCallback] Async callback ignorado: componente desmontado')
-        return undefined as any
+  const safeAsync = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <T extends (...args: any[]) => Promise<any>>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      callback: T,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): ((...args: Parameters<T>) => Promise<any>) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return async (...args: Parameters<T>): Promise<any> => {
+        if (!isMountedRef.current) {
+          console.warn('[useSafeCallback] Async callback ignorado: componente desmontado')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return undefined as any
+        }
+        return callback(...args)
       }
-      return callback(...args)
-    }
-  }, [])
+    }, [])
 
   return {
     isMounted,

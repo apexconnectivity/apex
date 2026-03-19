@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PlusCircle, Trash2, Ticket, AlertCircle, Info, Calendar } from 'lucide-react'
+import { PlusCircle, Trash2, AlertCircle, Info, Calendar } from 'lucide-react'
 import { Ticket as TicketType, ContratoSoporte, CategoriaTicket, PrioridadTicket, EstadoTicket, CATEGORIAS_TICKET, PRIORIDADES_TICKET, ESTADOS_TICKET } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
@@ -441,6 +441,7 @@ export function CreateTicketModal({
   contratos,
   empresas,
   proyectos,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setProyectos,
   usuarios,
   mode = 'create',
@@ -555,7 +556,8 @@ export function CreateTicketModal({
   const hasProyectos = proyectos && proyectos.filter(p => p.estado === 'activo').length > 0
 
   // Determinar el tipo de ticket seleccionado (soporte o proyecto)
-  const tipoTicketSeleccionado = ticketData.tipo_origen
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _tipoTicketSeleccionado = ticketData.tipo_origen
 
   const canSave = (() => {
     if (!ticketData.titulo || !ticketData.descripcion) return false

@@ -3,7 +3,6 @@
  */
 
 import { SettingsTab } from '@/types/configuracion'
-import { COMMON_MESSAGES } from './common_text'
 
 // ============================================================================
 // LABELS DE PESTAÑAS

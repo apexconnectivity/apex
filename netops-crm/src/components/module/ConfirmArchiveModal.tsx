@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { ProyectoCerrado, Clasificacion, getClasificacionColor } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, ARCHIVADO_CLASIFICACION, ARCHIVAR_MODAL } from '@/constants/archivado'
-import { CheckCircle, AlertTriangle, Archive } from 'lucide-react'
+import { CheckCircle, AlertTriangle } from 'lucide-react'
 import { ModalVariant } from '@/constants/modales'
 
 interface ConfirmArchiveModalProps {

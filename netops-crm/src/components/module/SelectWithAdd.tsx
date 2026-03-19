@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
-import { ModalVariant } from '@/constants/modales'
 
 type OptionType = 'industrias' | 'tamanios' | 'tipos' | 'tipos_contacto' | 'origenes' | 'tipos_relacion' | 'regimenes_fiscales'
 

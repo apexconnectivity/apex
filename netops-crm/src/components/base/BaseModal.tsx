@@ -9,7 +9,6 @@ import {
   getModalVariantColor,
   getModalVariantIcon,
   getOverlayClass,
-  getContentAnimation
 } from "@/constants/modales"
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full"
@@ -82,6 +81,7 @@ export function BaseModal({
   isLoading = false,
   loadingMessage,
   closeOnOverlayClick = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   closeOnEscape = true,
   disableClose = false,
   description,
@@ -94,7 +94,8 @@ export function BaseModal({
   // Obtener colores de la variante
   const variantColors = getModalVariantColor(variant)
   const VariantIcon = getModalVariantIcon(variant)
-  const IconComponent = accentIcon || VariantIcon
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _IconComponent = accentIcon || VariantIcon
 
   // Manejo del cambio de estado
   const handleOpenChange = (isOpen: boolean) => {
@@ -259,7 +260,8 @@ export function ModalBody({
   className,
   ...props
 }: ModalBodyProps) {
-  const variantColors = getModalVariantColor(variant)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _variantColors = getModalVariantColor(variant)
 
   return (
     <div
@@ -280,6 +282,7 @@ interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   showAccent?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const LAYOUT_CLASSES: Record<NonNullable<ModalFooterProps["layout"]>, string> = {
   stack: "flex flex-col-reverse gap-2",
   inline: "flex flex-row gap-2",

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { User, Role, hasPermission, canAccessModule, isInternalUser } from '@/types/auth'
+import { User, hasPermission, canAccessModule, isInternalUser } from '@/types/auth'
 
 // ============================================================================
 // CONFIGURACIÓN DE DEMO

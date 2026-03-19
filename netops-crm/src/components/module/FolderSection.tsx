@@ -16,7 +16,7 @@ interface FolderSectionProps {
 
 export default function FolderSection({
   titulo,
-  icon: Icon,
+  icon: _Icon,
   archivos,
   onVer,
   onEliminar,

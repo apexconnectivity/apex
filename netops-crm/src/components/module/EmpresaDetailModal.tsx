@@ -81,6 +81,7 @@ export function EmpresaDetailModal({
   contactos,
   documentos,
   proyectos,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   tickets = [],
   canEdit,
   canUploadDocuments,

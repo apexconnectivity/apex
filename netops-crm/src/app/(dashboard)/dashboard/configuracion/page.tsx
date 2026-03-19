@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Settings, Bell, Database } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Bell, Database } from 'lucide-react'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/auth-context'
 import { ModuleContainer, ModuleHeader } from '@/components/module'
 import { SettingsGeneral } from '@/components/module/SettingsGeneral'

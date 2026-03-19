@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { type Archivo, type EntidadTipo, type Visibilidad } from '@/types/archivos'
+import { type Archivo } from '@/types/archivos'
 
 // ============================================================================
 // Keys para localStorage

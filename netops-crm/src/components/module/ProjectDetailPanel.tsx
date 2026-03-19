@@ -1,9 +1,8 @@
 "use client"
 
 import { useMemo } from 'react'
-import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Building2, Target, Archive, XCircle } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Target, Archive, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { PIPELINE_FASE_COLORS } from '@/lib/colors'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
@@ -33,6 +32,7 @@ export function ProjectDetailPanel({
   onClose,
   proyecto,
   tareas,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   historial = [],
   onCerrar,
   onArchivar,

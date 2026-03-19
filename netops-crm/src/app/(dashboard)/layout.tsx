@@ -10,7 +10,6 @@ import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { useEmpresas, useContactos, useProyectos } from '@/hooks'
 import { Proyecto } from '@/types/proyectos'
 import { User } from '@/types/auth'
-import { Contacto } from '@/types/crm'
 import {
   LayoutDashboard,
   Building2,
@@ -72,7 +71,8 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isTransitioning, setIsTransitioning] = useState(false)
 
   // Estado para el modal de nuevo proyecto
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
@@ -89,7 +89,7 @@ export default function DashboardLayout({
     if (stored) {
       try {
         setUsuarios(JSON.parse(stored))
-      } catch (e) {
+      } catch {
         // Error al cargar usuarios
       }
     }

@@ -3,7 +3,7 @@
  * Contains all labels, statuses, types, and configuration for the calendario module
  */
 
-import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS, COMMON_DATE_LABELS } from './common_text'
+import { COMMON_BUTTONS, COMMON_FILTER_LABELS, COMMON_DATE_LABELS } from './common_text'
 
 // ==========================================
 // PAGE LABELS

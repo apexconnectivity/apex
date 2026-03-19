@@ -1,11 +1,11 @@
 'use client'
 
-import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
+import { BaseModal, ModalHeader, ModalBody } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getClasificacionColor, ProyectoArchivado } from '@/types/archivado'
 import { ARCHIVADO_BOTONES, DETALLE_ARCHIVADO_MODAL, ARCHIVADO_CLASIFICACION } from '@/constants/archivado'
-import { Archive, FileText, Download, Folder, RotateCcw, Trash2, ExternalLink } from 'lucide-react'
+import { FileText, Download, Folder, RotateCcw, Trash2, ExternalLink } from 'lucide-react'
 import { ModalVariant } from '@/constants/modales'
 
 interface DetalleArchivadoModalProps {

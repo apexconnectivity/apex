@@ -118,7 +118,7 @@ export function Timeline({
             {/* Vertical line */}
             <div className="absolute left-2 top-3 bottom-3 w-px bg-border" />
 
-            {displayEvents.map((event, index) => (
+            {displayEvents.map((event, _index) => (
               <div key={event.id} className="relative flex gap-3 py-2">
                 {/* Icon */}
                 <div

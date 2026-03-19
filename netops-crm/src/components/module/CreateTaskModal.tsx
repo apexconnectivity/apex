@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { SubtaskList } from '@/components/ui/subtask-list'
 import { CommentInput } from '@/components/ui/comment-input'
-import { Plus, X, Trash2, CheckSquare, MessageSquare, PlusCircle } from 'lucide-react'
+import { Trash2, PlusCircle } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
 import { ModalVariant } from '@/constants/modales'
@@ -184,6 +184,7 @@ export function CreateTaskModal({
   open,
   onOpenChange,
   proyectos,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setProyectos,
   usuarios,
   currentUser,

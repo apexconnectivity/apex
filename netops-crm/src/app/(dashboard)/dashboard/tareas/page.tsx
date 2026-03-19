@@ -5,36 +5,23 @@ import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useContactos } from '@/hooks/useContactos'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
-import { VARIANT_COLORS, STATUS_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
+import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
 
 // Importar constantes
 import {
-  PAGE_TITLE,
-  PAGE_DESCRIPTION,
-  TABS_LABELS,
-  BUTTON_LABELS,
-  EMPTY_MESSAGES,
-  FORM_LABELS,
-  FILTER_LABELS,
-  STATS_LABELS,
-  DATE_LABELS,
   OTHER_LABELS,
-  TASK_STATUS,
 } from '@/constants/tareas'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
-import { CheckSquare, X, Plus, Filter, Calendar, User, AlertCircle, MessageSquare, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle } from 'lucide-react'
-import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea, CategoriaTarea, PrioridadTarea } from '@/types/tareas'
-import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal, CreateProjectModal, CreateEmpresaModal, CreateUserModal } from '@/components/module'
+import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus } from 'lucide-react'
+import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, CreateTaskModal, CreateProjectModal } from '@/components/module'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 
@@ -143,11 +130,10 @@ export default function TareasPage() {
 
   // Modal nuevo proyecto
   const [showNewProject, setShowNewProject] = useState(false)
-  const [showNewEmpresa, setShowNewEmpresa] = useState(false)
-  const [showNewUsuario, setShowNewUsuario] = useState(false)
   const [subtareas, setSubtareas] = useSubtareas()
   const [comentarios, setComentarios] = useComentarios()
-  const [view, setView] = useState<'kanban' | 'lista'>('kanban')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_view, _setView] = useState<'kanban' | 'lista'>('kanban')
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [filtroPersona, setFiltroPersona] = useState<string>('todos')
@@ -250,11 +236,13 @@ export default function TareasPage() {
   }
 
   // Handler para crear empresa desde tareas
-  const handleSaveEmpresa = async (empresa: Partial<import('@/types/crm').Empresa>, isNew: boolean) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleSaveEmpresa = async (empresa: Partial<import('@/types/crm').Empresa>, isNew: boolean) => {
     if (!isNew || !empresa.nombre) return
 
     const now = new Date().toISOString().split('T')[0]
-    const nuevaEmpresa: import('@/types/crm').Empresa = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _nuevaEmpresa: import('@/types/crm').Empresa = {
       ...empresa,
       id: String(Date.now()),
       creado_en: now,
@@ -264,11 +252,13 @@ export default function TareasPage() {
   }
 
   // Handler para crear usuario desde tareas
-  const handleSaveUsuario = async (user: Partial<import('@/types/auth').User>, isNew: boolean) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleSaveUsuario = async (user: Partial<import('@/types/auth').User>, isNew: boolean) => {
     if (!isNew || !user.nombre) return
 
     const now = new Date().toISOString().split('T')[0]
-    const nuevoUsuario: import('@/types/auth').User = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _nuevoUsuario: import('@/types/auth').User = {
       ...user,
       id: String(Date.now()),
       nombre: user.nombre || '',
@@ -279,7 +269,7 @@ export default function TareasPage() {
       cambiar_password_proximo_login: true,
     } as import('@/types/auth').User
 
-    setUsuarios(prev => [...prev, nuevoUsuario])
+    setUsuarios(prev => [...prev, _nuevoUsuario])
   }
 
   const handleSaveTarea = (data: CreateTaskData) => {
@@ -413,7 +403,8 @@ export default function TareasPage() {
     setComentarios(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComentario] }))
   }
 
-  const clearFilters = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _clearFilters = () => {
     setFiltroProyecto('todos')
     setFiltroPersona('todos')
     setFiltroEstado('todos')
@@ -583,7 +574,7 @@ export default function TareasPage() {
           <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
         </StatGrid>
 
-        {view === 'kanban' && (
+        {_view === 'kanban' && (
           <div className="-mx-6 px-6 overflow-x-auto">
             <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
               {ESTADOS.map(estado => (
@@ -606,7 +597,7 @@ export default function TareasPage() {
           </div>
         )}
 
-        {view === 'lista' && (
+        {_view === 'lista' && (
           <div className="space-y-2">
             {visibleTareas.map(tarea => (
               <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>

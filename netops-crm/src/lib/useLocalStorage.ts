@@ -50,7 +50,7 @@ export function useLocalStorage<T>(
           } else {
             setStoredValue(initialValueRef.current)
           }
-        } catch (parseError) {
+        } catch {
           // Limpiar datos corruptos
           window.localStorage.removeItem(key)
           setStoredValue(initialValueRef.current)
@@ -58,7 +58,7 @@ export function useLocalStorage<T>(
       } else {
         setStoredValue(initialValueRef.current)
       }
-    } catch (error) {
+    } catch {
       setStoredValue(initialValueRef.current)
     } finally {
       setIsLoaded(true)

@@ -14,10 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base/BaseModal'
 import {
-  Zap, FolderKanban, CheckSquare, Headphones, FileText,
-  User, LogOut, Bell, Calendar, ChevronRight, Upload,
-  ExternalLink, Clock, AlertCircle, MessageSquare, Building2,
-  ArrowLeft, Phone, Mail, CheckCircle, XCircle, Eye
+  Zap, FolderKanban, Headphones, FileText,
+  User, LogOut, Upload,
+  ExternalLink, Clock, AlertCircle, Building2,
+  ArrowLeft, Phone, Mail, CheckCircle
 } from 'lucide-react'
 
 // Tipo para datos del formulario de ticket
@@ -146,15 +146,6 @@ function PortalLogin({ onLogin }: { onLogin: () => void }) {
   )
 }
 
-function DetailModal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  return (
-    <BaseModal open={open} onOpenChange={onClose} size="lg" className="max-h-[90vh]">
-      <ModalHeader title={title} />
-      <ModalBody>{children}</ModalBody>
-    </BaseModal>
-  )
-}
-
 function NuevoTicketModal({ open, onClose, onCreate }: {
   open: boolean
   onClose: () => void
@@ -223,7 +214,7 @@ function PortalClienteContent() {
   const [selectedProyecto, setSelectedProyecto] = useState<ProyectoCliente | null>(null)
   const [selectedTarea, setSelectedTarea] = useState<TareaCliente | null>(null)
   const [selectedTicket, setSelectedTicket] = useState<TicketCliente | null>(null)
-  const [tareas, setTareas] = useState<TareaCliente[]>(DEMO_TAREAS)
+  const [tareas, _setTareas] = useState<TareaCliente[]>(DEMO_TAREAS)
   const [tickets, setTickets] = useState<TicketCliente[]>(DEMO_TICKETS)
 
   const handleLogin = () => login(DEMO_CLIENTE.email, 'demo')

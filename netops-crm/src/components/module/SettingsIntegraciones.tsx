@@ -5,7 +5,6 @@ import { Plug, Loader2, CheckCircle2, ExternalLink, Key, Mail } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SettingsCard, SettingsCardContent, SettingsCardFooter } from '@/components/ui/settings-card'
-import { SettingsSection, SettingsRow, SettingsDivider } from '@/components/ui/settings-section'
 import { ToggleSwitch } from '@/components/ui/toggle'
 import { CONFIG_INTEGRACIONES_LABELS, CONFIG_COLORS } from '@/constants/configuracion'
 import { ConfigIntegraciones, IntegracionConfig } from '@/types/configuracion'

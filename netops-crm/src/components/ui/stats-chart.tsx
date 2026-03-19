@@ -231,11 +231,14 @@ interface StatsListProps {
   data: StatsListItem[]
   title?: string
   className?: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   showProgress?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function StatsList({ data, title, className, showProgress = true }: StatsListProps) {
-  const maxValue = Math.max(...data.map(d => d.value), 1)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _maxValue = Math.max(...data.map(d => d.value), 1)
 
   return (
     <Card className={className}>

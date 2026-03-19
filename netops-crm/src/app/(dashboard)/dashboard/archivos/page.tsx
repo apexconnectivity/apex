@@ -2,45 +2,32 @@
 
 import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { ArchivoCard, FolderSection, UploadModal } from '@/components/module'
 import { useArchivosStorage } from '@/hooks/useArchivosStorage'
-import { Folder, Building2, Briefcase, Ticket, CheckSquare, Lock, Globe, Files, Database, HardDrive, Trash2, Upload } from 'lucide-react'
+import { Folder, Building2, Briefcase, Ticket, Files, HardDrive } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { Archivo, EntidadTipo, Visibilidad } from '@/types/archivos'
 import {
-  PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS, BUTTON_LABELS,
-  FILTER_LABELS, EMPTY_MESSAGES, SECTION_TITLES, UPLOAD_MODAL,
-  STAT_COLORS, BADGE_LABELS, ERROR_MESSAGES, ACCESS_DENIED
+  PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS,
+  EMPTY_MESSAGES,
+  STAT_COLORS, ACCESS_DENIED
 } from '@/constants/archivos'
-import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { useEmpresas, useProyectos } from '@/hooks'
 
 export default function ArchivosPage() {
   const { user } = useAuth()
 
-  // ============================================================================
-  // Usar hook de localStorage para gestionar archivos
-  // ============================================================================
-  const { archivos, addArchivo, removeArchivo, loading } = useArchivosStorage()
+  const { archivos, loading } = useArchivosStorage()
   const [empresas] = useEmpresas()
-  const [proyectos] = useProyectos()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_proyectos] = useProyectos()
 
   const [view, setView] = useState<'todos' | 'empresas' | 'proyectos'>('todos')
   const [selectedEmpresa, setSelectedEmpresa] = useState<string>('todas')
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [showUpload, setShowUpload] = useState(false)
-  const [archivoAEliminar, setArchivoAEliminar] = useState<Archivo | null>(null)
-  const [expandedFolders, setExpandedFolders] = useState<string[]>(['corporativo', 'entregables', 'internos', 'facturas'])
 
   const isAdmin = user?.roles.includes('admin')
   const isTecnico = user?.roles.includes('tecnico')
@@ -49,12 +36,8 @@ export default function ArchivosPage() {
   const isFacturacion = user?.roles.includes('facturacion')
   const canUpload = isAdmin || isTecnico || isComercial || isCompras || isFacturacion
 
-  // ============================================================================
-  // Memoized: archivos filtrados por vista y empresa seleccionada
-  // ============================================================================
-  const archivosPorEntidad = useMemo(() => {
+  const archivosFiltrados = useMemo(() => {
     return archivos.filter(a => {
-      // Filtro por búsqueda
       if (searchQuery && !a.nombre_guardado.toLowerCase().includes(searchQuery.toLowerCase())) return false
       if (view === 'empresas' && a.entidad_tipo !== 'empresa') return false
       if (view === 'proyectos' && a.entidad_tipo !== 'proyecto') return false
@@ -66,24 +49,6 @@ export default function ArchivosPage() {
     })
   }, [archivos, searchQuery, view, selectedEmpresa])
 
-  // ============================================================================
-  // Memoized: archivos agrupados por carpeta
-  // ============================================================================
-  const archivosPorCarpeta = useMemo(() => {
-    const result: Record<string, Archivo[]> = {
-      'Empresas': [],
-      'Proyectos': [],
-    }
-    archivosPorEntidad.forEach(a => {
-      if (a.entidad_tipo === 'empresa') result['Empresas'].push(a)
-      else if (a.entidad_tipo === 'proyecto') result['Proyectos'].push(a)
-    })
-    return result
-  }, [archivosPorEntidad])
-
-  // ============================================================================
-  // Memoized: estadísticas de archivos
-  // ============================================================================
   const stats = useMemo(() => ({
     total: archivos.length,
     empresas: archivos.filter(a => a.entidad_tipo === 'empresa').length,
@@ -92,64 +57,6 @@ export default function ArchivosPage() {
     tamañoTotal: archivos.reduce((acc, a) => acc + a.tamaño_bytes, 0),
   }), [archivos])
 
-  // ============================================================================
-  // Handler: generar ruta para el archivo
-  // ============================================================================
-  const getRuta = (entidad: EntidadTipo, id: string, visibilidad: Visibilidad): string => {
-    if (entidad === 'empresa') {
-      const empresa = empresas.find(e => e.id === id)
-      const tipoCarpeta = empresa?.tipo_entidad === 'proveedor' ? 'Proveedores' : 'Clientes Activos'
-      return `/${tipoCarpeta}/${empresa?.nombre}/Corporativo/${visibilidad}/`
-    }
-    if (entidad === 'proyecto') {
-      const proyecto = proyectos.find(p => p.id === id)
-      return `/Clientes Activos/${proyecto?.empresa_id}/${proyecto?.nombre}/`
-    }
-    return '/'
-  }
-
-  // ============================================================================
-  // Handler: preparar upload - pasa los datos al hook que genera el ID
-  // ============================================================================
-  const handleUpload = (archivo: Omit<Archivo, 'id' | 'drive_file_id' | 'nombre_guardado' | 'drive_view_link' | 'drive_download_link' | 'drive_embed_link' | 'ruta_completa' | 'fecha_subida'>) => {
-    // El hook addArchivo se encarga de generar el ID, fechas y enlaces
-    // Solo necesitamos pasar la ruta calculada
-    const archivoConRuta = {
-      ...archivo,
-      ruta_completa: getRuta(archivo.entidad_tipo, archivo.entidad_id, archivo.visibilidad)
-    }
-    addArchivo(archivoConRuta)
-  }
-
-  // ============================================================================
-  // Handler: abrir diálogo de confirmación de eliminación
-  // ============================================================================
-  const handleEliminar = (archivo: Archivo) => {
-    setArchivoAEliminar(archivo)
-  }
-
-  // ============================================================================
-  // Handler: confirmar eliminación usando el hook
-  // ============================================================================
-  const confirmarEliminar = () => {
-    if (archivoAEliminar) {
-      removeArchivo(archivoAEliminar.id)
-      setArchivoAEliminar(null)
-    }
-  }
-
-  // ============================================================================
-  // Handler: toggle carpeta expandida
-  // ============================================================================
-  const toggleFolder = (folder: string) => {
-    setExpandedFolders(prev =>
-      prev.includes(folder) ? prev.filter(f => f !== folder) : [...prev, folder]
-    )
-  }
-
-  // ============================================================================
-  // Estado de carga
-  // ============================================================================
   if (loading) {
     return (
       <ModuleContainer>
@@ -160,9 +67,6 @@ export default function ArchivosPage() {
     )
   }
 
-  // ============================================================================
-  // Control de acceso
-  // ============================================================================
   if (!canUpload && !isAdmin) {
     return (
       <Card className="m-4 p-8 text-center">
@@ -176,7 +80,6 @@ export default function ArchivosPage() {
 
   return (
     <ModuleContainer>
-      {/* Header */}
       <ModuleHeader
         title={PAGE_TITLE}
         description={PAGE_DESCRIPTION}
@@ -187,17 +90,8 @@ export default function ArchivosPage() {
         ]}
         activeTab={view}
         onTabChange={(v) => setView(v as typeof view)}
-        actions={
-          canUpload && (
-            <Button onClick={() => setShowUpload(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              {BUTTON_LABELS.subir}
-            </Button>
-          )
-        }
       />
 
-      {/* Filtros */}
       <FilterBar
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
@@ -227,9 +121,6 @@ export default function ArchivosPage() {
         }}
       />
 
-      {/* ====================================================================== */}
-      {/* Stats */}
-      {/* ====================================================================== */}
       <StatGrid cols={5}>
         <MiniStat value={stats.total} label={STATS_LABELS.totalArchivos} variant="primary" showBorder accentColor={STAT_COLORS.total} icon={<Files className="h-5 w-5" />} />
         <MiniStat value={stats.empresas} label={STATS_LABELS.empresas} variant="info" showBorder accentColor={STAT_COLORS.empresas} icon={<Building2 className="h-5 w-5" />} />
@@ -238,128 +129,44 @@ export default function ArchivosPage() {
         <MiniStat value={formatBytes(stats.tamañoTotal)} label={STATS_LABELS.espacioUsado} variant="default" showBorder accentColor={STAT_COLORS.espacio} icon={<HardDrive className="h-5 w-5" />} />
       </StatGrid>
 
-      {/* ====================================================================== */}
-      {/* Lista de archivos por vista */}
-      {/* ====================================================================== */}
       <div className="grid gap-4">
-        {view === 'todos' && (
-          <>
-            {/* Empresas Section */}
-            <div className="border rounded-lg overflow-hidden">
-              <button
-                className="w-full flex items-center gap-2 p-4 bg-muted/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5"
-                onClick={() => toggleFolder('empresas')}
-              >
-                <Building2 className="h-5 w-5" />
-                <span className="font-semibold flex-1 text-left">{SECTION_TITLES.documentosEmpresas}</span>
-                <Badge variant="secondary">{archivosPorCarpeta['Empresas'].length}</Badge>
-              </button>
-              {expandedFolders.includes('empresas') && (
-                <div className="p-4 space-y-2">
-                  {archivosPorCarpeta['Empresas'].length > 0 ? (
-                    archivosPorCarpeta['Empresas'].map(archivo => (
-                      <ArchivoCard
-                        key={archivo.id}
-                        archivo={archivo}
-                        onVer={() => window.open(archivo.drive_view_link, '_blank')}
-                        onEliminar={() => handleEliminar(archivo)}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noDocumentosEmpresas}</p>
-                  )}
+        {archivosFiltrados.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                {view === 'empresas' 
+                  ? EMPTY_MESSAGES.noDocumentosEmpresas 
+                  : EMPTY_MESSAGES.noArchivosProyectos}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          archivosFiltrados.map(archivo => (
+            <Card key={archivo.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Folder className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                      <h4 className="font-medium">{archivo.nombre_original}</h4>
+                      <p className="text-sm text-muted-foreground">{archivo.entidad_tipo}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{archivo.visibilidad}</Badge>
+                    <span className="text-xs text-muted-foreground">{formatBytes(archivo.tamaño_bytes)}</span>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* Proyectos Section */}
-            <div className="border rounded-lg overflow-hidden">
-              <button
-                className="w-full flex items-center gap-2 p-4 bg-muted/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5"
-                onClick={() => toggleFolder('proyectos')}
-              >
-                <Briefcase className="h-5 w-5" />
-                <span className="font-semibold flex-1 text-left">{SECTION_TITLES.archivosProyectos}</span>
-                <Badge variant="secondary">{archivosPorCarpeta['Proyectos'].length}</Badge>
-              </button>
-              {expandedFolders.includes('proyectos') && (
-                <div className="p-4 space-y-2">
-                  {archivosPorCarpeta['Proyectos'].length > 0 ? (
-                    archivosPorCarpeta['Proyectos'].map(archivo => (
-                      <ArchivoCard
-                        key={archivo.id}
-                        archivo={archivo}
-                        onVer={() => window.open(archivo.drive_view_link, '_blank')}
-                        onEliminar={() => handleEliminar(archivo)}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noArchivosProyectos}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </>
+              </CardContent>
+            </Card>
+          ))
         )}
-
-        {view === 'empresas' && archivosPorEntidad.map(archivo => (
-          <ArchivoCard
-            key={archivo.id}
-            archivo={archivo}
-            onVer={() => window.open(archivo.drive_view_link, '_blank')}
-            onEliminar={() => handleEliminar(archivo)}
-          />
-        ))}
-
-        {view === 'proyectos' && archivosPorEntidad.map(archivo => (
-          <ArchivoCard
-            key={archivo.id}
-            archivo={archivo}
-            onVer={() => window.open(archivo.drive_view_link, '_blank')}
-            onEliminar={() => handleEliminar(archivo)}
-          />
-        ))}
       </div>
-
-      {/* ====================================================================== */}
-      {/* Diálogo de confirmación de eliminación */}
-      {/* ====================================================================== */}
-      <BaseModal open={!!archivoAEliminar} onOpenChange={() => setArchivoAEliminar(null)}>
-        <ModalHeader title={
-          <div className="flex items-center gap-2 text-destructive">
-            <Trash2 className="h-5 w-5" />
-            {ERROR_MESSAGES.confirmEliminacionTitulo}
-          </div>
-        } />
-        <ModalBody>
-          <p className="text-muted-foreground">{ERROR_MESSAGES.confirmEliminacion}</p>
-          {archivoAEliminar && (
-            <p className="mt-2 font-medium text-foreground">{archivoAEliminar.nombre_original}</p>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="outline" onClick={() => setArchivoAEliminar(null)}>{BUTTON_LABELS.cancelar}</Button>
-          <Button variant="destructive" onClick={confirmarEliminar}>{BUTTON_LABELS.eliminar}</Button>
-        </ModalFooter>
-      </BaseModal>
-
-      {/* ====================================================================== */}
-      {/* Modal de upload */}
-      {/* ====================================================================== */}
-      <UploadModal
-        open={showUpload}
-        onOpenChange={(open) => !open && setShowUpload(false)}
-        onUpload={handleUpload}
-        empresas={empresas.map(e => ({ id: e.id, nombre: e.nombre }))}
-        proyectos={proyectos.map(p => ({ id: p.id, nombre: p.nombre }))}
-      />
     </ModuleContainer>
   )
 }
 
-// ========================================================================
-// Utilidad para formatear bytes (copiada para mantener compatibilidad)
-// ========================================================================
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024

@@ -8,22 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
-  LayoutDashboard,
-  Building2,
-  FolderKanban,
-  CheckSquare,
-  Headphones,
-  FileText,
-  Calendar,
-  Bell,
-  Archive,
-  ShoppingCart,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
   Zap,
-  UserCog,
 } from 'lucide-react'
 import { User } from '@/types/auth'
 

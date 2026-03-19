@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useCallback } from "react"
+import React, { useState, useMemo, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import type { FormErrors } from "@/types/common"
@@ -23,6 +23,7 @@ export interface FormFieldProps {
   className?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface BaseFormProps<T extends Record<string, any>> {
   children: React.ReactNode
   defaultValues?: Partial<T>
@@ -340,6 +341,7 @@ export function FormFooter({
 /**
  * BaseForm - Componente principal
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function BaseForm<T extends Record<string, any>>({
   children,
   defaultValues,
@@ -401,7 +403,8 @@ export function BaseForm<T extends Record<string, any>>({
   }, [formData, localErrors, onChange])
   
   // Proporcionar contexto
-  const contextValue = useMemo(() => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _contextValue = useMemo(() => ({
     values: formData,
     errors: { ...errors, ...localErrors } as FormErrors,
     onChange: handleChange,

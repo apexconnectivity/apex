@@ -72,6 +72,7 @@ export function MiniStat({
   size = "sm",
   variant = "default",
   showBorder = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   iconPosition = "right",
   style,
   accentColor

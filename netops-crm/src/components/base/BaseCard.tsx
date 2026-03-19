@@ -62,6 +62,7 @@ export function BaseCard({
   showBorder = true,
   borderColor,
   glowOnHover = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   glowColor = "cyan"
 }: BaseCardProps) {
   const [isHovered, setIsHovered] = useState(false)

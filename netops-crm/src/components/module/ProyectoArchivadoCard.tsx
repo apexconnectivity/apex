@@ -2,7 +2,7 @@ import { BaseCard } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getClasificacionColor, ProyectoArchivado } from '@/types/archivado'
-import { ARCHIVADO_BOTONES, ARCHIVADO_CLASIFICACION } from '@/constants/archivado'
+import { ARCHIVADO_CLASIFICACION } from '@/constants/archivado'
 import { ExternalLink, RotateCcw, Trash2, Calendar, Database, Building2 } from 'lucide-react'
 
 interface ProyectoArchivadoCardProps {

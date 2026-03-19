@@ -1,49 +1,27 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import Link from 'next/link'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
 import { useEmpresas, useContactos, useProyectos, useTickets, useDocumentos } from '@/hooks'
 import { Card, CardContent } from '@/components/ui/card'
 import { CreateContactoModal } from '@/components/module/CreateContactoModal'
+import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
 import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { CreateEmpresaModal } from '@/components/module/CreateEmpresaModal'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { EmpresaDetailModal } from '@/components/module/EmpresaDetailModal'
-import { SelectWithAdd } from '@/components/module/SelectWithAdd'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
-import { Badge } from '@/components/ui/badge'
-import { StatusBadge } from '@/components/module/StatusBadge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { AccessDeniedCard } from '@/components/ui/access-denied-card'
-import { VARIANT_COLORS, STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
+import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import {
   Building2,
   Plus,
   Users,
-  Mail,
-  Phone,
-  Globe,
-  MapPin,
-  MoreVertical,
-  Edit,
-  Trash2,
-  FileText,
-  X,
-  Check,
-  Loader2,
   AlertCircle,
-  Upload,
-  Eye,
-  Lock,
-  Globe2,
   Bell,
   AlertTriangle,
   Clock
@@ -52,72 +30,40 @@ import {
   Empresa,
   Contacto,
   Documento,
-  INDUSTRIAS,
-  TAMAÑOS,
-  ORIGENES,
-  TIPOS_RELACION,
-  TIPOS_CONTACTO,
-  METODOS_PAGO,
-  MONEDAS,
   TipoEntidad,
-  TipoContacto
+  INDUSTRIAS,
 } from '@/types/crm'
 import { type Archivo } from '@/types/archivos'
-import { Proyecto, FASES } from '@/types/proyectos'
-import { Ticket, EstadoTicket } from '@/types/soporte'
+import { Proyecto } from '@/types/proyectos'
 
 // Importar constantes
 import {
   PAGE_TITLE,
   PAGE_DESCRIPTION,
-  TABS_LABELS,
   BUTTON_LABELS,
   ALERT_LABELS,
   VALIDATION_ERRORS,
   ACCESS_MESSAGES,
-  CRM_EMPTY,
-  EMPTY_MESSAGES,
-  FORM_LABELS,
-  STATS_LABELS,
 } from '@/constants/crm'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
 // ============================================
 const DIAS_INACTIVIDAD_PROSPECTO = 60
-
 const EMPRESAS_VACIA: Partial<Empresa> = {
-  tipo_entidad: 'cliente',
   nombre: '',
+  tipo_entidad: 'cliente',
   industria: undefined,
-  tamaño: undefined,
-  origen: undefined,
-  tipo_relacion: 'Cliente',
-  telefono_principal: '',
   email_principal: '',
-  sitio_web: '',
-  direccion: '',
-  ciudad: '',
-  pais: '',
-  razon_social: '',
-  rfc: '',
-  direccion_fiscal: '',
-  regimen_fiscal: '',
-  email_facturacion: '',
-  metodo_pago: undefined,
-  plazo_pago: undefined,
-  moneda_preferida: undefined,
+  telefono_principal: '',
 }
 
 const CONTACTO_VACIO: Partial<Contacto> = {
   nombre: '',
   cargo: '',
-  tipo_contacto: 'Técnico',
-  email: '',
   telefono: '',
+  email: '',
   es_principal: false,
-  recibe_facturas: false,
-  activo: true,
 }
 
 export default function CRMPage() {
@@ -127,10 +73,10 @@ export default function CRMPage() {
   const [contactos, setContactos] = useContactos()
   const [documentos, setDocumentos] = useDocumentos()
   const [proyectos, setProyectos] = useProyectos()
-  const [tickets, setTickets] = useTickets()
+  const [tickets, _setTickets] = useTickets()
 
   // Usuarios internos para proyectos
-  const [usuarios, setUsuarios] = useState<User[]>([])
+  const [usuarios, _setUsuarios] = useState<User[]>([])
 
   // ============================================
   // ESTADOS DE BÚSQUEDA Y FILTROS (agrupados)
@@ -275,7 +221,7 @@ export default function CRMPage() {
       const testKey = '__localStorage_test__'
       localStorage.setItem(testKey, testKey)
       localStorage.removeItem(testKey)
-    } catch (e) {
+    } catch {
       setErrors({
         general: 'Tu navegador no permite guardar datos en localStorage. Esto puede ser porque estás usando el modo privado o has deshabilitado las cookies. Los datos no se persistirán entre sesiones.'
       })
@@ -362,14 +308,17 @@ export default function CRMPage() {
     return contactosByEmpresa.get(empresaId) || []
   }, [contactosByEmpresa])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getDocumentos = useCallback((empresaId: string) => {
     return documentosByEmpresa.get(empresaId) || []
   }, [documentosByEmpresa])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getDocumentosInternos = useCallback((empresaId: string) => {
     return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'interno')
   }, [documentosByEmpresa])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getDocumentosPublicos = useCallback((empresaId: string) => {
     return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'publico')
   }, [documentosByEmpresa])
@@ -378,6 +327,7 @@ export default function CRMPage() {
     return proyectosByEmpresa.get(empresaId) || []
   }, [proyectosByEmpresa])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getTickets = useCallback((empresaId: string) => {
     const empresaProyectos = proyectosByEmpresa.get(empresaId) || []
     const proyectosIds = empresaProyectos.map(p => p.id!).filter(Boolean)
@@ -587,9 +537,9 @@ export default function CRMPage() {
       return
     }
 
-    let updatedContactos = [...contactos]
+    let _updatedContactos = [...contactos]
     if (editingContacto.es_principal) {
-      updatedContactos = updatedContactos.map(c =>
+      _updatedContactos = _updatedContactos.map(c =>
         c.empresa_id === editingContacto.empresa_id ? { ...c, es_principal: false } : c
       )
     }

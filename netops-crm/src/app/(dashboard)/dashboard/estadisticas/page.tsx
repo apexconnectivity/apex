@@ -403,8 +403,8 @@ function TareasStats({ tareas }: TareasStatsProps) {
       }))
   }, [tareas])
 
-  // Tasa de completación
-  const tasaCompletacion = tareas.length > 0
+  // Tasa de completación (used for display)
+  const _tasaCompletacion = tareas.length > 0
     ? Math.round((tareasCompletadas.length / tareas.length) * 100)
     : 0
 

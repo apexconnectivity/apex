@@ -10,40 +10,29 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION, ESTADOS_REUNION, TIPOS_SOLICITUD } from '@/types/calendario'
+import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION } from '@/types/calendario'
 import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
-import { useEmpresas, useProyectos } from '@/hooks'
-import { Calendar, Clock, User, CalendarDays, CalendarCheck, CalendarX, MapPin, Video, Check, X, Building2, Grid3X3, List, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useProyectos } from '@/hooks'
+import { Calendar, Clock, User, CalendarDays, CalendarCheck, CalendarX, MapPin, Video, Check, X, Building2, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
-  PAGE_TITLE,
-  PAGE_DESCRIPTION,
   BUTTON_LABELS,
   EMPTY_MESSAGES,
   FILTER_LABELS,
-  STATS_LABELS,
-  MEETING_STATUS,
   DURATION_OPTIONS,
   FORM_LABELS_REUNION,
 } from '@/constants/calendario'
 
-// Lista de usuarios internos (se llenará con datos del módulo de usuarios)
+// Lista de usuarios internos
 const USUARIOS_INTERNOS = [
   { id: '1', nombre: 'Carlos Admin' },
   { id: '2', nombre: 'Laura Pérez' },
   { id: '3', nombre: 'Juan Técnico' },
 ]
-
-// Reuniones (se llenará con datos de localStorage)
-const REUNIONES_VACIAS: Reunion[] = []
-
-// Solicitudes (se llenará con datos de localStorage)
-const SOLICITUDES_VACIAS: SolicitudReunion[] = []
 
 function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; title: string; onVer: (r: Reunion) => void }) {
   const sortedReuniones = [...reuniones].sort((a, b) => new Date(a.fecha_hora_inicio).getTime() - new Date(b.fecha_hora_inicio).getTime())

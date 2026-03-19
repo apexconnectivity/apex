@@ -1,16 +1,13 @@
 "use client"
 
-import { useState } from 'react'
-import { Plus, CheckCircle, Clock, AlertCircle, MessageSquare, Calendar, User, ChevronRight } from 'lucide-react'
+import { CheckCircle, Clock, AlertCircle, Calendar, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { ActivityFeed } from '@/components/ui/activity-feed'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { Ticket, ComentarioTicket, EstadoTicket } from '@/types/soporte'
-import { TICKET_DETALLE, TICKET_COMENTARIOS, TICKET_LABELS } from '@/constants/soporte'
+import { TICKET_COMENTARIOS, TICKET_LABELS } from '@/constants/soporte'
 
 interface TicketDetailPanelProps {
   isOpen: boolean
@@ -33,6 +30,7 @@ export function TicketDetailPanel({
   onClose,
   ticket,
   comentarios,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdate,
   onAddComentario,
   onChangeState,

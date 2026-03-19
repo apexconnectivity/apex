@@ -39,6 +39,7 @@ export function UploadDocumentModal({
   open,
   onOpenChange,
   onSave,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entidadId,
   entidadTipo,
 }: UploadDocumentModalProps) {

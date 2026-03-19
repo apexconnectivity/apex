@@ -17,9 +17,7 @@ import {
   Headphones,
 } from "lucide-react"
 import { DASHBOARD_STATS, SECTION_TITLES, ACTIVITY_TITLES, PRIORITY_LABELS, EMPTY_MESSAGES, DATE_RELATIVE, DUE_DATE } from "@/constants/dashboard"
-import { STATS_LABELS } from "@/constants/estadisticas"
-import { PRIORIDADES } from "@/constants/tareas"
-import { HEX_COLORS, VARIANT_COLORS, ACTIVITY_COLORS, SECTION_INDICATOR_COLORS, getActivityColor, getSectionIndicatorColor } from "@/lib/colors"
+import { ACTIVITY_COLORS, HEX_COLORS, VARIANT_COLORS, getSectionIndicatorColor } from "@/lib/colors"
 
 function StatsSkeleton() {
   return (
