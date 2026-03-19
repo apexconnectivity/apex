@@ -7,7 +7,8 @@ interface RoleBadgeProps {
   className?: string
 }
 
-export default function RoleBadge({ role, className }: RoleBadgeProps) {
+// Named export
+export function RoleBadge({ role, className }: RoleBadgeProps) {
   const roleConfig = getRoleColor(role)
   const roleLabel = ROLE_DEFINITIONS[role]?.label || role
 
@@ -25,3 +26,6 @@ export default function RoleBadge({ role, className }: RoleBadgeProps) {
     </Badge>
   )
 }
+
+// Default export for backwards compatibility
+export default RoleBadge

@@ -1,5 +1,3 @@
-'use client'
-
 /**
  * ============================================
  * Configuración Centralizada de Storage

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import RoleBadge from '@/components/ui/role-badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import {
@@ -127,29 +127,34 @@ export default function UsersPage() {
 
   const handleSave = async () => {
     setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-    if (editingUser) {
-      // Update existing user
-      setUsers(prev => prev.map(u =>
-        u.id === editingUser.id
-          ? { ...u, ...formData }
-          : u
-      ))
-    } else {
-      // Create new user
-      const newUser: User = {
-        id: String(Date.now()),
-        ...formData,
-        activo: true,
-        creado_en: new Date().toISOString().split('T')[0],
-        cambiar_password_proximo_login: false,
+      if (editingUser) {
+        // Update existing user
+        setUsers(prev => prev.map(u =>
+          u.id === editingUser.id
+            ? { ...u, ...formData }
+            : u
+        ))
+      } else {
+        // Create new user
+        const newUser: User = {
+          id: String(Date.now()),
+          ...formData,
+          activo: true,
+          creado_en: new Date().toISOString().split('T')[0],
+          cambiar_password_proximo_login: false,
+        }
+        setUsers(prev => [...prev, newUser])
       }
-      setUsers(prev => [...prev, newUser])
-    }
 
-    setIsLoading(false)
-    handleCloseModal()
+      handleCloseModal()
+    } catch (error) {
+      console.error('[Usuarios] Error al guardar usuario:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleRequestToggleActive = (user: User) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 export type CardVariant = 
@@ -64,7 +64,7 @@ export function BaseCard({
   glowOnHover = false,
   glowColor = "cyan"
 }: BaseCardProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   
   const variantClasses = VARIANT_STYLES[variant]
   const paddingClasses = PADDING_STYLES[padding]

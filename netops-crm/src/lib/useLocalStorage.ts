@@ -63,8 +63,7 @@ export function useLocalStorage<T>(
     } finally {
       setIsLoaded(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key])
+  }, [key, initialValue])
 
   // ============================================
   // Función para actualizar el valor

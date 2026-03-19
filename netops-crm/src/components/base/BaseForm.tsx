@@ -1,8 +1,9 @@
 "use client"
 
-import * as React from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
+import type { FormErrors } from "@/types/common"
 
 // ============================================================================
 // TIPOS
@@ -215,7 +216,7 @@ export function FormGroup({
   defaultOpen = true,
   className
 }: FormGroupProps) {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen)
+  const [isOpen, setIsOpen] = useState(defaultOpen)
   
   return (
     <div className={cn("space-y-4", className)}>
@@ -364,18 +365,27 @@ export function BaseForm<T extends Record<string, any>>({
   submitButtonSize = "md",
   buttonsAlign = "end",
 }: BaseFormProps<T>) {
-  const [formData, setFormData] = React.useState<Partial<T>>(values || defaultValues || {})
-  const [localErrors, setLocalErrors] = React.useState<Record<string, string>>({})
+  const [formData, setFormData] = useState<Partial<T>>(values || defaultValues || {})
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
   
-  // Actualizar cuando cambian los valores externos
+  // Ref para tracking del último valor синхронизированный
+  const prevValuesRef = React.useRef<string | undefined>(undefined)
+  
+  // Actualizar cuando cambian los valores externos (usando stringify para comparación estable)
   React.useEffect(() => {
-    if (values) {
-      setFormData(values)
+    const currentValuesStr = values ? JSON.stringify(values) : undefined
+    
+    // Solo actualizar si el valor realmente cambió (comparación profunda)
+    if (currentValuesStr !== prevValuesRef.current) {
+      if (values) {
+        setFormData(values)
+      }
+      prevValuesRef.current = currentValuesStr
     }
   }, [values])
   
   // Manejar cambio de campo
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     const newData = { ...formData, [field]: value }
     setFormData(newData)
     
@@ -391,9 +401,9 @@ export function BaseForm<T extends Record<string, any>>({
   }
   
   // Proporcionar contexto
-  const contextValue = React.useMemo(() => ({
+  const contextValue = useMemo(() => ({
     values: formData,
-    errors: { ...errors, ...localErrors } as any,
+    errors: { ...errors, ...localErrors } as FormErrors,
     onChange: handleChange,
     status,
     layout,

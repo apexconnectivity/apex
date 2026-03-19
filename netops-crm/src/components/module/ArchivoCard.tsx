@@ -16,7 +16,8 @@ interface ArchivoCardProps {
  * 
  * Usa BaseCard con efectos de hover y glow.
  */
-export default function ArchivoCard({ archivo, onVer, onEliminar }: ArchivoCardProps) {
+// Named export
+export function ArchivoCard({ archivo, onVer, onEliminar }: ArchivoCardProps) {
   return (
     <BaseCard hoverable glowOnHover padding="md">
       <div className="flex items-start gap-3">
@@ -60,3 +61,6 @@ export default function ArchivoCard({ archivo, onVer, onEliminar }: ArchivoCardP
     </BaseCard>
   )
 }
+
+// Default export for backwards compatibility
+export default ArchivoCard

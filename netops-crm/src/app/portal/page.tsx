@@ -20,6 +20,9 @@ import {
   ArrowLeft, Phone, Mail, CheckCircle, XCircle, Eye
 } from 'lucide-react'
 
+// Tipo para datos del formulario de ticket
+type TicketFormData = Pick<TicketCliente, 'titulo' | 'descripcion' | 'categoria' | 'prioridad' | 'estado'>
+
 const DEMO_CLIENTE: ClienteUsuario = {
   id: 'c1',
   email: 'juan@soltec.com',
@@ -157,13 +160,13 @@ function NuevoTicketModal({ open, onClose, onCreate }: {
   onClose: () => void
   onCreate: (ticket: Omit<TicketCliente, 'id' | 'numero_ticket' | 'creado_por_nombre' | 'fecha_apertura'>) => void
 }) {
-  const [ticket, setTicket] = useState({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media' })
+  const [ticket, setTicket] = useState<TicketFormData>({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media', estado: 'Abierto' })
 
   const handleCreate = () => {
     if (!ticket.titulo || !ticket.descripcion) return
-    onCreate(ticket as any)
+    onCreate(ticket)
     onClose()
-    setTicket({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media' })
+    setTicket({ titulo: '', descripcion: '', categoria: 'Soporte técnico', prioridad: 'Media', estado: 'Abierto' })
   }
 
   return (

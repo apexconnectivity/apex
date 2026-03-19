@@ -47,6 +47,12 @@ import {
   ChevronRight, Eye, Edit, X, ClipboardList, SendHorizontal, PackageCheck
 } from 'lucide-react'
 
+// ============================================
+// MAGIC NUMBERS - Constantes de negocio
+// ============================================
+const ORDEN_COMPRA_PREFIX = 'OC-2026-'
+const ORDEN_COMPRA_PADDING = 3
+
 function ProveedoresTab({ proveedores }: { proveedores: Proveedor[] }) {
   const [search, setSearch] = useState('')
 
@@ -378,7 +384,7 @@ export default function ComprasPage() {
     const nueva: OrdenCompra = {
       ...orden,
       id: Date.now().toString(),
-      numero_oc: `OC-2026-${String(ordenes.length + 1).padStart(3, '0')}`,
+      numero_oc: `${ORDEN_COMPRA_PREFIX}${String(ordenes.length + 1).padStart(ORDEN_COMPRA_PADDING, '0')}`,
       creado_por: user?.nombre ?? 'Usuario',
     }
     setOrdenes(prev => [nueva, ...prev])

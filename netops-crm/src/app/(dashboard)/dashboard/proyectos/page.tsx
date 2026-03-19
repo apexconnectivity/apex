@@ -450,64 +450,69 @@ export default function ProyectosPage() {
     }
 
     setIsSaving(true)
-    await new Promise(r => setTimeout(r, 500))
+    try {
+      await new Promise(r => setTimeout(r, 500))
 
-    const empresa = empresas.find(e => e.id === nuevoProyecto.empresa_id)
-    const responsable = usuarios.find(u => u.id === nuevoProyecto.responsable_id)
-    const contactoTecnico = contactos.find(c => c.id === nuevoProyecto.contacto_tecnico_id)
-    const now = new Date().toISOString().split('T')[0]
+      const empresa = empresas.find(e => e.id === nuevoProyecto.empresa_id)
+      const responsable = usuarios.find(u => u.id === nuevoProyecto.responsable_id)
+      const contactoTecnico = contactos.find(c => c.id === nuevoProyecto.contacto_tecnico_id)
+      const now = new Date().toISOString().split('T')[0]
 
-    setProyectos(prev => [...prev, {
-      ...nuevoProyecto,
-      id: String(Date.now()),
-      cliente_nombre: empresa?.nombre,
-      responsable_nombre: responsable?.nombre,
-      contacto_tecnico_nombre: contactoTecnico?.nombre,
-      creado_en: now,
-    } as Proyecto])
+      setProyectos(prev => [...prev, {
+        ...nuevoProyecto,
+        id: String(Date.now()),
+        cliente_nombre: empresa?.nombre,
+        responsable_nombre: responsable?.nombre,
+        contacto_tecnico_nombre: contactoTecnico?.nombre,
+        creado_en: now,
+      } as Proyecto])
 
-    // Crear tareas desde plantilla para la fase inicial del proyecto
-    const faseInicial = nuevoProyecto.fase_actual || 1
-    const faseNombre = fasesEditando.find(f => f.id === faseInicial)?.nombre || `Fase ${faseInicial}`
-    const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === faseInicial)
+      // Crear tareas desde plantilla para la fase inicial del proyecto
+      const faseInicial = nuevoProyecto.fase_actual || 1
+      const faseNombre = fasesEditando.find(f => f.id === faseInicial)?.nombre || `Fase ${faseInicial}`
+      const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === faseInicial)
 
-    if (plantillas.length > 0) {
-      const nuevasTareas: Tarea[] = plantillas.map((plantilla, index) => {
-        const fechaVencimiento = new Date()
-        fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
+      if (plantillas.length > 0) {
+        const nuevasTareas: Tarea[] = plantillas.map((plantilla, index) => {
+          const fechaVencimiento = new Date()
+          fechaVencimiento.setDate(fechaVencimiento.getDate() + plantilla.dias_vencimiento)
 
-        const tareaId = crypto.randomUUID()
-        return {
-          id: tareaId,
-          proyecto_id: String(Date.now()),
-          proyecto_nombre: nuevoProyecto.nombre || 'Nuevo Proyecto',
-          fase_origen: faseInicial,
-          fase_nombre: faseNombre,
-          categoria: plantilla.categoria,
-          nombre: plantilla.nombre,
-          descripcion: plantilla.descripcion,
-          prioridad: plantilla.prioridad,
-          estado: 'Pendiente' as EstadoTarea,
-          fecha_creacion: now,
-          fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
-          orden: index + 1,
-          creado_por: 'Sistema',
-          asignado_a_cliente: plantilla.requiere_cliente,
-          subtareas: plantilla.subtareas.map((sub, subIndex) => ({
-            id: crypto.randomUUID(),
-            tarea_id: tareaId,
-            nombre: sub.nombre,
-            completada: false,
-            orden: subIndex + 1,
-          })),
-        }
-      })
-      setTareas(prev => [...prev, ...nuevasTareas])
+          const tareaId = crypto.randomUUID()
+          return {
+            id: tareaId,
+            proyecto_id: String(Date.now()),
+            proyecto_nombre: nuevoProyecto.nombre || 'Nuevo Proyecto',
+            fase_origen: faseInicial,
+            fase_nombre: faseNombre,
+            categoria: plantilla.categoria,
+            nombre: plantilla.nombre,
+            descripcion: plantilla.descripcion,
+            prioridad: plantilla.prioridad,
+            estado: 'Pendiente' as EstadoTarea,
+            fecha_creacion: now,
+            fecha_vencimiento: fechaVencimiento.toISOString().split('T')[0],
+            orden: index + 1,
+            creado_por: 'Sistema',
+            asignado_a_cliente: plantilla.requiere_cliente,
+            subtareas: plantilla.subtareas.map((sub, subIndex) => ({
+              id: crypto.randomUUID(),
+              tarea_id: tareaId,
+              nombre: sub.nombre,
+              completada: false,
+              orden: subIndex + 1,
+            })),
+          }
+        })
+        setTareas(prev => [...prev, ...nuevasTareas])
+      }
+
+      setIsModalNuevo(false)
+      setNuevoProyecto(PROYECTO_VACIO)
+    } catch (error) {
+      console.error('[Proyectos] Error al guardar proyecto:', error)
+    } finally {
+      setIsSaving(false)
     }
-
-    setIsSaving(false)
-    setIsModalNuevo(false)
-    setNuevoProyecto(PROYECTO_VACIO)
   }
 
   // Guardar nueva empresa (compatible con CreateEmpresaModal)

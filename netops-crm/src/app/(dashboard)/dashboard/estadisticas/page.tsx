@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useMemo } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useEmpresas, useProyectos, useTareas, useTickets, useContactos, useArchivos, useReuniones, useContratos } from "@/lib/data"
 import { ModuleContainer } from "@/components/module/ModuleContainer"
@@ -91,7 +91,7 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
   const ambos = empresas.filter(e => e.tipo_entidad === 'ambos')
 
   // Empresas por industria
-  const industriasCount = React.useMemo(() => {
+  const industriasCount = useMemo(() => {
     const count: Record<string, number> = {}
     empresas.forEach(e => {
       if (e.industria) {
@@ -109,7 +109,7 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
   }, [empresas])
 
   // Empresas por tipo de relación
-  const relacionesCount = React.useMemo(() => {
+  const relacionesCount = useMemo(() => {
     const count: Record<string, number> = {}
     empresas.forEach(e => {
       const relacion = e.tipo_relacion || STATS_LABELS.sinRelacion
@@ -125,7 +125,7 @@ function CRMStats({ empresas, contactos }: CRMStatsProps) {
   }, [empresas])
 
   // Contactos por tipo
-  const contactosPorTipo = React.useMemo(() => {
+  const contactosPorTipo = useMemo(() => {
     const count: Record<string, number> = {}
     contactos.forEach(c => {
       count[c.tipo_contacto] = (count[c.tipo_contacto] || 0) + 1
@@ -228,7 +228,7 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
   const proyectosCerrados = proyectos.filter(p => p.estado === 'cerrado')
 
   // Proyectos por fase
-  const fasesCount = React.useMemo(() => {
+  const fasesCount = useMemo(() => {
     const fases = ['DIAGNÓSTICO', 'PROPUESTA', 'PLANIFICACIÓN', 'IMPLEMENTACIÓN', 'CIERRE']
     const faseColors = [CHART_COLORS.primary, CHART_COLORS.info, CHART_COLORS.purple, CHART_COLORS.warning, CHART_COLORS.success]
     const count: Record<string, number> = {}
@@ -248,11 +248,11 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
   }, [proyectosActivos])
 
   // Valor total de proyectos
-  const valorTotal = React.useMemo(() => {
+  const valorTotal = useMemo(() => {
     return proyectos.reduce((sum, p) => sum + (p.monto_estimado || 0), 0)
   }, [proyectos])
 
-  const valorCerrado = React.useMemo(() => {
+  const valorCerrado = useMemo(() => {
     return proyectosCerrados.reduce((sum, p) => sum + (p.monto_real || p.monto_estimado || 0), 0)
   }, [proyectosCerrados])
 
@@ -389,7 +389,7 @@ function TareasStats({ tareas }: TareasStatsProps) {
   })
 
   // Tareas por prioridad
-  const prioridadCount = React.useMemo(() => {
+  const prioridadCount = useMemo(() => {
     const count: Record<string, number> = {}
     tareas.forEach(t => {
       count[t.prioridad] = (count[t.prioridad] || 0) + 1
@@ -534,7 +534,7 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
   const ticketsResueltos = tickets.filter(t => t.estado === 'Resuelto' || t.estado === 'Cerrado')
 
   // Tickets por prioridad
-  const prioridadCount = React.useMemo(() => {
+  const prioridadCount = useMemo(() => {
     const count: Record<string, number> = {}
     tickets.forEach(t => {
       count[t.prioridad] = (count[t.prioridad] || 0) + 1
@@ -549,7 +549,7 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
   }, [tickets])
 
   // Tiempo promedio de respuesta
-  const tiempoPromedioRespuesta = React.useMemo(() => {
+  const tiempoPromedioRespuesta = useMemo(() => {
     const ticketsConRespuesta = tickets.filter(t => t.tiempo_respuesta_minutos && t.tiempo_respuesta_minutos > 0)
     if (ticketsConRespuesta.length === 0) return 0
     const total = ticketsConRespuesta.reduce((sum, t) => sum + (t.tiempo_respuesta_minutos || 0), 0)
@@ -557,13 +557,13 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
   }, [tickets])
 
   // Tickets de hoy
-  const ticketsHoy = React.useMemo(() => {
+  const ticketsHoy = useMemo(() => {
     const hoy = new Date().toISOString().split('T')[0]
     return tickets.filter(t => t.fecha_apertura.startsWith(hoy)).length
   }, [tickets])
 
   // Satisfacción promedio
-  const satisfaccionPromedio = React.useMemo(() => {
+  const satisfaccionPromedio = useMemo(() => {
     const ticketsConSatisfaccion = tickets.filter(t => t.satisfaccion_cliente && t.satisfaccion_cliente > 0)
     if (ticketsConSatisfaccion.length === 0) return 'N/A'
     const total = ticketsConSatisfaccion.reduce((sum, t) => sum + (t.satisfaccion_cliente || 0), 0)
@@ -686,14 +686,14 @@ function ResumenGeneral({
   contratos,
 }: ResumenGeneralProps) {
   // Calcular valor total de contratos activos
-  const valorContratosActivos = React.useMemo(() => {
+  const valorContratosActivos = useMemo(() => {
     return contratos
       .filter(c => c.estado === 'Activo')
       .reduce((sum, c) => sum + (c.monto_mensual || 0), 0)
   }, [contratos])
 
   // Reuniones próximas
-  const proximasReuniones = React.useMemo(() => {
+  const proximasReuniones = useMemo(() => {
     const ahora = new Date()
     return reuniones
       .filter(r => new Date(r.fecha_hora_inicio) >= ahora)
@@ -702,14 +702,14 @@ function ResumenGeneral({
   }, [reuniones])
 
   // Actividad reciente (empresas creadas/modificadas)
-  const ultimasEmpresas = React.useMemo(() => {
+  const ultimasEmpresas = useMemo(() => {
     return [...empresas]
       .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime())
       .slice(0, 5)
   }, [empresas])
 
   // Tareas próximas
-  const tareasProximas = React.useMemo(() => {
+  const tareasProximas = useMemo(() => {
     return tareas
       .filter(t => t.estado !== 'Completada' && t.fecha_vencimiento)
       .sort((a, b) => new Date(a.fecha_vencimiento!).getTime() - new Date(b.fecha_vencimiento!).getTime())

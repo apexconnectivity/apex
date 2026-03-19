@@ -1,12 +1,12 @@
 "use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import * as React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
   Building2,
@@ -24,8 +24,8 @@ import {
   ChevronRight,
   Zap,
   UserCog,
-} from "lucide-react"
-import { User } from "@/types/auth"
+} from 'lucide-react'
+import { User } from '@/types/auth'
 
 interface NavItem {
   name: string

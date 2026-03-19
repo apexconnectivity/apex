@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState, useMemo } from 'react'
 import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -83,10 +83,10 @@ export function DateRangePicker({
   className,
   disabled = false,
 }: DateRangePickerProps) {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [currentMonth, setCurrentMonth] = React.useState(new Date())
-  const [selectingFrom, setSelectingFrom] = React.useState(true)
-  const [tempRange, setTempRange] = React.useState<DateRange>(value || { from: undefined, to: undefined })
+  const [isOpen, setIsOpen] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectingFrom, setSelectingFrom] = useState(true)
+  const [tempRange, setTempRange] = useState<DateRange>(value || { from: undefined, to: undefined })
 
   const days = getDaysInMonth(currentMonth.getFullYear(), currentMonth.getMonth())
   const currentYear = currentMonth.getFullYear()
@@ -135,7 +135,7 @@ export function DateRangePicker({
     setSelectingFrom(true)
   }
 
-  const displayValue = React.useMemo(() => {
+  const displayValue = useMemo(() => {
     if (value?.from && value?.to) {
       return `${formatDate(value.from)} - ${formatDate(value.to)}`
     }

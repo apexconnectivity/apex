@@ -8,6 +8,7 @@
  * Incluye: export, import, clear, sincronización entre tabs
  */
 
+import { useState, useCallback, useEffect } from 'react'
 import { StorageKeys, STORAGE_TO_SUPABASE_MAP, type StorageDataMap } from '@/constants/storage-config'
 
 // ============================================================================
@@ -137,6 +138,9 @@ export function clearUserData(): void {
 // GESTIÓN DE TAMAÑO
 // ============================================================================
 
+// Tamaño máximo de localStorage (5MB en bytes)
+const MAX_LOCAL_STORAGE_SIZE = 5 * 1024 * 1024
+
 /**
  * Obtiene el tamaño aproximado usado en localStorage
  */
@@ -153,13 +157,11 @@ export function getStorageUsage(): { used: number; total: number; percentage: nu
     }
   }
 
-  // localStorage típicamente tiene 5MB
-  const total = 5 * 1024 * 1024
-  const percentage = (used / total) * 100
+  const percentage = (used / MAX_LOCAL_STORAGE_SIZE) * 100
 
   return {
     used: Math.round(used / 1024), // KB
-    total: Math.round(total / 1024), // KB
+    total: Math.round(MAX_LOCAL_STORAGE_SIZE / 1024), // KB
     percentage: Math.round(percentage * 100) / 100,
   }
 }
@@ -387,6 +389,3 @@ export function createStorageSyncHook<K extends StorageKeys>(key: K) {
     return { value, setValue: updateValue, isLoaded }
   }
 }
-
-// Importar useState y useCallback para el hook helper
-import { useState, useCallback, useEffect } from 'react'

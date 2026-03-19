@@ -3,7 +3,7 @@ import { Folder, FolderOpen, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Archivo } from '@/types/archivos'
 import { EMPTY_MESSAGES } from '@/constants/archivos'
-import ArchivoCard from './ArchivoCard'
+import { ArchivoCard } from './ArchivoCard'
 
 interface FolderSectionProps {
   titulo: string

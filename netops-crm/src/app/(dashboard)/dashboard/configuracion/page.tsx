@@ -30,50 +30,72 @@ export default function ConfiguracionPage() {
   useEffect(() => {
     const loadConfig = async () => {
       setIsLoading(true)
-      // Simular carga
-      await new Promise(resolve => setTimeout(resolve, 500))
+      try {
+        // Simular carga
+        await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Cargar desde localStorage si existe
-      const saved = localStorage.getItem('app_config')
-      if (saved) {
-        try {
-          setConfig(JSON.parse(saved))
-        } catch {
-          setConfig(DEFAULT_CONFIG)
+        // Cargar desde localStorage si existe
+        const saved = localStorage.getItem('app_config')
+        if (saved) {
+          try {
+            setConfig(JSON.parse(saved))
+          } catch {
+            setConfig(DEFAULT_CONFIG)
+          }
         }
+      } catch (error) {
+        console.error('[Configuracion] Error al cargar configuración:', error)
+        setConfig(DEFAULT_CONFIG)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     loadConfig()
   }, [])
 
   // Handlers para guardar cada sección
   const handleSaveGeneral = async (general: ConfigGeneral) => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    const newConfig = { ...config, general }
-    setConfig(newConfig)
-    localStorage.setItem('app_config', JSON.stringify(newConfig))
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const newConfig = { ...config, general }
+      setConfig(newConfig)
+      localStorage.setItem('app_config', JSON.stringify(newConfig))
+    } catch (error) {
+      console.error('[Configuracion] Error al guardar configuración general:', error)
+    }
   }
 
   const handleSaveEmpresa = async (empresa: ConfigEmpresa) => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    const newConfig = { ...config, empresa }
-    setConfig(newConfig)
-    localStorage.setItem('app_config', JSON.stringify(newConfig))
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const newConfig = { ...config, empresa }
+      setConfig(newConfig)
+      localStorage.setItem('app_config', JSON.stringify(newConfig))
+    } catch (error) {
+      console.error('[Configuracion] Error al guardar configuración de empresa:', error)
+    }
   }
 
   const handleSaveModulos = async (modulos: ConfigModulos) => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    const newConfig = { ...config, modulos }
-    setConfig(newConfig)
-    localStorage.setItem('app_config', JSON.stringify(newConfig))
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const newConfig = { ...config, modulos }
+      setConfig(newConfig)
+      localStorage.setItem('app_config', JSON.stringify(newConfig))
+    } catch (error) {
+      console.error('[Configuracion] Error al guardar configuración de módulos:', error)
+    }
   }
 
   const handleSaveIntegraciones = async (integraciones: ConfigIntegraciones) => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    const newConfig = { ...config, integraciones }
-    setConfig(newConfig)
-    localStorage.setItem('app_config', JSON.stringify(newConfig))
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const newConfig = { ...config, integraciones }
+      setConfig(newConfig)
+      localStorage.setItem('app_config', JSON.stringify(newConfig))
+    } catch (error) {
+      console.error('[Configuracion] Error al guardar configuración de integraciones:', error)
+    }
   }
 
   // Verificar si el usuario es admin

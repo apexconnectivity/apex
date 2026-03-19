@@ -10,6 +10,11 @@ import { SelectWithAdd } from './SelectWithAdd'
 import {
   Empresa,
   TipoEntidad,
+  Industria,
+  Tamaño,
+  Origen,
+  TipoRelacion,
+  MetodoPago,
   INDUSTRIAS,
   TAMAÑOS,
   ORIGENES,
@@ -17,6 +22,7 @@ import {
   METODOS_PAGO,
   MONEDAS,
 } from '@/types/crm'
+import type { SelectChangeHandler } from '@/types/common'
 import { ModalVariant } from '@/constants/modales'
 
 // Validaciones unificadas
@@ -266,7 +272,7 @@ export function CreateEmpresaModal({
               <SelectWithAdd
                 label="Industria"
                 value={formData.industria || ''}
-                onValueChange={(value) => setFormData({ ...formData, industria: value as any })}
+                onValueChange={(value) => setFormData({ ...formData, industria: value as Industria })}
                 optionsType="industrias"
               />
             </div>
@@ -275,7 +281,7 @@ export function CreateEmpresaModal({
               <SelectWithAdd
                 label="Tamaño"
                 value={formData.tamaño || ''}
-                onValueChange={(value) => setFormData({ ...formData, tamaño: value as any })}
+                onValueChange={(value) => setFormData({ ...formData, tamaño: value as Tamaño })}
                 optionsType="tamanios"
               />
             </div>
@@ -287,7 +293,7 @@ export function CreateEmpresaModal({
               <SelectWithAdd
                 label="Origen"
                 value={formData.origen || ''}
-                onValueChange={(value) => setFormData({ ...formData, origen: value as any })}
+                onValueChange={(value) => setFormData({ ...formData, origen: value as Origen })}
                 optionsType="origenes"
               />
             </div>
@@ -296,7 +302,7 @@ export function CreateEmpresaModal({
               <SelectWithAdd
                 label="Tipo de Relación"
                 value={formData.tipo_relacion || ''}
-                onValueChange={(value) => setFormData({ ...formData, tipo_relacion: value as any })}
+                onValueChange={(value) => setFormData({ ...formData, tipo_relacion: value as TipoRelacion })}
                 optionsType="tipos_relacion"
               />
             </div>
@@ -418,7 +424,7 @@ export function CreateEmpresaModal({
                 <Label>Método de Pago</Label>
                 <select
                   value={formData.metodo_pago || ''}
-                  onChange={(e) => setFormData({ ...formData, metodo_pago: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, metodo_pago: e.target.value as MetodoPago })}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="">Seleccionar método</option>

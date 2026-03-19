@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
@@ -81,6 +81,11 @@ import {
   STATS_LABELS,
 } from '@/constants/crm'
 
+// ============================================
+// MAGIC NUMBERS - Constantes de negocio
+// ============================================
+const DIAS_INACTIVIDAD_PROSPECTO = 60
+
 const EMPRESAS_VACIA: Partial<Empresa> = {
   tipo_entidad: 'cliente',
   nombre: '',
@@ -127,25 +132,142 @@ export default function CRMPage() {
   // Usuarios internos para proyectos
   const [usuarios, setUsuarios] = useState<User[]>([])
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [tipoFilter, setTipoFilter] = useState<TipoEntidad | 'todos'>('todos')
-  const [industriaFilter, setIndustriaFilter] = useState<string>('todas')
+  // ============================================
+  // ESTADOS DE BÚSQUEDA Y FILTROS (agrupados)
+  // ============================================
+  const [searchState, setSearchState] = useState({
+    query: '',
+    tipo: 'todos' as TipoEntidad | 'todos',
+    industria: 'todas'
+  })
 
-  const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null)
-  const [isModalEmpresa, setIsModalEmpresa] = useState(false)
-  const [isModalContacto, setIsModalContacto] = useState(false)
-  const [isModalDocumento, setIsModalDocumento] = useState(false)
-  const [isModalNewProject, setIsModalNewProject] = useState(false)
-  const [editingEmpresa, setEditingEmpresa] = useState<Partial<Empresa> | null>(null)
-  const [editingContacto, setEditingContacto] = useState<Partial<Contacto> | null>(null)
-  const [empresaForContacto, setEmpresaForContacto] = useState<Empresa | null>(null)
-  const [empresaForDocumento, setEmpresaForDocumento] = useState<Empresa | null>(null)
-  const [newDocumento, setNewDocumento] = useState<{ visibilidad: 'interno' | 'publico', descripcion: string, nombreArchivo: string }>({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
-  const [notaEditando, setNotaEditando] = useState(false)
+  const searchQuery = searchState.query
+  const tipoFilter = searchState.tipo
+  const industriaFilter = searchState.industria
+
+  // ============================================
+  // ESTADOS DE MODALES Y UI (agrupados)
+  // ============================================
+  const [uiState, setUiState] = useState({
+    selectedEmpresa: null as Empresa | null,
+    isModalEmpresa: false,
+    isModalContacto: false,
+    isModalDocumento: false,
+    isModalNewProject: false,
+    editingEmpresa: null as Partial<Empresa> | null,
+    editingContacto: null as Partial<Contacto> | null,
+    empresaForContacto: null as Empresa | null,
+    empresaForDocumento: null as Empresa | null,
+    notaEditando: false,
+  })
+
+  const {
+    selectedEmpresa,
+    isModalEmpresa,
+    isModalContacto,
+    isModalDocumento,
+    isModalNewProject,
+    editingEmpresa,
+    editingContacto,
+    empresaForContacto,
+    empresaForDocumento,
+    notaEditando,
+  } = uiState
+
+  // Setters agrupados para UI
+  const setSelectedEmpresa = useCallback((empresa: Empresa | null) => {
+    setUiState(prev => ({ ...prev, selectedEmpresa: empresa }))
+  }, [])
+
+  const setIsModalEmpresa = useCallback((open: boolean) => {
+    setUiState(prev => ({ ...prev, isModalEmpresa: open, editingEmpresa: open ? prev.editingEmpresa : null }))
+  }, [])
+
+  const setIsModalContacto = useCallback((open: boolean) => {
+    setUiState(prev => ({ ...prev, isModalContacto: open, editingContacto: open ? prev.editingContacto : null }))
+  }, [])
+
+  const setIsModalDocumento = useCallback((open: boolean) => {
+    setUiState(prev => ({ ...prev, isModalDocumento: open, empresaForDocumento: open ? prev.empresaForDocumento : null }))
+  }, [])
+
+  const setIsModalNewProject = useCallback((open: boolean) => {
+    setUiState(prev => ({ ...prev, isModalNewProject: open }))
+  }, [])
+
+  const setEditingEmpresa = useCallback((empresa: Partial<Empresa> | null) => {
+    setUiState(prev => ({ ...prev, editingEmpresa: empresa }))
+  }, [])
+
+  const setEditingContacto = useCallback((contacto: Partial<Contacto> | null) => {
+    setUiState(prev => ({ ...prev, editingContacto: contacto }))
+  }, [])
+
+  const setEmpresaForContacto = useCallback((empresa: Empresa | null) => {
+    setUiState(prev => ({ ...prev, empresaForContacto: empresa }))
+  }, [])
+
+  const setEmpresaForDocumento = useCallback((empresa: Empresa | null) => {
+    setUiState(prev => ({ ...prev, empresaForDocumento: empresa }))
+  }, [])
+
+  const setNotaEditando = useCallback((editando: boolean) => {
+    setUiState(prev => ({ ...prev, notaEditando: editando }))
+  }, [])
+
+  // Estado de nota temporal
   const [notaTemporal, setNotaTemporal] = useState('')
 
+  // Estado de documento nuevo
+  const [newDocumento, setNewDocumento] = useState<{ visibilidad: 'interno' | 'publico', descripcion: string, nombreArchivo: string }>({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
+
+  // Estados de guardado
   const [isSaving, setIsSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Handler para actualizar filtros
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setSearchState(prev => {
+      if (key === 'tipo') return { ...prev, tipo: value as TipoEntidad | 'todos' }
+      if (key === 'industria') return { ...prev, industria: value }
+      if (key === 'query') return { ...prev, query: value }
+      return prev
+    })
+  }, [])
+
+  const handleClearFilters = useCallback(() => {
+    setSearchState({ query: '', tipo: 'todos', industria: 'todas' })
+  }, [])
+
+  // Handlers para modales que actualizan múltiples estados
+  const handleNewEmpresa = useCallback(() => {
+    setEditingEmpresa({ ...EMPRESAS_VACIA })
+    setErrors({})
+    setSelectedEmpresa(null)
+    setIsModalEmpresa(true)
+  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
+
+  const handleEditEmpresa = useCallback((empresa: Empresa) => {
+    setEditingEmpresa({ ...empresa })
+    setErrors({})
+    setSelectedEmpresa(null)
+    setIsModalEmpresa(true)
+  }, [setEditingEmpresa, setErrors, setSelectedEmpresa, setIsModalEmpresa])
+
+  const handleNewContacto = useCallback((empresa: Empresa) => {
+    setEmpresaForContacto(empresa)
+    setEditingContacto({ ...CONTACTO_VACIO, id: String(Date.now()), empresa_id: empresa.id })
+    setErrors({})
+    setSelectedEmpresa(null)
+    setIsModalContacto(true)
+  }, [setEmpresaForContacto, setEditingContacto, setErrors, setSelectedEmpresa, setIsModalContacto])
+
+  const handleEditContacto = useCallback((contacto: Contacto) => {
+    setEditingContacto({ ...contacto })
+    setEmpresaForContacto(empresas.find(e => e.id === contacto.empresa_id) || null)
+    setErrors({})
+    setIsModalContacto(true)
+  }, [empresas, setEditingContacto, setEmpresaForContacto, setErrors, setIsModalContacto])
 
   // Verificar disponibilidad de localStorage al inicio
   useEffect(() => {
@@ -160,7 +282,7 @@ export default function CRMPage() {
     }
   }, [])
 
-  // Permisos
+  // Permisos computados
   const isAdmin = user?.roles.includes('admin')
   const isComercial = user?.roles.includes('comercial')
   const isCompras = user?.roles.includes('compras')
@@ -171,261 +293,119 @@ export default function CRMPage() {
   const canViewClientes = isAdmin || isComercial || isFacturacion || isMarketing || isTecnico
   const canViewProveedores = isAdmin || isCompras || isFacturacion || isMarketing
   const canEdit = isAdmin || isComercial || isCompras
-  const canEditFacturacion = isAdmin || isFacturacion
   const canUploadDocuments = isAdmin || isComercial || isCompras
 
   // Simulación: IDs de empresas asignadas al técnico (en producción vendría de proyectos)
   const empresasAsignadasTecnico = isTecnico ? ['1', '3'] : []
 
-  // Filtrar empresas
-  const filteredEmpresas = empresas.filter(e => {
-    // Restricción de técnicos: solo ven clientes de proyectos asignados
-    if (isTecnico && e.tipo_entidad === 'cliente') {
-      if (!empresasAsignadasTecnico.includes(e.id)) return false
-    }
+  // ============================================
+  // MEMOIZACIÓN: Filtrado de empresas
+  // ============================================
+  const filteredEmpresas = useMemo(() => {
+    return empresas.filter(e => {
+      // Restricción de técnicos: solo ven clientes de proyectos asignados
+      if (isTecnico && e.tipo_entidad === 'cliente') {
+        if (!empresasAsignadasTecnico.includes(e.id)) return false
+      }
 
-    if (!canViewClientes && e.tipo_entidad === 'cliente') return false
-    if (!canViewProveedores && (e.tipo_entidad === 'proveedor' || e.tipo_entidad === 'ambos')) return false
+      if (!canViewClientes && e.tipo_entidad === 'cliente') return false
+      if (!canViewProveedores && (e.tipo_entidad === 'proveedor' || e.tipo_entidad === 'ambos')) return false
 
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      if (!e.nombre.toLowerCase().includes(q) &&
-        !e.email_principal?.toLowerCase().includes(q) &&
-        !e.ciudad?.toLowerCase().includes(q)) return false
-    }
-    if (tipoFilter !== 'todos' && e.tipo_entidad !== tipoFilter) return false
-    if (industriaFilter !== 'todas' && e.industria !== industriaFilter) return false
-    return true
-  })
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        if (!e.nombre.toLowerCase().includes(q) &&
+          !e.email_principal?.toLowerCase().includes(q) &&
+          !e.ciudad?.toLowerCase().includes(q)) return false
+      }
+      if (tipoFilter !== 'todos' && e.tipo_entidad !== tipoFilter) return false
+      if (industriaFilter !== 'todas' && e.industria !== industriaFilter) return false
+      return true
+    })
+  }, [empresas, isTecnico, empresasAsignadasTecnico, canViewClientes, canViewProveedores, searchQuery, tipoFilter, industriaFilter])
 
-  const getContactos = (empresaId: string) => contactos.filter(c => c.empresa_id === empresaId)
-  const getDocumentos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId)
-  const getDocumentosInternos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId && d.visibilidad === 'interno')
-  const getDocumentosPublicos = (empresaId: string) => documentos.filter(d => d.entidad_tipo === 'empresa' && d.entidad_id === empresaId && d.visibilidad === 'publico')
-  const getProyectos = (empresaId: string) => proyectos.filter(p => p.empresa_id === empresaId)
-  const getTickets = (empresaId: string) => {
-    const proyectosIds = proyectos.filter(p => p.empresa_id === empresaId).map(p => p.id!).filter(Boolean)
+  // ============================================
+  // MEMOIZACIÓN: Índices para getters rápidos
+  // ============================================
+  const contactosByEmpresa = useMemo(() => {
+    const map = new Map<string, Contacto[]>()
+    contactos.forEach(c => {
+      const existing = map.get(c.empresa_id) || []
+      map.set(c.empresa_id, [...existing, c])
+    })
+    return map
+  }, [contactos])
+
+  const documentosByEmpresa = useMemo(() => {
+    const map = new Map<string, (Documento | Archivo)[]>()
+    documentos.forEach(d => {
+      if (d.entidad_tipo === 'empresa') {
+        const existing = map.get(d.entidad_id) || []
+        map.set(d.entidad_id, [...existing, d])
+      }
+    })
+    return map
+  }, [documentos])
+
+  const proyectosByEmpresa = useMemo(() => {
+    const map = new Map<string, Proyecto[]>()
+    proyectos.forEach(p => {
+      const existing = map.get(p.empresa_id) || []
+      map.set(p.empresa_id, [...existing, p])
+    })
+    return map
+  }, [proyectos])
+
+  // ============================================
+  // MEMOIZACIÓN: Getters memoizados
+  // ============================================
+  const getContactos = useCallback((empresaId: string) => {
+    return contactosByEmpresa.get(empresaId) || []
+  }, [contactosByEmpresa])
+
+  const getDocumentos = useCallback((empresaId: string) => {
+    return documentosByEmpresa.get(empresaId) || []
+  }, [documentosByEmpresa])
+
+  const getDocumentosInternos = useCallback((empresaId: string) => {
+    return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'interno')
+  }, [documentosByEmpresa])
+
+  const getDocumentosPublicos = useCallback((empresaId: string) => {
+    return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'publico')
+  }, [documentosByEmpresa])
+
+  const getProyectos = useCallback((empresaId: string) => {
+    return proyectosByEmpresa.get(empresaId) || []
+  }, [proyectosByEmpresa])
+
+  const getTickets = useCallback((empresaId: string) => {
+    const empresaProyectos = proyectosByEmpresa.get(empresaId) || []
+    const proyectosIds = empresaProyectos.map(p => p.id!).filter(Boolean)
     return tickets.filter(t => t.proyecto_id && proyectosIds.includes(t.proyecto_id))
-  }
+  }, [proyectosByEmpresa, tickets])
 
-  // Abrir modal para nueva empresa
-  const handleNewEmpresa = () => {
-    // NO asignar ID aquí - el modal lo detectará como nueva empresa
-    // y handleSaveEmpresa generará el ID al guardarla
-    setEditingEmpresa({ ...EMPRESAS_VACIA })
-    setErrors({})
-    setSelectedEmpresa(null) // Cerrar modal de empresa si está abierto
-    setIsModalEmpresa(true)
-  }
+  // ============================================
+  // MEMOIZACIÓN: Estadísticas
+  // ============================================
+  const empresaStats = useMemo(() => ({
+    total: empresas.length,
+    clientes: empresas.filter(e => e.tipo_entidad === 'cliente').length,
+    proveedores: empresas.filter(e => e.tipo_entidad === 'proveedor').length,
+    contactosTotal: contactos.length,
+  }), [empresas, contactos])
 
-  // Abrir modal para editar empresa
-  const handleEditEmpresa = (empresa: Empresa) => {
-    setEditingEmpresa({ ...empresa })
-    setErrors({})
-    setSelectedEmpresa(null) // Cerrar modal de empresa si está abierto
-    setIsModalEmpresa(true)
-  }
-
-  // Guardar empresa
-  const handleSaveEmpresa = async (empresa: Partial<Empresa>, isNew: boolean) => {
-    setErrors({})
-    setIsSaving(true)
-    await new Promise(r => setTimeout(r, 500))
-
-    const now = new Date().toISOString().split('T')[0]
-
-    if (!isNew) {
-      const success = setEmpresas(prev => prev.map(e =>
-        e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
-      ))
-      if (!success) {
-        setErrors({ general: 'Error al actualizar la empresa en localStorage' })
-        setIsSaving(false)
-        return
-      }
-    } else {
-      const newEmpresa = {
-        ...empresa,
-        id: String(Date.now()),
-        creado_en: now
-      } as Empresa
-
-      const success = setEmpresas(prev => {
-        const updated = [...prev, newEmpresa]
-        return updated
-      })
-
-      if (!success) {
-        setErrors({ general: 'Error al guardar la empresa en localStorage. Verifica que el navegador permita localStorage (no modo privado)' })
-        setIsSaving(false)
-        return
-      }
-    }
-
-    setIsSaving(false)
-    setEditingEmpresa(null)
-  }
-
-  // Eliminar empresa
-  const handleDeleteEmpresa = (id: string) => {
-    if (confirm('¿Estás seguro de eliminar esta empresa?')) {
-      const success = setEmpresas(prev => prev.filter(e => e.id !== id))
-      if (!success) {
-        return
-      }
-      setContactos(prev => prev.filter(c => c.empresa_id !== id))
-      setSelectedEmpresa(null)
-    }
-  }
-
-  // Abrir modal para nuevo contacto
-  const handleNewContacto = (empresa: Empresa) => {
-    setEmpresaForContacto(empresa)
-    setEditingContacto({ ...CONTACTO_VACIO, id: String(Date.now()), empresa_id: empresa.id })
-    setErrors({})
-    setSelectedEmpresa(null) // Cerrar modal de empresa
-    setIsModalContacto(true)
-  }
-
-  // Editar contacto existente
-  const handleEditContacto = (contacto: Contacto) => {
-    setEditingContacto({ ...contacto })
-    setEmpresaForContacto(empresas.find(e => e.id === contacto.empresa_id) || null)
-    setErrors({})
-    setIsModalContacto(true)
-  }
-
-  // Abrir modal para subir documento
-  const handleNewDocumento = (empresa: Empresa) => {
-    setEmpresaForDocumento(empresa)
-    setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
-    setSelectedEmpresa(null)
-    setIsModalDocumento(true)
-  }
-
-  // Guardar documento
-  const handleSaveDocumento = async () => {
-    if (!empresaForDocumento || !newDocumento.descripcion.trim() || !newDocumento.nombreArchivo.trim()) {
-      return
-    }
-    await handleUploadDocumento(empresaForDocumento.id, newDocumento.visibilidad, newDocumento.descripcion, newDocumento.nombreArchivo)
-    setIsModalDocumento(false)
-    setEmpresaForDocumento(null)
-    setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
-  }
-
-  // Guardar contacto
-  const handleSaveContacto = async () => {
-    setErrors({})
-
-    if (!editingContacto?.nombre || editingContacto.nombre.trim().length < 2) {
-      setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
-      return
-    }
-    if (!editingContacto?.email) {
-      setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
-      return
-    }
-    // Validar formato email
-    if (editingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingContacto.email)) {
-      setErrors({ email: VALIDATION_ERRORS.emailInvalido })
-      return
-    }
-    // Verificar email único en el sistema
-    const emailExists = contactos.some(c => c.email.toLowerCase() === editingContacto?.email?.toLowerCase() && c.id !== editingContacto?.id)
-    if (emailExists) {
-      setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
-      return
-    }
-    if (!editingContacto?.tipo_contacto) {
-      setErrors({ tipo_contacto: VALIDATION_ERRORS.tipoContactoRequerido })
-      return
-    }
-    // Validar teléfono si se ingresa
-    if (editingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(editingContacto.telefono)) {
-      setErrors({ telefono: VALIDATION_ERRORS.telefonoInvalido })
-      return
-    }
-
-    // Si es principal, desmarcar otros
-    let updatedContactos = [...contactos]
-    if (editingContacto.es_principal) {
-      updatedContactos = updatedContactos.map(c =>
-        c.empresa_id === editingContacto.empresa_id ? { ...c, es_principal: false } : c
-      )
-    }
-
-    setIsSaving(true)
-    await new Promise(r => setTimeout(r, 500))
-
-    if (contactos.find(c => c.id === editingContacto?.id)) {
-      setContactos(prev => prev.map(c =>
-        c.id === editingContacto?.id ? { ...c, ...editingContacto } as Contacto : c
-      ))
-    } else {
-      setContactos(prev => [...prev, {
-        ...editingContacto,
-        id: String(Date.now()),
-        creado_en: new Date().toISOString().split('T')[0]
-      } as Contacto])
-    }
-
-    setIsSaving(false)
-    setIsModalContacto(false)
-    setEditingContacto(null)
-    setEmpresaForContacto(null)
-  }
-
-  // Eliminar contacto
-  const handleDeleteContacto = (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este contacto?')) {
-      setContactos(prev => prev.filter(c => c.id !== id))
-    }
-  }
-
-  // Documentos
-  const handleUploadDocumento = async (empresaId: string, visibilidad: 'interno' | 'publico', descripcion: string, nombreArchivo: string) => {
-    await new Promise(r => setTimeout(r, 500))
-    const nuevoDoc = {
-      id: String(Date.now()),
-      empresa_id: empresaId,
-      archivo_id: `arch${Date.now()}`,
-      visibilidad,
-      descripcion,
-      subido_por: user?.nombre || 'Usuario',
-      fecha_subida: new Date().toISOString().split('T')[0],
-      nombre_archivo: nombreArchivo
-    } as unknown as Archivo
-    setDocumentos(prev => [...prev, nuevoDoc])
-  }
-
-  const handleDeleteDocumento = (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este documento?')) {
-      setDocumentos(prev => prev.filter(d => d.id !== id))
-    }
-  }
-
-  // Notas internas
-  const handleSaveNota = (empresaId: string) => {
-    const success = setEmpresas(prev => prev.map(e =>
-      e.id === empresaId ? { ...e, notas_internas: notaTemporal } : e
-    ))
-    if (!success) {
-      console.error('[CRM] Error al guardar nota')
-      return
-    }
-    setNotaEditando(false)
-  }
-
-  // Alertas
-  const getAlertas = () => {
-    const alertas: { id: string, tipo: 'warning' | 'danger', titulo: string, mensaje: string, empresaId?: string }[] = []
+  // ============================================
+  // MEMOIZACIÓN: Alertas
+  // ============================================
+  const alertas = useMemo(() => {
+    const resultado: { id: string, tipo: 'warning' | 'danger', titulo: string, mensaje: string, empresaId?: string }[] = []
 
     empresas.forEach(e => {
-      // Alerta: Sin contacto principal
       const contactosEmpresa = getContactos(e.id)
+
+      // Alerta: Sin contacto principal
       if (contactosEmpresa.length > 0 && !contactosEmpresa.some(c => c.es_principal)) {
-        alertas.push({
+        resultado.push({
           id: `sin-principal-${e.id}`,
           tipo: 'warning' as const,
           titulo: ALERT_LABELS.sinContactoPrincipal,
@@ -434,13 +414,13 @@ export default function CRMPage() {
         })
       }
 
-      // Alerta: Prospecto inactivo >60 días
+      // Alerta: Prospecto inactivo > DIAS_INACTIVIDAD_PROSPECTO días
       if ((e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos') && e.tipo_relacion === 'Prospecto') {
         const fechaCreacion = new Date(e.creado_en)
         const hoy = new Date()
         const diasInactivo = Math.floor((hoy.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60 * 24))
-        if (diasInactivo > 60) {
-          alertas.push({
+        if (diasInactivo > DIAS_INACTIVIDAD_PROSPECTO) {
+          resultado.push({
             id: `inactivo-${e.id}`,
             tipo: 'danger' as const,
             titulo: ALERT_LABELS.prospectoInactivo,
@@ -452,7 +432,7 @@ export default function CRMPage() {
 
       // Alerta: Proveedor sin contacto
       if (e.tipo_entidad === 'proveedor' && contactosEmpresa.length === 0) {
-        alertas.push({
+        resultado.push({
           id: `sin-contacto-prov-${e.id}`,
           tipo: 'warning' as const,
           titulo: ALERT_LABELS.proveedorSinContactos,
@@ -462,25 +442,210 @@ export default function CRMPage() {
       }
     })
 
-    return alertas
-  }
+    return resultado
+  }, [empresas, getContactos])
 
-  const alertas = getAlertas()
+  // ============================================
+  // HANDLERS DE ACCIONES
+  // ============================================
 
-  const handleCancelNota = () => {
+  const handleDeleteEmpresa = useCallback((id: string) => {
+    if (confirm('¿Estás seguro de eliminar esta empresa?')) {
+      const success = setEmpresas(prev => prev.filter(e => e.id !== id))
+      if (!success) {
+        return
+      }
+      setContactos(prev => prev.filter(c => c.empresa_id !== id))
+      setSelectedEmpresa(null)
+    }
+  }, [setEmpresas, setContactos, setSelectedEmpresa])
+
+  const handleSaveEmpresa = useCallback(async (empresa: Partial<Empresa>, isNew: boolean) => {
+    setErrors({})
+    setIsSaving(true)
+
+    try {
+      await new Promise(r => setTimeout(r, 500))
+      const now = new Date().toISOString().split('T')[0]
+
+      if (!isNew) {
+        const success = setEmpresas(prev => prev.map(e =>
+          e.id === empresa.id ? { ...e, ...empresa } as Empresa : e
+        ))
+        if (!success) {
+          setErrors({ general: 'Error al actualizar la empresa en localStorage' })
+          setIsSaving(false)
+          return
+        }
+      } else {
+        const newEmpresa = {
+          ...empresa,
+          id: String(Date.now()),
+          creado_en: now
+        } as Empresa
+
+        const success = setEmpresas(prev => [...prev, newEmpresa])
+        if (!success) {
+          setErrors({ general: 'Error al guardar la empresa en localStorage. Verifica que el navegador permita localStorage (no modo privado)' })
+          setIsSaving(false)
+          return
+        }
+      }
+
+      setEditingEmpresa(null)
+    } catch (error) {
+      console.error('[CRM] Error al guardar empresa:', error)
+      setErrors({ general: 'Error al guardar la empresa. Intenta de nuevo.' })
+    } finally {
+      setIsSaving(false)
+    }
+  }, [setEmpresas, setEditingEmpresa, setErrors, setIsSaving])
+
+  const handleDeleteContacto = useCallback((id: string) => {
+    if (confirm('¿Estás seguro de eliminar este contacto?')) {
+      setContactos(prev => prev.filter(c => c.id !== id))
+    }
+  }, [setContactos])
+
+  const handleUploadDocumento = useCallback(async (
+    empresaId: string,
+    visibilidad: 'interno' | 'publico',
+    descripcion: string,
+    nombreArchivo: string
+  ) => {
+    try {
+      await new Promise(r => setTimeout(r, 500))
+      const nuevoDoc = {
+        id: String(Date.now()),
+        empresa_id: empresaId,
+        archivo_id: `arch${Date.now()}`,
+        visibilidad,
+        descripcion,
+        subido_por: user?.nombre || 'Usuario',
+        fecha_subida: new Date().toISOString().split('T')[0],
+        nombre_archivo: nombreArchivo
+      } as unknown as Archivo
+      setDocumentos(prev => [...prev, nuevoDoc])
+    } catch (error) {
+      console.error('[CRM] Error al subir documento:', error)
+    }
+  }, [user?.nombre, setDocumentos])
+
+  const handleDeleteDocumento = useCallback((id: string) => {
+    if (confirm('¿Estás seguro de eliminar este documento?')) {
+      setDocumentos(prev => prev.filter(d => d.id !== id))
+    }
+  }, [setDocumentos])
+
+  const handleNewDocumento = useCallback((empresa: Empresa) => {
+    setEmpresaForDocumento(empresa)
+    setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
+    setSelectedEmpresa(null)
+    setIsModalDocumento(true)
+  }, [setEmpresaForDocumento, setNewDocumento, setSelectedEmpresa, setIsModalDocumento])
+
+  const handleSaveDocumento = useCallback(async () => {
+    if (!empresaForDocumento || !newDocumento.descripcion.trim() || !newDocumento.nombreArchivo.trim()) {
+      return
+    }
+    try {
+      await handleUploadDocumento(empresaForDocumento.id, newDocumento.visibilidad, newDocumento.descripcion, newDocumento.nombreArchivo)
+      setIsModalDocumento(false)
+      setEmpresaForDocumento(null)
+      setNewDocumento({ visibilidad: 'interno', descripcion: '', nombreArchivo: '' })
+    } catch (error) {
+      console.error('[CRM] Error al guardar documento:', error)
+    }
+  }, [empresaForDocumento, newDocumento, handleUploadDocumento, setIsModalDocumento, setEmpresaForDocumento, setNewDocumento])
+
+  const handleSaveContacto = useCallback(async () => {
+    setErrors({})
+
+    if (!editingContacto?.nombre || editingContacto.nombre.trim().length < 2) {
+      setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
+      return
+    }
+    if (!editingContacto?.email) {
+      setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
+      return
+    }
+    if (editingContacto.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingContacto.email)) {
+      setErrors({ email: VALIDATION_ERRORS.emailInvalido })
+      return
+    }
+    const emailExists = contactos.some(c => c.email.toLowerCase() === editingContacto?.email?.toLowerCase() && c.id !== editingContacto?.id)
+    if (emailExists) {
+      setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
+      return
+    }
+    if (!editingContacto?.tipo_contacto) {
+      setErrors({ tipo_contacto: VALIDATION_ERRORS.tipoContactoRequerido })
+      return
+    }
+    if (editingContacto.telefono && !/^[\d\s\+\-\(\)]+$/.test(editingContacto.telefono)) {
+      setErrors({ telefono: VALIDATION_ERRORS.telefonoInvalido })
+      return
+    }
+
+    let updatedContactos = [...contactos]
+    if (editingContacto.es_principal) {
+      updatedContactos = updatedContactos.map(c =>
+        c.empresa_id === editingContacto.empresa_id ? { ...c, es_principal: false } : c
+      )
+    }
+
+    setIsSaving(true)
+    try {
+      await new Promise(r => setTimeout(r, 500))
+
+      if (contactos.find(c => c.id === editingContacto?.id)) {
+        setContactos(prev => prev.map(c =>
+          c.id === editingContacto?.id ? { ...c, ...editingContacto } as Contacto : c
+        ))
+      } else {
+        setContactos(prev => [...prev, {
+          ...editingContacto,
+          id: String(Date.now()),
+          creado_en: new Date().toISOString().split('T')[0]
+        } as Contacto])
+      }
+
+      setIsModalContacto(false)
+      setEditingContacto(null)
+      setEmpresaForContacto(null)
+    } catch (error) {
+      console.error('[CRM] Error al guardar contacto:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [editingContacto, contactos, setErrors, setIsSaving, setContactos, setIsModalContacto, setEditingContacto, setEmpresaForContacto])
+
+  // Notas internas
+  const handleSaveNota = useCallback((empresaId: string) => {
+    const success = setEmpresas(prev => prev.map(e =>
+      e.id === empresaId ? { ...e, notas_internas: notaTemporal } : e
+    ))
+    if (!success) {
+      console.error('[CRM] Error al guardar nota')
+      return
+    }
+    setNotaEditando(false)
+  }, [notaTemporal, setEmpresas, setNotaEditando])
+
+  const handleCancelNota = useCallback(() => {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(false)
-  }
+  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
 
-  const openNotaEdit = () => {
+  const openNotaEdit = useCallback(() => {
     const empresa = empresas.find(e => e.id === selectedEmpresa?.id)
     setNotaTemporal(empresa?.notas_internas || '')
     setNotaEditando(true)
-  }
+  }, [empresas, selectedEmpresa?.id, setNotaTemporal, setNotaEditando])
 
-  // Guardar nuevo proyecto desde el modal de empresa
-  const handleSaveNewProject = async (proyecto: Partial<Proyecto>) => {
+  // Guardar nuevo proyecto
+  const handleSaveNewProject = useCallback(async (proyecto: Partial<Proyecto>) => {
     if (!selectedEmpresa) return
 
     const nuevoProyecto: Proyecto = {
@@ -505,7 +670,7 @@ export default function CRMPage() {
 
     setProyectos(prev => [...prev, nuevoProyecto])
     setIsModalNewProject(false)
-  }
+  }, [selectedEmpresa, user, setProyectos, setIsModalNewProject])
 
   if (!canViewClientes && !canViewProveedores) {
     return (
@@ -594,7 +759,7 @@ export default function CRMPage() {
       {/* Filtros */}
       <FilterBar
         searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(value) => handleFilterChange('query', value)}
         searchPlaceholder="Buscar empresas..."
         filters={[
           {
@@ -621,19 +786,9 @@ export default function CRMPage() {
           },
         ]}
         values={{ tipo: tipoFilter, industria: industriaFilter }}
-        onFilterChange={(key, value) => {
-          if (key === 'tipo') {
-            setTipoFilter(value as TipoEntidad | 'todos')
-          } else if (key === 'industria') {
-            setIndustriaFilter(value)
-          }
-        }}
+        onFilterChange={handleFilterChange}
         hasActiveFilters={tipoFilter !== 'todos' || industriaFilter !== 'todas' || !!searchQuery}
-        onClearFilters={() => {
-          setSearchQuery('')
-          setTipoFilter('todos')
-          setIndustriaFilter('todas')
-        }}
+        onClearFilters={handleClearFilters}
       />
 
       {/* Stats */}
@@ -648,7 +803,7 @@ export default function CRMPage() {
         />
         <MiniStat
           label="Clientes"
-          value={empresas.filter(e => e.tipo_entidad === 'cliente').length}
+          value={empresaStats.clientes}
           icon={<Users className="h-5 w-5" />}
           variant="info"
           showBorder
@@ -656,7 +811,7 @@ export default function CRMPage() {
         />
         <MiniStat
           label="Proveedores"
-          value={empresas.filter(e => e.tipo_entidad === 'proveedor').length}
+          value={empresaStats.proveedores}
           icon={<Building2 className="h-5 w-5" />}
           variant="warning"
           showBorder
@@ -664,7 +819,7 @@ export default function CRMPage() {
         />
         <MiniStat
           label="Contactos"
-          value={contactos.length}
+          value={empresaStats.contactosTotal}
           icon={<Users className="h-5 w-5" />}
           variant="success"
           showBorder

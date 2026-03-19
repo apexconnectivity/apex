@@ -1,4 +1,3 @@
-import React from 'react'
 import { FileText, Image, FileSpreadsheet, Folder } from 'lucide-react'
 import type { ReactNode } from 'react'
 

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState, useEffect } from 'react'
 import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -60,8 +60,8 @@ export function DatePicker({
   className,
   disabled = false,
 }: DatePickerProps) {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [currentMonth, setCurrentMonth] = React.useState(new Date())
+  const [isOpen, setIsOpen] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const days = getDaysInMonth(currentMonth.getFullYear(), currentMonth.getMonth())
   const currentYear = currentMonth.getFullYear()
@@ -86,7 +86,7 @@ export function DatePicker({
   }
 
   // Go to current month if no value
-  React.useEffect(() => {
+  useEffect(() => {
     if (value && !isSameDay(value, currentMonth)) {
       setCurrentMonth(new Date(value.getFullYear(), value.getMonth(), 1))
     }
