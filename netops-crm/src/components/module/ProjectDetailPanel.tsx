@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Target, Archive, XCircle } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Target, Archive, XCircle, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { PIPELINE_FASE_COLORS } from '@/lib/colors'
@@ -113,17 +113,17 @@ export function ProjectDetailPanel({
 
       {/* Contenido */}
       <SidePanelContent>
-        {/* Progreso del proyecto */}
-        <SidePanelSection title="Progreso del Proyecto">
+        {/* Progreso de tareas de la fase actual */}
+        <SidePanelSection title={`Progreso - ${faseActual?.nombre}`}>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Probabilidad de cierre</span>
-              <span className="font-medium">{proyecto.probabilidad_cierre}%</span>
+              <span className="text-muted-foreground">Tareas ejecutadas</span>
+              <span className="font-medium">{progresoTareas}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${proyecto.probabilidad_cierre}%` }}
+                style={{ width: `${progresoTareas}%` }}
               />
             </div>
           </div>
@@ -145,6 +145,17 @@ export function ProjectDetailPanel({
                 />
                 <span className="text-sm font-medium">{faseActual?.nombre}</span>
               </div>
+            </div>
+
+            {/* Responsable */}
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                <User className="h-3.5 w-3.5" />
+                <span className="text-xs">Responsable</span>
+              </div>
+              <span className="text-sm font-medium">
+                {proyecto.responsable_nombre || 'Sin asignar'}
+              </span>
             </div>
 
             {/* Estado */}
