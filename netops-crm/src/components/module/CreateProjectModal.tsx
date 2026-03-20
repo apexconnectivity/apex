@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { InputNumber } from '@/components/ui/input-number'
+import { DatePicker } from '@/components/ui/date-picker'
 import { InlineAddButton } from '@/components/ui/inline-add-button'
 import { Building2, User as UserIcon, Loader2 } from 'lucide-react'
 import { Proyecto, MONEDAS } from '@/types/proyectos'
@@ -355,6 +356,9 @@ export function CreateProjectModal({
               onChange={(e) => setFormData({ ...formData, monto_estimado: Number(e.target.value) })}
               placeholder="0"
               showCurrency
+              showStepper
+              step={100}
+              min={0}
               currency={formData.moneda || 'USD'}
               currencies={MONEDAS}
               onCurrencyChange={(value) => setFormData({ ...formData, moneda: value as 'USD' | 'MXN' | 'EUR' })}
@@ -364,27 +368,31 @@ export function CreateProjectModal({
 
           {/* Probabilidad y Fecha */}
           <div className="grid grid-cols-2 gap-4">
+            <InputNumber
+              label="Probabilidad de Cierre (%)"
+              value={formData.probabilidad_cierre ?? ''}
+              onChange={(e) => {
+                const val = Number(e.target.value)
+                // Validar que el valor esté entre 0 y 100
+                if (!isNaN(val) && val >= 0 && val <= 100) {
+                  setFormData({ ...formData, probabilidad_cierre: val })
+                } else if (e.target.value === '') {
+                  setFormData({ ...formData, probabilidad_cierre: 0 })
+                }
+              }}
+              placeholder="20"
+              showStepper
+              step={5}
+              min={0}
+              max={100}
+              error={errors.probabilidad_cierre}
+            />
             <div>
-              <Label htmlFor="probabilidad">Probabilidad de Cierre (%)</Label>
-              <Input
-                id="probabilidad"
-                type="number"
-                min={0}
-                max={100}
-                value={formData.probabilidad_cierre || ''}
-                onChange={(e) => setFormData({ ...formData, probabilidad_cierre: Number(e.target.value) })}
-                placeholder="20"
-                className={errors.probabilidad_cierre ? 'border-red-500' : ''}
-              />
-              {errors.probabilidad_cierre && <p className="text-xs text-red-500 mt-1">{errors.probabilidad_cierre}</p>}
-            </div>
-            <div>
-              <Label htmlFor="fecha">Fecha Estimada de Fin</Label>
-              <Input
-                id="fecha"
-                type="date"
-                value={formData.fecha_estimada_fin || ''}
-                onChange={(e) => setFormData({ ...formData, fecha_estimada_fin: e.target.value })}
+              <Label>Fecha Estimada de Fin</Label>
+              <DatePicker
+                value={formData.fecha_estimada_fin ? new Date(formData.fecha_estimada_fin) : undefined}
+                onChange={(date) => setFormData({ ...formData, fecha_estimada_fin: date ? date.toISOString().split('T')[0] : '' })}
+                placeholder="Seleccionar fecha"
               />
             </div>
           </div>

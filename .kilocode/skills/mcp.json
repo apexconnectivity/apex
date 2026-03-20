@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "ctx7sk-562b682e-9393-4304-b246-3c0b0e357c09"
+      },
+      "alwaysAllow": [],
+      "disabled": false
+    }
+  }
+}
