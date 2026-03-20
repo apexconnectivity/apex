@@ -217,6 +217,7 @@ export function CreateEmpresaModal({
   }
 
   const allErrors = { ...localErrors, ...errors }
+  const hasError = Object.keys(allErrors).length > 0
 
   // Determinar tipos disponibles según rol
   const isComercial = userRoles.includes('comercial')
@@ -243,12 +244,14 @@ export function CreateEmpresaModal({
       description={isEditing ? 'Editar los datos de una empresa existente' : 'Crear una nueva empresa en el CRM'}
       variant={variant}
       showAccentBar
+      hasError={hasError}
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
         title={isEditing ? 'Editar Empresa' : 'Nueva Empresa'}
         variant={variant}
         showIcon
+        hasError={hasError}
       />
 
       {/* ✅ ModalBody */}

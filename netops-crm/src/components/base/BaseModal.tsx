@@ -34,6 +34,9 @@ export interface BaseModalProps {
   isLoading?: boolean
   loadingMessage?: string
 
+  // Estado de error - muestra borde rojo y texto en rojo
+  hasError?: boolean
+
   // Comportamiento
   closeOnOverlayClick?: boolean
   closeOnEscape?: boolean
@@ -80,6 +83,7 @@ export function BaseModal({
   accentIcon,
   isLoading = false,
   loadingMessage,
+  hasError = false,
   closeOnOverlayClick = false,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   closeOnEscape = true,
@@ -100,7 +104,7 @@ export function BaseModal({
   // Manejo del cambio de estado
   const handleOpenChange = (isOpen: boolean) => {
     if (disableClose && !isOpen) return
-    
+
     // Usar setTimeout para mover la actualización de estado fuera del ciclo de renderizado
     // y así evitar errores de "Cannot update a component while rendering a different component"
     setTimeout(() => {
@@ -132,6 +136,8 @@ export function BaseModal({
             showAccentBar && variantColors.border,
             // Bordes redondeados mejorados
             "rounded-2xl",
+            // Borde rojo más grueso y sombra si hay errores de validación
+            hasError && "ring-4 ring-destructive/60 border-2 border-destructive shadow-lg shadow-destructive/30",
             contentClassName
           )}
           role="dialog"
@@ -200,6 +206,9 @@ interface ModalHeaderProps {
   showIcon?: boolean
   icon?: React.ReactNode
   showAccentBar?: boolean
+
+  // Estado de error - cambia el título a rojo
+  hasError?: boolean
 }
 
 export function ModalHeader({
@@ -210,7 +219,8 @@ export function ModalHeader({
   variant = "default",
   showIcon = false,
   icon,
-  showAccentBar = false
+  showAccentBar = false,
+  hasError = false
 }: ModalHeaderProps) {
   // Obtener colores de la variante
   const variantColors = getModalVariantColor(variant)
@@ -248,7 +258,7 @@ export function ModalHeader({
 
       <DialogPrimitive.Title className={cn(
         "text-lg font-semibold leading-none tracking-tight",
-        variantColors.text
+        hasError ? "text-destructive" : variantColors.text
       )}>
         {title}
       </DialogPrimitive.Title>
