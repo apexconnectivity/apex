@@ -73,7 +73,6 @@ const EMPRESAS_VACIA: Partial<Empresa> = {
   nombre: '',
   tipo_entidad: 'cliente',
   industria: undefined,
-  email_principal: '',
   telefono_principal: '',
 }
 
@@ -289,7 +288,7 @@ export default function CRMPage() {
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
         if (!e.nombre.toLowerCase().includes(q) &&
-          !e.email_principal?.toLowerCase().includes(q) &&
+          !e.sitio_web?.toLowerCase().includes(q) &&
           !e.ciudad?.toLowerCase().includes(q)) return false
       }
       if (tipoFilter !== 'todos' && e.tipo_entidad !== tipoFilter) return false

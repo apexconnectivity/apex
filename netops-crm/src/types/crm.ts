@@ -1,12 +1,12 @@
 export type TipoEntidad = 'cliente' | 'proveedor' | 'ambos'
-export type Industria = 
-  | 'Tecnología' 
-  | 'Salud' 
-  | 'Educación' 
-  | 'Finanzas' 
-  | 'Comercio' 
-  | 'Industria' 
-  | 'Gobierno' 
+export type Industria =
+  | 'Tecnología'
+  | 'Salud'
+  | 'Educación'
+  | 'Finanzas'
+  | 'Comercio'
+  | 'Industria'
+  | 'Gobierno'
   | 'Otro'
 
 export type Tamaño = 'Micro' | 'PYME' | 'Gran empresa'
@@ -15,13 +15,13 @@ export type Origen = 'Web' | 'Referencia' | 'Llamada en frío' | 'Evento' | 'Lin
 
 export type TipoRelacion = 'Cliente' | 'Prospecto' | 'Ex-cliente'
 
-export type TipoContacto = 
-  | 'Técnico' 
-  | 'Administrativo' 
-  | 'Financiero' 
-  | 'Compras' 
-  | 'Comercial' 
-  | 'Soporte' 
+export type TipoContacto =
+  | 'Técnico'
+  | 'Administrativo'
+  | 'Financiero'
+  | 'Compras'
+  | 'Comercial'
+  | 'Soporte'
   | 'Otro'
 
 export type MetodoPago = 'Transferencia' | 'Tarjeta' | 'Efectivo' | 'Cheque' | 'Otro'
@@ -44,7 +44,6 @@ export interface Empresa {
   tipo_relacion?: TipoRelacion
   tipo_contrato?: TipoContrato
   telefono_principal?: string
-  email_principal?: string
   sitio_web?: string
   direccion?: string
   ciudad?: string

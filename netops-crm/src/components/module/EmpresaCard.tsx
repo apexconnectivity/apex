@@ -1,4 +1,4 @@
-import { Building2, Mail, Phone, MapPin, Users, FolderKanban, MoreHorizontal } from 'lucide-react'
+import { Building2, Phone, MapPin, Users, FolderKanban, MoreHorizontal, Globe } from 'lucide-react'
 import { ModuleCard } from './ModuleCard'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ interface EmpresaCardProps {
     nombre: string
     industria?: string
     tipo_entidad: TipoEntidad
-    email_principal?: string
+    sitio_web?: string
     telefono_principal?: string
     ciudad?: string
     pais?: string
@@ -96,10 +96,10 @@ export function EmpresaCard({
       </div>
 
       <div className="space-y-1.5 text-sm text-muted-foreground">
-        {empresa.email_principal && (
+        {empresa.sitio_web && (
           <div className="flex items-center gap-2 min-w-0">
-            <Mail className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="truncate">{empresa.email_principal}</span>
+            <Globe className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate">{empresa.sitio_web}</span>
           </div>
         )}
         {empresa.telefono_principal && (

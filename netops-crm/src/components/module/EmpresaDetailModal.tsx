@@ -179,10 +179,6 @@ export function EmpresaDetailModal({
                   <p className="font-medium">{empresa.tipo_relacion || '-'}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="font-medium">{empresa.email_principal || '-'}</p>
-                </div>
-                <div>
                   <Label className="text-muted-foreground">Teléfono</Label>
                   <p className="font-medium">{empresa.telefono_principal || '-'}</p>
                 </div>

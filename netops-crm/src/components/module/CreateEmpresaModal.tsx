@@ -49,7 +49,6 @@ const EMPRESA_VACIA: Partial<Empresa> = {
   tipo_relacion: 'Cliente',
   tipo_contrato: 'Ninguno',
   telefono_principal: '',
-  email_principal: '',
   sitio_web: '',
   direccion: '',
   ciudad: '',
@@ -98,6 +97,32 @@ export function CreateEmpresaModal({
     }
   }, [open, empresa])
 
+  // Función para verificar si el formulario tiene los campos obligatorios llenos
+  const canSave = (): boolean => {
+    // Nombre: requerido, mínimo 3 caracteres
+    if (!formData.nombre?.trim() || formData.nombre.trim().length < 3) {
+      return false
+    }
+    // Razón Social: requerida
+    if (!formData.razon_social?.trim()) {
+      return false
+    }
+    // Tipo de entidad: requerido
+    if (!formData.tipo_entidad) {
+      return false
+    }
+    // Tipo de relación: requerido
+    if (!formData.tipo_relacion) {
+      return false
+    }
+    // Teléfono: requerido, 10 dígitos
+    const digits = formData.telefono_principal?.replace(/\s/g, '') || ''
+    if (digits.length < 10) {
+      return false
+    }
+    return true
+  }
+
   const handleSave = async () => {
     // Bloqueo sincrónico: si ya hay un submit en curso, ignorar
     if (isSubmittingRef.current || isSaving) return
@@ -140,14 +165,6 @@ export function CreateEmpresaModal({
       const digits = formData.telefono_principal?.replace(/\s/g, '') || ''
       if (digits.length < 10) {
         validationErrors.telefono_principal = 'El teléfono debe tener 10 dígitos'
-      }
-    }
-
-    // Email principal (solo si se proporcionó)
-    if (formData.email_principal && formData.email_principal.trim() !== '') {
-      const emailValidation = validateEmail(formData.email_principal)
-      if (!emailValidation.isValid) {
-        validationErrors.email_principal = emailValidation.error || 'Email inválido'
       }
     }
 
@@ -217,7 +234,6 @@ export function CreateEmpresaModal({
   }
 
   const allErrors = { ...localErrors, ...errors }
-  const hasError = Object.keys(allErrors).length > 0
 
   // Determinar tipos disponibles según rol
   const isComercial = userRoles.includes('comercial')
@@ -244,14 +260,12 @@ export function CreateEmpresaModal({
       description={isEditing ? 'Editar los datos de una empresa existente' : 'Crear una nueva empresa en el CRM'}
       variant={variant}
       showAccentBar
-      hasError={hasError}
     >
       {/* ✅ ModalHeader */}
       <ModalHeader
         title={isEditing ? 'Editar Empresa' : 'Nueva Empresa'}
         variant={variant}
         showIcon
-        hasError={hasError}
       />
 
       {/* ✅ ModalBody */}
@@ -362,16 +376,15 @@ export function CreateEmpresaModal({
               />
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>Sitio Web</Label>
               <Input
-                type="email"
-                value={formData.email_principal || ''}
-                onChange={(e) => setFormData({ ...formData, email_principal: e.target.value })}
-                placeholder="Ej: contacto@empresa.com"
-                className={allErrors.email_principal ? 'border-red-500' : ''}
+                value={formData.sitio_web || ''}
+                onChange={(e) => setFormData({ ...formData, sitio_web: e.target.value })}
+                placeholder="www.empresa.com"
+                className={allErrors.sitio_web ? 'border-red-500' : ''}
               />
-              {allErrors.email_principal && (
-                <p className="text-red-500 text-sm">{allErrors.email_principal}</p>
+              {allErrors.sitio_web && (
+                <p className="text-red-500 text-sm">{allErrors.sitio_web}</p>
               )}
             </div>
           </div>
@@ -401,16 +414,7 @@ export function CreateEmpresaModal({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Sitio Web</Label>
-            <Input
-              value={formData.sitio_web || ''}
-              onChange={(e) => setFormData({ ...formData, sitio_web: e.target.value })}
-              placeholder="Ej: www.empresa.com"
-              className={allErrors.sitio_web ? 'border-red-500' : ''}
-            />
-            {allErrors.sitio_web && <p className="text-red-500 text-sm">{allErrors.sitio_web}</p>}
-          </div>
+
 
           {/* Datos de facturación */}
           <div className="border-t pt-4 mt-4">
@@ -498,7 +502,7 @@ export function CreateEmpresaModal({
         <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button className="flex-1" onClick={handleSave} disabled={isSaving || isSubmittingLocal}>
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving || isSubmittingLocal || !canSave()}>
           {(isSaving || isSubmittingLocal) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           Guardar
         </Button>
