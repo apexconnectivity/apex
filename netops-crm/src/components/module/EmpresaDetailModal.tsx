@@ -464,7 +464,6 @@ export function EmpresaDetailModal({
           }}
           empresas={[empresa]}
           usuarios={usuarios}
-          contactos={contactosTecnicos}
           isSaving={isSavingProject}
         />
       )}

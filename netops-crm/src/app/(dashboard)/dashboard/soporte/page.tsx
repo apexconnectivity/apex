@@ -617,7 +617,6 @@ export default function SoportePage() {
           onSave={handleSaveProyecto}
           empresas={empresas}
           usuarios={usuarios}
-          contactos={contactos}
         />
 
         {/* Modal para crear nueva empresa */}

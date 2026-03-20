@@ -116,7 +116,7 @@ export default function ProyectosPage() {
 
   // Modal nueva empresa
   const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false)
-  
+
   // Modal nuevo usuario
   const [isModalNuevoUsuario, setIsModalNuevoUsuario] = useState(false)
 
@@ -178,12 +178,12 @@ export default function ProyectosPage() {
     const r: Record<number, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
     const filtered = proyectos.filter(p => {
       if (p.estado !== 'activo') return false
-      
+
       // Filtro por empresa para clientes
       if (user?.roles.includes('cliente')) {
         return p.empresa_id === user.empresa_id
       }
-      
+
       if (isAdmin) return true
       if (isComercial) return p.fase_actual <= 3
       if (isTecnico) return p.fase_actual >= 4
@@ -257,7 +257,7 @@ export default function ProyectosPage() {
               orden: i + 1,
               creado_por: 'Sistema',
               asignado_a_cliente: pl.requiere_cliente,
-              subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si+1 }))
+              subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si + 1 }))
             }
           })
           setTimeout(() => setTareas(tPrev => [...tPrev, ...nuevas]), 0)
@@ -308,11 +308,11 @@ export default function ProyectosPage() {
     setIsSaving(true)
     const proyectoId = data.id || crypto.randomUUID()
     const now = new Date().toISOString().split('T')[0]
-    
+
     // Buscar info adicional necesaria
     const empresa = empresas.find(e => e.id === data.empresa_id)
     const responsable = usuarios.find(u => u.id === data.responsable_id)
-    
+
     const nuevoProyectoData: Proyecto = {
       ...PROYECTO_VACIO,
       ...data,
@@ -325,11 +325,11 @@ export default function ProyectosPage() {
     if (isNew) {
       setProyectos(prev => [...prev, nuevoProyectoData])
       agregarHistorial(proyectoId, 'creacion', 'Proyecto creado')
-      
+
       // Generar tareas automáticas para la fase inicial
       const fase = nuevoProyectoData.fase_actual || 1
       const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
-      
+
       if (plantillas.length > 0) {
         const nuevasTareas = plantillas.map((pl, i) => {
           const v = new Date(); v.setDate(v.getDate() + pl.dias_vencimiento)
@@ -350,7 +350,7 @@ export default function ProyectosPage() {
             orden: i + 1,
             creado_por: 'Sistema',
             asignado_a_cliente: pl.requiere_cliente,
-            subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si+1 }))
+            subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si + 1 }))
           }
         })
         setTareas(prev => [...prev, ...nuevasTareas])
@@ -359,7 +359,7 @@ export default function ProyectosPage() {
       setProyectos(prev => prev.map(p => p.id === proyectoId ? { ...p, ...nuevoProyectoData } : p))
       agregarHistorial(proyectoId, 'edicion', 'Datos del proyecto actualizados')
     }
-    
+
     setIsSaving(false)
     setIsModalNuevo(false)
   }, [empresas, usuarios, fasesEditando, setProyectos, setTareas, agregarHistorial])
@@ -500,7 +500,6 @@ export default function ProyectosPage() {
           proyecto={proyectoEditando}
           empresas={empresas}
           usuarios={usuarios}
-          contactos={contactos}
           isSaving={isSaving}
         />
       )}

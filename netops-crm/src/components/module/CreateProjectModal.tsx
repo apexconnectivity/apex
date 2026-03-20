@@ -13,20 +13,22 @@ import { InlineAddButton } from '@/components/ui/inline-add-button'
 import { Building2, User as UserIcon, Loader2 } from 'lucide-react'
 import { Proyecto, MONEDAS } from '@/types/proyectos'
 import { User } from '@/types/auth'
-import { Contacto, Empresa } from '@/types/crm'
+import { Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
 import { CreateUserModal } from './CreateUserModal'
+import { ManageContactsModal } from './ManageContactsModal'
 import { STORAGE_KEYS } from '@/constants/storage'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import { Contacto } from '@/types/crm'
 
 interface CreateProjectModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (proyecto: Partial<Proyecto>, isNew: boolean) => void | Promise<void>
   proyecto?: Partial<Proyecto> | null
-  empresas: Empresa[]
-  usuarios: User[]
-  contactos: Contacto[]
+  empresas?: Empresa[]
+  usuarios?: User[]
   isSaving?: boolean
   errors?: Record<string, string>
 }
@@ -59,7 +61,6 @@ export function CreateProjectModal({
   proyecto,
   empresas,
   usuarios,
-  contactos,
   isSaving = false,
   errors = {},
 }: CreateProjectModalProps) {
@@ -67,7 +68,7 @@ export function CreateProjectModal({
 
   // Usar ref para trackear el estado abierto sin causar re-renders
   const isOpenRef = useRef(false)
-  
+
   const [formData, setFormData] = useState<Partial<Proyecto>>(
     proyecto || PROYECTO_VACIO
   )
@@ -75,18 +76,22 @@ export function CreateProjectModal({
   // State for sub-modals
   const [showNewEmpresa, setShowNewEmpresa] = useState(false)
   const [showNewUsuario, setShowNewUsuario] = useState(false)
-  
+  const [showManageContacts, setShowManageContacts] = useState(false)
+
+  // Use localStorage directly for contacts to keep them in sync with ManageContactsModal
+  const [localContactos] = useLocalStorage<Contacto[]>(STORAGE_KEYS.contactos, [])
+
   // Estado local para empresas y usuarios - se inicializa y actualiza solo cuando cambia open
-  const [localEmpresas, setLocalEmpresas] = useState<Empresa[]>(empresas)
-  const [localUsuarios, setLocalUsuarios] = useState<User[]>(usuarios)
+  const [localEmpresas, setLocalEmpresas] = useState<Empresa[]>(empresas || [])
+  const [localUsuarios, setLocalUsuarios] = useState<User[]>(usuarios || [])
 
   // Reset form when modal opens - usar ref para evitar bucles
   useEffect(() => {
     if (open && !isOpenRef.current) {
       isOpenRef.current = true
       setFormData(proyecto || PROYECTO_VACIO)
-      setLocalEmpresas(empresas)
-      setLocalUsuarios(usuarios)
+      setLocalEmpresas(empresas || [])
+      setLocalUsuarios(usuarios || [])
     } else if (!open) {
       isOpenRef.current = false
     }
@@ -100,8 +105,8 @@ export function CreateProjectModal({
     u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
   )
 
-  // Filtrar contactos de la empresa seleccionada
-  const contactosTecnicos = contactos.filter(c => c.empresa_id === formData.empresa_id)
+  // Filtrar contactos de la empresa seleccionada - usar localContactos para mantener sincronización
+  const contactosTecnicos = localContactos.filter(c => c.empresa_id === formData.empresa_id && c.tipo_contacto === 'Técnico')
 
   const handleSave = async () => {
     if (!formData.nombre?.trim()) return
@@ -134,7 +139,7 @@ export function CreateProjectModal({
     localStorage.setItem(STORAGE_KEYS.empresas, JSON.stringify([...existingEmpresas, newEmpresa]))
 
     setShowNewEmpresa(false)
-    
+
     // Select the new empresa automatically
     setFormData({
       ...formData,
@@ -166,7 +171,7 @@ export function CreateProjectModal({
     localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify([...existingUsers, newUser]))
 
     setShowNewUsuario(false)
-    
+
     // Select the new user automatically
     setFormData({
       ...formData,
@@ -298,11 +303,19 @@ export function CreateProjectModal({
 
           {/* Contacto Técnico */}
           <div>
-            <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
+              <InlineAddButton
+                onClick={() => setShowManageContacts(true)}
+                icon={UserIcon}
+                label="Nuevo contacto"
+                disabled={!formData.empresa_id}
+              />
+            </div>
             <Select
               value={formData.contacto_tecnico_id || ''}
               onValueChange={(value) => {
-                const contacto = contactos.find(c => c.id === value)
+                const contacto = localContactos.find(c => c.id === value)
                 setFormData({
                   ...formData,
                   contacto_tecnico_id: value,
@@ -419,6 +432,12 @@ export function CreateProjectModal({
         onOpenChange={setShowNewUsuario}
         onSave={handleSaveUsuario}
         user={null}
+      />
+
+      <ManageContactsModal
+        isOpen={showManageContacts}
+        onClose={() => setShowManageContacts(false)}
+        empresaId={formData.empresa_id || ''}
       />
     </>
   )

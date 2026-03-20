@@ -671,7 +671,6 @@ export default function TareasPage() {
         onSave={handleSaveProyecto}
         empresas={empresas}
         usuarios={usuarios}
-        contactos={contactos}
       />
     </>
   )

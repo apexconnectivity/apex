@@ -191,7 +191,6 @@ export default function DashboardLayout({
         proyecto={null}
         empresas={empresas}
         usuarios={usuarios}
-        contactos={contactos}
       />
     </div>
   )
