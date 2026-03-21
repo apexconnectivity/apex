@@ -109,9 +109,8 @@ export default function ProyectosPage() {
   const [errorsCierre, setErrorsCierre] = useState<Record<string, string>>({}) // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isClosing, setIsClosing] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-  // Modal configurar fases
-  const [isModalConfigFases, setIsModalConfigFases] = useState(false)
-  const [fasesEditando, setFasesEditando] = useState<Fase[]>([...FASES]) // eslint-disable-line @typescript-eslint/no-unused-vars
+  // Fases del pipeline (usando constante, no editable)
+  const fases = FASES
 
   // Modal archivar proyecto
   const [isModalArchivar, setIsModalArchivar] = useState(false)
@@ -236,8 +235,8 @@ export default function ProyectosPage() {
       if (isTecnico && fase < 4) return prev
 
       const faseAnterior = proyecto.fase_actual
-      const faseAnteriorNombre = fasesEditando.find(f => f.id === faseAnterior)?.nombre
-      const faseNuevaNombre = fasesEditando.find(f => f.id === fase)?.nombre
+      const faseAnteriorNombre = fases.find(f => f.id === faseAnterior)?.nombre
+      const faseNuevaNombre = fases.find(f => f.id === fase)?.nombre
 
       if (faseAnteriorNombre && faseNuevaNombre) {
         agregarHistorial(id, 'cambio_fase', `Cambió de fase a "${faseNuevaNombre}"`)
@@ -273,7 +272,7 @@ export default function ProyectosPage() {
       }
       return prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p)
     })
-  }, [isComercial, isTecnico, fasesEditando, setProyectos, setTareas, agregarHistorial])
+  }, [isComercial, isTecnico, fases, setProyectos, setTareas, agregarHistorial])
 
   const handleCerrar = useCallback((proyecto: Proyecto) => {
     setProyectoACerrar(proyecto); setMotivoCierre(''); setNotasCierre(''); setIsModalCerrar(true)
@@ -347,7 +346,7 @@ export default function ProyectosPage() {
             proyecto_id: proyectoId,
             proyecto_nombre: nuevoProyectoData.nombre,
             fase_origen: fase,
-            fase_nombre: fasesEditando.find(f => f.id === fase)?.nombre || '',
+            fase_nombre: fases.find(f => f.id === fase)?.nombre || '',
             categoria: pl.categoria,
             nombre: pl.nombre,
             descripcion: pl.descripcion,
@@ -370,7 +369,7 @@ export default function ProyectosPage() {
 
     setIsSaving(false)
     setIsModalNuevo(false)
-  }, [empresas, usuarios, fasesEditando, setProyectos, setTareas, agregarHistorial])
+  }, [empresas, usuarios, fases, setProyectos, setTareas, agregarHistorial])
 
   // Handlers para creación inline quitados de aquí ya que el ModalReusable los maneja interna o se inyectan como props si es necesario.
   // Pero como CreateProjectModal ya importa CreateEmpresaModal y CreateUserModal, solo necesitamos pasarle las listas base.
@@ -404,12 +403,6 @@ export default function ProyectosPage() {
           description="Pipeline de proyectos"
           actions={
             <>
-              {isAdmin && (
-                <Button variant="outline" size="sm" onClick={() => setIsModalConfigFases(true)}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurar Fases
-                </Button>
-              )}
               {canMovePhases && (
                 <Button onClick={handleNewProyecto}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -436,7 +429,7 @@ export default function ProyectosPage() {
         />
 
         <StatGrid cols={5}>
-          {fasesEditando.map(fase => (
+          {fases.map(fase => (
             <MiniStat
               key={fase.id}
               value={proyectosPorFase[fase.id]?.length || 0}
@@ -450,7 +443,7 @@ export default function ProyectosPage() {
         {view === 'pipeline' && (
           <div className="overflow-x-auto pb-4">
             <div className="flex gap-4 min-w-[1400px]">
-              {fasesEditando.map(fase => (
+              {fases.map(fase => (
                 <div key={fase.id} className="flex-1 min-w-[280px]">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: fase.color }} />
@@ -522,11 +515,6 @@ export default function ProyectosPage() {
       <BaseModal open={isModalArchivar} onOpenChange={setIsModalArchivar}>
         <ModalHeader title="Archivar Proyecto" />
         <ModalFooter><Button onClick={confirmarArchivar}>Archivar</Button></ModalFooter>
-      </BaseModal>
-
-      <BaseModal open={isModalConfigFases} onOpenChange={setIsModalConfigFases}>
-        <ModalHeader title="Configuración de Fases" />
-        <ModalFooter><Button onClick={() => setIsModalConfigFases(false)}>Cerrar</Button></ModalFooter>
       </BaseModal>
     </>
   )
