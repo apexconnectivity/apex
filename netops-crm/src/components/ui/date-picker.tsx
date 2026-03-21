@@ -138,14 +138,18 @@ export function DatePicker({
 
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - pointer-events-none permite scroll */}
           <div
             className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
+            style={{ pointerEvents: 'none' }}
           />
 
-          {/* Popover Content */}
-          <div className="absolute top-full left-0 z-50 mt-2 w-72 bg-background rounded-xl shadow-xl border border-border/50 animate-in fade-in zoom-in-95 duration-300">
+          {/* Popover Content - con pointer-events-auto */}
+          <div
+            className="absolute top-full left-0 z-50 mt-2 w-72 bg-background rounded-xl shadow-xl border border-border/50 animate-in fade-in zoom-in-95 duration-300"
+            style={{ pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Calendar Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
               <button

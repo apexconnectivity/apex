@@ -22,6 +22,7 @@ import { ManageContactsModal } from './ManageContactsModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Contacto } from '@/types/crm'
+import { validateRequired, validateNumberRange } from '@/lib/validation-utils'
 
 interface CreateProjectModalProps {
   open: boolean
@@ -85,6 +86,7 @@ export function CreateProjectModal({
   // Estado local para empresas y usuarios - se inicializa y actualiza solo cuando cambia open
   const [localEmpresas, setLocalEmpresas] = useState<Empresa[]>(empresas || [])
   const [localUsuarios, setLocalUsuarios] = useState<User[]>(usuarios || [])
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
 
   // Reset form when modal opens - usar ref para evitar bucles
   useEffect(() => {
@@ -109,8 +111,56 @@ export function CreateProjectModal({
   // Filtrar contactos de la empresa seleccionada - usar localContactos para mantener sincronización
   const contactosTecnicos = localContactos.filter(c => c.empresa_id === formData.empresa_id && c.tipo_contacto === 'Técnico')
 
+  // Validar formulario
+  const validateForm = (): boolean => {
+    const validationErrors: Record<string, string> = {}
+
+    // Nombre (obligatorio)
+    const nombreValidation = validateRequired(formData.nombre)
+    if (!nombreValidation.isValid) {
+      validationErrors.nombre = nombreValidation.error || 'El nombre es obligatorio'
+    }
+
+    // Empresa (obligatorio)
+    const empresaValidation = validateRequired(formData.empresa_id)
+    if (!empresaValidation.isValid) {
+      validationErrors.empresa_id = empresaValidation.error || 'Selecciona una empresa'
+    }
+
+    // Responsable (obligatorio)
+    const responsableValidation = validateRequired(formData.responsable_id)
+    if (!responsableValidation.isValid) {
+      validationErrors.responsable_id = responsableValidation.error || 'Selecciona un responsable'
+    }
+
+    // Contacto técnico (obligatorio)
+    const contactoValidation = validateRequired(formData.contacto_tecnico_id)
+    if (!contactoValidation.isValid) {
+      validationErrors.contacto_tecnico_id = contactoValidation.error || 'Selecciona un contacto técnico'
+    }
+
+    // Monto estimado (opcional, pero si se ingresa debe ser válido)
+    if (formData.monto_estimado !== undefined && formData.monto_estimado !== null) {
+      const montoRangeValidation = validateNumberRange(0, 999999999)(formData.monto_estimado)
+      if (!montoRangeValidation.isValid) {
+        validationErrors.monto_estimado = montoRangeValidation.error || 'Monto inválido'
+      }
+    }
+
+    // Probabilidad de cierre (0-100)
+    if (formData.probabilidad_cierre !== undefined && formData.probabilidad_cierre !== null) {
+      const probabilidadValidation = validateNumberRange(0, 100)(formData.probabilidad_cierre)
+      if (!probabilidadValidation.isValid) {
+        validationErrors.probabilidad_cierre = probabilidadValidation.error || 'La probabilidad debe estar entre 0 y 100'
+      }
+    }
+
+    setLocalErrors(validationErrors)
+    return Object.keys(validationErrors).length === 0
+  }
+
   const handleSave = async () => {
-    if (!formData.nombre?.trim()) return
+    if (!validateForm()) return
 
     await onSave(formData, !isEditing)
     onOpenChange(false)
@@ -184,6 +234,19 @@ export function CreateProjectModal({
   // Determinar variante según modo
   const variant: ModalVariant = isEditing ? 'edit' : 'create'
 
+  // Combinar errores locales con errores de props
+  const allErrors = { ...localErrors, ...errors }
+
+  // Verificar si el formulario puede guardarse
+  const canSave = (): boolean => {
+    return !!(
+      formData.nombre?.trim() &&
+      formData.empresa_id?.trim() &&
+      formData.responsable_id?.trim() &&
+      formData.contacto_tecnico_id?.trim()
+    )
+  }
+
   return (
     <>
       <BaseModal
@@ -210,9 +273,9 @@ export function CreateProjectModal({
               value={formData.nombre || ''}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               placeholder="Ej: Implementación de Red"
-              className={errors.nombre ? 'border-red-500' : ''}
+              className={allErrors.nombre ? 'border-red-500' : ''}
             />
-            {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
+            {allErrors.nombre && <p className="text-xs text-red-500 mt-1">{allErrors.nombre}</p>}
           </div>
 
           {/* Cliente */}
@@ -238,7 +301,7 @@ export function CreateProjectModal({
                 })
               }}
             >
-              <SelectTrigger className={errors.empresa_id ? 'border-red-500' : ''}>
+              <SelectTrigger className={allErrors.empresa_id ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecciona una empresa" />
               </SelectTrigger>
               <SelectContent>
@@ -253,7 +316,7 @@ export function CreateProjectModal({
                 )}
               </SelectContent>
             </Select>
-            {errors.empresa_id && <p className="text-xs text-red-500 mt-1">{errors.empresa_id}</p>}
+            {allErrors.empresa_id && <p className="text-xs text-red-500 mt-1">{allErrors.empresa_id}</p>}
           </div>
 
           {/* Responsable */}
@@ -277,7 +340,7 @@ export function CreateProjectModal({
                 })
               }}
             >
-              <SelectTrigger className={errors.responsable_id ? 'border-red-500' : ''}>
+              <SelectTrigger className={allErrors.responsable_id ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Selecciona un responsable" />
               </SelectTrigger>
               <SelectContent>
@@ -299,7 +362,7 @@ export function CreateProjectModal({
                 )}
               </SelectContent>
             </Select>
-            {errors.responsable_id && <p className="text-xs text-red-500 mt-1">{errors.responsable_id}</p>}
+            {allErrors.responsable_id && <p className="text-xs text-red-500 mt-1">{allErrors.responsable_id}</p>}
           </div>
 
           {/* Contacto Técnico */}
@@ -325,7 +388,7 @@ export function CreateProjectModal({
               }}
               disabled={!formData.empresa_id}
             >
-              <SelectTrigger className={errors.contacto_tecnico_id ? 'border-red-500' : ''}>
+              <SelectTrigger className={allErrors.contacto_tecnico_id ? 'border-red-500' : ''}>
                 <SelectValue placeholder={formData.empresa_id ? "Selecciona un contacto" : "Selecciona primero un cliente"} />
               </SelectTrigger>
               <SelectContent>
@@ -345,7 +408,7 @@ export function CreateProjectModal({
                 )}
               </SelectContent>
             </Select>
-            {errors.contacto_tecnico_id && <p className="text-xs text-red-500 mt-1">{errors.contacto_tecnico_id}</p>}
+            {allErrors.contacto_tecnico_id && <p className="text-xs text-red-500 mt-1">{allErrors.contacto_tecnico_id}</p>}
           </div>
 
           {/* Monto Estimado */}
@@ -414,7 +477,7 @@ export function CreateProjectModal({
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button className="flex-1" onClick={handleSave} disabled={isSaving || !formData.nombre?.trim()}>
+          <Button className="flex-1" onClick={handleSave} disabled={isSaving || !canSave()}>
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
