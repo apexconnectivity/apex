@@ -464,7 +464,11 @@ export function CreateEmpresaModal({
                   value={formData.email_facturacion || ''}
                   onChange={(e) => setFormData({ ...formData, email_facturacion: e.target.value })}
                   placeholder="facturacion@empresa.com"
+                  className={allErrors.email_facturacion ? 'border-red-500' : ''}
                 />
+                {allErrors.email_facturacion && (
+                  <p className="text-red-500 text-sm">{allErrors.email_facturacion}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Método de Pago</Label>
