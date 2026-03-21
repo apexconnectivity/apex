@@ -762,6 +762,126 @@ export function getSectionIndicatorColor(section: string): string {
 }
 
 // ==========================================
+// COLORES PARA TIPOS DE DEPENDENCIA DE TAREAS
+// ==========================================
+
+export const DEPENDENCY_TYPE_COLORS = {
+  bloqueante: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/15',
+    indicator: 'bg-red-500',
+    border: 'border-red-500/30',
+    label: 'Bloqueante',
+    description: 'Debe completarse antes',
+  },
+  inicio_despues: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15',
+    indicator: 'bg-amber-500',
+    border: 'border-amber-500/30',
+    label: 'Inicio después',
+    description: 'Inicia N días después',
+  },
+  fin_despues: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
+    indicator: 'bg-emerald-500',
+    border: 'border-emerald-500/30',
+    label: 'Fin después',
+    description: 'Inicia tras fin',
+  },
+} as const
+
+// ==========================================
+// COLORES PARA GRUPOS DEL DASHBOARD DE TAREAS
+// ==========================================
+
+export const TASK_DASHBOARD_GROUP_COLORS = {
+  vencen_hoy: {
+    color: 'text-red-400',
+    bg: 'bg-red-500/15',
+    border: 'border-red-500/30',
+    label: 'Vencen Hoy',
+    icon: '🔴',
+  },
+  proximos_7_dias: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15',
+    border: 'border-amber-500/30',
+    label: 'Próximos 7 días',
+    icon: '⚠️',
+  },
+  en_progreso: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/15',
+    border: 'border-blue-500/30',
+    label: 'En Progreso',
+    icon: '🔄',
+  },
+  sin_vencimiento: {
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/15',
+    border: 'border-slate-500/30',
+    label: 'Sin Vencimiento',
+    icon: '⏳',
+  },
+  completadas_recientes: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
+    border: 'border-emerald-500/30',
+    label: 'Completadas Recientes',
+    icon: '✅',
+  },
+} as const
+
+// ==========================================
+// COLORES PARA TIPOS DE CONTACTO DE CLIENTE
+// ==========================================
+
+export const CLIENT_CONTACT_TYPE_COLORS = {
+  Principal: {
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/15',
+    label: 'Principal',
+  },
+  Técnico: {
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/15',
+    label: 'Técnico',
+  },
+  Administrativo: {
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/15',
+    label: 'Administrativo',
+  },
+  Financiero: {
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/15',
+    label: 'Financiero',
+  },
+  Compras: {
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/15',
+    label: 'Compras',
+  },
+  Comercial: {
+    color: 'text-violet-400',
+    bg: 'bg-violet-500/15',
+    label: 'Comercial',
+  },
+  Soporte: {
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/15',
+    label: 'Soporte',
+  },
+  Otro: {
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/15',
+    label: 'Otro',
+  },
+} as const
+
+// ==========================================
 // COLORES PARA ARCHIVADO DE PROYECTOS
 // ==========================================
 

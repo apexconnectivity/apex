@@ -1,14 +1,16 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil } from 'lucide-react'
+import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil, Link2, Users, FolderOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ActivityFeed } from '@/components/ui/activity-feed'
 import { SubtaskList } from '@/components/ui/subtask-list'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
-import { Tarea, Subtarea, Comentario, EstadoTarea } from '@/types/tareas'
+import { DependencyBadge } from '@/components/ui/dependencies-selector'
+import { Tarea, Subtarea, Comentario, EstadoTarea, TIPO_DEPENDENCIA_LABELS } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
+import { cn } from '@/lib/utils'
 
 interface TaskDetailPanelProps {
   isOpen: boolean
@@ -26,10 +28,15 @@ interface TaskDetailPanelProps {
 }
 
 /**
- * TaskDetailPanel - Panel lateral de detalles de tarea
+ * TaskDetailPanel - Panel lateral de detalles de tarea (Actualizado TAREAS v2)
  * 
  * Usa BaseSidePanel para la estructura y SidePanelHeader/Content/Footer
  * para una arquitectura reutilizable.
+ * 
+ * Mejoras:
+ * - Sección de dependencias visuales
+ * - Indicador de asignación a cliente
+ * - Badges de categoría mejorados
  */
 export function TaskDetailPanel({
   isOpen,
@@ -96,20 +103,10 @@ export function TaskDetailPanel({
     }
   }
 
-  // Get estado text class
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _getEstadoClase = (estado: EstadoTarea) => {
-    switch (estado) {
-      case 'Completada':
-        return 'line-through text-muted-foreground'
-      case 'En progreso':
-        return 'text-blue-400'
-      case 'Bloqueada':
-        return 'text-red-400'
-      default:
-        return 'text-muted-foreground'
-    }
-  }
+  // Check if task is overdue
+  const isOverdue = tarea?.fecha_vencimiento && 
+    new Date(tarea.fecha_vencimiento) < new Date() && 
+    tarea.estado !== 'Completada'
 
   if (!tarea) return null
 
@@ -142,11 +139,14 @@ export function TaskDetailPanel({
 
       {/* Contenido */}
       <SidePanelContent>
-        {/* Tags */}
+        {/* Tags de estado, prioridad y categoría */}
         <div className="flex flex-wrap gap-1.5">
           <StatusBadge status={tarea.estado} />
           <StatusBadge status={tarea.prioridad} type="prioridad" />
           <StatusBadge status={tarea.categoria} type="categoria" />
+          {tarea.asignado_a_cliente && (
+            <StatusBadge status="Cliente" customColor="bg-cyan-500/15 text-cyan-400" />
+          )}
         </div>
 
         {/* Descripción */}
@@ -156,30 +156,38 @@ export function TaskDetailPanel({
           </p>
         )}
 
-        {/* Grid de información */}
+        {/* Grid de información mejorada */}
         <SidePanelSection>
           <div className="grid grid-cols-2 gap-3">
-            {/* Proyecto */}
+            {/* Proyecto + Fase */}
             <div className="bg-muted/30 rounded-lg p-3 col-span-2">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                <CheckSquare className="h-3.5 w-3.5" />
+                <FolderOpen className="h-3.5 w-3.5" />
                 <span className="text-xs">Proyecto</span>
               </div>
-              <span className="text-sm font-medium truncate block">
-                {tarea.proyecto_nombre}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium truncate">
+                  {tarea.proyecto_nombre}
+                </span>
+                <span className={cn(
+                  'text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground',
+                  'shrink-0'
+                )}>
+                  Fase {tarea.fase_origen}
+                </span>
+              </div>
             </div>
 
             {/* Estado */}
             <div className="bg-muted/30 rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                <CheckSquare className="h-3.5 w-3.5" />
+                {getEstadoIcon(tarea.estado)}
                 <span className="text-xs">Estado</span>
               </div>
               <select
                 value={editedTarea?.estado}
                 onChange={(e) => setEditedTarea({ ...editedTarea!, estado: e.target.value as EstadoTarea })}
-                className="text-sm font-medium bg-transparent border-none outline-none w-full"
+                className="text-sm font-medium bg-transparent border-none outline-none w-full cursor-pointer"
               >
                 <option value="Pendiente">Pendiente</option>
                 <option value="En progreso">En progreso</option>
@@ -197,25 +205,73 @@ export function TaskDetailPanel({
               <span className="text-sm font-medium">{tarea.prioridad}</span>
             </div>
 
-            {/* Responsable */}
-            <div className="bg-muted/30 rounded-lg p-3">
+            {/* Responsable o Cliente */}
+            <div className={cn(
+              "bg-muted/30 rounded-lg p-3",
+              tarea.asignado_a_cliente && "col-span-2"
+            )}>
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                <User className="h-3.5 w-3.5" />
-                <span className="text-xs">Responsable</span>
+                {tarea.asignado_a_cliente ? (
+                  <Users className="h-3.5 w-3.5" />
+                ) : (
+                  <User className="h-3.5 w-3.5" />
+                )}
+                <span className="text-xs">
+                  {tarea.asignado_a_cliente ? 'Contacto Cliente' : 'Responsable'}
+                </span>
               </div>
-              <span className="text-sm font-medium">{tarea.responsable_nombre || 'Sin asignar'}</span>
+              <span className="text-sm font-medium">
+                {tarea.asignado_a_cliente 
+                  ? (tarea.contacto_cliente_nombre || 'Cliente')
+                  : (tarea.responsable_nombre || 'Sin asignar')
+                }
+              </span>
             </div>
 
-            {/* Fecha */}
-            <div className="bg-muted/30 rounded-lg p-3">
+            {/* Fecha de vencimiento */}
+            <div className={cn(
+              "bg-muted/30 rounded-lg p-3",
+              isOverdue && "bg-red-500/10 border border-red-500/20"
+            )}>
               <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                 <Calendar className="h-3.5 w-3.5" />
                 <span className="text-xs">Vencimiento</span>
               </div>
-              <span className="text-sm font-medium">{formatFecha(tarea.fecha_vencimiento)}</span>
+              <span className={cn(
+                "text-sm font-medium",
+                isOverdue && "text-red-400"
+              )}>
+                {formatFecha(tarea.fecha_vencimiento)}
+              </span>
+              {isOverdue && (
+                <span className="text-[10px] text-red-400 block">⚠️ Vencida</span>
+              )}
             </div>
           </div>
         </SidePanelSection>
+
+        {/* Sección de Dependencias */}
+        {tarea.dependencias && tarea.dependencias.length > 0 && (
+          <SidePanelSection>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Link2 className="h-4 w-4 text-amber-400" />
+                <span className="text-sm font-medium">Dependencias</span>
+                <span className="text-xs text-muted-foreground">
+                  ({tarea.dependencias.length})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tarea.dependencias.map((dep) => (
+                  <DependencyBadge
+                    key={dep.tarea_id}
+                    dependency={dep}
+                  />
+                ))}
+              </div>
+            </div>
+          </SidePanelSection>
+        )}
 
         {/* Subtareas */}
         <SidePanelSection>

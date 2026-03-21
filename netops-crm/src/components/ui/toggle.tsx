@@ -59,6 +59,9 @@ export function Toggle({
   )
 }
 
+// Alias for ToggleSwitch - matches common naming conventions
+export const Switch = ToggleSwitch
+
 // Variante pequeña conmutador para uso en tablas o listas
 interface ToggleSwitchProps {
   checked: boolean

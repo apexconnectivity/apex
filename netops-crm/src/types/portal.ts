@@ -5,6 +5,7 @@ export interface ClienteUsuario {
   rol: string
   empresa_id: string
   empresa_nombre: string
+  contactoId?: string // Optional - may be used for client portal task filtering
   cargo?: string
   telefono?: string
 }

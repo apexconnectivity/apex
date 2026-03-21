@@ -6,6 +6,24 @@ export type EstadoTarea = 'Pendiente' | 'En progreso' | 'Completada' | 'Bloquead
 
 export type TipoDependencia = 'bloqueante' | 'inicio_despues' | 'fin_despues'
 
+/**
+ * Etiquetas amigables para tipos de dependencia
+ */
+export const TIPO_DEPENDENCIA_LABELS: Record<TipoDependencia, { label: string; description: string }> = {
+  bloqueante: { 
+    label: 'Bloqueante', 
+    description: 'La tarea dependiente no puede iniciar hasta que esta tarea esté completada' 
+  },
+  inicio_despues: { 
+    label: 'Inicio después', 
+    description: 'La tarea dependiente inicia N días después de que esta tarea inicie' 
+  },
+  fin_despues: { 
+    label: 'Fin después', 
+    description: 'La tarea dependiente inicia N días después de que esta tarea finalice' 
+  },
+}
+
 export interface Dependencia {
   tarea_id: string
   tipo: TipoDependencia
@@ -62,6 +80,131 @@ export const CATEGORIAS: CategoriaTarea[] = ['Comercial', 'Técnica', 'Compras',
 export const PRIORIDADES: PrioridadTarea[] = ['Baja', 'Media', 'Alta', 'Urgente']
 
 export const ESTADOS: EstadoTarea[] = ['Pendiente', 'En progreso', 'Completada', 'Bloqueada']
+
+// ============================================================================
+// TIPOS DE CONTACTO DE CLIENTE
+// ============================================================================
+
+/**
+ * Tipos de contacto de cliente según el spec de TAREAS v2
+ * Se usa cuando una tarea está asignada a cliente
+ */
+export type TipoContactoCliente = 
+  | 'Técnico' 
+  | 'Administrativo' 
+  | 'Financiero' 
+  | 'Compras' 
+  | 'Comercial' 
+  | 'Soporte' 
+  | 'Otro' 
+  | 'Principal'
+
+export const TIPOS_CONTACTO_CLIENTE: TipoContactoCliente[] = [
+  'Principal',
+  'Técnico',
+  'Administrativo',
+  'Financiero',
+  'Compras',
+  'Comercial',
+  'Soporte',
+  'Otro',
+]
+
+// ============================================================================
+// TIPOS DE ORIGEN DE TAREA
+// ============================================================================
+
+export type OrigenTarea = 'plantilla' | 'manual' | 'recurrente'
+
+// ============================================================================
+// INTERVALOS DE RECURRENCIA
+// ============================================================================
+
+export type IntervaloRecurrencia = 'Diario' | 'Semanal' | 'Mensual' | 'Personalizado'
+
+export const INTERVALOS_RECURRENCIA: IntervaloRecurrencia[] = ['Diario', 'Semanal', 'Mensual', 'Personalizado']
+
+// ============================================================================
+// TAREA RECURRENTE (Configuración)
+// ============================================================================
+
+/**
+ * Configuración para generar tareas recurrentes automáticamente
+ */
+export interface TareaRecurrente {
+  id: string
+  proyecto_id: string | null // null si es global
+  categoria: CategoriaTarea
+  nombre: string
+  descripcion?: string
+  responsable_default?: string // UUID del usuario por defecto
+  asignar_a_cliente: boolean
+  tipo_contacto?: TipoContactoCliente // obligatorio si asignar_a_cliente = true
+  intervalo: IntervaloRecurrencia
+  intervalo_dias?: number // si es personalizado, cada cuántos días
+  dia_especifico?: {
+    tipo: 'dia_mes' | 'dia_semana'
+    valor: number | string
+  }
+  proxima_generacion: string // ISO date
+  generar_con_vencimiento_dias?: number // +N días desde generación
+  activa: boolean
+  ultima_generacion?: string // ISO date
+  veces_generada: number
+  creada_por: string
+  fecha_creacion: string
+}
+
+// ============================================================================
+// ARCHIVO TAREA (relación con Módulo 6)
+// ============================================================================
+
+/**
+ * Relación entre tarea y archivos adjuntos
+ */
+export interface ArchivoTarea {
+  id: string
+  tarea_id: string
+  archivo_id: string // Referencia al archivo en Drive
+  subido_por: string // UUID del usuario
+  fecha: string // ISO timestamp
+}
+
+// ============================================================================
+// AGRUPACIONES DEL DASHBOARD PERSONAL
+// ============================================================================
+
+/**
+ * Agrupaciones automáticas para el Dashboard Personal "Mis Tareas"
+ * Según RN-TAR-24
+ */
+export type GrupoDashboardTareas = 
+  | 'vencen_hoy' 
+  | 'proximos_7_dias' 
+  | 'en_progreso' 
+  | 'sin_vencimiento' 
+  | 'completadas_recientes'
+
+export const GRUPOS_DASHBOARD: { key: GrupoDashboardTareas; label: string; orden: number }[] = [
+  { key: 'vencen_hoy', label: 'Vencen Hoy', orden: 1 },
+  { key: 'proximos_7_dias', label: 'Próximos 7 días', orden: 2 },
+  { key: 'en_progreso', label: 'En Progreso', orden: 3 },
+  { key: 'sin_vencimiento', label: 'Sin Vencimiento', orden: 4 },
+  { key: 'completadas_recientes', label: 'Completadas Recientes', orden: 5 },
+]
+
+// ============================================================================
+// TIPO DE VISUALIZACIÓN DE TAREAS
+// ============================================================================
+
+export type VistaTareas = 'kanban' | 'fases' | 'gantt' | 'lista'
+
+export const VISTAS_TAREAS: { key: VistaTareas; label: string }[] = [
+  { key: 'kanban', label: 'Kanban' },
+  { key: 'fases', label: 'Por Fases' },
+  { key: 'gantt', label: 'Gantt' },
+  { key: 'lista', label: 'Lista' },
+]
 
 // Plantillas de tareas por fase
 export interface SubtareaPlantilla {

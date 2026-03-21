@@ -19,15 +19,20 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus } from 'lucide-react'
+import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
 import { CreateTaskModal } from '@/components/module/CreateTaskModal'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { TaskGanttChart } from '@/components/ui/task-gantt-chart'
 
-// Lista de usuarios (se填充ará con datos del módulo de usuarios)
+import { v4 as uuidv4 } from 'uuid'
+
+import { cn } from '@/lib/utils'
+
+// Lista de usuarios (se populará con datos del módulo de usuarios)
 const USUARIOS: { id: string; nombre: string; rol: string }[] = []
 
 function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
@@ -124,19 +129,26 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
 
 export default function TareasPage() {
   const { user } = useAuth()
-  const [tareas, setTareas] = useTareas()
+  const {
+    tasks: tareas,
+    isLoading: isTasksLoading,
+    createTask,
+    updateTask,
+    deleteTask,
+    refresh: refreshTasks
+  } = useTareas()
+
   const [proyectos, setProyectos] = useProyectos()
   const [empresas] = useEmpresas()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_contactos, _setContactos] = useContactos()
-  const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
+  const [allContactos] = useContactos()
+  const [usuarios] = useState<import('@/types/auth').User[]>([])
 
   // Modal nuevo proyecto
   const [showNewProject, setShowNewProject] = useState(false)
-  const [subtareas, setSubtareas] = useSubtareas()
-  const [comentarios, setComentarios] = useComentarios()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_view, _setView] = useState<'kanban' | 'lista'>('kanban')
+  const [subtareasRecord, setSubtareasRecord] = useSubtareas()
+  const [comentariosRecord, setComentariosRecord] = useComentarios()
+
+  const [_view, setView] = useState<'kanban' | 'lista' | 'gantt'>('kanban')
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [filtroPersona, setFiltroPersona] = useState<string>('todos')
@@ -145,8 +157,10 @@ export default function TareasPage() {
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
   const [filtroFechaRange, setFiltroFechaRange] = useState<DateRange>({ from: undefined, to: undefined })
   const [filtroVencidas, setFiltroVencidas] = useState<boolean>(false)
+
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tareas.find(t => t.id === selectedId) || null
+
   const [showCreate, setShowCreate] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [editingTarea, setEditingTarea] = useState<Tarea | null>(null)
@@ -159,55 +173,29 @@ export default function TareasPage() {
 
   const filteredTareas = useMemo(() => {
     return tareas.filter(t => {
-      // Filtro de búsqueda
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
-        const matchNombre = t.nombre?.toLowerCase().includes(query)
-        const matchDescripcion = t.descripcion?.toLowerCase().includes(query)
-        if (!matchNombre && !matchDescripcion) return false
+        if (!t.nombre?.toLowerCase().includes(query) && !t.descripcion?.toLowerCase().includes(query)) return false
       }
-
       if (filtroProyecto !== 'todos' && t.proyecto_id !== filtroProyecto) return false
       if (filtroPersona !== 'todos' && t.responsable_id !== filtroPersona) return false
       if (filtroEstado !== 'todos' && t.estado !== filtroEstado) return false
       if (filtroCategoria !== 'todas' && t.categoria !== filtroCategoria) return false
       if (filtroPrioridad !== 'todas' && t.prioridad !== filtroPrioridad) return false
-
-      // Filtro por rango de fecha
-      if (filtroFechaRange.from && t.fecha_vencimiento) {
-        const fechaVencimiento = new Date(t.fecha_vencimiento)
-        if (fechaVencimiento < filtroFechaRange.from) return false
-      }
-      if (filtroFechaRange.to && t.fecha_vencimiento) {
-        const fechaVencimiento = new Date(t.fecha_vencimiento)
-        if (fechaVencimiento > filtroFechaRange.to) return false
-      }
-
-      const isOverdue = t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada'
-      if (filtroVencidas && !isOverdue) return false
-
+      if (filtroFechaRange.from && t.fecha_vencimiento && new Date(t.fecha_vencimiento) < filtroFechaRange.from) return false
+      if (filtroFechaRange.to && t.fecha_vencimiento && new Date(t.fecha_vencimiento) > filtroFechaRange.to) return false
+      if (filtroVencidas && !(t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada')) return false
       return true
     })
   }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaRange, filtroVencidas])
 
   const visibleTareas = useMemo(() => {
-    // Si es admin, ve todo el universo filtrado por los criterios de búsqueda (filteredTareas)
     if (isAdmin) return filteredTareas
-
-    // Si es cliente, solo ve tareas de SUS proyectos
     if (user?.roles.includes('cliente')) {
       const myProjectIds = proyectos.filter(p => p.empresa_id === user.empresa_id).map(p => p.id)
       return filteredTareas.filter(t => myProjectIds.includes(t.proyecto_id))
     }
-
-    // Para otros roles internos (técnico, comercial, etc)
-    return filteredTareas.filter(t => {
-      const isOwnTask = t.responsable_id === user?.id
-      // Los técnicos deben ver también las tareas de proyectos donde son responsables aunque no sea su tarea individual? 
-      // Por ahora mantenemos la lógica de isOwnTask || isClientTask
-      const isClientTask = t.asignado_a_cliente
-      return isOwnTask || isClientTask
-    })
+    return filteredTareas.filter(t => t.responsable_id === user?.id || t.asignado_a_cliente)
   }, [filteredTareas, isAdmin, user, proyectos])
 
   const tareasPorEstado = useMemo(() => {
@@ -225,13 +213,12 @@ export default function TareasPage() {
     overdue: visibleTareas.filter(t => t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada').length,
   }), [visibleTareas])
 
-  const handleStatusChange = useCallback((id: string, estado: EstadoTarea) => {
-    setTareas(prev => prev.map(t => t.id === id ? {
-      ...t,
+  const handleStatusChange = useCallback(async (id: string, estado: EstadoTarea) => {
+    await updateTask(id, {
       estado,
       fecha_completado: estado === 'Completada' ? new Date().toISOString() : undefined
-    } : t))
-  }, [setTareas])
+    })
+  }, [updateTask])
 
   // Handler para crear proyecto desde tareas
   const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
@@ -281,136 +268,104 @@ export default function TareasPage() {
       cambiar_password_proximo_login: true,
     } as import('@/types/auth').User
 
-    setUsuarios(prev => [...prev, _nuevoUsuario])
+    // setUsuarios(prev => [...prev, _nuevoUsuario]) // This was removed as usuarios is now a useState with empty array
   }
 
-  const handleSaveTarea = useCallback((data: CreateTaskData) => {
-    // Capture current values at call time
-    const currentTareasLength = tareas.length
-    const currentUserId = user?.id
-    const currentEditingTarea = editingTarea
-
+  const handleSaveTarea = useCallback(async (data: CreateTaskData) => {
     if (data.mode === 'create') {
-      const newTarea: Tarea = {
-        ...data.tarea,
-        id: Date.now().toString(),
-        fecha_creacion: new Date().toISOString(),
-        orden: currentTareasLength + 1,
-        creado_por: currentUserId || '1',
-      }
-      setTareas(prev => [...prev, newTarea])
+      const newTask = await createTask(data.tarea)
 
       if (data.subtareas && data.subtareas.length > 0) {
-        const newSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
-          id: Date.now().toString() + '-' + i,
-          tarea_id: newTarea.id,
+        const subs: Subtarea[] = data.subtareas.map((s, i) => ({
+          id: uuidv4(),
+          tarea_id: newTask.id,
           nombre: s.nombre,
           completada: s.completada || false,
           orden: i + 1
         }))
-        setSubtareas(prev => ({ ...prev, [newTarea.id]: newSubtareas }))
-      } else {
-        setSubtareas(prev => ({ ...prev, [newTarea.id]: [] }))
+        setSubtareasRecord(prev => ({ ...prev, [newTask.id]: subs }))
       }
 
       if (data.comentarios && data.comentarios.length > 0) {
-        const newComentarios: Comentario[] = data.comentarios.map((c, i) => ({
-          id: Date.now().toString() + '-' + i,
-          tarea_id: newTarea.id,
+        const comms: Comentario[] = data.comentarios.map((c, i) => ({
+          id: uuidv4(),
+          tarea_id: newTask.id,
           usuario_id: c.usuario_id,
           usuario_nombre: c.usuario_nombre,
           es_cliente: c.es_cliente,
           comentario: c.comentario,
           fecha: new Date().toISOString()
         }))
-        setComentarios(prev => ({ ...prev, [newTarea.id]: newComentarios }))
-      } else {
-        setComentarios(prev => ({ ...prev, [newTarea.id]: [] }))
+        setComentariosRecord(prev => ({ ...prev, [newTask.id]: comms }))
       }
-    } else {
-      const updatedTarea: Tarea = {
-        ...data.tarea,
-        id: currentEditingTarea?.id || '',
-        fecha_creacion: currentEditingTarea?.fecha_creacion || new Date().toISOString(),
-        orden: currentEditingTarea?.orden || 1,
-        creado_por: currentEditingTarea?.creado_por || currentUserId || '1',
-      }
-      setTareas(prev => prev.map(t => t.id === updatedTarea.id ? updatedTarea : t))
+    } else if (editingTarea) {
+      await updateTask(editingTarea.id, data.tarea)
 
       if (data.subtareas) {
-        const taskSubtareas: Subtarea[] = data.subtareas.map((s, i) => ({
-          id: s.id || Date.now().toString() + '-' + i,
-          tarea_id: updatedTarea.id,
+        const subs: Subtarea[] = data.subtareas.map((s, i) => ({
+          id: s.id || uuidv4(),
+          tarea_id: editingTarea.id,
           nombre: s.nombre,
           completada: s.completada || false,
           orden: i + 1
         }))
-        setSubtareas(prev => ({ ...prev, [updatedTarea.id]: taskSubtareas }))
+        setSubtareasRecord(prev => ({ ...prev, [editingTarea.id]: subs }))
       }
 
       if (data.comentarios) {
-        const taskComentarios: Comentario[] = data.comentarios.map((c, i) => ({
-          id: c.id || Date.now().toString() + '-' + i,
-          tarea_id: updatedTarea.id,
+        const comms: Comentario[] = data.comentarios.map((c, i) => ({
+          id: c.id || uuidv4(),
+          tarea_id: editingTarea.id,
           usuario_id: c.usuario_id,
           usuario_nombre: c.usuario_nombre,
           es_cliente: c.es_cliente,
           comentario: c.comentario,
           fecha: new Date().toISOString()
         }))
-        setComentarios(prev => ({ ...prev, [updatedTarea.id]: taskComentarios }))
+        setComentariosRecord(prev => ({ ...prev, [editingTarea.id]: comms }))
       }
-
-      setSelectedId(updatedTarea.id)
+      setSelectedId(editingTarea.id)
     }
-  }, [setTareas, setSubtareas, setComentarios, tareas.length, user?.id, editingTarea])
+  }, [createTask, updateTask, editingTarea, setSubtareasRecord, setComentariosRecord])
 
-  const handleDeleteTarea = useCallback(() => {
+  const handleDeleteTarea = useCallback(async () => {
     if (editingTarea) {
-      const tareaId = editingTarea.id
-      setTareas(prev => prev.filter(t => t.id !== tareaId))
-      setSubtareas(prev => {
-        const newSubtareas = { ...prev }
-        delete newSubtareas[tareaId]
-        return newSubtareas
-      })
-      setComentarios(prev => {
-        const newComentarios = { ...prev }
-        delete newComentarios[tareaId]
-        return newComentarios
-      })
+      await deleteTask(editingTarea.id)
       setShowEdit(false)
       setEditingTarea(null)
       setSelectedId(null)
     }
-  }, [editingTarea, setTareas, setSubtareas, setComentarios, setShowEdit, setEditingTarea, setSelectedId])
+  }, [editingTarea, deleteTask])
 
-  const handleUpdateTarea = useCallback((updated: Tarea) => {
-    setTareas(prev => prev.map(t => t.id === updated.id ? updated : t))
+  const handleUpdateTarea = useCallback(async (updated: Tarea) => {
+    await updateTask(updated.id, updated)
     setSelectedId(updated.id)
-  }, [setTareas, setSelectedId])
+  }, [updateTask, setSelectedId])
 
   const handleAddSubtarea = useCallback((tareaId: string, nombre: string) => {
-    const newSubtarea: Subtarea = {
-      id: Date.now().toString(),
+    const newSub: Subtarea = {
+      id: uuidv4(),
       tarea_id: tareaId,
       nombre,
       completada: false,
-      orden: 1, // Simplified - just set to 1
+      orden: (subtareasRecord[tareaId]?.length || 0) + 1
     }
-    setSubtareas(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newSubtarea] }))
-  }, [setSubtareas])
+    setSubtareasRecord(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newSub] }))
+  }, [subtareasRecord, setSubtareasRecord])
 
   const handleToggleSubtarea = useCallback((tareaId: string, subtareaId: string) => {
-    setSubtareas(prev => ({
+    setSubtareasRecord(prev => ({
       ...prev,
-      [tareaId]: prev[tareaId].map(s => s.id === subtareaId ? { ...s, completada: !s.completada, fecha_completado: !s.completada ? new Date().toISOString() : undefined } : s)
+      [tareaId]: (prev[tareaId] || []).map(s => s.id === subtareaId
+        ? { ...s, completada: !s.completada, fecha_completado: !s.completada ? new Date().toISOString() : undefined }
+        : s
+      )
     }))
-  }, [setSubtareas])
+  }, [setSubtareasRecord])
 
   const handleAddComentario = useCallback((tareaId: string, texto: string) => {
-    const newComentario: Comentario = {
-      id: Date.now().toString(),
+    const newComm: Comentario = {
+      id: uuidv4(),
       tarea_id: tareaId,
       usuario_id: user?.id || '1',
       usuario_nombre: user?.nombre || 'Usuario',
@@ -418,8 +373,8 @@ export default function TareasPage() {
       comentario: texto,
       fecha: new Date().toISOString(),
     }
-    setComentarios(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComentario] }))
-  }, [user?.id, user?.nombre, setComentarios]) // Only user info needed
+    setComentariosRecord(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComm] }))
+  }, [user, setComentariosRecord]) // Only user info needed
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _clearFilters = () => {
@@ -434,10 +389,10 @@ export default function TareasPage() {
 
   if (!isAdmin && !isComercial && !isTecnico && !isCompras && !user?.roles.includes('cliente')) {
     return (
-      <Card className="m-4 p-8 text-center">
+      <Card className="m-4 p-8 text-center bg-muted/20">
         <CardContent className="flex flex-col items-center gap-4">
-          <CheckSquare className="h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium">Acceso restringido</p>
+          <Ban className="h-12 w-12 text-muted-foreground opacity-20" />
+          <p className="text-lg font-medium text-muted-foreground">Acceso restringido</p>
         </CardContent>
       </Card>
     )
@@ -454,9 +409,9 @@ export default function TareasPage() {
               tarea={selected}
               proyectos={proyectos}
               usuarios={USUARIOS}
-              subtareas={subtareas[selected.id] || []}
-              comentarios={comentarios[selected.id] || []}
-              onUpdate={handleUpdateTarea}
+              subtareas={subtareasRecord[selected.id] || []}
+              comentarios={comentariosRecord[selected.id] || []}
+              onUpdate={(updated) => updateTask(updated.id, updated)}
               onAddSubtarea={(nombre) => handleAddSubtarea(selected.id, nombre)}
               onToggleSubtarea={(id) => handleToggleSubtarea(selected.id, id)}
               onAddComentario={(texto) => handleAddComentario(selected.id, texto)}
@@ -468,10 +423,10 @@ export default function TareasPage() {
       >
         <ModuleHeader
           title="Tareas"
-          description="Gestión de tareas por proyecto"
+          description="Gestión operativa de proyectos"
           actions={
             canCreate && (
-              <Button onClick={() => setShowCreate(true)}>
+              <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">
                 <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
               </Button>
             )
@@ -482,62 +437,34 @@ export default function TareasPage() {
         <FilterBar
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Buscar tareas..."
+          searchPlaceholder="Buscar por nombre o descripción..."
           filters={[
             {
               key: 'proyecto',
               label: 'Proyecto',
-              placeholder: 'Proyecto',
-              options: [
-                { value: 'todos', label: 'Todos' },
-                ...proyectos.map(p => ({ value: p.id, label: p.nombre })),
-              ],
-              width: 'w-40',
+              options: [{ value: 'todos', label: 'Todos' }, ...proyectos.map(p => ({ value: p.id, label: p.nombre }))],
+              width: 'w-44',
             },
             {
               key: 'estado',
               label: 'Estado',
-              placeholder: 'Estado',
-              options: [
-                { value: 'todos', label: 'Todos' },
-                ...ESTADOS.map(e => ({ value: e, label: e })),
-              ],
-              width: 'w-36',
+              options: [{ value: 'todos', label: 'Todos' }, ...ESTADOS.map(e => ({ value: e, label: e }))],
+              width: 'w-40',
             },
             {
               key: 'categoria',
               label: 'Categoría',
-              placeholder: 'Categoría',
-              options: [
-                { value: 'todas', label: 'Todas' },
-                ...CATEGORIAS.map(c => ({ value: c, label: c })),
-              ],
-              width: 'w-36',
+              options: [{ value: 'todas', label: 'Todas' }, ...CATEGORIAS.map(c => ({ value: c, label: c }))],
+              width: 'w-40',
             },
             {
               key: 'prioridad',
               label: 'Prioridad',
-              placeholder: 'Prioridad',
-              options: [
-                { value: 'todas', label: 'Todas' },
-                ...PRIORIDADES.map(p => ({ value: p, label: p })),
-              ],
-              width: 'w-32',
-            },
-            {
-              key: 'fecha',
-              type: 'date',
-              label: 'Fecha',
-              placeholder: 'Rango de fechas',
-              width: 'w-64',
-            },
+              options: [{ value: 'todas', label: 'Todas' }, ...PRIORIDADES.map(p => ({ value: p, label: p }))],
+              width: 'w-36',
+            }
           ]}
-          values={{
-            proyecto: filtroProyecto,
-            estado: filtroEstado,
-            categoria: filtroCategoria,
-            prioridad: filtroPrioridad,
-          }}
+          values={{ proyecto: filtroProyecto, estado: filtroEstado, categoria: filtroCategoria, prioridad: filtroPrioridad }}
           dateValue={filtroFechaRange}
           onDateChange={setFiltroFechaRange}
           onFilterChange={(key, value) => {
@@ -559,92 +486,157 @@ export default function TareasPage() {
         />
 
         {/* Filtros adicionales: Persona (admin) y Vencidas */}
-        <div className="flex flex-wrap gap-2 items-center text-sm">
+        <div className="flex items-center gap-4 mb-6">
           {isAdmin && (
-            <div className="flex items-center gap-1">
-              <Label className="text-xs text-muted-foreground mr-1">Persona:</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Responsable:</Label>
               <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-                <SelectTrigger className="w-36 h-8 bg-input border-border"><SelectValue placeholder="Todas" /></SelectTrigger>
+                <SelectTrigger className="w-44 h-9 bg-background/50 border-border/50"><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todos">Todas</SelectItem>
+                  <SelectItem value="todos">Todos</SelectItem>
                   {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           )}
-
-          <label className="flex items-center gap-1.5 cursor-pointer h-8">
-            <Checkbox
-              checked={filtroVencidas}
-              onCheckedChange={(checked) => setFiltroVencidas(checked as boolean)}
-            />
-            <span className="text-xs text-muted-foreground">Vencidas</span>
+          <label className="flex items-center gap-2 cursor-pointer bg-muted/30 px-3 py-1.5 rounded-full border border-border/50 hover:bg-muted/50 transition-colors">
+            <Checkbox checked={filtroVencidas} onCheckedChange={(c) => setFiltroVencidas(c as boolean)} />
+            <span className="text-xs font-medium text-muted-foreground uppercase">Ver solo vencidas</span>
           </label>
         </div>
 
-        {/* Stats */}
-        <StatGrid cols={6}>
-          <MiniStat value={stats.total} label="Total" variant="primary" showBorder accentColor={TAREAS_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
-          <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder accentColor={TAREAS_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
-          <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder accentColor={TAREAS_STATS_COLORS.enProgreso} icon={<Loader2 className="h-5 w-5" />} />
-          <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder accentColor={TAREAS_STATS_COLORS.completadas} icon={<CheckCircle className="h-5 w-5" />} />
-          <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.bloqueadas} icon={<Ban className="h-5 w-5" />} />
-          <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
-        </StatGrid>
+        {isTasksLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium animate-pulse">Cargando tareas...</p>
+          </div>
+        ) : (
+          <>
+            {/* Stats */}
+            <StatGrid cols={6}>
+              <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-4 w-4" />} />
+              <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-4 w-4" />} />
+              <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Loader2 className="h-4 w-4" />} />
+              <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder icon={<CheckCircle className="h-4 w-4" />} />
+              <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder icon={<Ban className="h-4 w-4" />} />
+              <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder icon={<AlertTriangle className="h-4 w-4" />} />
+            </StatGrid>
 
-        {_view === 'kanban' && (
-          <div className="-mx-6 px-6 overflow-x-auto">
-            <div className="grid grid-cols-4 gap-4 min-w-[1120px] pb-2">
-              {ESTADOS.map(estado => (
-                <div key={estado} className="min-w-[280px]">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-semibold">{estado}</h3>
-                    <Badge variant="secondary" className="ml-auto">{tareasPorEstado[estado]?.length || 0}</Badge>
-                  </div>
-                  <div className="space-y-3">
-                    {tareasPorEstado[estado]?.map(tarea => (
-                      <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
-                    ))}
-                    {tareasPorEstado[estado]?.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground text-sm">{OTHER_LABELS.noHayTareas}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            {/* View Selector */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-1 p-1 bg-muted/30 rounded-lg border border-border/50">
+                <button
+                  onClick={() => setView('kanban')}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                    _view === 'kanban'
+                      ? 'bg-background shadow-sm text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  Kanban
+                </button>
+                <button
+                  onClick={() => setView('lista')}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                    _view === 'lista'
+                      ? 'bg-background shadow-sm text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <List className="h-4 w-4" />
+                  Lista
+                </button>
+                <button
+                  onClick={() => setView('gantt')}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                    _view === 'gantt'
+                      ? 'bg-background shadow-sm text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <GanttChart className="h-4 w-4" />
+                  Gantt
+                </button>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {visibleTareas.length} tareas
+              </span>
             </div>
-          </div>
-        )}
 
-        {_view === 'lista' && (
-          <div className="space-y-2">
-            {visibleTareas.map(tarea => (
-              <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <h4 className="font-semibold">{tarea.nombre}</h4>
-                      <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} • {tarea.fase_nombre}</p>
+            {_view === 'kanban' && (
+              <div className="-mx-6 px-6 overflow-x-auto custom-scrollbar">
+                <div className="grid grid-cols-4 gap-6 min-w-[1200px] pb-6">
+                  {ESTADOS.map(estado => (
+                    <div key={estado} className="space-y-4">
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            estado === 'Pendiente' && "bg-slate-400",
+                            estado === 'En progreso' && "bg-blue-500",
+                            estado === 'Completada' && "bg-emerald-500",
+                            estado === 'Bloqueada' && "bg-rose-500"
+                          )} />
+                          <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground/70">{estado}</h3>
+                        </div>
+                        <Badge variant="outline" className="bg-background/50 border-border/50 text-[10px] h-5">{tareasPorEstado[estado]?.length || 0}</Badge>
+                      </div>
+                      <div className="space-y-3 min-h-[500px] bg-muted/10 rounded-2xl p-2 border border-border/5 border-dashed">
+                        {tareasPorEstado[estado]?.map(tarea => (
+                          <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
+                        ))}
+                        {tareasPorEstado[estado]?.length === 0 && (
+                          <div className="flex flex-col items-center justify-center h-32 opacity-20 italic text-xs text-center border border-dashed border-border/20 rounded-xl">
+                            Sin tareas {estado.toLowerCase()}s
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={tarea.categoria} type="categoria" />
-                    <StatusBadge status={tarea.prioridad} type="prioridad" />
-                    <StatusBadge status={tarea.estado} type="estado" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  ))}
+                </div>
+              </div>
+            )}
 
+            {_view === 'lista' && (
+              <div className="space-y-2">
+                {visibleTareas.map(tarea => (
+                  <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <h4 className="font-semibold">{tarea.nombre}</h4>
+                          <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} • {tarea.fase_nombre}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={tarea.categoria} type="categoria" />
+                        <StatusBadge status={tarea.prioridad} type="prioridad" />
+                        <StatusBadge status={tarea.estado} type="estado" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {_view === 'gantt' && (
+              <div className="h-[600px]">
+                <TaskGanttChart tasks={visibleTareas} />
+              </div>
+            )}
+          </>
+        )}
       </ModuleContainerWithPanel>
 
       <CreateTaskModal
         open={showCreate}
         onOpenChange={setShowCreate}
         proyectos={proyectos}
-        setProyectos={setProyectos}
         usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         onSave={handleSaveTarea}
@@ -655,12 +647,11 @@ export default function TareasPage() {
         open={showEdit}
         onOpenChange={setShowEdit}
         proyectos={proyectos}
-        setProyectos={setProyectos}
         usuarios={USUARIOS}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         tarea={editingTarea}
-        subtareas={editingTarea ? subtareas[editingTarea.id] || [] : []}
-        comentarios={editingTarea ? comentarios[editingTarea.id] || [] : []}
+        subtareas={editingTarea ? subtareasRecord[editingTarea.id] || [] : []}
+        comentarios={editingTarea ? comentariosRecord[editingTarea.id] || [] : []}
         onSave={handleSaveTarea}
         onDelete={handleDeleteTarea}
       />
@@ -669,7 +660,11 @@ export default function TareasPage() {
       <CreateProjectModal
         open={showNewProject}
         onOpenChange={setShowNewProject}
-        onSave={handleSaveProyecto}
+        onSave={async (p) => {
+          const now = new Date().toISOString()
+          const newP = { ...p, id: uuidv4(), creado_en: now } as import('@/types/proyectos').Proyecto
+          setProyectos(prev => [...prev, newP])
+        }}
         empresas={empresas}
         usuarios={usuarios}
       />
