@@ -4,37 +4,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { InlineAddButton } from '@/components/ui/inline-add-button'
-import { Badge } from '@/components/ui/badge' // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Input } from '@/components/ui/input' // eslint-disable-line @typescript-eslint/no-unused-vars
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Label } from '@/components/ui/label'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { RotateCcw, Plus, Building2, Layers, Lightbulb, PenTool, Bug, Rocket, User as UserIcon, XCircle, Archive, Settings, ChevronLeft, ChevronRight, FolderKanban, Loader2, Pencil } from 'lucide-react'
-import { ModuleHeader, ModuleCard, ProjectCard, StatusBadge, ModuleContainerWithPanel } from '@/components/module'
+import { Plus, ChevronLeft, ChevronRight, FolderKanban, Rocket } from 'lucide-react'
+import { ModuleHeader, ModuleCard, ProjectCard, ModuleContainerWithPanel } from '@/components/module'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// Lazy loading para modales grandes
-const CreateEmpresaModal = dynamic(
-  () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
-)
-const CreateUserModal = dynamic(
-  () => import('@/components/module/CreateUserModal').then(mod => mod.CreateUserModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
-)
 const ProjectDetailPanel = dynamic(
   () => import('@/components/module/ProjectDetailPanel').then(mod => mod.ProjectDetailPanel),
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
@@ -45,21 +22,19 @@ import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/bas
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
-import { Proyecto, FASES, FaseProyecto, Fase, MONEDAS, HistorialProyecto } from '@/types/proyectos'
+import { Proyecto, FASES, FaseProyecto, HistorialProyecto } from '@/types/proyectos'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE } from '@/types/tareas'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Empresa } from '@/types/crm'
 import { User } from '@/types/auth'
-import { useEmpresas, useContactos, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
+import { useEmpresas, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { VARIANT_COLORS, STATUS_COLORS, ARCHIVE_CLASSES } from '@/lib/colors'
 
 // Importar constantes
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {
-  VALIDATION_ERRORS,
-} from '@/constants/proyectos'
+
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 
@@ -86,8 +61,7 @@ export default function ProyectosPage() {
   // Hooks del store centralizado
   const [proyectos, setProyectos] = useProyectos()
   const [tareas, setTareas] = useTareas()
-  const [empresas, _setEmpresas] = useEmpresas() // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [contactos] = useContactos()
+  const [empresas] = useEmpresas()
 
   // Usuarios reales
   const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
@@ -161,25 +135,6 @@ export default function ProyectosPage() {
   const isComercial = user?.roles.includes('comercial')
   const isTecnico = user?.roles.includes('tecnico')
   const canMovePhases = isAdmin || isComercial || isTecnico
-  const canClose = isAdmin // eslint-disable-line @typescript-eslint/no-unused-vars
-
-  const responsablesPosibles = useMemo(() =>
-    usuarios.filter(u =>
-      u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
-    ),
-    [usuarios]
-  ) // eslint-disable-line @typescript-eslint/no-unused-vars
-
-  const empresasClientes = useMemo(() =>
-    empresas.filter(e => e.tipo_entidad === 'cliente'),
-    [empresas]
-  ) // eslint-disable-line @typescript-eslint/no-unused-vars
-
-  const contactosDeEmpresa = proyectoEditando?.empresa_id
-    ? contactos.filter(c => c.empresa_id === proyectoEditando.empresa_id && c.activo)
-    : []
-
-  const contactosTecnicos = contactosDeEmpresa.filter(c => c.tipo_contacto === 'Técnico')
 
   const proyectosPorFase = useMemo(() => {
     const r: Record<number, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
