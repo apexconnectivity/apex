@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
 import { InputPhone } from '@/components/ui/input-phone'
 import { Label } from '@/components/ui/label'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
@@ -304,7 +305,7 @@ export function CreateEmpresaModal({
           {/* Nombre */}
           <div className="space-y-2">
             <Label>Nombre *</Label>
-            <Input
+            <InputTextCase
               value={formData.nombre || ''}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               placeholder="Ej: Mi Empresa SA"
@@ -391,7 +392,7 @@ export function CreateEmpresaModal({
 
           <div className="space-y-2">
             <Label>Dirección</Label>
-            <Input
+            <InputTextCase
               value={formData.direccion || ''}
               onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
             />
@@ -400,14 +401,14 @@ export function CreateEmpresaModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Ciudad</Label>
-              <Input
+              <InputTextCase
                 value={formData.ciudad || ''}
                 onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>País</Label>
-              <Input
+              <InputTextCase
                 value={formData.pais || ''}
                 onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
               />
@@ -422,7 +423,7 @@ export function CreateEmpresaModal({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Razón Social *</Label>
-                <Input
+                <InputTextCase
                   value={formData.razon_social || ''}
                   onChange={(e) => setFormData({ ...formData, razon_social: e.target.value })}
                   placeholder="Razón social oficial"
@@ -442,7 +443,7 @@ export function CreateEmpresaModal({
               </div>
               <div className="space-y-2">
                 <Label>Dirección Fiscal</Label>
-                <Input
+                <InputTextCase
                   value={formData.direccion_fiscal || ''}
                   onChange={(e) => setFormData({ ...formData, direccion_fiscal: e.target.value })}
                   placeholder="Dirección para facturación"

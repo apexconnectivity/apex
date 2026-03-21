@@ -13,7 +13,8 @@ export function WelcomeHeader() {
 
   // Cargar datos desde hooks
   const [proyectosData] = useProyectos()
-  const [tareasData] = useTareas()
+  const tareasHook = useTareas()
+  const tareasData = tareasHook.tasks
   const [soporteData] = useTickets()
 
   // Contar proyectos activos (estado === 'activo')

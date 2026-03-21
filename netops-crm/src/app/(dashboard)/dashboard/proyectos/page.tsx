@@ -60,7 +60,9 @@ export default function ProyectosPage() {
 
   // Hooks del store centralizado
   const [proyectos, setProyectos] = useProyectos()
-  const [tareas, setTareas] = useTareas()
+  const tareasHook = useTareas()
+  const tareas = tareasHook.tasks
+  const createTarea = tareasHook.createTask
   const [empresas] = useEmpresas()
 
   // Usuarios reales
@@ -200,34 +202,34 @@ export default function ProyectosPage() {
       if (fase > (faseAnterior || 0)) {
         const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
         if (plantillas.length > 0) {
-          const nuevas = plantillas.map((pl, i) => {
-            const v = new Date(); v.setDate(v.getDate() + pl.dias_vencimiento)
-            const tid = crypto.randomUUID()
-            return {
-              id: tid,
-              proyecto_id: id,
-              proyecto_nombre: proyecto.nombre,
-              fase_origen: fase,
-              fase_nombre: faseNuevaNombre || '',
-              categoria: pl.categoria,
-              nombre: pl.nombre,
-              descripcion: pl.descripcion,
-              prioridad: pl.prioridad,
-              estado: 'Pendiente' as EstadoTarea,
-              fecha_creacion: new Date().toISOString().split('T')[0],
-              fecha_vencimiento: v.toISOString().split('T')[0],
-              orden: i + 1,
-              creado_por: 'Sistema',
-              asignado_a_cliente: pl.requiere_cliente,
-              subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si + 1 }))
+          // Crear tareas usando el servicio
+          const crearTareas = async () => {
+            for (const pl of plantillas) {
+              const v = new Date()
+              v.setDate(v.getDate() + pl.dias_vencimiento)
+              await createTarea({
+                proyecto_id: id,
+                proyecto_nombre: proyecto.nombre,
+                fase_origen: fase,
+                fase_nombre: faseNuevaNombre || '',
+                categoria: pl.categoria,
+                nombre: pl.nombre,
+                descripcion: pl.descripcion,
+                prioridad: pl.prioridad,
+                estado: 'Pendiente' as EstadoTarea,
+                fecha_vencimiento: v.toISOString().split('T')[0],
+                orden: plantillas.indexOf(pl) + 1,
+                creado_por: 'Sistema',
+                asignado_a_cliente: pl.requiere_cliente,
+              })
             }
-          })
-          setTimeout(() => setTareas(tPrev => [...tPrev, ...nuevas]), 0)
+          }
+          crearTareas()
         }
       }
       return prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p)
     })
-  }, [isComercial, isTecnico, fases, setProyectos, setTareas, agregarHistorial])
+  }, [isComercial, isTecnico, fases, setProyectos, createTarea, agregarHistorial])
 
   const handleCerrar = useCallback((proyecto: Proyecto) => {
     setProyectoACerrar(proyecto); setMotivoCierre(''); setNotasCierre(''); setIsModalCerrar(true)
@@ -293,11 +295,11 @@ export default function ProyectosPage() {
       const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
 
       if (plantillas.length > 0) {
-        const nuevasTareas = plantillas.map((pl, i) => {
-          const v = new Date(); v.setDate(v.getDate() + pl.dias_vencimiento)
-          const tid = crypto.randomUUID()
-          return {
-            id: tid,
+        // Crear tareas usando el servicio
+        await Promise.all(plantillas.map(async (pl, i) => {
+          const v = new Date()
+          v.setDate(v.getDate() + pl.dias_vencimiento)
+          await createTarea({
             proyecto_id: proyectoId,
             proyecto_nombre: nuevoProyectoData.nombre,
             fase_origen: fase,
@@ -307,15 +309,12 @@ export default function ProyectosPage() {
             descripcion: pl.descripcion,
             prioridad: pl.prioridad,
             estado: 'Pendiente' as EstadoTarea,
-            fecha_creacion: now,
             fecha_vencimiento: v.toISOString().split('T')[0],
             orden: i + 1,
             creado_por: 'Sistema',
             asignado_a_cliente: pl.requiere_cliente,
-            subtareas: pl.subtareas.map((s, si) => ({ id: crypto.randomUUID(), tarea_id: tid, nombre: s.nombre, completada: false, orden: si + 1 }))
-          }
-        })
-        setTareas(prev => [...prev, ...nuevasTareas])
+          })
+        }))
       }
     } else {
       setProyectos(prev => prev.map(p => p.id === proyectoId ? { ...p, ...nuevoProyectoData } : p))
@@ -324,7 +323,7 @@ export default function ProyectosPage() {
 
     setIsSaving(false)
     setIsModalNuevo(false)
-  }, [empresas, usuarios, fases, setProyectos, setTareas, agregarHistorial])
+  }, [empresas, usuarios, fases, setProyectos, createTarea, agregarHistorial])
 
   // Handlers para creación inline quitados de aquí ya que el ModalReusable los maneja interna o se inyectan como props si es necesario.
   // Pero como CreateProjectModal ya importa CreateEmpresaModal y CreateUserModal, solo necesitamos pasarle las listas base.

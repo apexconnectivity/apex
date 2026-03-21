@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
+import { InputPhone } from '@/components/ui/input-phone'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -15,10 +17,9 @@ import {
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { Contacto, TipoContacto, TIPOS_CONTACTO } from '@/types/crm'
 import { Loader2 } from 'lucide-react'
-import { VARIANT_COLORS } from '@/lib/colors'
 import { ModalVariant } from '@/constants/modales'
 
-interface CreateContactoModalProps {
+interface CreateContactModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (contacto: Partial<Contacto>, isNew: boolean) => void | Promise<void>
@@ -39,7 +40,10 @@ const CONTACTO_VACIO: Partial<Contacto> = {
   activo: true,
 }
 
-export function CreateContactoModal({
+/**
+ * CreateContactModal - Modal para crear/editar contactos de empresa
+ */
+export function CreateContactModal({
   open,
   onOpenChange,
   onSave,
@@ -47,7 +51,7 @@ export function CreateContactoModal({
   empresaId,
   isSaving = false,
   errors = {},
-}: CreateContactoModalProps) {
+}: CreateContactModalProps) {
   const isEditing = !!contacto?.id
 
   const [formData, setFormData] = useState<Partial<Contacto>>(
@@ -65,8 +69,15 @@ export function CreateContactoModal({
     }
   }, [open, contacto, empresaId])
 
+  // Validar que todos los campos requeridos estén llenos
+  const isFormValid = Boolean(
+    formData.nombre?.trim() &&
+    formData.email?.trim() &&
+    formData.tipo_contacto
+  )
+
   const handleSave = async () => {
-    if (!formData.nombre?.trim() || !formData.email?.trim()) return
+    if (!isFormValid || isSaving) return
 
     await onSave(formData, !isEditing)
     onOpenChange(false)
@@ -95,30 +106,34 @@ export function CreateContactoModal({
 
       <ModalBody className="space-y-4">
         <div className="space-y-2">
-          <Label>Nombre *</Label>
-          <Input
+          <Label htmlFor="contact_nombre">Nombre *</Label>
+          <InputTextCase
+            id="contact_nombre"
             value={formData.nombre || ''}
             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-            className={errors.nombre ? VARIANT_COLORS.danger.borderColor : ''}
+            placeholder="Juan Pérez"
+            className={errors.nombre ? 'border-red-500' : ''}
           />
-          {errors.nombre && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.nombre}</p>}
+          {errors.nombre && <p className="text-xs text-red-500 mt-1">{errors.nombre}</p>}
         </div>
 
         <div className="space-y-2">
-          <Label>Cargo</Label>
-          <Input
+          <Label htmlFor="contact_cargo">Cargo</Label>
+          <InputTextCase
+            id="contact_cargo"
             value={formData.cargo || ''}
             onChange={(e) => setFormData({ ...formData, cargo: e.target.value })}
+            placeholder="Gerente de Proyectos"
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Tipo de Contacto *</Label>
+          <Label htmlFor="contact_tipo">Tipo de Contacto *</Label>
           <Select
             value={formData.tipo_contacto || ''}
             onValueChange={(v) => setFormData({ ...formData, tipo_contacto: v as TipoContacto })}
           >
-            <SelectTrigger>
+            <SelectTrigger id="contact_tipo">
               <SelectValue placeholder="Seleccionar tipo" />
             </SelectTrigger>
             <SelectContent>
@@ -130,24 +145,27 @@ export function CreateContactoModal({
         </div>
 
         <div className="space-y-2">
-          <Label>Email *</Label>
+          <Label htmlFor="contact_email">Email *</Label>
           <Input
+            id="contact_email"
             type="email"
             value={formData.email || ''}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className={errors.email ? VARIANT_COLORS.danger.borderColor : ''}
+            placeholder="juan@empresa.com"
+            className={errors.email ? 'border-red-500' : ''}
           />
-          {errors.email && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.email}</p>}
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
         </div>
 
         <div className="space-y-2">
-          <Label>Teléfono</Label>
-          <Input
+          <Label htmlFor="contact_telefono">Teléfono</Label>
+          <InputPhone
+            id="contact_telefono"
             value={formData.telefono || ''}
-            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-            className={errors.telefono ? VARIANT_COLORS.danger.borderColor : ''}
+            onChange={(value) => setFormData({ ...formData, telefono: value })}
+            placeholder="55 1234 5678"
+            error={errors.telefono}
           />
-          {errors.telefono && <p className={`${VARIANT_COLORS.danger.valueColor} text-xs`}>{errors.telefono}</p>}
         </div>
 
         <div className="flex items-center gap-2">
@@ -188,7 +206,11 @@ export function CreateContactoModal({
         <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button className="flex-1" onClick={handleSave} disabled={isSaving || !formData.nombre?.trim() || !formData.email?.trim()}>
+        <Button
+          className="flex-1"
+          onClick={handleSave}
+          disabled={isSaving || !isFormValid}
+        >
           {isSaving ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

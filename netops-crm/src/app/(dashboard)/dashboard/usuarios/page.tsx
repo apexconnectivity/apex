@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
-import { ModuleContainer, ModuleHeader, CreateUserModal } from '@/components/module'
+import { ModuleContainer, ModuleHeader, CreateColaboratorModal } from '@/components/module'
 import { ManageContactsModal } from '@/components/module/ManageContactsModal'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Button } from '@/components/ui/button'
@@ -46,7 +46,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
-  
+
   const [isManageContactsOpen, setIsManageContactsOpen] = useState(false)
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<string | null>(null)
 
@@ -77,7 +77,7 @@ export default function UsersPage() {
   const { internalUsers, uniqueCompanies } = useMemo(() => {
     const internal = filteredUsers.filter(u => !u.roles.includes('cliente'))
     const clients = filteredUsers.filter(u => u.roles.includes('cliente'))
-    
+
     const companyMap = new Map()
     clients.forEach(u => {
       if (u.empresa_id) {
@@ -95,7 +95,7 @@ export default function UsersPage() {
         if (u.activo) stats.activeUsers++
       }
     })
-    
+
     return {
       internalUsers: internal,
       uniqueCompanies: Array.from(companyMap.values()) as { id: string; nombre: string; contactosCount: number; activeUsers: number }[]
@@ -299,10 +299,10 @@ export default function UsersPage() {
 
                       <div className="flex items-center gap-4">
                         <div className="flex gap-1">
-                        {user.roles.map((role: Role) => (
-                          <RoleBadge key={role} role={role} className="text-xs" />
-                        ))}
-                      </div>
+                          {user.roles.map((role: Role) => (
+                            <RoleBadge key={role} role={role} className="text-xs" />
+                          ))}
+                        </div>
 
                         <div className="flex items-center gap-1">
                           <Button
@@ -351,8 +351,8 @@ export default function UsersPage() {
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {uniqueCompanies.map((emp: any) => (
-                <Card 
-                  key={emp.id} 
+                <Card
+                  key={emp.id}
                   className="cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group border-border/50 bg-muted/10"
                   onClick={() => {
                     setSelectedEmpresaId(emp.id)
@@ -369,7 +369,7 @@ export default function UsersPage() {
                         <p className="text-xs text-muted-foreground">{emp.contactosCount} {emp.contactosCount === 1 ? 'contacto registrado' : 'contactos registrados'}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between text-xs pt-4 border-t border-border/5">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -394,8 +394,8 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* User Modal - Usando componente reutilizable */}
-      <CreateUserModal
+      {/* Colaborator Modal - Usando componente reutilizable */}
+      <CreateColaboratorModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         user={editingUser}
@@ -471,7 +471,7 @@ export default function UsersPage() {
                   El usuario <strong>{userToDelete.nombre}</strong> perderá el acceso a la plataforma y toda su configuración personal será eliminada.
                 </p>
               </div>
-              
+
               <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -503,7 +503,7 @@ export default function UsersPage() {
       )}
 
       {isManageContactsOpen && selectedEmpresaId && (
-        <ManageContactsModal 
+        <ManageContactsModal
           isOpen={isManageContactsOpen}
           onClose={() => setIsManageContactsOpen(false)}
           empresaId={selectedEmpresaId}

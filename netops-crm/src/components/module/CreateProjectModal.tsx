@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -12,12 +13,13 @@ import { InputNumber } from '@/components/ui/input-number'
 import { DatePicker } from '@/components/ui/date-picker'
 import { InlineAddButton } from '@/components/ui/inline-add-button'
 import { Building2, User as UserIcon, Loader2 } from 'lucide-react'
+import { EmptyStateModal } from '@/components/base/EmptyStateModal'
 import { Proyecto, MONEDAS } from '@/types/proyectos'
 import { User } from '@/types/auth'
 import { Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
-import { CreateUserModal } from './CreateUserModal'
+import { CreateColaboratorModal } from './CreateColaboratorModal'
 import { ManageContactsModal } from './ManageContactsModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
@@ -249,6 +251,34 @@ export function CreateProjectModal({
 
   return (
     <>
+      {/* Empty State: No hay empresas - verificar prop empresas directamente */}
+      {!isEditing && empresas && empresas.length === 0 && (
+        <EmptyStateModal
+          open={open}
+          onOpenChange={onOpenChange}
+          title="No hay empresas"
+          description="Debes crear al menos una empresa antes de crear un proyecto."
+          icon="folder"
+          variant="warning"
+          actions={[
+            {
+              label: 'Crear Empresa',
+              onClick: () => {
+                onOpenChange(false)
+                setShowNewEmpresa(true)
+              },
+              variant: 'default',
+              icon: <Building2 className="w-4 h-4 mr-2" />,
+            },
+            {
+              label: 'Cancelar',
+              onClick: () => onOpenChange(false),
+              variant: 'outline',
+            },
+          ]}
+        />
+      )}
+
       <BaseModal
         open={open}
         onOpenChange={onOpenChange}
@@ -268,7 +298,7 @@ export function CreateProjectModal({
           {/* Nombre del Proyecto */}
           <div>
             <Label htmlFor="nombre">Nombre del Proyecto *</Label>
-            <Input
+            <InputTextCase
               id="nombre"
               value={formData.nombre || ''}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
@@ -498,7 +528,7 @@ export function CreateProjectModal({
         empresa={null}
       />
 
-      <CreateUserModal
+      <CreateColaboratorModal
         open={showNewUsuario}
         onOpenChange={setShowNewUsuario}
         onSave={handleSaveUsuario}

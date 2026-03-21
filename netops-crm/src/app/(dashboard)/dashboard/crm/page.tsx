@@ -25,8 +25,8 @@ const CreateEmpresaModal = dynamic(
   // @ts-ignore - preload is supported in Next.js 14 but types are not updated
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
-const CreateContactoModal = dynamic(
-  () => import('@/components/module/CreateContactoModal').then(mod => mod.CreateContactoModal),
+const CreateContactModal = dynamic(
+  () => import('@/components/module/CreateContactModal').then(mod => mod.CreateContactModal),
   // @ts-ignore
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
@@ -92,7 +92,7 @@ export default function CRMPage() {
   const [contactos, setContactos] = useContactos()
   const [documentos, setDocumentos] = useDocumentos()
   const [proyectos, setProyectos] = useProyectos()
-  const [tickets] = useTareas()
+  const { tasks: tickets } = useTareas()
 
   // Usuarios
   const [usuarios, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
@@ -953,7 +953,7 @@ export default function CRMPage() {
       />
 
       {/* Modal de Contacto */}
-      <CreateContactoModal
+      <CreateContactModal
         open={isModalContacto}
         onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}
         onSave={handleSaveContacto}

@@ -21,7 +21,8 @@ export default function DashboardPage() {
   // Hooks centralizados para gestión de datos
   const [empresas] = useEmpresas()
   const [proyectos] = useProyectos()
-  const [tareas] = useTareas()
+  const tareasHook = useTareas()
+  const tareas = tareasHook.tasks
   const [tickets] = useTickets()
   const [contactos] = useContactos()
 

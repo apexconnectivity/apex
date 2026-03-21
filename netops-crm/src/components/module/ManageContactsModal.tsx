@@ -5,18 +5,20 @@ import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Empresa, Contacto } from '@/types/crm'
 import { User } from '@/types/auth'
-import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
+import { BaseModal, ModalHeader, ModalBody } from '@/components/base'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
+import { InputPhone } from '@/components/ui/input-phone'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { 
-  Building2, 
-  UserPlus, 
-  Pencil, 
-  Trash2, 
+import {
+  Building2,
+  UserPlus,
+  Pencil,
+  Trash2,
   ShieldCheck,
   Mail,
   Phone,
@@ -34,47 +36,47 @@ interface ManageContactsModalProps {
 export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = false }: ManageContactsModalProps) {
   const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, [])
   const [contactos, setContactos] = useLocalStorage<Contacto[]>(STORAGE_KEYS.contactos, [])
-  const [usuarios, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
-  
+  const [, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
+
   const [isEditingContacto, setIsEditingContacto] = useState(false)
   const [editingContacto, setEditingContacto] = useState<Partial<Contacto> | null>(null)
-  
+
   useEffect(() => {
     if (!isOpen) {
       setIsEditingContacto(false)
       setEditingContacto(null)
     }
   }, [isOpen])
-  
+
   const empresa = useMemo(() => empresas.find(e => e.id === empresaId), [empresas, empresaId])
   const empresaContactos = useMemo(() => contactos.filter(c => c.empresa_id === empresaId), [contactos, empresaId])
-  
+
   const handleSaveContacto = () => {
     if (!editingContacto?.nombre || !editingContacto?.email) return
-    
+
     const now = new Date().toISOString()
     const isNew = !editingContacto.id
     const contactoId = editingContacto.id || crypto.randomUUID()
-    
+
     // 1. Actualizar lista de contactos
     setContactos(prev => {
-      const updated = isNew 
+      const updated = isNew
         ? [...prev, {
-            ...editingContacto,
-            id: contactoId,
-            empresa_id: empresaId,
-            creado_en: now.split('T')[0],
-            es_principal: false
-          } as Contacto]
+          ...editingContacto,
+          id: contactoId,
+          empresa_id: empresaId,
+          creado_en: now.split('T')[0],
+          es_principal: false
+        } as Contacto]
         : prev.map(c => c.id === contactoId ? { ...c, ...editingContacto } as Contacto : c)
       return updated
     })
-    
+
     // 2. Sincronizar con el usuario asociado para el portal de cliente
     setUsuarios(prev => {
       const email = editingContacto.email || ''
       const existingUserIndex = prev.findIndex(u => u.email.toLowerCase() === email.toLowerCase())
-      
+
       if (existingUserIndex !== -1) {
         const updatedUsers = [...prev]
         updatedUsers[existingUserIndex] = {
@@ -98,15 +100,15 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
       }
       return prev
     })
-    
+
     setIsEditingContacto(false)
     setEditingContacto(null)
   }
-  
+
   const handleDeleteContacto = (id: string) => {
     const contacto = contactos.find(c => c.id === id)
     if (contacto?.es_principal) return
-    
+
     setContactos(prev => prev.filter(c => c.id !== id))
     // Opcional: Desactivar usuario también
   }
@@ -120,7 +122,7 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
 
   return (
     <BaseModal open={isOpen} onOpenChange={onClose} size="xl">
-      <ModalHeader 
+      <ModalHeader
         title={
           <div className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-cyan-500" />
@@ -147,7 +149,7 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                 </Button>
               )}
             </div>
-            
+
             <div className="grid gap-3">
               {empresaContactos.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground text-sm border-2 border-dashed rounded-xl border-border/50">
@@ -176,12 +178,12 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                             <p className="text-[11px] text-muted-foreground truncate">{contacto.cargo || 'Sin cargo definido'}</p>
                           </div>
                         </div>
-                        
+
                         {!isReadOnly && (
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-cyan-500 hover:bg-cyan-500/10"
                               disabled={contacto.es_principal}
                               onClick={() => {
@@ -192,9 +194,9 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                               <Pencil className="h-4 w-4" />
                             </Button>
                             {!contacto.es_principal && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
                                 onClick={() => handleDeleteContacto(contacto.id)}
                               >
@@ -204,7 +206,7 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-3 pt-3 border-t border-border/5">
                         <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-60" /> {contacto.email}</span>
                         {contacto.telefono && <span className="flex items-center gap-1.5"><Phone className="h-3 w-3 opacity-60" /> {contacto.telefono}</span>}
@@ -215,7 +217,7 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
               )}
             </div>
           </div>
-          
+
           {/* Formulario de Edición */}
           <div className="md:col-span-2 flex flex-col">
             {isEditingContacto ? (
@@ -228,52 +230,60 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                     {editingContacto?.id ? 'Editar Información' : 'Nuevo Contacto'}
                   </h4>
                 </div>
-                
+
                 <div className="space-y-4 flex-1">
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Nombre completo *</Label>
-                    <Input 
-                      value={editingContacto?.nombre || ''} 
-                      onChange={e => setEditingContacto(prev => ({ ...prev, nombre: e.target.value }))}
+                    <Label htmlFor="manage_contact_nombre" className="text-xs text-muted-foreground">Nombre completo *</Label>
+                    <InputTextCase
+                      id="manage_contact_nombre"
+                      value={editingContacto?.nombre || ''}
+                      onChange={(e) => setEditingContacto(prev => ({ ...prev, nombre: e.target.value }))}
                       placeholder="Ej: Juan Pérez"
                       className="bg-background/50 h-9"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Email corporativo *</Label>
-                    <Input 
+                    <Label htmlFor="manage_contact_email" className="text-xs text-muted-foreground">Email corporativo *</Label>
+                    <Input
+                      id="manage_contact_email"
                       type="email"
-                      value={editingContacto?.email || ''} 
+                      value={editingContacto?.email || ''}
                       onChange={e => setEditingContacto(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="juan@empresa.com"
                       className="bg-background/50 h-9"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Cargo / Puesto</Label>
-                    <Input 
-                      value={editingContacto?.cargo || ''} 
-                      onChange={e => setEditingContacto(prev => ({ ...prev, cargo: e.target.value }))}
+                    <Label htmlFor="manage_contact_cargo" className="text-xs text-muted-foreground">Cargo / Puesto</Label>
+                    <InputTextCase
+                      id="manage_contact_cargo"
+                      value={editingContacto?.cargo || ''}
+                      onChange={(e) => setEditingContacto(prev => ({ ...prev, cargo: e.target.value }))}
                       placeholder="Ej: Gerente de TI"
                       className="bg-background/50 h-9"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Teléfono de contacto</Label>
-                    <Input 
-                      value={editingContacto?.telefono || ''} 
-                      onChange={e => setEditingContacto(prev => ({ ...prev, telefono: e.target.value }))}
-                      placeholder="+52 ..."
+                    <Label htmlFor="manage_contact_telefono" className="text-xs text-muted-foreground">Teléfono de contacto</Label>
+                    <InputPhone
+                      id="manage_contact_telefono"
+                      value={editingContacto?.telefono || ''}
+                      onChange={(value) => setEditingContacto(prev => ({ ...prev, telefono: value }))}
+                      placeholder="55 1234 5678"
                       className="bg-background/50 h-9"
                     />
                   </div>
                 </div>
-                
+
                 <div className="pt-6 flex gap-3">
                   <Button variant="ghost" className="flex-1 h-10" onClick={() => setIsEditingContacto(false)}>
                     Descartar
                   </Button>
-                  <Button className="flex-1 h-10 shadow-lg shadow-primary/20" onClick={handleSaveContacto}>
+                  <Button
+                    className="flex-1 h-10 shadow-lg shadow-primary/20"
+                    onClick={handleSaveContacto}
+                    disabled={!editingContacto?.nombre?.trim() || !editingContacto?.email?.trim()}
+                  >
                     Guardar
                   </Button>
                 </div>

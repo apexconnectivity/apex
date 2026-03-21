@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
+import { EmptyStateModal } from '@/components/base/EmptyStateModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -11,7 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { SubtaskList } from '@/components/ui/subtask-list'
 import { CommentInput } from '@/components/ui/comment-input'
 import { DependenciesSelector } from '@/components/ui/dependencies-selector'
-import { Trash2, PlusCircle, User, Users } from 'lucide-react'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Trash2, PlusCircle, User, Users, FolderOpen } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS, Dependencia } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
 import { Contacto } from '@/types/crm'
@@ -119,7 +122,7 @@ function TaskFormFields({
 
       <div className="space-y-2">
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nombre de la Tarea *</Label>
-        <Input
+        <InputTextCase
           value={tarea.nombre}
           onChange={(e) => setTarea({ ...tarea, nombre: e.target.value })}
           placeholder="Ej: Configurar Firewall Fortinet"
@@ -248,12 +251,12 @@ function TaskFormFields({
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vencimiento</Label>
-          <Input
-            type="date"
-            className="bg-input/50 border-border/50"
-            value={tarea.fecha_vencimiento || ''}
-            onChange={(e) => setTarea({ ...tarea, fecha_vencimiento: e.target.value })}
+          <DatePicker
+            value={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento) : undefined}
+            onChange={(date) => setTarea({ ...tarea, fecha_vencimiento: date ? date.toISOString().split('T')[0] : '' })}
+            placeholder="Seleccionar fecha"
             disabled={disabled}
+            className="bg-input/50 border-border/50"
           />
         </div>
       </div>
@@ -414,7 +417,36 @@ export function CreateTaskModal({
   const variant: ModalVariant = isEditMode ? 'edit' : 'create'
 
   return (
-    <BaseModal
+    <>
+      {/* Empty State: No hay proyectos */}
+      {!hasProyectos && !isEditMode && (
+        <EmptyStateModal
+          open={open}
+          onOpenChange={onOpenChange}
+          title="No hay proyectos"
+          description="Debes crear al menos un proyecto antes de crear tareas."
+          icon="folder"
+          variant="warning"
+          actions={[
+            {
+              label: 'Crear Proyecto',
+              onClick: () => {
+                onOpenChange(false)
+                onCreateProject?.()
+              },
+              variant: 'default',
+              icon: <FolderOpen className="w-4 h-4 mr-2" />,
+            },
+            {
+              label: 'Cancelar',
+              onClick: () => onOpenChange(false),
+              variant: 'outline',
+            },
+          ]}
+        />
+      )}
+
+      <BaseModal
       open={open}
       onOpenChange={onOpenChange}
       size="lg"
@@ -428,25 +460,7 @@ export function CreateTaskModal({
       />
 
       <ModalBody>
-        {!hasProyectos ? (
-          <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
-            <PlusCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-            <p className="text-muted-foreground font-medium">No hay proyectos disponibles.</p>
-            <p className="text-sm text-muted-foreground mb-6">Debes crear al menos un proyecto antes de asignar tareas.</p>
-            {onCreateProject && (
-              <Button
-                onClick={() => {
-                  onOpenChange(false)
-                  onCreateProject()
-                }}
-                className="shadow-lg shadow-primary/20"
-              >
-                Crear Primer Proyecto
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
               <TaskFormFields
                 tarea={tareaData}
@@ -499,7 +513,6 @@ export function CreateTaskModal({
               </div>
             </div>
           </div>
-        )}
       </ModalBody>
 
       <ModalFooter variant={variant} layout="inline-between">
@@ -518,5 +531,6 @@ export function CreateTaskModal({
         </div>
       </ModalFooter>
     </BaseModal>
+    </>
   )
 }

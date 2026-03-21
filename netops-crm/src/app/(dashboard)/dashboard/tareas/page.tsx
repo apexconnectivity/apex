@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useContactos } from '@/hooks/useContactos'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import { STORAGE_KEYS } from '@/constants/storage'
 import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
 
 // Importar constantes
@@ -19,8 +21,9 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { CheckSquare, Calendar, User, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
+import { CheckSquare, Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
+import { type User } from '@/types/auth'
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
 import { CreateTaskModal } from '@/components/module/CreateTaskModal'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
@@ -85,7 +88,7 @@ function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: (
 
         {tarea.responsable_nombre && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <User className="h-3 w-3" />
+            <UserIcon className="h-3 w-3" />
             <span>{tarea.asignado_a_cliente ? `👤 ${tarea.contacto_cliente_nombre}` : tarea.responsable_nombre}</span>
           </div>
         )}
@@ -141,7 +144,7 @@ export default function TareasPage() {
   const [proyectos, setProyectos] = useProyectos()
   const [empresas] = useEmpresas()
   const [allContactos] = useContactos()
-  const [usuarios] = useState<import('@/types/auth').User[]>([])
+  const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
 
   // Modal nuevo proyecto
   const [showNewProject, setShowNewProject] = useState(false)

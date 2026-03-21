@@ -200,7 +200,7 @@ export const STORAGE_KEYS = {
 export const USUARIOS_PAGE = {
   titulo: 'Usuarios',
   descripcion: 'Gestiona los usuarios internos del sistema',
-  nuevoUsuario: 'Nuevo Usuario',
+  nuevoUsuario: 'Nuevo Colaborador',
   buscarPlaceholder: 'Buscar usuarios...',
   filtros: 'Filtros:',
   estado: 'Estado:',

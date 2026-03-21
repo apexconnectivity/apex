@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
+import { InputTextCase } from '@/components/ui/input-text-case'
+import { InputPhone } from '@/components/ui/input-phone'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
@@ -10,7 +12,7 @@ import { User, Role } from '@/types/auth'
 import { cn } from '@/lib/utils'
 import { ModalVariant } from '@/constants/modales'
 
-interface CreateUserModalProps {
+interface CreateColaboratorModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (user: Partial<User>, isNew: boolean) => void | Promise<void>
@@ -32,19 +34,19 @@ const ROLE_LABELS: Record<Role, string> = {
 }
 
 /**
- * CreateUserModal - Modal para crear/editar usuarios
+ * CreateColaboratorModal - Modal para crear/editar colaboradores (usuarios internos)
  */
-export function CreateUserModal({
+export function CreateColaboratorModal({
   open,
   onOpenChange,
   onSave,
   user,
   isSaving = false,
   errors = {},
-}: CreateUserModalProps) {
+}: CreateColaboratorModalProps) {
   const isEditing = !!user?.id
 
-  // Form data is now managed inside CreateUserModal
+  // Form data is now managed inside CreateColaboratorModal
   const [formData, setFormData] = useState<Partial<User>>({
     nombre: '',
     email: '',
@@ -89,13 +91,13 @@ export function CreateUserModal({
 
   return (
     <BaseModal open={open} onOpenChange={onOpenChange} size="md" variant={variant} showAccentBar>
-      <ModalHeader title={isEditing ? 'Editar Usuario' : 'Nuevo Usuario'} variant={variant} showIcon />
+      <ModalHeader title={isEditing ? 'Editar Colaborador' : 'Nuevo Colaborador'} variant={variant} showIcon />
 
       <ModalBody className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="user_nombre">Nombre completo *</Label>
-          <Input
-            id="user_nombre"
+          <Label htmlFor="colaborator_nombre">Nombre completo *</Label>
+          <InputTextCase
+            id="colaborator_nombre"
             value={formData.nombre || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
             placeholder="Juan Pérez"
@@ -105,9 +107,9 @@ export function CreateUserModal({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="user_email">Email *</Label>
+          <Label htmlFor="colaborator_email">Email *</Label>
           <Input
-            id="user_email"
+            id="colaborator_email"
             type="email"
             value={formData.email || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -118,12 +120,13 @@ export function CreateUserModal({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="user_telefono">Teléfono</Label>
-          <Input
-            id="user_telefono"
+          <Label htmlFor="colaborator_telefono">Teléfono</Label>
+          <InputPhone
+            id="colaborator_telefono"
             value={formData.telefono || ''}
-            onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
-            placeholder="+54 9 11 1234-5678"
+            onChange={(value) => setFormData(prev => ({ ...prev, telefono: value }))}
+            placeholder="55 1234 5678"
+            error={errors.telefono}
           />
         </div>
 

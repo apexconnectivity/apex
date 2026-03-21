@@ -3,6 +3,11 @@
 import { useMemo } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useEmpresas, useProyectos, useTareas, useTickets, useContactos, useArchivos, useReuniones, useContratos } from "@/lib/data"
+import { type Tarea } from "@/types/tareas"
+import { type ContratoSoporte, type Ticket } from "@/types/soporte"
+import { type Reunion } from "@/types/calendario"
+import { type Empresa } from "@/types/crm"
+import { type Archivo } from "@/types/archivos"
 import { ModuleContainer } from "@/components/module/ModuleContainer"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -376,7 +381,7 @@ function ProyectosStats({ proyectos }: ProyectosStatsProps) {
 // ============================================================================
 
 interface TareasStatsProps {
-  tareas: ReturnType<typeof useTareas>[0]
+  tareas: Tarea[]
 }
 
 function TareasStats({ tareas }: TareasStatsProps) {
@@ -667,13 +672,13 @@ function TicketsStats({ tickets }: TicketsStatsProps) {
 // ============================================================================
 
 interface ResumenGeneralProps {
-  empresas: ReturnType<typeof useEmpresas>[0]
-  proyectos: ReturnType<typeof useProyectos>[0]
-  tareas: ReturnType<typeof useTareas>[0]
-  tickets: ReturnType<typeof useTickets>[0]
-  archivos: ReturnType<typeof useArchivos>[0]
-  reuniones: ReturnType<typeof useReuniones>[0]
-  contratos: ReturnType<typeof useContratos>[0]
+  empresas: Empresa[]
+  proyectos: unknown[]
+  tareas: Tarea[]
+  tickets: Ticket[]
+  archivos: Archivo[]
+  reuniones: Reunion[]
+  contratos: ContratoSoporte[]
 }
 
 function ResumenGeneral({
@@ -923,7 +928,8 @@ export default function EstadisticasPage() {
   // Data hooks
   const [empresas] = useEmpresas()
   const [proyectos] = useProyectos()
-  const [tareas] = useTareas()
+  const tareasHook = useTareas()
+  const tareas = tareasHook.tasks
   const [tickets] = useTickets()
   const [contactos] = useContactos()
   const [archivos] = useArchivos()
