@@ -155,11 +155,12 @@ export function CreateUserModal({
         </div>
       </ModalBody>
 
-      <ModalFooter variant={variant}>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+      <ModalFooter variant={variant} layout="inline-between">
+        <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
           Cancelar
         </Button>
         <Button
+          className="flex-1"
           onClick={handleSave}
           disabled={isSaving || !formData.nombre || !formData.email || !formData.roles?.length}
         >
@@ -168,7 +169,7 @@ export function CreateUserModal({
               Guardando...
             </>
           ) : (
-            isEditing ? 'Guardar cambios' : 'Crear usuario'
+            'Guardar'
           )}
         </Button>
       </ModalFooter>

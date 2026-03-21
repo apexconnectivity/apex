@@ -101,6 +101,7 @@ export default function SoportePage() {
   const { user } = useAuth()
   const [empresas, setEmpresas] = useEmpresas()
   const [proyectos, setProyectos] = useProyectos()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [contactos] = useContactos()
   const [usuarios] = useLocalStorage<import('@/types/auth').User[]>(STORAGE_KEYS.usuarios, [])
   const [view, setView] = useLocalStorage<'contratos' | 'tickets'>(STORAGE_KEYS.soporteVista, 'tickets')

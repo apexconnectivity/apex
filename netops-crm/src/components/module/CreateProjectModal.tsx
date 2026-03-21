@@ -410,18 +410,18 @@ export function CreateProjectModal({
           </div>
         </ModalBody>
 
-        <ModalFooter variant={variant} showAccent>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <ModalFooter variant={variant} layout="inline-between">
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || !formData.nombre?.trim()}>
+          <Button className="flex-1" onClick={handleSave} disabled={isSaving || !formData.nombre?.trim()}>
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Guardando...
               </>
             ) : (
-              isEditing ? 'Guardar cambios' : 'Crear Proyecto'
+              'Guardar'
             )}
           </Button>
         </ModalFooter>

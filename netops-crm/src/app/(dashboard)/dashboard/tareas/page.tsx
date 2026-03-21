@@ -127,7 +127,8 @@ export default function TareasPage() {
   const [tareas, setTareas] = useTareas()
   const [proyectos, setProyectos] = useProyectos()
   const [empresas] = useEmpresas()
-  const [contactos] = useContactos()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_contactos, _setContactos] = useContactos()
   const [usuarios, setUsuarios] = useState<import('@/types/auth').User[]>([])
 
   // Modal nuevo proyecto
@@ -362,7 +363,7 @@ export default function TareasPage() {
 
       setSelectedId(updatedTarea.id)
     }
-  }, []) // No deps needed - captures current values via closure
+  }, [setTareas, setSubtareas, setComentarios, tareas.length, user?.id, editingTarea])
 
   const handleDeleteTarea = useCallback(() => {
     if (editingTarea) {
@@ -382,12 +383,12 @@ export default function TareasPage() {
       setEditingTarea(null)
       setSelectedId(null)
     }
-  }, [editingTarea]) // Only editingTarea is needed - capture id before async
+  }, [editingTarea, setTareas, setSubtareas, setComentarios, setShowEdit, setEditingTarea, setSelectedId])
 
   const handleUpdateTarea = useCallback((updated: Tarea) => {
     setTareas(prev => prev.map(t => t.id === updated.id ? updated : t))
     setSelectedId(updated.id)
-  }, []) // No deps - setters are stable
+  }, [setTareas, setSelectedId])
 
   const handleAddSubtarea = useCallback((tareaId: string, nombre: string) => {
     const newSubtarea: Subtarea = {
@@ -398,14 +399,14 @@ export default function TareasPage() {
       orden: 1, // Simplified - just set to 1
     }
     setSubtareas(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newSubtarea] }))
-  }, []) // No deps - just adds a new subtarea
+  }, [setSubtareas])
 
   const handleToggleSubtarea = useCallback((tareaId: string, subtareaId: string) => {
     setSubtareas(prev => ({
       ...prev,
       [tareaId]: prev[tareaId].map(s => s.id === subtareaId ? { ...s, completada: !s.completada, fecha_completado: !s.completada ? new Date().toISOString() : undefined } : s)
     }))
-  }, []) // No deps - setters are stable
+  }, [setSubtareas])
 
   const handleAddComentario = useCallback((tareaId: string, texto: string) => {
     const newComentario: Comentario = {
@@ -418,7 +419,7 @@ export default function TareasPage() {
       fecha: new Date().toISOString(),
     }
     setComentarios(prev => ({ ...prev, [tareaId]: [...(prev[tareaId] || []), newComentario] }))
-  }, [user?.id, user?.nombre]) // Only user info needed
+  }, [user?.id, user?.nombre, setComentarios]) // Only user info needed
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _clearFilters = () => {

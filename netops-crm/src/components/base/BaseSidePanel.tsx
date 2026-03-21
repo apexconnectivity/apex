@@ -4,6 +4,7 @@ import * as React from "react"
 import { X, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSidePanelVariantColor, type SidePanelVariant } from "@/constants/paneles"
+import { motion, AnimatePresence } from "framer-motion"
 
 export type SidePanelPosition = "left" | "right"
 
@@ -74,89 +75,104 @@ export function BaseSidePanel({
     }
   }
 
-  const actualWidth = width.includes('[') ? width.match(/\[(.*?)\]/)?.[1] || '500px' : '500px'
+  const actualWidth = width.includes('[') ? width.match(/\[(.*?)\]/)?.[1] || '25vw' : '25vw'
 
   return (
-    <div
-      className={cn(
-        "h-full overflow-hidden shrink-0",
-        "transition-all duration-500 ease-spring-out will-change-[margin-right,opacity]",
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
-        className
-      )}
-      style={{ 
-        width: actualWidth,
-        marginRight: isOpen ? '0px' : `-${actualWidth}`
-      }}
-    >
-      <div
-        className={cn(
-          "flex flex-col h-full w-full",
-          "bg-slate-900/40 backdrop-blur-xl border-l border-border/50 shadow-2xl",
-          positionClasses[position].container,
-          variantColors.border,
-          showAccentBar && "border-l-4",
-          "transition-transform duration-500 ease-spring-out will-change-transform",
-          isOpen ? "translate-x-0 scale-100" : "translate-x-full scale-95"
-        )}
-      >
-        {/* Header */}
-        {(title || showCloseButton || showBackButton) && (
-          <div className={cn(
-            "flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0",
-            headerClassName
-          )}>
-            <div className="flex items-center gap-3 min-w-0">
-              {showBackButton && onBack && (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="p-1.5 rounded-lg hover:bg-white/5 transition-colors shrink-0"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-              )}
-              {title && (
-                <h2 className="text-lg font-semibold truncate tracking-tight">{title}</h2>
-              )}
+    <AnimatePresence mode="sync">
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          className={cn(
+            "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm",
+            className
+          )}
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ x: position === "right" ? "100%" : "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: position === "right" ? "100%" : "-100%" }}
+            transition={{
+              type: "spring",
+              damping: 40,
+              stiffness: 200,
+              mass: 1.2,
+              restDelta: 1,
+              restSpeed: 1
+            }}
+            className={cn(
+              "absolute top-0 bottom-0 flex flex-col",
+              position === "right" ? "right-0" : "left-0",
+              "bg-slate-900/95 backdrop-blur-xl border-l border-border/50 shadow-2xl",
+              positionClasses[position].container,
+              variantColors.border,
+              showAccentBar && (position === "right" ? "border-l-4" : "border-r-4")
+            )}
+            style={{ width: actualWidth }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            {(title || showCloseButton || showBackButton) && (
+              <div className={cn(
+                "flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0",
+                headerClassName
+              )}>
+                <div className="flex items-center gap-3 min-w-0">
+                  {showBackButton && onBack && (
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="p-1.5 rounded-lg hover:bg-white/5 transition-colors shrink-0"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  {title && (
+                    <h2 className="text-lg font-semibold truncate tracking-tight">{title}</h2>
+                  )}
+                </div>
+
+                {showCloseButton && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className={cn(
+                      "p-2 rounded-lg hover:bg-white/10 transition-all active:scale-90 shrink-0",
+                      positionClasses[position].button
+                    )}
+                  >
+                    <X className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Body */}
+            <div className={cn(
+              "flex-1 overflow-y-auto custom-scrollbar",
+              contentClassName
+            )}>
+              {children}
             </div>
 
-            {showCloseButton && (
-              <button
-                type="button"
-                onClick={onClose}
+            {/* Footer */}
+            {footer && (
+              <div
                 className={cn(
-                  "p-2 rounded-lg hover:bg-white/10 transition-all active:scale-90 shrink-0",
-                  positionClasses[position].button
+                  "px-6 py-4 shrink-0 bg-slate-900/70 backdrop-blur-md",
+                  showFooterBorder && "border-t border-white/5"
                 )}
               >
-                <X className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-              </button>
+                {footer}
+              </div>
             )}
-          </div>
-        )}
-
-        {/* Body */}
-        <div className={cn(
-          "flex-1 overflow-y-auto custom-scrollbar",
-          contentClassName
-        )}>
-          {children}
-        </div>
-
-        {/* Footer */}
-        {footer && (
-          <div
-            className={cn(
-              "px-6 py-4 shrink-0 bg-slate-900/70 backdrop-blur-md",
-              showFooterBorder && "border-t border-white/5"
-            )}
-          >
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 

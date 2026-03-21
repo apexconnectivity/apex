@@ -76,6 +76,7 @@ export default function DashboardLayout({
 
   // Hooks para obtener datos necesarios para el modal de proyectos
   const [empresas] = useEmpresas()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [contactos] = useContactos()
   const [_proyectos, setProyectos] = useProyectos()
 

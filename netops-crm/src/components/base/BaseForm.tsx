@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback } from "react"
+import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import type { FormErrors } from "@/types/common"
@@ -73,7 +73,7 @@ export function FormHeader({
   className
 }: FormHeaderComponentProps) {
   if (!title && !globalError && !globalSuccess) return null
-  
+
   return (
     <div className={cn("space-y-1 mb-6", className)}>
       {title && (
@@ -82,14 +82,14 @@ export function FormHeader({
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
-      
+
       {globalError && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {globalError}
         </div>
       )}
-      
+
       {globalSuccess && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -106,27 +106,27 @@ export function FormHeader({
 export const FormField = React.forwardRef<
   HTMLDivElement,
   FormFieldProps & React.HTMLAttributes<HTMLDivElement>
->(({ 
-  name, 
-  label, 
-  required, 
-  error, 
+>(({
+  name,
+  label,
+  required,
+  error,
   helperText,
   disabled,
   showCharCount,
   maxLength,
   className,
   children,
-  ...props 
+  ...props
 }, ref) => {
   const child = React.Children.only(children) as React.ReactElement
-  
+
   // Obtener valor para char count
   const value = child.props?.value as string | undefined
   const defaultValue = child.props?.defaultValue as string | undefined
   const currentValue = value !== undefined ? value : defaultValue || ""
   const charCount = String(currentValue).length
-  
+
   const childWithProps = React.cloneElement(child, {
     id: child.props.id || name,
     name: child.props.name || name,
@@ -134,11 +134,11 @@ export const FormField = React.forwardRef<
     "aria-invalid": !!error,
     "aria-describedby": error ? `${name}-error` : helperText ? `${name}-helper` : undefined,
   })
-  
+
   return (
     <div ref={ref} className={cn("space-y-1.5", className)} {...props}>
       {label && (
-        <label 
+        <label
           htmlFor={name}
           className={cn(
             "text-sm font-medium text-foreground",
@@ -148,16 +148,16 @@ export const FormField = React.forwardRef<
           {label}
         </label>
       )}
-      
+
       {childWithProps}
-      
+
       {error && (
         <p id={`${name}-error`} className="text-xs text-red-400 flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>
       )}
-      
+
       {(helperText || (showCharCount && maxLength)) && (
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           {helperText && <span>{helperText}</span>}
@@ -189,7 +189,7 @@ export function FormRow({ children, columns = 2, className }: FormRowProps) {
     3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
     4: "grid-cols-2 md:grid-cols-4"
   }
-  
+
   return (
     <div className={cn("grid gap-4", gridClasses[columns], className)}>
       {children}
@@ -218,11 +218,11 @@ export function FormGroup({
   className
 }: FormGroupProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-  
+
   return (
     <div className={cn("space-y-4", className)}>
       {title && (
-        <div 
+        <div
           className={cn(
             "flex items-center gap-2 cursor-pointer",
             collapsible && "select-none"
@@ -242,7 +242,7 @@ export function FormGroup({
           </div>
         </div>
       )}
-      
+
       {(!collapsible || isOpen) && (
         <div className="space-y-4 pl-4 border-l-2 border-border/50">
           {children}
@@ -290,25 +290,25 @@ export function FormFooter({
     end: "justify-end",
     between: "justify-between"
   }
-  
+
   const variantClasses = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
     primary: "bg-cyan-500 text-white hover:bg-cyan-600",
     destructive: "bg-red-500 text-white hover:bg-red-600"
   }
-  
+
   const sizeClasses = {
     sm: "px-3 py-1.5 text-xs",
     md: "px-4 py-2 text-sm",
     lg: "px-6 py-3 text-base"
   }
-  
+
   const isLoading = status === "submitting"
-  
+
   return (
     <div className={cn("flex items-center gap-3 pt-4 mt-4 border-t border-border/50", alignClasses[align], className)}>
       {children}
-      
+
       {showCancelButton && onCancel && (
         <button
           type="button"
@@ -319,7 +319,7 @@ export function FormFooter({
           {cancelText}
         </button>
       )}
-      
+
       {showSubmitButton && (
         <button
           type="submit"
@@ -369,14 +369,14 @@ export function BaseForm<T extends Record<string, any>>({
 }: BaseFormProps<T>) {
   const [formData, setFormData] = useState<Partial<T>>(values || defaultValues || {})
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
-  
+
   // Ref para tracking del último valor sincronizado
   const prevValuesRef = React.useRef<string | undefined>(undefined)
-  
+
   // Actualizar cuando cambian los valores externos (usando stringify para comparación estable)
   React.useEffect(() => {
     const currentValuesStr = values ? JSON.stringify(values) : undefined
-    
+
     // Solo actualizar si el valor realmente cambió (comparación profunda)
     if (currentValuesStr !== prevValuesRef.current) {
       if (values) {
@@ -385,12 +385,12 @@ export function BaseForm<T extends Record<string, any>>({
       prevValuesRef.current = currentValuesStr
     }
   }, [values])
-  
+
   // Manejar cambio de campo - usar useCallback estable que no cause re-renders innecesarios
   const handleChange = React.useCallback((field: string, value: unknown) => {
     setFormData(prevData => {
       const newData = { ...prevData, [field]: value }
-      
+
       // Validación local sin causar re-render adicional
       if (localErrors[field]) {
         setLocalErrors(prevErrors => {
@@ -399,50 +399,50 @@ export function BaseForm<T extends Record<string, any>>({
           return next
         })
       }
-      
+
       // Notificar al padre fuera del callback de setState
       if (onChange) {
         // Usar timeout para evitar batching de React
         setTimeout(() => onChange(newData), 0)
       }
-      
+
       return newData
     })
   }, [localErrors, onChange])
-  
+
   // Manejar submit
   const handleSubmit = React.useCallback((e: React.FormEvent) => {
     e.preventDefault()
     onSubmit(formData as T)
   }, [formData, onSubmit])
-  
+
   // Grid classes para layout horizontal
   const horizontalGridClasses: Record<2 | 3 | 4, string> = {
     2: "grid-cols-1 md:grid-cols-2",
     3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
     4: "grid-cols-2 md:grid-cols-4"
   }
-  
-  const gridClass = layout === "horizontal" && columns > 1 
+
+  const gridClass = layout === "horizontal" && columns > 1
     ? horizontalGridClasses[columns as 2 | 3 | 4]
     : ""
-  
+
   return (
     <form onSubmit={handleSubmit} className={cn("space-y-4", className)}>
-      <FormHeader 
+      <FormHeader
         title={title}
         description={description}
         globalError={globalError}
         globalSuccess={globalSuccess}
       />
-      
+
       <div className={cn(
         layout === "horizontal" && columns > 1 && "grid gap-4",
         gridClass
       )}>
         {children}
       </div>
-      
+
       {(showSubmitButton || showCancelButton) && (
         <FormFooter
           status={status}

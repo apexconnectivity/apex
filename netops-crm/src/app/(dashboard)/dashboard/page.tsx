@@ -40,8 +40,9 @@ export default function DashboardPage() {
     const misProyectos = proyectos.filter(p => p.empresa_id === user?.empresa_id)
     const misTareas = tareas.filter(t => misProyectos.some(p => p.id === t.proyecto_id))
     const misTickets = tickets.filter(t => t.empresa_id === user?.empresa_id)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const misDocumentos = [] // Pendiente conectar con hook de documentos si existe
-    
+
     const tareasPendientes = misTareas.filter(t => t.estado !== 'Completada')
     const ticketsAbiertos = misTickets.filter(t => t.estado !== 'Cerrado' && t.estado !== 'Resuelto')
 

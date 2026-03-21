@@ -184,18 +184,18 @@ export function CreateContactoModal({
         </div>
       </ModalBody>
 
-      <ModalFooter variant={variant}>
-        <Button variant="outline" onClick={handleClose}>
+      <ModalFooter variant={variant} layout="inline-between">
+        <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button onClick={handleSave} disabled={isSaving || !formData.nombre?.trim() || !formData.email?.trim()}>
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving || !formData.nombre?.trim() || !formData.email?.trim()}>
           {isSaving ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               Guardando...
             </>
           ) : (
-            isEditing ? 'Guardar cambios' : 'Crear Contacto'
+            'Guardar'
           )}
         </Button>
       </ModalFooter>

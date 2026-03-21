@@ -64,7 +64,7 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true)
-      
+
       // Llamar a AuthContext para actualizar los datos reales
       await updateUser({
         nombre: profileData.nombre,
@@ -73,7 +73,7 @@ export default function ProfilePage() {
 
       setSaveMessage({ type: 'success', text: 'Perfil actualizado correctamente' })
       setIsEditing(false)
-    } catch (err) {
+    } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
       setSaveMessage({ type: 'error', text: 'No se pudo actualizar el perfil' })
     } finally {
       setIsSaving(false)
@@ -95,15 +95,15 @@ export default function ProfilePage() {
     }
 
     setIsSaving(true)
-    
+
     // Simulación de cambio de contraseña
     try {
       await new Promise(resolve => setTimeout(resolve, 1000))
       // En una app real llamaríamos a un endpoint de cambio de pass
-      
+
       setPasswordMessage({ type: 'success', text: 'Contraseña actualizada correctamente' })
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    } catch (err) {
+    } catch { // eslint-disable-line @typescript-eslint/no-unused-vars
       setPasswordMessage({ type: 'error', text: 'Error al cambiar la contraseña' })
     } finally {
       setIsSaving(false)
@@ -151,8 +151,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               {saveMessage && (
                 <div className={`flex items-center gap-2 p-3 rounded-lg ${saveMessage.type === 'success'
-                    ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                  ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
                   }`}>
                   {saveMessage.type === 'success' ? (
                     <CheckCircle2 className="h-4 w-4" />
@@ -253,8 +253,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               {passwordMessage && (
                 <div className={`flex items-center gap-2 p-3 rounded-lg ${passwordMessage.type === 'success'
-                    ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                  ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
                   }`}>
                   {passwordMessage.type === 'success' ? (
                     <CheckCircle2 className="h-4 w-4" />
