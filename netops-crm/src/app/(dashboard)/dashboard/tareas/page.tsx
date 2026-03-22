@@ -35,8 +35,18 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { cn } from '@/lib/utils'
 
-// Lista de usuarios (se populará con datos del módulo de usuarios)
-const USUARIOS: { id: string; nombre: string; rol: string }[] = []
+// Transformar usuarios del formato User al formato requerido por CreateTaskModal
+// Filtra solo usuarios internos (colaboradores) para el selector de responsable
+const transformUsuarios = (users: User[]): { id: string; nombre: string; rol: string }[] => {
+  const ROLES_INTERNOS = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
+  return users
+    .filter(u => u.activo && u.roles.some(r => ROLES_INTERNOS.includes(r))) // Solo usuarios internos activos
+    .map(u => ({
+      id: u.id,
+      nombre: u.nombre,
+      rol: u.roles[0] || 'cliente' // Primer rol como string
+    }))
+}
 
 function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
@@ -411,7 +421,7 @@ export default function TareasPage() {
               onClose={() => setSelectedId(null)}
               tarea={selected}
               proyectos={proyectos}
-              usuarios={USUARIOS}
+              usuarios={transformUsuarios(usuarios)}
               subtareas={subtareasRecord[selected.id] || []}
               comentarios={comentariosRecord[selected.id] || []}
               onUpdate={(updated) => updateTask(updated.id, updated)}
@@ -497,7 +507,7 @@ export default function TareasPage() {
                 <SelectTrigger className="w-44 h-9 bg-background/50 border-border/50"><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  {USUARIOS.map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
+                  {transformUsuarios(usuarios).map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -640,7 +650,7 @@ export default function TareasPage() {
         open={showCreate}
         onOpenChange={setShowCreate}
         proyectos={proyectos}
-        usuarios={USUARIOS}
+        usuarios={transformUsuarios(usuarios)}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         onSave={handleSaveTarea}
         onCreateProject={() => setShowNewProject(true)}
@@ -650,7 +660,7 @@ export default function TareasPage() {
         open={showEdit}
         onOpenChange={setShowEdit}
         proyectos={proyectos}
-        usuarios={USUARIOS}
+        usuarios={transformUsuarios(usuarios)}
         currentUser={{ id: user?.id || '1', nombre: user?.nombre || 'Usuario' }}
         tarea={editingTarea}
         subtareas={editingTarea ? subtareasRecord[editingTarea.id] || [] : []}

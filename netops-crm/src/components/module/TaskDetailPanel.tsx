@@ -5,6 +5,7 @@ import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, 
 import { Button } from '@/components/ui/button'
 import { ActivityFeed } from '@/components/ui/activity-feed'
 import { SubtaskList } from '@/components/ui/subtask-list'
+import { TextDescriptionComments } from '@/components/ui/text-description-comments'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { DependencyBadge } from '@/components/ui/dependencies-selector'
@@ -104,8 +105,8 @@ export function TaskDetailPanel({
   }
 
   // Check if task is overdue
-  const isOverdue = tarea?.fecha_vencimiento && 
-    new Date(tarea.fecha_vencimiento) < new Date() && 
+  const isOverdue = tarea?.fecha_vencimiento &&
+    new Date(tarea.fecha_vencimiento) < new Date() &&
     tarea.estado !== 'Completada'
 
   if (!tarea) return null
@@ -151,9 +152,9 @@ export function TaskDetailPanel({
 
         {/* Descripción */}
         {tarea.descripcion && (
-          <p className="text-sm bg-muted/30 p-3 rounded-lg text-muted-foreground">
-            {tarea.descripcion}
-          </p>
+          <div className="bg-muted/30 p-3 rounded-lg">
+            <TextDescriptionComments text={tarea.descripcion} className="text-sm text-muted-foreground" />
+          </div>
         )}
 
         {/* Grid de información mejorada */}
@@ -221,7 +222,7 @@ export function TaskDetailPanel({
                 </span>
               </div>
               <span className="text-sm font-medium">
-                {tarea.asignado_a_cliente 
+                {tarea.asignado_a_cliente
                   ? (tarea.contacto_cliente_nombre || 'Cliente')
                   : (tarea.responsable_nombre || 'Sin asignar')
                 }

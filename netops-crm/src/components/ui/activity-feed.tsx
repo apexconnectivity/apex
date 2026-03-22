@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { TextDescriptionComments } from '@/components/ui/text-description-comments'
 import { MessageSquare, Plus, Clock } from 'lucide-react'
 
 // Generic comment type that can be used across different entity types
@@ -104,7 +105,7 @@ export function ActivityFeed({
                   </span>
                 )}
               </div>
-              <p className="text-sm">{comment.comentario}</p>
+              <TextDescriptionComments text={comment.comentario} className="text-sm" />
             </div>
           ))
         )}

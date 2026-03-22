@@ -4,18 +4,15 @@ import { useState, useEffect, useRef } from 'react'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { EmptyStateModal } from '@/components/base/EmptyStateModal'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { InputTextCase } from '@/components/ui/input-text-case'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { SubtaskList } from '@/components/ui/subtask-list'
-import { CommentInput } from '@/components/ui/comment-input'
 import { DependenciesSelector } from '@/components/ui/dependencies-selector'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Trash2, PlusCircle, User, Users, FolderOpen } from 'lucide-react'
-import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, EstadoTarea, CATEGORIAS, PRIORIDADES, ESTADOS, Dependencia } from '@/types/tareas'
+import { Trash2, User, Users, FolderOpen } from 'lucide-react'
+import { Tarea, Subtarea, Comentario, CategoriaTarea, PrioridadTarea, CATEGORIAS, PRIORIDADES, Dependencia } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
 import { Contacto } from '@/types/crm'
 import { useContactos } from '@/hooks/useContactos'
@@ -135,7 +132,13 @@ function TaskFormFields({
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Descripción</Label>
         <Textarea
           value={tarea.descripcion || ''}
-          onChange={(e) => setTarea({ ...tarea, descripcion: e.target.value })}
+          onChange={(e) => {
+            // Formatear texto: primera letra de cada párrafo en mayúscula
+            const text = e.target.value
+            const paragraphs = text.split(/\n+/)
+            const formatted = paragraphs.map(p => p.trim() ? p.charAt(0).toUpperCase() + p.slice(1) : p).join('\n')
+            setTarea({ ...tarea, descripcion: formatted })
+          }}
           placeholder="Detalla los pasos o requerimientos de la tarea..."
           rows={3}
           className="bg-input/50 border-border/50 focus:ring-primary/20 transition-all resize-none"
@@ -150,10 +153,10 @@ function TaskFormFields({
           </Label>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <input 
-                type="radio" 
-                id="assign-internal" 
-                name="assign-type" 
+              <input
+                type="radio"
+                id="assign-internal"
+                name="assign-type"
                 checked={!tarea.asignado_a_cliente}
                 onChange={() => setTarea({ ...tarea, asignado_a_cliente: false, contacto_cliente_id: '', contacto_cliente_nombre: '' })}
                 className="w-4 h-4 accent-primary"
@@ -161,10 +164,10 @@ function TaskFormFields({
               <Label htmlFor="assign-internal" className="text-xs font-medium cursor-pointer">Interno</Label>
             </div>
             <div className="flex items-center gap-2">
-              <input 
-                type="radio" 
-                id="assign-client" 
-                name="assign-type" 
+              <input
+                type="radio"
+                id="assign-client"
+                name="assign-type"
                 checked={tarea.asignado_a_cliente}
                 onChange={() => setTarea({ ...tarea, asignado_a_cliente: true, responsable_id: '', responsable_nombre: '' })}
                 className="w-4 h-4 accent-primary"
@@ -196,9 +199,9 @@ function TaskFormFields({
         ) : (
           <div className="space-y-2">
             <Label className="text-xs font-semibold text-muted-foreground">Contacto Cliente</Label>
-            <Select 
-              value={tarea.contacto_cliente_id || ''} 
-              onValueChange={(v) => setTarea({ ...tarea, contacto_cliente_id: v, contacto_cliente_nombre: contactos.find(c => c.id === v)?.nombre })} 
+            <Select
+              value={tarea.contacto_cliente_id || ''}
+              onValueChange={(v) => setTarea({ ...tarea, contacto_cliente_id: v, contacto_cliente_nombre: contactos.find(c => c.id === v)?.nombre })}
               disabled={disabled || !tarea.proyecto_id}
             >
               <SelectTrigger className="bg-background border-border/50">
@@ -403,13 +406,7 @@ export function CreateTaskModal({
     setSubtareas(subtareas.map((s, i) => i === index ? { ...s, completada: !s.completada } : s))
   }
 
-  const handleAddComment = (comentario: string) => {
-    setComentarios([...comentarios, { comentario, usuario_nombre: currentUser.nombre }])
-  }
 
-  const handleRemoveComment = (index: number) => {
-    setComentarios(comentarios.filter((_, i) => i !== index))
-  }
 
   const hasProyectos = proyectos.length > 0
   const canSave = tareaData.nombre && tareaData.proyecto_id && hasProyectos
@@ -447,20 +444,20 @@ export function CreateTaskModal({
       )}
 
       <BaseModal
-      open={open}
-      onOpenChange={onOpenChange}
-      size="lg"
-      variant={variant}
-      showAccentBar
-    >
-      <ModalHeader
-        title={isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}
+        open={open}
+        onOpenChange={onOpenChange}
+        size="lg"
         variant={variant}
-        showIcon
-      />
+        showAccentBar
+      >
+        <ModalHeader
+          title={isEditMode ? 'Editar Tarea' : 'Nueva Tarea'}
+          variant={variant}
+          showIcon
+        />
 
-      <ModalBody>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <ModalBody>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
               <TaskFormFields
                 tarea={tareaData}
@@ -470,7 +467,7 @@ export function CreateTaskModal({
                 contactos={allContactos || []}
               />
             </div>
-            
+
             <div className="lg:col-span-2 space-y-8 lg:border-l lg:pl-8 border-border/50">
               <div className="space-y-4">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -504,33 +501,42 @@ export function CreateTaskModal({
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Users className="w-4 h-4" /> Comentarios
                 </Label>
-                <CommentInput
-                  comments={comentarios}
-                  onAdd={handleAddComment}
-                  onRemove={handleRemoveComment}
-                  currentUserName={currentUser.nombre}
+                <Textarea
+                  value={comentarios.map(c => c.comentario).join('\n\n')}
+                  onChange={(e) => {
+                    const text = e.target.value
+                    const commentsArray = text.split('\n\n').filter(c => c.trim())
+                    const formatted = commentsArray.map(c => {
+                      const paragraphs = c.split(/\n+/)
+                      return paragraphs.map(p => p.trim() ? p.charAt(0).toUpperCase() + p.slice(1) : p).join('\n')
+                    })
+                    setComentarios(formatted.map(c => ({ comentario: c, usuario_nombre: currentUser.nombre })))
+                  }}
+                  placeholder="Agregar comentarios..."
+                  rows={3}
+                  className="bg-input/50 border-border/50 focus:ring-primary/20 transition-all resize-none"
                 />
               </div>
             </div>
           </div>
-      </ModalBody>
+        </ModalBody>
 
-      <ModalFooter variant={variant} layout="inline-between">
-        <div className="flex-1">
-          {isEditMode && onDelete && (
-            <Button variant="ghost" onClick={onDelete} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" /> Eliminar Tarea
+        <ModalFooter variant={variant} layout="inline-between">
+          <div className="flex-1">
+            {isEditMode && onDelete && (
+              <Button variant="ghost" onClick={onDelete} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" /> Eliminar Tarea
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={!canSave} className="min-w-[120px]">
+              {isEditMode ? 'Guardar Cambios' : 'Crear Tarea'}
             </Button>
-          )}
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!canSave} className="min-w-[120px]">
-            {isEditMode ? 'Guardar Cambios' : 'Crear Tarea'}
-          </Button>
-        </div>
-      </ModalFooter>
-    </BaseModal>
+          </div>
+        </ModalFooter>
+      </BaseModal>
     </>
   )
 }

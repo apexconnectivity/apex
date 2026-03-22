@@ -4,6 +4,7 @@ import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, User, Link2, FileTe
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { TextDescriptionComments } from '@/components/ui/text-description-comments'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { type Tarea, type EstadoTarea } from '@/types/tareas'
@@ -78,27 +79,27 @@ function getEstadoTextClass(estado: EstadoTarea): string {
  */
 function formatDate(dateString?: string, options?: Intl.DateTimeFormatOptions): string {
   if (!dateString) return ''
-  
+
   const date = new Date(dateString)
   const now = new Date()
   const tomorrow = new Date(now)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  
+
   // Si es hoy
   if (date.toDateString() === now.toDateString()) {
     return 'Hoy'
   }
-  
+
   // Si es mañana
   if (date.toDateString() === tomorrow.toDateString()) {
     return 'Mañana'
   }
-  
+
   // Si está vencida
   if (date < now) {
     return `Vencida (${Math.ceil((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))}d)`
   }
-  
+
   return date.toLocaleDateString('es-ES', options || { day: '2-digit', month: 'short' })
 }
 
@@ -107,11 +108,11 @@ function formatDate(dateString?: string, options?: Intl.DateTimeFormatOptions): 
  */
 function getDateColor(dateString?: string): string {
   if (!dateString) return 'text-muted-foreground'
-  
+
   const date = new Date(dateString)
   const now = new Date()
   const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays < 0) return 'text-red-400' // Vencida
   if (diffDays === 0) return 'text-red-400 font-medium' // Hoy
   if (diffDays <= 2) return 'text-amber-400' // Muy próximo
@@ -148,10 +149,10 @@ export function TaskCard({
 }: TaskCardProps) {
   const hasDependencies = showDependencies && tarea.dependencias && tarea.dependencias.length > 0
   const isCompleted = tarea.estado === 'Completada'
-  
+
   // Determinar si la fecha está vencida
-  const isOverdue = tarea.fecha_vencimiento && 
-    new Date(tarea.fecha_vencimiento) < new Date() && 
+  const isOverdue = tarea.fecha_vencimiento &&
+    new Date(tarea.fecha_vencimiento) < new Date() &&
     !isCompleted
 
   // ========================================================================
@@ -180,7 +181,7 @@ export function TaskCard({
           tarea.categoria === 'Administrativa' && 'bg-amber-500',
           tarea.categoria === 'General' && 'bg-slate-500',
         )} />
-        
+
         {/* Contenido */}
         <div className="pl-2 space-y-2">
           {/* Header: Prioridad + Estado */}
@@ -188,7 +189,7 @@ export function TaskCard({
             <StatusBadge status={tarea.prioridad} type="prioridad" />
             {getEstadoIcon(tarea.estado, 'h-4 w-4')}
           </div>
-          
+
           {/* Título */}
           <h4 className={cn(
             'text-sm font-medium line-clamp-2 leading-tight',
@@ -196,7 +197,7 @@ export function TaskCard({
           )}>
             {tarea.nombre}
           </h4>
-          
+
           {/* Meta info */}
           <div className="space-y-1.5">
             {/* Fecha */}
@@ -209,7 +210,7 @@ export function TaskCard({
                 <span>{formatDate(tarea.fecha_vencimiento)}</span>
               </div>
             )}
-            
+
             {/* Responsable o Cliente */}
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {tarea.asignado_a_cliente ? (
@@ -225,7 +226,7 @@ export function TaskCard({
               ) : null}
             </div>
           </div>
-          
+
           {/* Footer: indicadores adicionales */}
           <div className="flex items-center justify-between pt-1 border-t border-border/30">
             <div className="flex items-center gap-2">
@@ -248,7 +249,7 @@ export function TaskCard({
                 </div>
               )}
             </div>
-            
+
             {/* Botón completar rápido */}
             {!isCompleted && onComplete && (
               <Button
@@ -300,7 +301,7 @@ export function TaskCard({
         {isCompleted && (
           <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
         )}
-        
+
         {/* Contenido */}
         <div className="flex-1 min-w-0">
           <p className={cn(
@@ -323,7 +324,7 @@ export function TaskCard({
             )}
           </div>
         </div>
-        
+
         {/* Badges */}
         <div className="flex items-center gap-1.5 shrink-0">
           <StatusBadge status={tarea.prioridad} type="prioridad" />
@@ -361,7 +362,7 @@ export function TaskCard({
             {tarea.nombre}
           </h4>
         </div>
-        
+
         {/* Acciones rápidas */}
         {!isCompleted && onComplete && (
           <Button
@@ -381,9 +382,9 @@ export function TaskCard({
 
       {/* Descripción (si existe y no es muy larga) */}
       {tarea.descripcion && tarea.descripcion.length < 100 && (
-        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-          {tarea.descripcion}
-        </p>
+        <div className="mb-3 line-clamp-2">
+          <TextDescriptionComments text={tarea.descripcion} className="text-xs text-muted-foreground" />
+        </div>
       )}
 
       {/* Badges de estado */}
@@ -469,7 +470,7 @@ export function TaskCard({
             </div>
           )}
         </div>
-        
+
         {/* Indicador de drag (Kanban) */}
         <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-50 transition-opacity cursor-grab" />
       </div>
