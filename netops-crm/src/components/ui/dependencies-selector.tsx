@@ -108,15 +108,6 @@ export function DependenciesSelector({
     onChange(dependencies.filter(d => d.tarea_id !== tareaId))
   }
 
-  // Cambiar tipo de dependencia
-  const handleChangeType = (tareaId: string, newType: TipoDependencia) => {
-    onChange(dependencies.map(d => 
-      d.tarea_id === tareaId 
-        ? { ...d, tipo: newType, dias_desplazamiento: newType === 'bloqueante' ? undefined : d.dias_desplazamiento }
-        : d
-    ))
-  }
-
   // Cambiar días de desplazamiento
   const handleChangeDays = (tareaId: string, days: string) => {
     onChange(dependencies.map(d => 

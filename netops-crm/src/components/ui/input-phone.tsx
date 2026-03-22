@@ -29,7 +29,6 @@ interface InputPhoneProps extends Omit<InputProps, "onChange"> {
 export function InputPhone({
   label,
   error,
-  className,
   value,
   onChange,
   placeholder = "55 1234 5678",

@@ -26,10 +26,6 @@ const extendedStatusConfig: Record<string, { color: string; bg: string; label: s
   confirmada: { color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Confirmada' },
   tentativa: { color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Tentativa' },
 
-  // Estados técnicos
-  soporte_tecnico: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Soporte Técnico' },
-  tecnica: { color: 'text-purple-400', bg: 'bg-purple-500/15', label: 'Técnica' },
-
   // Tipos de soporte
   soporte_24x7: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Soporte 24x7' },
   _24x7: { color: 'text-red-400', bg: 'bg-red-500/15', label: 'Soporte 24x7' },

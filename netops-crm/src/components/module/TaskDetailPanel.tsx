@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { CheckSquare, Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil, Link2, Users, FolderOpen } from 'lucide-react'
+import { Calendar, User, AlertCircle, CheckCircle2, Circle, Clock, Pencil, Link2, Users, FolderOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ActivityFeed } from '@/components/ui/activity-feed'
 import { SubtaskList } from '@/components/ui/subtask-list'
@@ -9,7 +9,7 @@ import { TextDescriptionComments } from '@/components/ui/text-description-commen
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { BaseSidePanel, SidePanelHeader, SidePanelContent, SidePanelSection, SidePanelFooter } from '@/components/base'
 import { DependencyBadge } from '@/components/ui/dependencies-selector'
-import { Tarea, Subtarea, Comentario, EstadoTarea, TIPO_DEPENDENCIA_LABELS } from '@/types/tareas'
+import { Tarea, Subtarea, Comentario, EstadoTarea } from '@/types/tareas'
 import { Proyecto } from '@/types/proyectos'
 import { cn } from '@/lib/utils'
 

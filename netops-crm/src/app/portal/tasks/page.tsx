@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Circle, Clock, AlertTriangle, FileUp, Eye, RotateCcw, Calendar } from 'lucide-react'
+import { CheckCircle2, Circle, AlertTriangle, Eye, RotateCcw, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -157,7 +157,7 @@ export default function PortalTasksPage() {
   const [tareas, setTareas] = useState<Tarea[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState<TaskClienteFiltros>({ estado: 'pendientes' })
-  const [completingId, setCompletingId] = useState<string | null>(null)
+  const [, setCompletingId] = useState<string | null>(null)
 
   // Cargar tareas del cliente
   useEffect(() => {
@@ -186,17 +186,9 @@ export default function PortalTasksPage() {
     return t.estado === 'Completada'
   })
 
-  // Verificar si puede reabrir tarea
-  const puedeReabrir = async (tareaId: string) => {
-    const result = await taskService.canReopenTask(tareaId)
-    return result
-  }
-
   // Completar tarea
   const handleCompletar = async (tarea: Tarea) => {
     if (!user?.contactoId) return
-    
-    setCompletingId(tarea.id)
     try {
       await taskService.updateTask(tarea.id, {
         estado: 'Completada',

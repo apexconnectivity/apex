@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { CheckSquare, Filter, Search, RefreshCw, Zap } from 'lucide-react'
+import { CheckSquare, Search, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +14,6 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { cn } from '@/lib/utils'
 import { type Tarea, type GrupoDashboardTareas } from '@/types/tareas'
-import { StatusBadge } from '@/components/module/StatusBadge'
 
 // ============================================================================
 // PROPS
@@ -80,11 +79,10 @@ export default function TasksDashboardPage() {
     }
 
     // Determinar categorías visibles según rol del usuario
-    const isAdmin = user.roles.includes('admin')
-    const rol = user.roles[0] // Usar el primer rol
+    const _isAdmin = user.roles.includes('admin')
 
     // Si no es admin, filtrar por responsable_id
-    if (!isAdmin) {
+    if (!_isAdmin) {
       result = result.filter(t => 
         t.responsable_id === user.id || 
         (t.responsable_id === undefined && !t.asignado_a_cliente)
@@ -178,9 +176,8 @@ export default function TasksDashboardPage() {
   }
 
   // Verificar acceso
-  const isAdmin = user?.roles.includes('admin')
   const canView = user?.roles.some(r => 
-    ['admin', 'tecnico', 'comercial', 'compras', 'facturacion'].includes(r)
+    ['admin', 'especialista', 'comercial', 'compras', 'facturacion'].includes(r)
   )
 
   if (!canView) {

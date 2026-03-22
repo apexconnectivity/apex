@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { Plus, ChevronLeft, ChevronRight, FolderKanban, Rocket } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, FolderKanban, Rocket, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ModuleHeader, ModuleCard, ProjectCard, ModuleContainerWithPanel } from '@/components/module'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -59,7 +65,7 @@ export default function ProyectosPage() {
   const searchParams = useSearchParams()
 
   // Hooks del store centralizado
-  const [proyectos, setProyectos] = useProyectos()
+  const [proyectos, setProyectos, , deleteProyecto, archiveProyecto] = useProyectos()
   const tareasHook = useTareas()
   const tareas = tareasHook.tasks
   const createTarea = tareasHook.createTask
@@ -68,7 +74,7 @@ export default function ProyectosPage() {
   // Usuarios reales
   const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
 
-  const [view, setView] = useState<'pipeline' | 'cerrados'>('pipeline')
+  const [view, setView] = useState<'pipeline' | 'cerrados' | 'archivados'>('pipeline')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -93,6 +99,10 @@ export default function ProyectosPage() {
   const [proyectoAArchivar, setProyectoAArchivar] = useState<Proyecto | null>(null)
   const [clasificacionArchivo, setClasificacionArchivo] = useState<'completado' | 'inconcluso'>('completado')
   const [isArchiving, setIsArchiving] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
+
+  // Modal eliminar proyecto (solo admins)
+  const [isModalEliminar, setIsModalEliminar] = useState(false)
+  const [proyectoAEliminar, setProyectoAEliminar] = useState<Proyecto | null>(null)
 
   // Historial de proyectos
   const [historialProyectos, setHistorialProyectos] = useHistorialProyectos()
@@ -135,7 +145,7 @@ export default function ProyectosPage() {
 
   const isAdmin = user?.roles.includes('admin')
   const isComercial = user?.roles.includes('comercial')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
   const canMovePhases = isAdmin || isComercial || isTecnico
 
   const proyectosPorFase = useMemo(() => {
@@ -167,8 +177,26 @@ export default function ProyectosPage() {
     })
   }, [proyectos, user])
 
+  const proyectosArchivados = useMemo(() => {
+    return proyectos.filter(p => {
+      if (p.estado !== 'archivado') return false
+      if (user?.roles.includes('cliente')) {
+        return p.empresa_id === user.empresa_id
+      }
+      return true
+    })
+  }, [proyectos, user])
+
   const infoTareasPorProyecto = useMemo(() => {
-    const r: Record<string, any> = {}
+    type InfoTareasProyecto = {
+      total: number
+      completadas: number
+      progreso: number
+      enProgreso: number
+      bloqueadas: number
+      proximaVence: string | null
+    }
+    const r: Record<string, InfoTareasProyecto> = {}
     proyectos.forEach(p => {
       const pTareas = tareas.filter(t => t.proyecto_id === p.id)
       const total = pTareas.length
@@ -179,6 +207,7 @@ export default function ProyectosPage() {
         progreso: total === 0 ? 0 : Math.round((completadas / total) * 100),
         enProgreso: pTareas.filter(t => t.estado === 'En progreso').length,
         bloqueadas: pTareas.filter(t => t.estado === 'Bloqueada').length,
+        proximaVence: null,
       }
     })
     return r
@@ -247,6 +276,26 @@ export default function ProyectosPage() {
     setProyectos(prev => prev.map(p => p.id === id ? { ...p, estado: 'activo', motivo_cierre: undefined, fecha_cierre: undefined } : p))
     agregarHistorial(id, 'reapertura', 'Proyecto reabierto')
   }, [setProyectos, agregarHistorial])
+
+  // Handler para archivar permanentemente (solo proyectos cerrados, solo admins)
+  const handleArchivarPermanente = useCallback((proyecto: Proyecto) => {
+    archiveProyecto(proyecto.id)
+    agregarHistorial(proyecto.id, 'archivado', 'Archivado permanentemente')
+  }, [archiveProyecto, agregarHistorial])
+
+  // Handler para eliminar permanentemente (solo proyectos cerrados, solo admins)
+  const handleEliminarPermanente = useCallback((proyecto: Proyecto) => {
+    setProyectoAEliminar(proyecto)
+    setIsModalEliminar(true)
+  }, [])
+
+  const confirmarEliminar = useCallback(() => {
+    if (!proyectoAEliminar) return
+    deleteProyecto(proyectoAEliminar.id)
+    agregarHistorial(proyectoAEliminar.id, 'archivado', 'Eliminado permanentemente')
+    setIsModalEliminar(false)
+    setProyectoAEliminar(null)
+  }, [proyectoAEliminar, deleteProyecto, agregarHistorial])
 
   const handleArchivar = useCallback((proyecto: Proyecto) => {
     setProyectoAArchivar(proyecto)
@@ -367,10 +416,13 @@ export default function ProyectosPage() {
           }
           tabs={[
             { value: 'pipeline', label: 'Pipeline' },
-            ...(!user?.roles.includes('cliente') ? [{ value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length }] : [])
+            ...(!user?.roles.includes('cliente') ? [
+              { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length },
+              ...(isAdmin ? [{ value: 'archivados', label: 'Archivados', count: proyectosArchivados.length }] : [])
+            ] : [])
           ]}
           activeTab={view}
-          onTabChange={(v) => setView(v as 'pipeline' | 'cerrados')}
+          onTabChange={(v) => setView(v as 'pipeline' | 'cerrados' | 'archivados')}
         />
 
         <FilterBar
@@ -438,11 +490,61 @@ export default function ProyectosPage() {
                   <div>
                     <h3 className="font-semibold">{p.nombre}</h3>
                     <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
+                    {p.motivo_cierre && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Motivo: {p.motivo_cierre}
+                      </p>
+                    )}
                   </div>
-                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleReabrir(p.id) }}>Reabrir</Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleReabrir(p.id) }}>
+                      Reabrir
+                    </Button>
+                    {isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleArchivarPermanente(p) }}>
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archivar permanentemente
+                          </DropdownMenuItem>
+                          <DropdownMenuItem destructive onClick={(e) => { e.stopPropagation(); handleEliminarPermanente(p) }}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar permanentemente
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </div>
               </ModuleCard>
             ))}
+          </div>
+        )}
+
+        {view === 'archivados' && isAdmin && (
+          <div className="space-y-3">
+            {proyectosArchivados.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No hay proyectos archivados
+              </div>
+            ) : (
+              proyectosArchivados.map(p => (
+                <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)}>
+                  <div className="flex items-center justify-between w-full">
+                    <div>
+                      <h3 className="font-semibold">{p.nombre}</h3>
+                      <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
+                    </div>
+                    <Badge variant="secondary">Archivado</Badge>
+                  </div>
+                </ModuleCard>
+              ))
+            )}
           </div>
         )}
       </ModuleContainerWithPanel>
@@ -455,6 +557,7 @@ export default function ProyectosPage() {
           proyecto={proyectoEditando}
           empresas={empresas}
           usuarios={usuarios}
+          proyectos={proyectos}
           isSaving={isSaving}
         />
       )}
@@ -469,6 +572,28 @@ export default function ProyectosPage() {
       <BaseModal open={isModalArchivar} onOpenChange={setIsModalArchivar}>
         <ModalHeader title="Archivar Proyecto" />
         <ModalFooter><Button onClick={confirmarArchivar}>Archivar</Button></ModalFooter>
+      </BaseModal>
+
+      {/* Modal eliminar proyecto */}
+      <BaseModal open={isModalEliminar} onOpenChange={setIsModalEliminar}>
+        <ModalHeader title="Eliminar Proyecto" />
+        <ModalBody>
+          <p className="text-sm text-muted-foreground">
+            ¿Estás seguro de que deseas eliminar permanentemente el proyecto{' '}
+            <strong>&ldquo;{proyectoAEliminar?.nombre}&rdquo;</strong>?
+          </p>
+          <p className="text-sm text-destructive mt-2">
+            Esta acción no se puede deshacer. El proyecto y todos sus datos asociados serán eliminados permanentemente.
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="outline" onClick={() => setIsModalEliminar(false)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={confirmarEliminar}>
+            Eliminar permanentemente
+          </Button>
+        </ModalFooter>
       </BaseModal>
     </>
   )

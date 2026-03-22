@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { Card, CardContent } from '@/components/ui/card'
-import { ModuleContainer, ModuleHeader, CreateColaboratorModal } from '@/components/module'
+import { ModuleContainer, ModuleHeader, ManageColaboratorModal } from '@/components/module'
 import { ManageContactsModal } from '@/components/module/ManageContactsModal'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { Button } from '@/components/ui/button'
@@ -26,16 +26,17 @@ import {
   Building2,
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
+import { type Empresa } from '@/types/crm'
 import { cn } from '@/lib/utils'
 import { USUARIOS_PAGE, BUTTON_LABELS } from '@/constants/auth'
 
 // Roles internos disponibles
-const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
+const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing']
 
 export default function UsersPage() {
   const { user: currentUser, updateUser } = useAuth()
   const [users, setUsers] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
-  const [empresas] = useLocalStorage<any[]>(STORAGE_KEYS.empresas, [])
+  const [empresas] = useLocalStorage<Empresa[]>(STORAGE_KEYS.empresas, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activo' | 'inactivo'>('todos')
   const [filtroRol, setFiltroRol] = useState<'todos' | Role>('todos')
@@ -127,8 +128,9 @@ export default function UsersPage() {
       await new Promise(resolve => setTimeout(resolve, 500))
 
       if (!isNew && editingUser) {
-        // Update existing user
+        // Update existing user (no actualizar password_hash aquí)
         const updatedData = { ...editingUser, ...data }
+        delete (updatedData as Record<string, unknown>).password_hash
         setUsers(prev => prev.map(u =>
           u.id === editingUser.id
             ? updatedData
@@ -140,11 +142,13 @@ export default function UsersPage() {
           updateUser(data)
         }
       } else {
-        // Create new user
+        // Create new user con username y password_hash
         const newUser: User = {
           id: crypto.randomUUID(),
           nombre: data.nombre || '',
           email: data.email || '',
+          username: data.username || '',
+          password_hash: data.password_hash || btoa('changeme'), // Hash por defecto
           telefono: data.telefono || '',
           roles: data.roles || [],
           activo: true,
@@ -350,7 +354,7 @@ export default function UsersPage() {
               Directorios de Clientes
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {uniqueCompanies.map((emp: any) => (
+              {uniqueCompanies.map((emp) => (
                 <Card
                   key={emp.id}
                   className="cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group border-border/50 bg-muted/10"
@@ -395,7 +399,7 @@ export default function UsersPage() {
       </div>
 
       {/* Colaborator Modal - Usando componente reutilizable */}
-      <CreateColaboratorModal
+      <ManageColaboratorModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         user={editingUser}

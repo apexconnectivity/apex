@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
+import { ButtonInline } from '@/components/ui/button-inline'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -83,7 +84,7 @@ export function DashboardHeader({ showSearch = true, showNewProject = true, onNe
     const labels: Record<string, string> = {
       admin: 'Admin',
       comercial: 'Comercial',
-      tecnico: 'Técnico',
+      especialista: 'Especialista',
       compras: 'Compras',
       facturacion: 'Facturación',
       marketing: 'Marketing',
@@ -177,15 +178,11 @@ export function DashboardHeader({ showSearch = true, showNewProject = true, onNe
                 </Button>
                 
                 {isCliente && empresa && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 gap-1 opacity-80 hover:opacity-100 font-medium tracking-tight animate-in fade-in duration-500"
+                  <ButtonInline
                     onClick={() => setIsCompanyModalOpen(true)}
-                  >
-                    <Building2 className="h-3 w-3" />
-                    {empresa.nombre}
-                  </Button>
+                    icon={Building2}
+                    label={empresa.nombre}
+                  />
                 )}
               </div>
             )}

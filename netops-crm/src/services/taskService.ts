@@ -171,7 +171,7 @@ class TaskService {
     
     // Determinar categorías visibles según rol
     const categoriasPorRol: Record<string, CategoriaTarea[]> = {
-      tecnico: ['Técnica'],
+      especialista: ['Técnica'],
       comercial: ['Comercial'],
       compras: ['Compras'],
       facturacion: ['Administrativa'],
@@ -347,9 +347,10 @@ class TaskService {
       return false
     }
     
-    // Agregar temporalmente las nuevas dependencias
+    // Agregar temporalmente las nuevas dependencias (para validación de ciclos)
     const tempTask = { id: taskId, dependencias: newDependencies }
-    const tempTasks = [...tasks.filter(t => t.id !== taskId), tempTask]
+    // tempTasks se usa solo para validación: no se persisten aquí
+    void tempTask
     
     return !checkCycle(taskId, new Set())
   }

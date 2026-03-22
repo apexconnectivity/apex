@@ -28,7 +28,7 @@ export default function DashboardPage() {
 
   // Determinar qué mostrar según el rol
   const isAdmin = user?.roles.includes('admin')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
   const isComercial = user?.roles.includes('comercial')
   const isCliente = user?.roles.includes('cliente')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

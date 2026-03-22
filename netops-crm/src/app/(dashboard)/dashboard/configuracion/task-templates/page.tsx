@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { CheckSquare, Plus, Trash2, Edit2, ChevronDown, ChevronRight, Save, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -62,8 +61,6 @@ function PlantillaRow({
   onChange,
   onDelete,
 }: PlantillaRowProps) {
-  const faseConfig = FASES.find(f => f.id === plantilla.fase_id)
-
   if (!isEditing) {
     // Vista de solo lectura
     return (
@@ -377,7 +374,7 @@ export default function TaskTemplatesPage() {
     setNuevasPlantillas(prev => ({ ...prev, [faseId]: newPlantilla }))
   }
 
-  const handleSaveNew = (faseId: number) => {
+  const _handleSaveNew = (faseId: number) => {
     const newData = nuevasPlantillas[faseId]
     if (!newData) return
 
@@ -400,7 +397,7 @@ export default function TaskTemplatesPage() {
     })
   }
 
-  const handleCancelNew = (faseId: number) => {
+  const _handleCancelNew = (faseId: number) => {
     setNuevasPlantillas(prev => {
       const { [faseId]: _, ...rest } = prev
       return rest

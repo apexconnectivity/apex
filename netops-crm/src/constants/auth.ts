@@ -29,8 +29,8 @@ export const ROLES = {
     border: 'border-blue-500/30',
     nivel: 2
   },
-  tecnico: {
-    label: 'Técnico',
+  especialista: {
+    label: 'Especialista',
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/20',
     border: 'border-emerald-500/30',
@@ -75,11 +75,11 @@ export type RoleKey = keyof typeof ROLES
 export const PERMISOS = {
   // Módulos
   modulo_crm: { label: 'Acceso CRM', roles: ['admin', 'comercial'] },
-  modulo_proyectos: { label: 'Acceso Proyectos', roles: ['admin', 'comercial', 'tecnico'] },
-  modulo_tareas: { label: 'Acceso Tareas', roles: ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing'] },
-  modulo_soporte: { label: 'Acceso Soporte', roles: ['admin', 'tecnico', 'compras'] },
+  modulo_proyectos: { label: 'Acceso Proyectos', roles: ['admin', 'comercial', 'especialista'] },
+  modulo_tareas: { label: 'Acceso Tareas', roles: ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing'] },
+  modulo_soporte: { label: 'Acceso Soporte', roles: ['admin', 'especialista', 'compras'] },
   modulo_compras: { label: 'Acceso Compras', roles: ['admin', 'compras'] },
-  modulo_archivos: { label: 'Acceso Archivos', roles: ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing'] },
+  modulo_archivos: { label: 'Acceso Archivos', roles: ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing'] },
   modulo_usuarios: { label: 'Gestión Usuarios', roles: ['admin'] },
   modulo_estadisticas: { label: 'Estadísticas', roles: ['admin', 'comercial'] },
 
@@ -89,15 +89,15 @@ export const PERMISOS = {
   eliminar_empresa: { label: 'Eliminar Empresas', roles: ['admin'] },
 
   crear_proyecto: { label: 'Crear Proyectos', roles: ['admin', 'comercial'] },
-  editar_proyecto: { label: 'Editar Proyectos', roles: ['admin', 'comercial', 'tecnico'] },
+  editar_proyecto: { label: 'Editar Proyectos', roles: ['admin', 'comercial', 'especialista'] },
   cerrar_proyecto: { label: 'Cerrar Proyectos', roles: ['admin', 'comercial'] },
 
-  crear_tarea: { label: 'Crear Tareas', roles: ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing'] },
-  editar_tarea: { label: 'Editar Tareas', roles: ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing'] },
-  completar_tarea: { label: 'Completar Tareas', roles: ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing'] },
+  crear_tarea: { label: 'Crear Tareas', roles: ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing'] },
+  editar_tarea: { label: 'Editar Tareas', roles: ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing'] },
+  completar_tarea: { label: 'Completar Tareas', roles: ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing'] },
 
-  crear_ticket: { label: 'Crear Tickets', roles: ['admin', 'tecnico', 'cliente'] },
-  resolver_ticket: { label: 'Resolver Tickets', roles: ['admin', 'tecnico'] },
+  crear_ticket: { label: 'Crear Tickets', roles: ['admin', 'especialista', 'cliente'] },
+  resolver_ticket: { label: 'Resolver Tickets', roles: ['admin', 'especialista'] },
 
   aprobar_orden: { label: 'Aprobar Órdenes de Compra', roles: ['admin', 'compras'] },
 

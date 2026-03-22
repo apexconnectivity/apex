@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { taskService, type TaskFilters, type TaskGroupResult } from '@/services/taskService'
-import { type Tarea, type CategoriaTarea, type Dependencia, type GrupoDashboardTareas } from '@/types/tareas'
+import { type Tarea, type CategoriaTarea, type Dependencia } from '@/types/tareas'
 
 /**
  * Hook para gestionar tareas utilizando el TaskService (LocalStorage con asincronía)
@@ -154,7 +154,7 @@ export function useTareas(projectId?: string) {
   const canCompleteTask = useCallback(async (taskId: string) => {
     try {
       return await taskService.canCompleteTask(taskId)
-    } catch (err) {
+    } catch {
       return { canComplete: false, blockedBy: [] }
     }
   }, [])
@@ -165,7 +165,7 @@ export function useTareas(projectId?: string) {
   const validateNoCycles = useCallback(async (taskId: string, newDependencies: Dependencia[]) => {
     try {
       return await taskService.validateNoCycles(taskId, newDependencies)
-    } catch (err) {
+    } catch {
       return false
     }
   }, [])
@@ -176,7 +176,7 @@ export function useTareas(projectId?: string) {
   const getTasksForDependency = useCallback(async (projectId: string, excludeTaskId?: string) => {
     try {
       return await taskService.getTasksForDependency(projectId, excludeTaskId)
-    } catch (err) {
+    } catch {
       return []
     }
   }, [])
@@ -191,7 +191,7 @@ export function useTareas(projectId?: string) {
   const canReopenTask = useCallback(async (taskId: string) => {
     try {
       return await taskService.canReopenTask(taskId)
-    } catch (err) {
+    } catch {
       return { canReopen: false }
     }
   }, [])

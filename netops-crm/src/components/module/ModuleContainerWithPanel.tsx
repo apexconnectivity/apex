@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import { cn } from '@/lib/utils'
-import { BaseSidePanel } from '@/components/base'
 
 interface ModuleContainerWithPanelProps {
   children: React.ReactNode
@@ -22,14 +21,18 @@ interface ModuleContainerWithPanelProps {
 export const ModuleContainerWithPanel = React.memo(function ModuleContainerWithPanel({ 
   children, 
   panel, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   panelOpen,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   panelTitle,
   onClosePanel,
   onClose,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   panelWidth = "w-1/5",
   className 
 }: ModuleContainerWithPanelProps) {
   // Usar useCallback para estabilidad de la función de cierre
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleClose = useCallback(() => {
     if (onClosePanel) {
       onClosePanel()

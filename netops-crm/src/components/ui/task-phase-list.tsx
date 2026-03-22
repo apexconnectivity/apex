@@ -5,7 +5,6 @@ import { ChevronDown, ChevronRight, FolderOpen, CheckCircle2, Circle, Clock, Ale
 import { cn } from '@/lib/utils'
 import { TaskCard } from '@/components/ui/task-card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { type Tarea, type EstadoTarea } from '@/types/tareas'
 
 // ============================================================================
@@ -71,13 +70,6 @@ function TaskRow({ tarea, isBlocked = false, onClick, onComplete, compact = true
     'En progreso': <Clock className="h-4 w-4 text-blue-400 animate-pulse" />,
     Bloqueada: <AlertCircle className="h-4 w-4 text-red-400" />,
     Completada: <CheckCircle2 className="h-4 w-4 text-emerald-400" />,
-  }
-
-  const priorityColors: Record<string, string> = {
-    Urgente: 'bg-red-500/20 text-red-400',
-    Alta: 'bg-orange-500/20 text-orange-400',
-    Media: 'bg-blue-500/20 text-blue-400',
-    Baja: 'bg-slate-500/20 text-slate-400',
   }
 
   if (compact) {

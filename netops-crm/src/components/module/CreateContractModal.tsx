@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Trash2 } from 'lucide-react'
 import { ContratoSoporte as ContratoType, TipoContrato, EstadoContrato, CONTRATOS_TIPOS, CONTRATOS_ESTADOS } from '@/types/soporte'
 import { Empresa } from '@/types/crm'
-import { CREATE_CONTRACT_MODAL } from '@/constants/soporte'
+import { Proyecto } from '@/types/proyectos'
+import { CREATE_CONTRACT_MODAL, SOPORTE_CONTRATOS } from '@/constants/soporte'
 import { ModalVariant } from '@/constants/modales'
 
 interface CreateContractModalProps {
@@ -18,6 +19,7 @@ interface CreateContractModalProps {
   onOpenChange: (open: boolean) => void
   empresas: Empresa[]
   usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
+  proyectos?: Proyecto[]
   contrato?: ContratoType | null
   onSave: (data: CreateContractData) => void
   onDelete?: () => void
@@ -37,19 +39,22 @@ function ContractFormFields({
   setContrato,
   empresas,
   usuarios,
+  proyectos,
   disabled
 }: {
   contrato: Omit<ContratoType, 'id' | 'creado_en'>
   setContrato: React.Dispatch<React.SetStateAction<Omit<ContratoType, 'id' | 'creado_en'>>>
   empresas: Empresa[]
   usuarios: { id: string; nombre: string; rol?: string, roles?: string[] }[]
+  proyectos?: Proyecto[]
   disabled?: boolean
 }) {
   const clientEmpresas = empresas.filter(e => e.tipo_entidad === 'cliente')
   const tecnicos = usuarios.filter(u => 
-    u.rol === 'tecnico' || u.rol === 'admin' || 
-    u.roles?.includes('tecnico') || u.roles?.includes('admin')
+    u.rol === 'especialista' || u.rol === 'admin' || 
+    u.roles?.includes('especialista') || u.roles?.includes('admin')
   )
+  const proyectosActivos = proyectos?.filter(p => p.estado === 'activo') ?? []
 
   return (
     <div className="space-y-4">
@@ -79,6 +84,33 @@ function ContractFormFields({
           disabled={disabled}
         />
       </div>
+
+      {proyectosActivos.length > 0 && (
+        <div>
+          <Label>{SOPORTE_CONTRATOS.origenProyecto}</Label>
+          <Select value={contrato.proyecto_origen_id || ''} onValueChange={(v) => {
+            const proyecto = proyectosActivos.find(p => p.id === v)
+            setContrato({
+              ...contrato,
+              proyecto_origen_id: v || undefined,
+              proyecto_origen_nombre: proyecto?.nombre || undefined,
+            })
+          }} disabled={disabled}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder={SOPORTE_CONTRATOS.seleccionarProyecto} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{SOPORTE_CONTRATOS.sinProyecto}</SelectItem>
+              {proyectosActivos.map(p => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.nombre}
+                  {p.tipo_contrato && <span className="text-muted-foreground ml-1">({p.tipo_contrato})</span>}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -210,6 +242,7 @@ export function CreateContractModal({
   onOpenChange,
   empresas,
   usuarios,
+  proyectos,
   contrato,
   onSave,
   onDelete
@@ -232,6 +265,8 @@ export function CreateContractModal({
     tecnico_asignado_id: '',
     tecnico_asignado_nombre: '',
     notas: '',
+    proyecto_origen_id: '',
+    proyecto_origen_nombre: '',
   })
 
   const initializedRef = useRef(false)
@@ -265,6 +300,8 @@ export function CreateContractModal({
         tecnico_asignado_id: contrato.tecnico_asignado_id || '',
         tecnico_asignado_nombre: contrato.tecnico_asignado_nombre || '',
         notas: contrato.notas || '',
+        proyecto_origen_id: contrato.proyecto_origen_id || '',
+        proyecto_origen_nombre: contrato.proyecto_origen_nombre || '',
       })
     } else {
       setContratoData({
@@ -283,6 +320,8 @@ export function CreateContractModal({
         tecnico_asignado_id: '',
         tecnico_asignado_nombre: '',
         notas: '',
+        proyecto_origen_id: '',
+        proyecto_origen_nombre: '',
       })
     }
   }, [open, contrato, isEditMode])
@@ -333,6 +372,7 @@ export function CreateContractModal({
             setContrato={setContratoData}
             empresas={empresas}
             usuarios={usuarios}
+            proyectos={proyectos}
           />
         )}
       </ModalBody>

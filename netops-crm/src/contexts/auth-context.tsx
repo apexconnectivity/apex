@@ -10,7 +10,7 @@ import { STORAGE_KEYS } from '@/constants/storage'
 
 // Credenciales demo configurables via variables de entorno
 // Si no están definidas, usan los valores por defecto
-const DEMO_EMAIL = process.env.NEXT_PUBLIC_DEMO_EMAIL || 'admin@apex.com'
+const DEMO_USERNAME = process.env.NEXT_PUBLIC_DEMO_USERNAME || 'admin'
 const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'admin123'
 
 // ============================================================================
@@ -21,7 +21,7 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (username: string, password: string) => Promise<void>
   logout: () => void
   updateUser: (updatedData: Partial<User>) => Promise<void>
   hasPermission: (module: string, action: 'canView' | 'canCreate' | 'canEdit' | 'canDelete') => boolean
@@ -35,7 +35,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Los usuarios deben gestionarse desde el módulo de Usuarios (pendiente localStorage)
 const BOOTSTRAP_USER: User = {
   id: '1',
-  email: DEMO_EMAIL,
+  email: 'admin@apex.com',
+  username: DEMO_USERNAME,
+  password_hash: btoa(DEMO_PASSWORD), // Hash simple para demo
   nombre: 'Administrador',
   telefono: '',
   activo: true,
@@ -61,36 +63,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     setIsLoading(true)
 
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
 
+      if (!username.trim()) {
+        throw new Error('El nombre de usuario es requerido')
+      }
+
+      if (!password) {
+        throw new Error('La contraseña es requerida')
+      }
+
       // Buscar en usuarios dinámicos (localStorage)
       const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
       const users: User[] = storedUsers ? JSON.parse(storedUsers) : []
       
-      let foundUser = email.toLowerCase() === BOOTSTRAP_USER.email.toLowerCase() ? BOOTSTRAP_USER : null
+      // Buscar por username (prioridad al bootstrap user)
+      let foundUser = username.toLowerCase() === BOOTSTRAP_USER.username.toLowerCase() ? BOOTSTRAP_USER : null
       
       if (!foundUser) {
-        foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null
+        foundUser = users.find(u => u.username?.toLowerCase() === username.toLowerCase()) || null
       }
 
       if (!foundUser) {
-        throw new Error('Email o contraseña incorrectos')
+        throw new Error('Usuario o contraseña incorrectos')
       }
 
-      // En una app real, verificaríamos el hash de la contraseña
-      // Por ahora, cualquier contraseña que coincida con DEMO_PASSWORD funciona para el admin
-      // Para otros usuarios, aceptamos cualquier contraseña no vacía en modo demo
-      if (foundUser.roles.includes('admin') && password !== DEMO_PASSWORD) {
-        throw new Error('Email o contraseña incorrectos')
-      }
-      
-      if (!password) {
-        throw new Error('La contraseña es requerida')
+      // Validar contraseña
+      // Para usuarios sin password_hash (legacy), aceptar cualquier contraseña no vacía en demo
+      // Para usuarios con password_hash, validar contra el hash
+      if (foundUser.password_hash) {
+        const isValidPassword = atob(foundUser.password_hash) === password
+        if (!isValidPassword) {
+          throw new Error('Usuario o contraseña incorrectos')
+        }
+      } else {
+        // Compatibilidad con usuarios sin hash (demo)
+        if (!password) {
+          throw new Error('Usuario o contraseña incorrectos')
+        }
       }
 
       // Update last access

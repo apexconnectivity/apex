@@ -27,6 +27,9 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
+  // Determinar si el usuario es admin (puede ver/editar todos los perfiles)
+  const isAdmin = user?.roles.includes('admin') ?? false
+
   // Profile form
   const [profileData, setProfileData] = useState({
     nombre: '',
@@ -123,24 +126,29 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <Tabs defaultValue="perfil" className="space-y-6">
+      <Tabs defaultValue={isAdmin ? "perfil" : "seguridad"} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="perfil" className="gap-2">
-            <User className="h-4 w-4" />
-            Perfil
-          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="perfil" className="gap-2">
+              <User className="h-4 w-4" />
+              Perfil
+            </TabsTrigger>
+          )}
           <TabsTrigger value="seguridad" className="gap-2">
             <Lock className="h-4 w-4" />
             Seguridad
           </TabsTrigger>
-          <TabsTrigger value="notificaciones" className="gap-2">
-            <Bell className="h-4 w-4" />
-            Notificaciones
-          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="notificaciones" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Notificaciones
+            </TabsTrigger>
+          )}
         </TabsList>
 
-        {/* Profile Tab */}
-        <TabsContent value="perfil">
+        {/* Profile Tab - Solo para admins */}
+        {isAdmin && (
+          <TabsContent value="perfil">
           <Card>
             <CardHeader>
               <CardTitle>Información Personal</CardTitle>
@@ -240,6 +248,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         {/* Security Tab */}
         <TabsContent value="seguridad">
@@ -334,39 +343,41 @@ export default function ProfilePage() {
           </Card>
         </TabsContent>
 
-        {/* Notifications Tab */}
-        <TabsContent value="notificaciones">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferencias de Notificaciones</CardTitle>
-              <CardDescription>
-                Configura cómo quieres recibir notificaciones
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { id: 'email_projects', label: 'Proyectos', desc: 'Notificaciones sobre proyectos' },
-                  { id: 'email_tasks', label: 'Tareas', desc: 'Recordatorios de tareas' },
-                  { id: 'email_tickets', label: 'Tickets', desc: 'Actualizaciones de tickets de soporte' },
-                  { id: 'email_calendar', label: 'Calendario', desc: 'Recordatorios de reuniones' },
-                ].map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div>
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+        {/* Notifications Tab - Solo para admins */}
+        {isAdmin && (
+          <TabsContent value="notificaciones">
+            <Card>
+              <CardHeader>
+                <CardTitle>Preferencias de Notificaciones</CardTitle>
+                <CardDescription>
+                  Configura cómo quieres recibir notificaciones
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { id: 'email_projects', label: 'Proyectos', desc: 'Notificaciones sobre proyectos' },
+                    { id: 'email_tasks', label: 'Tareas', desc: 'Recordatorios de tareas' },
+                    { id: 'email_tickets', label: 'Tickets', desc: 'Actualizaciones de tickets de soporte' },
+                    { id: 'email_calendar', label: 'Calendario', desc: 'Recordatorios de reuniones' },
+                  ].map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 rounded-lg border">
+                      <div>
+                        <p className="font-medium">{item.label}</p>
+                        <p className="text-sm text-muted-foreground">{item.desc}</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="h-5 w-5 rounded border-gray-300 text-cyan-500 focus:ring-cyan-500"
+                      />
                     </div>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="h-5 w-5 rounded border-gray-300 text-cyan-500 focus:ring-cyan-500"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

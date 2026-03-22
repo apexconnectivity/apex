@@ -53,7 +53,7 @@ export function Sidebar({
     const labels: Record<string, string> = {
       admin: 'Admin',
       comercial: 'Comercial',
-      tecnico: 'Técnico',
+      especialista: 'Especialista',
       compras: 'Compras',
       facturacion: 'Facturación',
       marketing: 'Marketing',

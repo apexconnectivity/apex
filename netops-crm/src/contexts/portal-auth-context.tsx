@@ -19,7 +19,8 @@ const PortalAuthContext = createContext<AuthContextType>({
   isLoading: true,
 })
 
-const DEMO_CLIENTE: ClienteUsuario = {
+// Demo user - usado en portal sin autenticación real
+const _DEMO_CLIENTE: ClienteUsuario = {
   id: 'c1',
   email: 'juan@soltec.com',
   nombre: 'Juan Pérez',

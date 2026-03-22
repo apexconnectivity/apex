@@ -104,6 +104,7 @@ export function EmpresaDetailModal({
   onCloseNewProject,
   onSaveNewProject,
   usuarios = [],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   contactosTecnicos = [],
   isSavingProject = false,
 }: EmpresaDetailModalProps) {
@@ -460,6 +461,7 @@ export function EmpresaDetailModal({
           }}
           empresas={[empresa]}
           usuarios={usuarios}
+          proyectos={proyectos}
           isSaving={isSavingProject}
         />
       )}

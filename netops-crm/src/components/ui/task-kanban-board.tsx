@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from 'react'
 import { CheckCircle2, Circle, Clock, AlertCircle, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TaskCard } from '@/components/ui/task-card'

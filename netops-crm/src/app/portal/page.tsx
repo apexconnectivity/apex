@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ClienteUsuario, ProyectoCliente, TareaCliente, TicketCliente, DocumentoCliente, ArchivoProyectoCliente } from '@/types/portal'
-import { getPrioridadIcon, getTicketEstadoColor } from '@/lib/colors'
+import { getTicketEstadoColor } from '@/lib/colors'
 import { PortalAuthProvider, usePortalAuth } from '@/contexts/portal-auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,23 +15,24 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base/BaseModal'
 import {
   Zap, FolderKanban, Headphones, FileText,
-  User, LogOut, Upload,
+  LogOut, Upload,
   ExternalLink, Clock, AlertCircle, Building2,
-  ArrowLeft, Phone, Mail, CheckCircle, Calendar, Plus
+  ArrowLeft, CheckCircle, Calendar, Plus
 } from 'lucide-react'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
-import { Empresa, Contacto } from '@/types/crm'
 import { Proyecto } from '@/types/proyectos'
 import { Tarea } from '@/types/tareas'
 import { Ticket } from '@/types/soporte'
+import { Documento } from '@/types/crm'
 import { SolicitudReunion } from '@/types/calendario'
+import { type User } from '@/types/auth'
 import { FASES } from '@/types/proyectos'
 
 // Tipo para datos del formulario de ticket
 type TicketFormData = Pick<TicketCliente, 'titulo' | 'descripcion' | 'categoria' | 'prioridad' | 'estado'>
 
-const DEMO_CLIENTE: ClienteUsuario = {
+const _DEMO_CLIENTE: ClienteUsuario = {
   id: 'c1',
   email: 'juan@soltec.com',
   nombre: 'Juan Pérez',
@@ -42,7 +43,7 @@ const DEMO_CLIENTE: ClienteUsuario = {
   telefono: '+54 11 1234-5678',
 }
 
-const DEMO_PROYECTOS: ProyectoCliente[] = [
+const _DEMO_PROYECTOS: ProyectoCliente[] = [
   {
     id: '1',
     nombre: 'Implementación Firewall Fortinet',
@@ -73,7 +74,7 @@ const DEMO_PROYECTOS: ProyectoCliente[] = [
   },
 ]
 
-const DEMO_TAREAS: TareaCliente[] = [
+const _DEMO_TAREAS: TareaCliente[] = [
   { id: 't1', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Fortinet', nombre: 'Subir diagrama de red actual', descripcion: 'Documentar la topología actual de red incluyendo todos los equipos y conexiones', estado: 'Pendiente', prioridad: 'Alta', fecha_vencimiento: '2026-03-12', fecha_creacion: '2026-03-01', categoria: 'Técnica' },
   { id: 't2', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Fortinet', nombre: 'Confirmar horarios para capacitación', descripcion: 'Coordinar fecha y hora para la capacitación del equipo de TI', estado: 'Pendiente', prioridad: 'Media', fecha_vencimiento: '2026-03-15', fecha_creacion: '2026-03-05', categoria: 'General' },
   { id: 't3', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Fortinet', nombre: 'Revisar propuesta de seguridad', descripcion: 'Revisar y aprobar la propuesta de políticas de seguridad', estado: 'En progreso', prioridad: 'Baja', fecha_creacion: '2026-03-08', categoria: 'General' },
@@ -81,27 +82,27 @@ const DEMO_TAREAS: TareaCliente[] = [
   { id: 't5', proyecto_id: '2', proyecto_nombre: 'Auditoría de Seguridad Q1', nombre: 'Revisar informe preliminar', descripcion: 'Revisar el informe preliminar de hallazgos', estado: 'Completada', prioridad: 'Alta', fecha_vencimiento: '2026-03-10', fecha_creacion: '2026-02-15', categoria: 'General' },
 ]
 
-const DEMO_TICKETS: TicketCliente[] = [
+const _DEMO_TICKETS: TicketCliente[] = [
   { id: '1', numero_ticket: 'TK-2026-023', titulo: 'No hay conexión sede norte', descripcion: 'Desde esta mañana no tenemos acceso a internet en la sede norte. Todo el personal afectado.', estado: 'Abierto', prioridad: 'Urgente', categoria: 'Soporte técnico', creado_por_nombre: 'María García', fecha_apertura: '2026-03-10T10:30:00' },
   { id: '2', numero_ticket: 'TK-2026-018', titulo: 'Consulta sobre factura de febrero', descripcion: 'Necesitamos verificar los cargos adicionales del mes pasado', estado: 'En progreso', prioridad: 'Media', categoria: 'Facturación', creado_por_nombre: 'Juan Pérez', fecha_apertura: '2026-03-08T09:00:00' },
   { id: '3', numero_ticket: 'TK-2026-015', titulo: 'Solicitud de cambio de horario', descripcion: 'Necesitamos cambiar el horario de soporte técnico a turno noche', estado: 'Esperando cliente', prioridad: 'Baja', categoria: 'Consulta comercial', creado_por_nombre: 'Laura Pérez', fecha_apertura: '2026-03-05T14:00:00' },
   { id: '4', numero_ticket: 'TK-2026-010', titulo: 'Renovación de certificado SSL', descripcion: 'El certificado del dominio principal expira pronto', estado: 'Resuelto', prioridad: 'Alta', categoria: 'Soporte técnico', creado_por_nombre: 'Carlos Admin', fecha_apertura: '2026-03-01T08:00:00', fecha_cierre: '2026-03-03T16:00:00' },
 ]
 
-const DEMO_DOCUMENTOS: DocumentoCliente[] = [
+const _DEMO_DOCUMENTOS: DocumentoCliente[] = [
   { id: 'd1', nombre_original: 'Condiciones Generales.pdf', mime_type: 'application/pdf', tamaño_bytes: 2500000, visibilidad: 'publico', fecha_subida: '2026-01-15T10:00:00', subido_por_nombre: 'Carlos Admin' },
   { id: 'd2', nombre_original: 'Manual de Usuario.pdf', mime_type: 'application/pdf', tamaño_bytes: 4500000, visibilidad: 'publico', fecha_subida: '2026-02-01T14:30:00', subido_por_nombre: 'Carlos Admin' },
   { id: 'd3', nombre_original: 'Propuesta Económica.pdf', mime_type: 'application/pdf', tamaño_bytes: 1200000, visibilidad: 'publico', fecha_subida: '2026-01-10T09:00:00', subido_por_nombre: 'Laura Pérez' },
   { id: 'd4', nombre_original: 'Contrato de Servicios.pdf', mime_type: 'application/pdf', tamaño_bytes: 890000, visibilidad: 'publico', fecha_subida: '2026-01-05T11:00:00', subido_por_nombre: 'Carlos Admin' },
 ]
 
-const DEMO_ARCHIVOS_PROYECTO: ArchivoProyectoCliente[] = [
+const _DEMO_ARCHIVOS_PROYECTO: ArchivoProyectoCliente[] = [
   { id: 'a1', nombre_original: 'diagrama_red_actual.pdf', mime_type: 'application/pdf', tamaño_bytes: 850000, ruta_completa: '/Entregables Cliente/', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Fortinet', visibilidad: 'Entregables Cliente', fecha_subida: '2026-02-01T14:20:00', subido_por_nombre: 'Laura Pérez' },
   { id: 'a2', nombre_original: 'requisitos_usuarios.docx', mime_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', tamaño_bytes: 45000, ruta_completa: '/Entregables Cliente/', proyecto_id: '1', proyecto_nombre: 'Implementación Firewall Fortinet', visibilidad: 'Entregables Cliente', fecha_subida: '2026-03-01T08:30:00', subido_por_nombre: 'Laura Pérez' },
   { id: 'a3', nombre_original: 'informe_preliminar.pdf', mime_type: 'application/pdf', tamaño_bytes: 2500000, ruta_completa: '/Entregables Cliente/', proyecto_id: '2', proyecto_nombre: 'Auditoría de Seguridad Q1', visibilidad: 'Entregables Cliente', fecha_subida: '2026-03-08T10:00:00', subido_por_nombre: 'Carlos Admin' },
 ]
 
-const DEMO_EQUIPO = [
+const _DEMO_EQUIPO = [
   { id: '1', nombre: 'Carlos Rodríguez', cargo: 'Gerente de Proyecto', email: 'carlos@apex.com', telefono: '+54 11 1111-1111' },
   { id: '2', nombre: 'Laura Pérez', cargo: 'Ejecutiva Comercial', email: 'laura@apex.com', telefono: '+54 11 2222-2222' },
   { id: '3', nombre: 'Juan Técnico', cargo: 'Ingeniero de Soporte', email: 'juan@apex.com', telefono: '+54 11 3333-3333' },
@@ -291,8 +292,8 @@ function PortalClienteContent() {
   const [allProyectos] = useLocalStorage<Proyecto[]>(STORAGE_KEYS.proyectos, [])
   const [allTareas] = useLocalStorage<Tarea[]>(STORAGE_KEYS.tareas, [])
   const [allTickets, setAllTickets] = useLocalStorage<Ticket[]>(STORAGE_KEYS.tickets, [])
-  const [allDocumentos] = useLocalStorage<any[]>(STORAGE_KEYS.documentos, [])
-  const [_allReuniones, setAllReuniones] = useLocalStorage<SolicitudReunion[]>(STORAGE_KEYS.reuniones as any, [])
+  const [allDocumentos] = useLocalStorage<Documento[]>(STORAGE_KEYS.documentos, [])
+  const [_allReuniones, setAllReuniones] = useLocalStorage<SolicitudReunion[]>(STORAGE_KEYS.reuniones, [])
 
   // Filtrar datos por la empresa del cliente
   const misProyectos = allProyectos.filter(p => p.empresa_id === user?.empresa_id)
@@ -305,13 +306,13 @@ function PortalClienteContent() {
   
   // Filtrado específico para el proyecto seleccionado
   const tareasDelProyecto = selectedProyecto ? misTareas.filter(t => t.proyecto_id === selectedProyecto.id) : []
-  const ticketsDelProyecto = selectedProyecto ? misTickets.filter(t => (t as any).proyecto_id === selectedProyecto.id) : []
-  const documentosDelProyecto = selectedProyecto ? misDocumentos.filter(d => d.proyecto_id === selectedProyecto.id) : []
+  const ticketsDelProyecto = selectedProyecto ? misTickets.filter(t => t.proyecto_id === selectedProyecto.id) : []
+  const documentosDelProyecto = selectedProyecto ? misDocumentos.filter(d => 'proyecto_id' in d && (d as { proyecto_id?: string }).proyecto_id === selectedProyecto.id) : []
 
   const handleLogin = () => {
     const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios)
-    const users = storedUsers ? JSON.parse(storedUsers) : []
-    const firstClient = users.find((u: any) => u.roles.includes('cliente'))
+    const users: User[] = storedUsers ? JSON.parse(storedUsers) : []
+    const firstClient = users.find((u) => u.roles.includes('cliente'))
     if (firstClient) {
       login(firstClient.email, 'demo')
     } else {
@@ -319,31 +320,37 @@ function PortalClienteContent() {
     }
   }
 
-  const handleCreateTicket = (ticketData: Omit<Ticket, 'id' | 'numero_ticket' | 'creado_por_id' | 'creado_por_nombre' | 'fecha_apertura' | 'ultima_actualizacion'>) => {
+  const handleCreateTicket = (ticketData: Omit<Ticket, 'id' | 'numero_ticket' | 'creado_por' | 'creado_por_nombre' | 'creado_por_cliente' | 'fecha_apertura' | 'empresa_id' | 'tiempo_invertido_minutos'>) => {
     const nuevo: Ticket = {
       ...ticketData,
       id: crypto.randomUUID(),
       numero_ticket: `TK-${new Date().getFullYear()}-${String(allTickets.length + 1).padStart(3, '0')}`,
-      creado_por_id: user?.id || 'cliente',
+      creado_por: user?.id || 'cliente',
       creado_por_nombre: user?.nombre || 'Cliente',
+      creado_por_cliente: true,
       fecha_apertura: new Date().toISOString(),
-      ultima_actualizacion: new Date().toISOString(),
       empresa_id: user?.empresa_id || '',
-      comentarios_count: 0
-    } as any
+      tiempo_invertido_minutos: 0
+    }
     setAllTickets(prev => [nuevo, ...prev])
   }
 
   const handleSolicitarReunion = (reunionData: Partial<SolicitudReunion>) => {
     const nueva: SolicitudReunion = {
-      ...reunionData,
+      proyecto_id: reunionData.proyecto_id || '',
+      proyecto_nombre: reunionData.proyecto_nombre || '',
+      fecha_solicitada: reunionData.fecha_solicitada || '',
+      hora_solicitada: reunionData.hora_solicitada || '',
+      duracion: reunionData.duracion || 60,
+      motivo: reunionData.motivo || '',
+      comentarios: reunionData.comentarios,
       id: crypto.randomUUID(),
       contacto_solicitante_id: user?.id || '',
       contacto_solicitante_nombre: user?.nombre || '',
       empresa_nombre: user?.empresa_nombre || '',
       estado: 'Pendiente',
       fecha_solicitud: new Date().toISOString()
-    } as any
+    }
     setAllReuniones(prev => [nueva, ...prev])
     console.log('[Portal] Solicitud de reunión enviada:', nueva)
   }
@@ -612,7 +619,7 @@ function PortalClienteContent() {
                       <div key={archivo.id} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{archivo.nombre_original}</span>
+                          <span className="text-sm">{archivo.nombre_archivo || 'Documento sin nombre'}</span>
                         </div>
                         <Button variant="ghost" size="sm"><ExternalLink className="h-3 w-3" /></Button>
                       </div>
@@ -696,13 +703,13 @@ function PortalClienteContent() {
       <NuevoTicketModal 
         open={showNewTicket} 
         onClose={() => setShowNewTicket(false)} 
-        onCreate={handleCreateTicket as any} 
+        onCreate={(ticket) => handleCreateTicket(ticket as Omit<Ticket, 'id' | 'numero_ticket' | 'creado_por' | 'creado_por_nombre' | 'creado_por_cliente' | 'fecha_apertura' | 'ultima_actualizacion' | 'empresa_id' | 'tiempo_invertido_minutos'>)} 
       />
       <SolicitarReunionModal 
         open={showNewMeeting} 
         onClose={() => setShowNewMeeting(false)} 
         onSolicitar={handleSolicitarReunion} 
-        proyectos={misProyectos as any} 
+        proyectos={misProyectos} 
       />
     </div>
   )

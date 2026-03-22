@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Input } from '@/components/ui/input'
 import { InputTextCase } from '@/components/ui/input-text-case'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -11,15 +10,15 @@ import { Badge } from '@/components/ui/badge'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { InputNumber } from '@/components/ui/input-number'
 import { DatePicker } from '@/components/ui/date-picker'
-import { InlineAddButton } from '@/components/ui/inline-add-button'
+import { ButtonInline } from '@/components/ui/button-inline'
 import { Building2, User as UserIcon, Loader2 } from 'lucide-react'
 import { EmptyStateModal } from '@/components/base/EmptyStateModal'
-import { Proyecto, MONEDAS } from '@/types/proyectos'
+import { Proyecto, MONEDAS, TIPOS_CONTRATO_PROYECTO, type TipoContratoProyecto } from '@/types/proyectos'
 import { User } from '@/types/auth'
 import { Empresa } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
 import { CreateEmpresaModal } from './CreateEmpresaModal'
-import { CreateColaboratorModal } from './CreateColaboratorModal'
+import { ManageColaboratorModal } from './ManageColaboratorModal'
 import { ManageContactsModal } from './ManageContactsModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
@@ -33,6 +32,7 @@ interface CreateProjectModalProps {
   proyecto?: Partial<Proyecto> | null
   empresas?: Empresa[]
   usuarios?: User[]
+  proyectos?: Partial<Proyecto>[]
   isSaving?: boolean
   errors?: Record<string, string>
 }
@@ -46,6 +46,7 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
   contacto_tecnico_id: '',
   contacto_tecnico_nombre: '',
   fase_actual: 1,
+  tipo_contrato: undefined,
   moneda: 'USD',
   monto_estimado: 0,
   probabilidad_cierre: 20,
@@ -65,6 +66,7 @@ export function CreateProjectModal({
   proyecto,
   empresas,
   usuarios,
+  proyectos,
   isSaving = false,
   errors = {},
 }: CreateProjectModalProps) {
@@ -107,7 +109,7 @@ export function CreateProjectModal({
 
   // Filtrar usuarios internos (admin y técnico)
   const responsablesPosibles = localUsuarios.filter(u =>
-    u.activo && (u.roles.includes('admin') || u.roles.includes('tecnico'))
+    u.activo && (u.roles.includes('admin') || u.roles.includes('especialista'))
   )
 
   // Filtrar contactos de la empresa seleccionada - usar localContactos para mantener sincronización
@@ -121,6 +123,22 @@ export function CreateProjectModal({
     const nombreValidation = validateRequired(formData.nombre)
     if (!nombreValidation.isValid) {
       validationErrors.nombre = nombreValidation.error || 'El nombre es obligatorio'
+    } else {
+      // Verificar duplicado por nombre + empresa
+      // Una empresa no puede tener dos proyectos con el mismo nombre
+      if (proyectos && formData.nombre?.trim() && formData.empresa_id) {
+        const normalizedName = formData.nombre.trim().toLowerCase()
+        const isDuplicate = proyectos.some(p => {
+          // Excluir el proyecto actual en modo edición
+          if (isEditing && p.id === proyecto?.id) return false
+          // Verificar misma empresa y mismo nombre
+          return p.empresa_id === formData.empresa_id &&
+            p.nombre?.trim().toLowerCase() === normalizedName
+        })
+        if (isDuplicate) {
+          validationErrors.nombre = 'Esta empresa ya tiene un proyecto con este nombre'
+        }
+      }
     }
 
     // Empresa (obligatorio)
@@ -241,12 +259,14 @@ export function CreateProjectModal({
 
   // Verificar si el formulario puede guardarse
   const canSave = (): boolean => {
-    return !!(
+    const hasRequiredFields = !!(
       formData.nombre?.trim() &&
       formData.empresa_id?.trim() &&
       formData.responsable_id?.trim() &&
       formData.contacto_tecnico_id?.trim()
     )
+    const hasNoErrors = Object.keys(localErrors).length === 0
+    return hasRequiredFields && hasNoErrors
   }
 
   return (
@@ -312,7 +332,7 @@ export function CreateProjectModal({
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label htmlFor="empresa">Cliente *</Label>
-              <InlineAddButton
+              <ButtonInline
                 onClick={() => setShowNewEmpresa(true)}
                 icon={Building2}
                 label="Nueva empresa"
@@ -349,11 +369,34 @@ export function CreateProjectModal({
             {allErrors.empresa_id && <p className="text-xs text-red-500 mt-1">{allErrors.empresa_id}</p>}
           </div>
 
+          {/* Tipo de Contrato */}
+          <div>
+            <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
+            <Select
+              value={formData.tipo_contrato || ''}
+              onValueChange={(value) => setFormData({ ...formData, tipo_contrato: value as TipoContratoProyecto })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el tipo de contrato" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS_CONTRATO_PROYECTO.map((tipo) => (
+                  <SelectItem key={tipo} value={tipo}>
+                    {tipo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              El tipo de contrato permite filtrar proyectos en el módulo de soporte
+            </p>
+          </div>
+
           {/* Responsable */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label htmlFor="responsable">Responsable *</Label>
-              <InlineAddButton
+              <ButtonInline
                 onClick={() => setShowNewUsuario(true)}
                 icon={UserIcon}
                 label="Nuevo usuario"
@@ -380,7 +423,7 @@ export function CreateProjectModal({
                       <div className="flex items-center gap-2">
                         <span>{usuario.nombre}</span>
                         <Badge variant="secondary" className="text-xs">
-                          {usuario.roles.includes('admin') ? 'Admin' : 'Técnico'}
+                          {usuario.roles.includes('admin') ? 'Admin' : 'Especialista'}
                         </Badge>
                       </div>
                     </SelectItem>
@@ -398,8 +441,8 @@ export function CreateProjectModal({
           {/* Contacto Técnico */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <Label htmlFor="contacto_tecnico">Contacto Técnico del Cliente *</Label>
-              <InlineAddButton
+              <Label htmlFor="contacto_tecnico">Contacto Especialista del Cliente *</Label>
+              <ButtonInline
                 onClick={() => setShowManageContacts(true)}
                 icon={UserIcon}
                 label="Nuevo contacto"
@@ -528,7 +571,7 @@ export function CreateProjectModal({
         empresa={null}
       />
 
-      <CreateColaboratorModal
+      <ManageColaboratorModal
         open={showNewUsuario}
         onOpenChange={setShowNewUsuario}
         onSave={handleSaveUsuario}

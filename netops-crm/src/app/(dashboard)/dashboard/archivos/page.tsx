@@ -30,7 +30,7 @@ export default function ArchivosPage() {
   const [searchQuery, setSearchQuery] = useState<string>('')
 
   const isAdmin = user?.roles.includes('admin')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
   const isComercial = user?.roles.includes('comercial')
   const isCompras = user?.roles.includes('compras')
   const isFacturacion = user?.roles.includes('facturacion')

@@ -1,7 +1,7 @@
 export type Role = 
   | 'admin' 
   | 'comercial' 
-  | 'tecnico' 
+  | 'especialista' 
   | 'compras' 
   | 'facturacion' 
   | 'marketing' 
@@ -10,6 +10,8 @@ export type Role =
 export interface User {
   id: string
   email: string
+  username: string
+  password_hash: string
   nombre: string
   telefono?: string
   activo: boolean
@@ -73,9 +75,9 @@ export const ROLE_DEFINITIONS: Record<Role, RoleDefinition> = {
       { module: 'configuracion', canView: false, canCreate: false, canEdit: false, canDelete: false },
     ],
   },
-  tecnico: {
-    name: 'tecnico',
-    label: 'Técnico',
+  especialista: {
+    name: 'especialista',
+    label: 'Especialista',
     description: 'Implementación y soporte técnico',
     es_interno: true,
     modules: [

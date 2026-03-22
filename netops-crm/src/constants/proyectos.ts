@@ -156,7 +156,7 @@ export const FORM_LABELS = {
   presupuesto: 'Presupuesto',
   moneda: 'Moneda',
   responsable: COMMON_FORM_LABELS.responsable,
-  contactoTecnico: 'Contacto Técnico',
+  contactoTecnico: 'Contacto Especialista',
   tipo: 'Tipo de Proyecto',
   prioridad: COMMON_FORM_LABELS.prioridad,
   fase: 'Fase Actual',

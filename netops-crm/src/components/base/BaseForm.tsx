@@ -3,7 +3,6 @@
 import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
-import type { FormErrors } from "@/types/common"
 
 // ============================================================================
 // TIPOS
@@ -346,7 +345,7 @@ export function BaseForm<T extends Record<string, any>>({
   children,
   defaultValues,
   values,
-  errors,
+  errors: _errors,
   onSubmit,
   onChange,
   status = "idle",
@@ -387,7 +386,7 @@ export function BaseForm<T extends Record<string, any>>({
   }, [values])
 
   // Manejar cambio de campo - usar useCallback estable que no cause re-renders innecesarios
-  const handleChange = React.useCallback((field: string, value: unknown) => {
+  const _handleChange = React.useCallback((field: string, value: unknown) => {
     setFormData(prevData => {
       const newData = { ...prevData, [field]: value }
 

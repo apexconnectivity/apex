@@ -115,6 +115,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         onSave={handleSaveProject}
         empresas={empresas}
         usuarios={usuarios}
+        proyectos={proyectos}
       />
     </>
   )

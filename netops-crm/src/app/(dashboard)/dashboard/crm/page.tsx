@@ -25,8 +25,8 @@ const CreateEmpresaModal = dynamic(
   // @ts-ignore - preload is supported in Next.js 14 but types are not updated
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
-const CreateContactModal = dynamic(
-  () => import('@/components/module/CreateContactModal').then(mod => mod.CreateContactModal),
+const ManageContactsModal = dynamic(
+  () => import('@/components/module/ManageContactsModal').then(mod => mod.ManageContactsModal),
   // @ts-ignore
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
 )
@@ -60,7 +60,7 @@ import {
   PAGE_DESCRIPTION,
   BUTTON_LABELS,
   ALERT_LABELS,
-  VALIDATION_ERRORS,
+
   ACCESS_MESSAGES,
 } from '@/constants/crm'
 import { STORAGE_KEYS } from '@/constants/storage'
@@ -76,13 +76,6 @@ const EMPRESAS_VACIA: Partial<Empresa> = {
   telefono_principal: '',
 }
 
-const CONTACTO_VACIO: Partial<Contacto> = {
-  nombre: '',
-  cargo: '',
-  telefono: '',
-  email: '',
-  es_principal: false,
-}
 
 export default function CRMPage() {
   const { user } = useAuth()
@@ -95,7 +88,7 @@ export default function CRMPage() {
   const { tasks: tickets } = useTareas()
 
   // Usuarios
-  const [usuarios, setUsuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
+  const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
 
   // ============================================
   // ESTADOS DE BÚSQUEDA Y FILTROS (agrupados)
@@ -120,7 +113,7 @@ export default function CRMPage() {
     isModalDocumento: false,
     isModalNewProject: false,
     editingEmpresa: null as Partial<Empresa> | null,
-    editingContacto: null as Partial<Contacto> | null,
+
     empresaForContacto: null as Empresa | null,
     empresaForDocumento: null as Empresa | null,
     notaEditando: false,
@@ -134,7 +127,6 @@ export default function CRMPage() {
     isModalDocumento,
     isModalNewProject,
     editingEmpresa,
-    editingContacto,
     empresaForContacto,
     empresaForDocumento,
     notaEditando,
@@ -151,7 +143,7 @@ export default function CRMPage() {
   }, [])
 
   const setIsModalContacto = useCallback((open: boolean) => {
-    setUiState(prev => ({ ...prev, isModalContacto: open, editingContacto: open ? prev.editingContacto : null }))
+    setUiState(prev => ({ ...prev, isModalContacto: open }))
   }, [])
 
   const setIsModalDocumento = useCallback((open: boolean) => {
@@ -166,9 +158,6 @@ export default function CRMPage() {
     setUiState(prev => ({ ...prev, editingEmpresa: empresa }))
   }, [])
 
-  const setEditingContacto = useCallback((contacto: Partial<Contacto> | null) => {
-    setUiState(prev => ({ ...prev, editingContacto: contacto }))
-  }, [])
 
   const setEmpresaForContacto = useCallback((empresa: Empresa | null) => {
     setUiState(prev => ({ ...prev, empresaForContacto: empresa }))
@@ -228,19 +217,17 @@ export default function CRMPage() {
 
   const handleNewContacto = useCallback((empresa: Empresa) => {
     setEmpresaForContacto(empresa)
-    setEditingContacto({ ...CONTACTO_VACIO, empresa_id: empresa.id })
     setErrors({})
     setSelectedEmpresa(null)
     setIsModalContacto(true)
-  }, [setEmpresaForContacto, setEditingContacto, setErrors, setSelectedEmpresa, setIsModalContacto])
+  }, [setEmpresaForContacto, setErrors, setSelectedEmpresa, setIsModalContacto])
 
   const handleEditContacto = useCallback((contacto: Contacto) => {
     const empresa = empresas.find(e => e.id === contacto.empresa_id) || null
-    setEditingContacto({ ...contacto })
     setEmpresaForContacto(empresa)
     setErrors({})
     setIsModalContacto(true)
-  }, [empresas, setEditingContacto, setEmpresaForContacto, setErrors, setIsModalContacto])
+  }, [empresas, setEmpresaForContacto, setErrors, setIsModalContacto])
 
   // Verificar disponibilidad de localStorage al inicio
   useEffect(() => {
@@ -261,7 +248,7 @@ export default function CRMPage() {
   const isCompras = user?.roles.includes('compras')
   const isFacturacion = user?.roles.includes('facturacion')
   const isMarketing = user?.roles.includes('marketing')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
 
   const canViewClientes = isAdmin || isComercial || isFacturacion || isMarketing || isTecnico
   const canViewProveedores = isAdmin || isCompras || isFacturacion || isMarketing
@@ -564,111 +551,6 @@ export default function CRMPage() {
     }
   }, [empresaForDocumento, newDocumento, handleUploadDocumento, setIsModalDocumento, setEmpresaForDocumento, setNewDocumento])
 
-  const handleSaveContacto = useCallback(async (contactoData: Partial<Contacto>, isNew: boolean) => {
-    setErrors({})
-    console.log('[CRM] Iniciando guardado de contacto:', { contactoData, isNew })
-
-    // Validaciones
-    if (!contactoData.nombre || contactoData.nombre.trim().length < 2) {
-      setErrors({ nombre: VALIDATION_ERRORS.nombreObligatorio })
-      return
-    }
-    if (!contactoData.email) {
-      setErrors({ email: VALIDATION_ERRORS.emailObligatorio })
-      return
-    }
-    if (contactoData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactoData.email)) {
-      setErrors({ email: VALIDATION_ERRORS.emailInvalido })
-      return
-    }
-
-    // El chequeo de email duplicado lo hacemos contra el estado actual 'contactos'
-    const emailExists = contactos.some(c => c.email.toLowerCase() === contactoData.email?.toLowerCase() && c.id !== contactoData.id)
-    if (emailExists) {
-      setErrors({ email: VALIDATION_ERRORS.emailYaRegistrado })
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      await new Promise(r => setTimeout(r, 500))
-
-      const now = new Date().toISOString()
-      const contactoId = isNew ? crypto.randomUUID() : contactoData.id!
-
-      // 1. Guardar el contacto
-      setContactos(prev => {
-        let updated = [...prev]
-
-        // Manejar contacto principal si se marcó este
-        if (contactoData.es_principal) {
-          updated = updated.map(c =>
-            c.empresa_id === contactoData.empresa_id ? { ...c, es_principal: false } : c
-          )
-        }
-
-        if (!isNew) {
-          return updated.map(c =>
-            c.id === contactoId ? { ...c, ...contactoData } as Contacto : c
-          )
-        } else {
-          const nuevoContacto = {
-            ...contactoData,
-            id: contactoId,
-            creado_en: now.split('T')[0]
-          } as Contacto
-          return [...updated, nuevoContacto]
-        }
-      })
-
-      // 2. Sincronizar con el usuario asociado si ya existe o crear uno nuevo
-      setUsuarios(prev => {
-        const email = contactoData.email || ''
-        const existingUserIndex = prev.findIndex(u => u.email.toLowerCase() === email.toLowerCase())
-
-        if (existingUserIndex !== -1) {
-          // Actualizar usuario existente si los datos cambiaron
-          const updatedUsers = [...prev]
-          updatedUsers[existingUserIndex] = {
-            ...updatedUsers[existingUserIndex],
-            nombre: contactoData.nombre || updatedUsers[existingUserIndex].nombre,
-            telefono: contactoData.telefono || updatedUsers[existingUserIndex].telefono,
-            // Mantener roles y otros campos
-          }
-          console.log('[CRM] Usuario existente actualizado:', updatedUsers[existingUserIndex])
-          return updatedUsers
-        } else if (isNew) {
-          // Crear nuevo si es nuevo contacto
-          const nuevoUsuario: User = {
-            id: crypto.randomUUID(),
-            email: email,
-            nombre: contactoData.nombre || '',
-            telefono: contactoData.telefono,
-            activo: true,
-            creado_en: now,
-            cambiar_password_proximo_login: true,
-            roles: ['cliente'],
-            empresa_id: contactoData.empresa_id
-          }
-          console.log('[CRM] Nuevo usuario creado:', nuevoUsuario)
-          return [...prev, nuevoUsuario]
-        }
-
-        return prev
-      })
-
-      setIsModalContacto(false)
-      setEditingContacto(null)
-      setEmpresaForContacto(null)
-      console.log('[CRM] Contacto y usuario procesados correctamente')
-    } catch (error) {
-      console.error('[CRM] Error al guardar contacto:', error)
-      setErrors({ general: 'Error al procesar el guardado' })
-    } finally {
-      setIsSaving(false)
-    }
-  }, [contactos, setContactos, setUsuarios, setIsModalContacto, setEditingContacto, setEmpresaForContacto, setErrors, setIsSaving])
-
   // Notas internas
   const handleSaveNota = useCallback((empresaId: string) => {
     const currentNotaTemporal = notaTemporal
@@ -952,15 +834,11 @@ export default function CRMPage() {
         isSavingProject={isSaving}
       />
 
-      {/* Modal de Contacto */}
-      <CreateContactModal
-        open={isModalContacto}
-        onOpenChange={(open) => { if (!open) { setIsModalContacto(false); setEditingContacto(null) } }}
-        onSave={handleSaveContacto}
-        contacto={editingContacto}
+      {/* Modal de Contactos */}
+      <ManageContactsModal
+        isOpen={isModalContacto}
+        onClose={() => { setIsModalContacto(false) }}
         empresaId={empresaForContacto?.id || ''}
-        isSaving={isSaving}
-        errors={errors}
       />
 
       {/* Modal de Documento */}

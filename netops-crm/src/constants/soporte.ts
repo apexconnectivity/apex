@@ -85,10 +85,14 @@ export const SOPORTE_EMPTY = {
 export const SOPORTE_CONTRATOS = {
   inicio: 'Inicio',
   fin: 'Fin',
-  tecnico: 'Técnico',
+  tecnico: 'Especialista',
   horas: 'Horas',
   horasConsumidasMes: 'Horas consumidas este mes',
   sinAsignar: 'Sin asignar',
+  filtroSoloContratosSoporte: 'Solo contratos de soporte',
+  origenProyecto: 'Proyecto origen',
+  seleccionarProyecto: 'Seleccionar proyecto...',
+  sinProyecto: 'Sin proyecto',
 } as const
 
 // ============================================
@@ -224,7 +228,7 @@ export const CREATE_CONTRACT_MODAL = {
     montoMensual: 'Monto mensual',
     horasIncluidas: 'Horas incluidas/mes',
     moneda: 'Moneda',
-    tecnicoAsignado: 'Técnico asignado',
+    tecnicoAsignado: 'Especialista asignado',
     notas: 'Notas',
     renovacionAutomatica: 'Renovación automática',
   },

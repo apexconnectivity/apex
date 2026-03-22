@@ -3,16 +3,12 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
-import { useContactos } from '@/hooks/useContactos'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
+import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS } from '@/lib/colors'
 
 // Importar constantes
-import {
-  OTHER_LABELS,
-} from '@/constants/tareas'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +17,7 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { CheckSquare, Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
+import { Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
 import { type User } from '@/types/auth'
 import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
@@ -38,7 +34,7 @@ import { cn } from '@/lib/utils'
 // Transformar usuarios del formato User al formato requerido por CreateTaskModal
 // Filtra solo usuarios internos (colaboradores) para el selector de responsable
 const transformUsuarios = (users: User[]): { id: string; nombre: string; rol: string }[] => {
-  const ROLES_INTERNOS = ['admin', 'comercial', 'tecnico', 'compras', 'facturacion', 'marketing']
+  const ROLES_INTERNOS = ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing']
   return users
     .filter(u => u.activo && u.roles.some(r => ROLES_INTERNOS.includes(r))) // Solo usuarios internos activos
     .map(u => ({
@@ -148,12 +144,10 @@ export default function TareasPage() {
     createTask,
     updateTask,
     deleteTask,
-    refresh: refreshTasks
   } = useTareas()
 
   const [proyectos, setProyectos] = useProyectos()
   const [empresas] = useEmpresas()
-  const [allContactos] = useContactos()
   const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
 
   // Modal nuevo proyecto
@@ -180,7 +174,7 @@ export default function TareasPage() {
 
   const isAdmin = user?.roles.includes('admin')
   const isComercial = user?.roles.includes('comercial')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
   const isCompras = user?.roles.includes('compras')
   const canCreate = isAdmin || isComercial || isTecnico || isCompras
 
@@ -233,8 +227,8 @@ export default function TareasPage() {
     })
   }, [updateTask])
 
-  // Handler para crear proyecto desde tareas
-  const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
+  // Handler para crear proyecto desde tareas (reservado para uso futuro)
+  const _handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
     if (!isNew || !proyecto.nombre) return
 
     const now = new Date().toISOString().split('T')[0]
@@ -275,7 +269,7 @@ export default function TareasPage() {
       id: String(Date.now()),
       nombre: user.nombre || '',
       email: user.email || '',
-      roles: user.roles || ['tecnico'],
+      roles: user.roles || ['especialista'],
       activo: true,
       creado_en: now,
       cambiar_password_proximo_login: true,
@@ -300,7 +294,7 @@ export default function TareasPage() {
       }
 
       if (data.comentarios && data.comentarios.length > 0) {
-        const comms: Comentario[] = data.comentarios.map((c, i) => ({
+        const comms: Comentario[] = data.comentarios.map((c) => ({
           id: uuidv4(),
           tarea_id: newTask.id,
           usuario_id: c.usuario_id,
@@ -326,7 +320,7 @@ export default function TareasPage() {
       }
 
       if (data.comentarios) {
-        const comms: Comentario[] = data.comentarios.map((c, i) => ({
+        const comms: Comentario[] = data.comentarios.map((c) => ({
           id: c.id || uuidv4(),
           tarea_id: editingTarea.id,
           usuario_id: c.usuario_id,
@@ -350,7 +344,7 @@ export default function TareasPage() {
     }
   }, [editingTarea, deleteTask])
 
-  const handleUpdateTarea = useCallback(async (updated: Tarea) => {
+  const _handleUpdateTarea = useCallback(async (updated: Tarea) => {
     await updateTask(updated.id, updated)
     setSelectedId(updated.id)
   }, [updateTask, setSelectedId])
@@ -680,6 +674,7 @@ export default function TareasPage() {
         }}
         empresas={empresas}
         usuarios={usuarios}
+        proyectos={proyectos}
       />
     </>
   )

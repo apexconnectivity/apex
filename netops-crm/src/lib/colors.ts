@@ -332,7 +332,7 @@ export const ROLE_COLORS = {
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/20',
     border: 'border-emerald-500/30',
-    label: 'Técnico',
+    label: 'Especialista',
   },
   compras: {
     color: 'text-amber-400',
@@ -844,10 +844,10 @@ export const CLIENT_CONTACT_TYPE_COLORS = {
     bg: 'bg-cyan-500/15',
     label: 'Principal',
   },
-  Técnico: {
+  Especialista: {
     color: 'text-purple-400',
     bg: 'bg-purple-500/15',
-    label: 'Técnico',
+    label: 'Especialista',
   },
   Administrativo: {
     color: 'text-slate-400',

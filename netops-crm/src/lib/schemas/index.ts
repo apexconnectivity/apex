@@ -55,7 +55,7 @@ const EstadoProyectoSchema = z.enum(['activo', 'cerrado'])
 const RoleSchema = z.enum([
   'admin',
   'comercial',
-  'tecnico',
+  'especialista',
   'compras',
   'facturacion',
   'marketing',

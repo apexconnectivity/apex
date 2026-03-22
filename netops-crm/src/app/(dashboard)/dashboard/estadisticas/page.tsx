@@ -938,7 +938,7 @@ export default function EstadisticasPage() {
 
   // Check if user has access
   const isAdmin = user?.roles.includes('admin')
-  const canView = isAdmin || user?.roles.includes('comercial') || user?.roles.includes('tecnico') || user?.roles.includes('facturacion')
+  const canView = isAdmin || user?.roles.includes('comercial') || user?.roles.includes('especialista') || user?.roles.includes('facturacion')
 
   if (!canView) {
     return (

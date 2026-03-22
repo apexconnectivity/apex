@@ -114,6 +114,7 @@ export default function SoportePage() {
   const [showCreateContract, setShowCreateContract] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
   const [showNewEmpresa, setShowNewEmpresa] = useState(false)
+  const [soloContratosSoporte, setSoloContratosSoporte] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('todas')
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
@@ -166,7 +167,7 @@ export default function SoportePage() {
   }, [tickets, setTickets]) // Only tickets and setTickets needed
 
   const isAdmin = user?.roles.includes('admin')
-  const isTecnico = user?.roles.includes('tecnico')
+  const isTecnico = user?.roles.includes('especialista')
   const isComercial = user?.roles.includes('comercial')
   const isCompras = user?.roles.includes('compras')
   const isFacturacion = user?.roles.includes('facturacion')
@@ -210,9 +211,18 @@ export default function SoportePage() {
       if (user?.roles.includes('cliente')) {
         return c.empresa_id === user.empresa_id
       }
+
+      // Filtro: solo contratos con proyecto origen de tipo 'Soporte'
+      if (soloContratosSoporte && c.proyecto_origen_id) {
+        const proyectoOrigen = proyectos.find(p => p.id === c.proyecto_origen_id)
+        if (!proyectoOrigen || proyectoOrigen.tipo_contrato !== 'Soporte') {
+          return false
+        }
+      }
+
       return true
     })
-  }, [contratos, user])
+  }, [contratos, user, soloContratosSoporte, proyectos])
 
   const getTicketsByEstado = useCallback((estado: EstadoTicket) => {
     return filteredTickets.filter(t => t.estado === estado)
@@ -540,7 +550,16 @@ export default function SoportePage() {
 
         {view === 'contratos' && (
           <>
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-4">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={soloContratosSoporte}
+                  onChange={(e) => setSoloContratosSoporte(e.target.checked)}
+                  className="rounded border-input w-4 h-4 accent-primary"
+                />
+                <span className="text-muted-foreground">{SOPORTE_CONTRATOS.filtroSoloContratosSoporte}</span>
+              </label>
               {canCreate && <Button onClick={() => setShowCreateContract(true)}><Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoContrato}</Button>}
             </div>
 
@@ -555,6 +574,11 @@ export default function SoportePage() {
                           <Badge variant={contrato.estado === 'Activo' ? 'default' : 'secondary'}>{contrato.estado}</Badge>
                         </div>
                         <p className="text-muted-foreground">{contrato.empresa_nombre}</p>
+                        {contrato.proyecto_origen_nombre && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {SOPORTE_CONTRATOS.origenProyecto}: {contrato.proyecto_origen_nombre}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">{contrato.moneda} {contrato.monto_mensual}/mes</p>
@@ -607,6 +631,7 @@ export default function SoportePage() {
             onOpenChange={setShowCreateContract}
             empresas={empresas}
             usuarios={usuarios}
+            proyectos={proyectos}
             onSave={handleCreateContract}
           />
         )}
@@ -618,6 +643,7 @@ export default function SoportePage() {
           onSave={handleSaveProyecto}
           empresas={empresas}
           usuarios={usuarios}
+          proyectos={proyectos}
         />
 
         {/* Modal para crear nueva empresa */}

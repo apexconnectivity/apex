@@ -58,8 +58,8 @@ function getSuggestedResponsable(
         return { id: contrato.tecnico_asignado_id, nombre: contrato.tecnico_asignado_nombre }
       }
       const tecnico = usuarios.find(u => 
-        u.rol === 'tecnico' || u.rol === 'admin' || 
-        u.roles?.includes('tecnico') || u.roles?.includes('admin')
+        u.rol === 'especialista' || u.rol === 'admin' || 
+        u.roles?.includes('especialista') || u.roles?.includes('admin')
       )
       if (tecnico) return { id: tecnico.id, nombre: tecnico.nombre }
       return null

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ButtonInline } from '@/components/ui/button-inline'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,8 @@ import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Reunion, SolicitudReunion, TipoReunion, EstadoReunion, TIPOS_REUNION } from '@/types/calendario'
+import { type User as AuthUser } from '@/types/auth'
+import { type Proyecto } from '@/types/proyectos'
 import { getReunionEstadoColor, getTipoReunionIcon, CALENDAR_STATS_COLORS } from '@/lib/colors'
 import { useProyectos } from '@/hooks'
 import { ManageContactsModal } from '@/components/module/ManageContactsModal'
@@ -92,9 +95,9 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios, use
   isOpen: boolean
   onClose: () => void
   onCreate: (reunion: Omit<Reunion, 'id' | 'creado_en' | 'google_event_id'>) => void
-  proyectos: any[]
-  usuarios: any[]
-  user: any
+  proyectos: Proyecto[]
+  usuarios: AuthUser[]
+  user: AuthUser | null | undefined
   onOpenManageCompany?: (empresaId: string) => void
 }) {
   const isCliente = user?.roles.includes('cliente')
@@ -129,7 +132,7 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios, use
   const usuariosFiltrados = useMemo(() => {
     if (!isCliente) return usuarios
     
-    const rolesAutorizados = ['tecnico', 'facturacion', 'compras', 'admin']
+    const rolesAutorizados = ['especialista', 'facturacion', 'compras', 'admin']
     const proyectoSeleccionado = proyectos.find(p => p.id === reunion.proyecto_id)
     const tecnicoAsignadoId = proyectoSeleccionado?.responsable_id
     
@@ -274,15 +277,11 @@ function NuevaReunionModal({ isOpen, onClose, onCreate, proyectos, usuarios, use
               <div className="flex items-center justify-between mb-2">
                 <Label>{FORM_LABELS_REUNION.asistentesCliente}</Label>
                 {empresaId && (
-                  <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 text-[10px] gap-1 text-cyan-400 hover:text-cyan-300"
-                  onClick={() => empresaId && onOpenManageCompany?.(empresaId)}
-                >
-                    <UserPlus className="h-3 w-3" />
-                    Gestionar Contactos
-                  </Button>
+                  <ButtonInline
+                    onClick={() => empresaId && onOpenManageCompany?.(empresaId)}
+                    icon={UserPlus}
+                    label="Gestionar Contactos"
+                  />
                 )}
               </div>
               {empresaId ? (
@@ -467,11 +466,11 @@ export default function CalendarioPage() {
   const [filtroProyecto, setFiltroProyecto] = useState<string>('todos')
   const [searchQuery, setSearchQuery] = useState<string>('')
   
-  const [allUsers] = useLocalStorage<any[]>(STORAGE_KEYS.usuarios, [])
+  const [allUsers] = useLocalStorage<AuthUser[]>(STORAGE_KEYS.usuarios, [])
 
   const isAdmin = user?.roles.includes('admin')
   const isCliente = user?.roles.includes('cliente')
-  const canCreate = isAdmin || user?.roles.includes('tecnico') || user?.roles.includes('comercial') || isCliente
+  const canCreate = isAdmin || user?.roles.includes('especialista') || user?.roles.includes('comercial') || isCliente
 
   const misProyectos = useMemo(() => {
     if (!isCliente) return proyectos

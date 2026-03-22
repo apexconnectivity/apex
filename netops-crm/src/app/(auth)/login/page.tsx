@@ -12,18 +12,18 @@ import { Zap, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react'
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading } = useAuth()
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [formData, setFormData] = useState({ username: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
 
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { username?: string; password?: string } = {}
 
-    if (!formData.email.trim()) {
-      newErrors.email = "El correo electrónico es requerido"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Ingresa un correo electrónico válido"
+    if (!formData.username.trim()) {
+      newErrors.username = "El nombre de usuario es requerido"
+    } else if (formData.username.trim().length < 3) {
+      newErrors.username = "El nombre de usuario debe tener al menos 3 caracteres"
     }
 
     if (!formData.password) {
@@ -43,7 +43,7 @@ export default function LoginPage() {
     }
 
     try {
-      await login(formData.email, formData.password)
+      await login(formData.username, formData.password)
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
@@ -87,22 +87,22 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-300">
-                  Email
+                  Usuario
                 </label>
                 <Input
-                  type="email"
-                  placeholder="correo@empresa.com"
-                  value={formData.email}
+                  type="text"
+                  placeholder="nombre.usuario"
+                  value={formData.username}
                   onChange={(e) => {
-                    setFormData({ ...formData, email: e.target.value })
-                    if (errors.email) {
-                      setErrors({ ...errors, email: undefined })
+                    setFormData({ ...formData, username: e.target.value })
+                    if (errors.username) {
+                      setErrors({ ...errors, username: undefined })
                     }
                   }}
                   className="bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500"
                   disabled={isLoading}
                 />
-                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
               </div>
 
               <div className="space-y-2">
@@ -170,10 +170,10 @@ export default function LoginPage() {
           <div className="mt-6 p-4 rounded-lg bg-slate-900/50 border border-slate-800">
             <p className="text-xs text-slate-500 mb-2 font-medium">CREDENCIALES DE DEMO</p>
             <div className="space-y-1 text-xs text-slate-400">
-              <p><span className="text-slate-500">Admin:</span> admin@apex.com / admin123</p>
-              <p><span className="text-slate-500">Comercial:</span> comercial@apex.com / comercial123</p>
-              <p><span className="text-slate-500">Técnico:</span> tecnico@apex.com / tecnico123</p>
-              <p><span className="text-slate-500">Cliente:</span> cliente@empresa.com / cliente123</p>
+              <p><span className="text-slate-500">Admin:</span> admin / admin123</p>
+              <p><span className="text-slate-500">Comercial:</span> comercial / demo123</p>
+              <p><span className="text-slate-500">Especialista:</span> especialista / demo123</p>
+              <p><span className="text-slate-500">Cliente:</span> cliente / demo123</p>
             </div>
           </div>
         )}

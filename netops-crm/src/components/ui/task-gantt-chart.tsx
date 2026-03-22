@@ -229,7 +229,7 @@ export function TaskGanttChart({ tasks, className }: TaskGanttChartProps) {
         className="relative"
         style={{ minWidth: LABEL_WIDTH + days.length * DAY_WIDTH }}
       >
-        {ganttTasks.map((ganttTask, index) => {
+        {ganttTasks.map((ganttTask) => {
           const left = getDatePosition(ganttTask.startDate)
           const width = getTaskWidth(ganttTask.duration)
           const task = ganttTask.task
@@ -334,9 +334,9 @@ export function TaskGanttChart({ tasks, className }: TaskGanttChartProps) {
             height: ganttTasks.length * ROW_HEIGHT,
           }}
         >
-          {ganttTasks.map((ganttTask, index) => {
-            const y = index * ROW_HEIGHT + ROW_HEIGHT / 2
-            return ganttTask.dependencies.map((dep) => {
+        {ganttTasks.map((ganttTask, taskIndex) => {
+            const y = taskIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+            return ganttTask.dependencies.map((dep, depIndex) => {
               const targetIndex = ganttTasks.findIndex(gt => gt.task.id === dep.targetId)
               if (targetIndex === -1) return null
               
@@ -345,7 +345,7 @@ export function TaskGanttChart({ tasks, className }: TaskGanttChartProps) {
               const endX = LABEL_WIDTH + getDatePosition(ganttTasks[targetIndex].startDate)
               
               return (
-                <g key={`${dep.targetId}-${index}`}>
+                <g key={`${dep.targetId}-${depIndex}`}>
                   <path
                     d={`M ${startX} ${y} 
                         C ${startX + 20} ${y},

@@ -1,6 +1,32 @@
 export type FaseProyecto = 1 | 2 | 3 | 4 | 5
 
-export type EstadoProyecto = 'activo' | 'cerrado'
+export type EstadoProyecto = 'activo' | 'cerrado' | 'archivado'
+
+// Tipos de contrato para proyectos
+export type TipoContratoProyecto = 
+  | 'Implementación' 
+  | 'Configuración' 
+  | 'Soporte' 
+  | 'Monitoreo'
+  | 'Consultoría'
+  | 'Auditoría'
+  | 'Migración'
+  | 'Desarrollo'
+  | 'Mantenimiento'
+  | 'Otro'
+
+export const TIPOS_CONTRATO_PROYECTO: TipoContratoProyecto[] = [
+  'Implementación',
+  'Configuración',
+  'Soporte',
+  'Monitoreo',
+  'Consultoría',
+  'Auditoría',
+  'Migración',
+  'Desarrollo',
+  'Mantenimiento',
+  'Otro',
+]
 
 import type { Moneda } from './compartidos'
 export { MONEDAS } from './compartidos'
@@ -51,6 +77,7 @@ export interface Proyecto {
   descripcion?: string
   fase_actual: FaseProyecto
   estado: EstadoProyecto
+  tipo_contrato?: TipoContratoProyecto
   fecha_inicio?: string
   fecha_estimada_fin?: string
   fecha_real_fin?: string

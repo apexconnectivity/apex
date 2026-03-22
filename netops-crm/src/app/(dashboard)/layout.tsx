@@ -78,7 +78,7 @@ export default function DashboardLayout({
   const [empresas] = useEmpresas()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [contactos] = useContactos()
-  const [_proyectos, setProyectos] = useProyectos()
+  const [proyectos, setProyectos] = useProyectos()
 
   // Cargar usuarios desde localStorage
   const [usuarios, setUsuarios] = useState<User[]>([])
@@ -192,6 +192,7 @@ export default function DashboardLayout({
         proyecto={null}
         empresas={empresas}
         usuarios={usuarios}
+        proyectos={proyectos}
       />
     </div>
   )

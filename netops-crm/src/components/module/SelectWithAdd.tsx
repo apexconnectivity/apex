@@ -51,7 +51,7 @@ const OPTIONS_BY_TYPE: Record<OptionType, { label: string; value: string }[]> = 
     { label: 'Ambos', value: 'ambos' },
   ],
   tipos_contacto: [
-    { label: 'Técnico', value: 'Técnico' },
+    { label: 'Especialista', value: 'Técnico' },
     { label: 'Comercial', value: 'Comercial' },
     { label: 'Administrativo', value: 'Administrativo' },
     { label: 'Gerencial', value: 'Gerencial' },

@@ -58,7 +58,7 @@ export function WelcomeHeader() {
         </div>
 
         {/* Quick Stats - Solo para internos */}
-        {user?.roles?.some(r => ['admin', 'comercial', 'tecnico'].includes(r)) && (
+        {user?.roles?.some(r => ['admin', 'comercial', 'especialista'].includes(r)) && (
           <div className="flex gap-3">
             {isLoading ? (
               <>
