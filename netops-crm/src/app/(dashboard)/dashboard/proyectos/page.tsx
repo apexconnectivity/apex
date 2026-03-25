@@ -29,17 +29,10 @@ import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { Proyecto, FASES, FaseProyecto, HistorialProyecto } from '@/types/proyectos'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Tarea, EstadoTarea, PLANTILLAS_POR_FASE } from '@/types/tareas'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Empresa } from '@/types/crm'
+import { EstadoTarea, PLANTILLAS_POR_FASE } from '@/types/tareas'
 import { User } from '@/types/auth'
 import { useEmpresas, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { VARIANT_COLORS, STATUS_COLORS, ARCHIVE_CLASSES } from '@/lib/colors'
 
-// Importar constantes
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
@@ -88,9 +81,6 @@ export default function ProyectosPage() {
   const [isModalCerrar, setIsModalCerrar] = useState(false)
   const [proyectoACerrar, setProyectoACerrar] = useState<Proyecto | null>(null)
   const [motivoCierre, setMotivoCierre] = useState('')
-  const [notasCierre, setNotasCierre] = useState('') // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [errorsCierre, setErrorsCierre] = useState<Record<string, string>>({}) // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [isClosing, setIsClosing] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
 
   // Fases del pipeline (usando constante, no editable)
   const fases = FASES
@@ -99,7 +89,6 @@ export default function ProyectosPage() {
   const [isModalArchivar, setIsModalArchivar] = useState(false)
   const [proyectoAArchivar, setProyectoAArchivar] = useState<Proyecto | null>(null)
   const [clasificacionArchivo, setClasificacionArchivo] = useState<'completado' | 'inconcluso'>('completado')
-  const [isArchiving, setIsArchiving] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
 
   // Modal eliminar proyecto (solo admins)
   const [isModalEliminar, setIsModalEliminar] = useState(false)
@@ -107,12 +96,6 @@ export default function ProyectosPage() {
 
   // Historial de proyectos
   const [historialProyectos, setHistorialProyectos] = useHistorialProyectos()
-
-  // Modal nueva empresa
-  const [isModalNuevaEmpresa, setIsModalNuevaEmpresa] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
-
-  // Modal nuevo usuario
-  const [isModalNuevoUsuario, setIsModalNuevoUsuario] = useState(false) // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const agregarHistorial = useCallback((
     proyectoId: string,
@@ -291,15 +274,15 @@ export default function ProyectosPage() {
   }, [proyectos, tareas])
 
   const handleCerrar = useCallback((proyecto: Proyecto) => {
-    setProyectoACerrar(proyecto); setMotivoCierre(''); setNotasCierre(''); setIsModalCerrar(true)
+    setProyectoACerrar(proyecto); setMotivoCierre(''); setIsModalCerrar(true)
   }, [])
 
   const confirmarCerrar = useCallback(() => {
     if (!proyectoACerrar || !motivoCierre) return
-    setIsClosing(true)
     setProyectos(prev => prev.map(p => p.id === proyectoACerrar.id ? { ...p, estado: 'cerrado', fecha_cierre: new Date().toISOString().split('T')[0], motivo_cierre: motivoCierre } : p))
     agregarHistorial(proyectoACerrar.id, 'cierre', `Proyecto cerrado. Motivo: ${motivoCierre}`)
-    setIsClosing(false); setIsModalCerrar(false); setProyectoACerrar(null)
+    setIsModalCerrar(false)
+    setProyectoACerrar(null)
   }, [proyectoACerrar, motivoCierre, setProyectos, agregarHistorial])
 
   const handleReabrir = useCallback((id: string) => {
@@ -355,10 +338,10 @@ export default function ProyectosPage() {
 
   const confirmarArchivar = useCallback(() => {
     if (!proyectoAArchivar) return
-    setIsArchiving(true)
     setProyectos(prev => prev.filter(p => p.id !== proyectoAArchivar.id))
     agregarHistorial(proyectoAArchivar.id, 'archivado', `Archivado como ${clasificacionArchivo}`)
-    setTimeout(() => { setIsArchiving(false); setIsModalArchivar(false); setProyectoAArchivar(null) }, 100)
+    setIsModalArchivar(false)
+    setProyectoAArchivar(null)
   }, [proyectoAArchivar, clasificacionArchivo, setProyectos, agregarHistorial])
 
   const handleNewProyecto = useCallback(() => {
