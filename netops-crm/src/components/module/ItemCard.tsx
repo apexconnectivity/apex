@@ -11,6 +11,7 @@ import {
   PROJECT_CARD_VALUE_COLORS,
   getProjectCardProgressColor,
   getProjectCardTaskDotColor,
+  getProjectCardFaseColor,
 } from '@/lib/colors'
 
 interface ItemMeta {
@@ -43,6 +44,7 @@ interface ProjectCardProps {
   progressLabel?: string
   dueDate?: string
   value?: string
+  fase?: number
   assignee?: {
     name: string
     avatar?: string
@@ -121,6 +123,7 @@ function ProjectCard({
   progressLabel = 'Progreso',
   dueDate,
   value,
+  fase,
   assignee,
   tags,
   tasksInfo,
@@ -129,8 +132,23 @@ function ProjectCard({
   className = '',
   children
 }: ProjectCardProps) {
+  // Obtener colores según la fase del proyecto
+  const faseColors = fase ? getProjectCardFaseColor(fase) : null
+
   return (
-    <ModuleCard onClick={onClick} className={`group ${className}`}>
+    <ModuleCard 
+      onClick={onClick} 
+      className={`group ${className}`}
+      borderColor={faseColors?.border}
+    >
+      {/* Indicador de fase en el borde izquierdo */}
+      {faseColors && (
+        <div 
+          className="absolute top-0 left-0 w-1 h-full rounded-l-xl"
+          style={{ backgroundColor: faseColors.border }}
+        />
+      )}
+      
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm truncate text-foreground">
@@ -152,6 +170,17 @@ function ProjectCard({
         )}
       </div>
 
+      {/* Badge de fase */}
+      {faseColors && (
+        <div className="mb-3 flex items-center gap-2">
+          <span 
+            className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${faseColors.badge.bg} ${faseColors.badge.text} border ${faseColors.badge.border}`}
+          >
+            Fase {fase}
+          </span>
+        </div>
+      )}
+
       {progress !== undefined && (
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
@@ -163,7 +192,7 @@ function ProjectCard({
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${progress}%`,
-                background: getProjectCardProgressColor(progress),
+                background: faseColors?.progressGradient || getProjectCardProgressColor(progress),
               }}
             />
           </div>

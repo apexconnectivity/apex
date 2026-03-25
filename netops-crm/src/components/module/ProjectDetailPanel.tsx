@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Target, Archive, XCircle, User } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, AlertCircle, Calendar, Target, Archive, XCircle, User, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/module/StatusBadge'
 import { PIPELINE_FASE_COLORS } from '@/lib/colors'
@@ -18,6 +18,7 @@ interface ProjectDetailPanelProps {
   historial?: HistorialProyecto[]
   onCerrar?: (proyecto: Proyecto) => void
   onArchivar?: (proyecto: Proyecto) => void
+  onRetrocederFase?: (proyecto: Proyecto) => void
   canClose?: boolean
 }
 
@@ -36,6 +37,7 @@ export function ProjectDetailPanel({
   historial = [],
   onCerrar,
   onArchivar,
+  onRetrocederFase,
   canClose,
 }: ProjectDetailPanelProps) {
   // Filtrar tareas por proyecto_id Y fase actual
@@ -228,8 +230,19 @@ export function ProjectDetailPanel({
       </SidePanelContent>
 
       {/* Footer con acciones */}
-      {(onCerrar || onArchivar) && (
+      {(onCerrar || onArchivar || onRetrocederFase) && (
         <SidePanelFooter>
+          {onRetrocederFase && proyecto.fase_actual > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRetrocederFase(proyecto)}
+              className="flex-1 border-amber-500/50 text-amber-500 hover:bg-amber-500/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retroceder Fase
+            </Button>
+          )}
           {canClose && onCerrar && (
             <Button
               variant="outline"

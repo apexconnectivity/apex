@@ -164,6 +164,9 @@ export default function TareasPage() {
   const [filtroPrioridad, setFiltroPrioridad] = useState<string>('todas')
   const [filtroFechaRange, setFiltroFechaRange] = useState<DateRange>({ from: undefined, to: undefined })
   const [filtroVencidas, setFiltroVencidas] = useState<boolean>(false)
+  
+  // Filtro de fase (para ver tareas de fases anteriores del proyecto)
+  const [filtroFase, setFiltroFase] = useState<number | null>(null)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = tareas.find(t => t.id === selectedId) || null
@@ -192,9 +195,20 @@ export default function TareasPage() {
       if (filtroFechaRange.from && t.fecha_vencimiento && new Date(t.fecha_vencimiento) < filtroFechaRange.from) return false
       if (filtroFechaRange.to && t.fecha_vencimiento && new Date(t.fecha_vencimiento) > filtroFechaRange.to) return false
       if (filtroVencidas && !(t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada')) return false
+      // Filtrar por fase: si hay un filtro de fase activo, mostrar solo tareas de esa fase
+      // Si no hay filtro de fase, mostrar solo tareas de la fase actual de cada proyecto
+      if (filtroFase !== null) {
+        // Filtro de fase específico activo (tareas de fase anterior)
+        if (t.fase_origen !== filtroFase) return false
+      } else {
+        // Sin filtro de fase específico, mostrar solo tareas de la fase actual de cada proyecto
+        // Se aplica tanto cuando hay un proyecto específico seleccionado como cuando se ven todos
+        const proyecto = proyectos.find(p => p.id === t.proyecto_id)
+        if (proyecto && t.fase_origen !== proyecto.fase_actual) return false
+      }
       return true
     })
-  }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaRange, filtroVencidas])
+  }, [tareas, searchQuery, filtroProyecto, filtroPersona, filtroEstado, filtroCategoria, filtroPrioridad, filtroFechaRange, filtroVencidas, filtroFase, proyectos])
 
   const visibleTareas = useMemo(() => {
     if (isAdmin) return filteredTareas
@@ -392,6 +406,7 @@ export default function TareasPage() {
     setFiltroPrioridad('todas')
     setFiltroFechaRange({ from: undefined, to: undefined })
     setFiltroVencidas(false)
+    setFiltroFase(null)
   }
 
   if (!isAdmin && !isComercial && !isTecnico && !isCompras && !user?.roles.includes('cliente')) {
@@ -480,7 +495,7 @@ export default function TareasPage() {
             else if (key === 'categoria') setFiltroCategoria(value)
             else if (key === 'prioridad') setFiltroPrioridad(value)
           }}
-          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas}
+          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas || filtroFase !== null}
           onClearFilters={() => {
             setSearchQuery('')
             setFiltroProyecto('todos')
@@ -489,10 +504,11 @@ export default function TareasPage() {
             setFiltroPrioridad('todas')
             setFiltroFechaRange({ from: undefined, to: undefined })
             setFiltroVencidas(false)
+            setFiltroFase(null)
           }}
         />
 
-        {/* Filtros adicionales: Persona (admin) y Vencidas */}
+        {/* Filtros adicionales: Persona (admin), Fase, Vencidas */}
         <div className="flex items-center gap-4 mb-6">
           {isAdmin && (
             <div className="flex items-center gap-2">
@@ -506,6 +522,26 @@ export default function TareasPage() {
               </Select>
             </div>
           )}
+          {/* Selector de Fase */}
+          <div className="flex items-center gap-2">
+            <Label className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Fase:</Label>
+            <Select 
+              value={filtroFase?.toString() || 'actual'} 
+              onValueChange={(v) => setFiltroFase(v === 'actual' ? null : parseInt(v))}
+            >
+              <SelectTrigger className="w-48 h-9 bg-background/50 border-border/50">
+                <SelectValue placeholder="Fase actual" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="actual">Fase actual</SelectItem>
+                <SelectItem value="1">Fase 1: Prospecto</SelectItem>
+                <SelectItem value="2">Fase 2: Diagnóstico</SelectItem>
+                <SelectItem value="3">Fase 3: Propuesta</SelectItem>
+                <SelectItem value="4">Fase 4: Implementación</SelectItem>
+                <SelectItem value="5">Fase 5: Cierre</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <label className="flex items-center gap-2 cursor-pointer bg-muted/30 px-3 py-1.5 rounded-full border border-border/50 hover:bg-muted/50 transition-colors">
             <Checkbox checked={filtroVencidas} onCheckedChange={(c) => setFiltroVencidas(c as boolean)} />
             <span className="text-xs font-medium text-muted-foreground uppercase">Ver solo vencidas</span>

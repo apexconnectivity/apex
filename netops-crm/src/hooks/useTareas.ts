@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { taskService, type TaskFilters, type TaskGroupResult } from '@/services/taskService'
 import { type Tarea, type CategoriaTarea, type Dependencia } from '@/types/tareas'
 
@@ -16,6 +16,7 @@ export function useTareas(projectId?: string) {
   const [tasks, setTasks] = useState<Tarea[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const hasLoadedRef = useRef(false)
 
   const fetchTasks = useCallback(async () => {
     setIsLoading(true)
@@ -24,7 +25,12 @@ export function useTareas(projectId?: string) {
       const data = projectId 
         ? await taskService.getTasksByProject(projectId)
         : await taskService.getTasks()
-      setTasks(data)
+      
+      // Deduplicar tareas por ID para evitar duplicados
+      const uniqueData = data.filter((task, index, self) => 
+        index === self.findIndex(t => t.id === task.id)
+      )
+      setTasks(uniqueData)
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Error al cargar tareas'))
     } finally {
@@ -33,6 +39,8 @@ export function useTareas(projectId?: string) {
   }, [projectId])
 
   useEffect(() => {
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
     fetchTasks()
   }, [fetchTasks])
 
@@ -68,6 +76,27 @@ export function useTareas(projectId?: string) {
       setTasks(prev => prev.filter(t => t.id !== id))
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Error al eliminar tarea'))
+      throw err
+    }
+  }
+
+  /**
+   * Elimina todas las tareas asociadas a un proyecto
+   */
+  const deleteTasksByProject = async (projectId: string) => {
+    try {
+      // Obtener todas las tareas del proyecto
+      const projectTasks = await taskService.getTasksByProject(projectId)
+      
+      // Eliminar cada tarea
+      for (const task of projectTasks) {
+        await taskService.deleteTask(task.id)
+      }
+      
+      // Actualizar el estado local
+      setTasks(prev => prev.filter(t => t.proyecto_id !== projectId))
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Error al eliminar tareas del proyecto'))
       throw err
     }
   }
@@ -244,6 +273,7 @@ export function useTareas(projectId?: string) {
     createTask,
     updateTask,
     deleteTask,
+    deleteTasksByProject,
     
     // Filtrado y consultas
     getTasksFiltered,

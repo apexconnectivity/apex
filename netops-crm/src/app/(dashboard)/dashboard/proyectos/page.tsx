@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
-import { Plus, ChevronLeft, ChevronRight, FolderKanban, Rocket, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
+import { Plus, FolderKanban, Rocket, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,6 +69,7 @@ export default function ProyectosPage() {
   const tareasHook = useTareas()
   const tareas = tareasHook.tasks
   const createTarea = tareasHook.createTask
+  const deleteTasksByProject = tareasHook.deleteTasksByProject
   const [empresas] = useEmpresas()
 
   // Usuarios reales
@@ -148,6 +149,82 @@ export default function ProyectosPage() {
   const isTecnico = user?.roles.includes('especialista')
   const canMovePhases = isAdmin || isComercial || isTecnico
 
+  // Efecto para avance automático de fase cuando todas las tareas de la fase actual están completadas
+  useEffect(() => {
+    // Solo admins pueden controlar el avance automático de fase
+    if (!isAdmin) return
+    
+    const timer = setTimeout(() => {
+      proyectos.forEach(p => {
+        // Solo proyectos activos que no estén en la última fase
+        if (p.estado !== 'activo' || p.fase_actual >= 5) return
+        
+        // Obtener tareas de la fase actual del proyecto
+        const tareasFaseActual = tareas.filter(t => 
+          t.proyecto_id === p.id && 
+          t.fase_origen === p.fase_actual
+        )
+        
+        // Verificar si hay tareas en esta fase y si todas están completadas
+        if (tareasFaseActual.length > 0) {
+          const todasCompletadas = tareasFaseActual.every(t => t.estado === 'Completada')
+          
+          if (todasCompletadas) {
+            // Avanzar automáticamente a la siguiente fase
+            const faseAnterior = p.fase_actual
+            const faseNueva = faseAnterior + 1
+            const faseNuevaNombre = fases.find(f => f.id === faseNueva)?.nombre
+            const faseAnteriorNombre = fases.find(f => f.id === faseAnterior)?.nombre
+            
+            if (faseAnteriorNombre && faseNuevaNombre) {
+              agregarHistorial(p.id, 'cambio_fase', `Cambió de fase a "${faseNuevaNombre}"`)
+            }
+            
+            // Actualizar el proyecto
+            setProyectos(prev => prev.map(proj => 
+              proj.id === p.id ? { ...proj, fase_actual: faseNueva as FaseProyecto } : proj
+            ))
+            
+            // Crear tareas de la nueva fase SOLO si no existen ya para esa fase
+            const plantillas = PLANTILLAS_POR_FASE.filter(pl => pl.fase_id === faseNueva)
+            if (plantillas.length > 0) {
+              // VERIFICAR SI YA EXISTEN TAREAS PARA ESTA FASE
+              const tareasExistentes = tareas.filter(t => 
+                t.proyecto_id === p.id && 
+                t.fase_origen === faseNueva
+              )
+              
+              if (tareasExistentes.length === 0) {
+                // Crear tareas solo si no existen
+                plantillas.forEach(pl => {
+                  const v = new Date()
+                  v.setDate(v.getDate() + pl.dias_vencimiento)
+                  createTarea({
+                    proyecto_id: p.id,
+                    proyecto_nombre: p.nombre,
+                    fase_origen: faseNueva,
+                    fase_nombre: faseNuevaNombre || '',
+                    categoria: pl.categoria,
+                    nombre: pl.nombre,
+                    descripcion: pl.descripcion,
+                    prioridad: pl.prioridad,
+                    estado: 'Pendiente' as EstadoTarea,
+                    fecha_vencimiento: v.toISOString().split('T')[0],
+                    orden: plantillas.indexOf(pl) + 1,
+                    creado_por: 'Sistema',
+                    asignado_a_cliente: pl.requiere_cliente,
+                  })
+                })
+              }
+            }
+          }
+        }
+      })
+    }, 1000) // Delay para evitar múltiples actualizaciones simultáneas
+
+    return () => clearTimeout(timer)
+  }, [tareas, proyectos, isAdmin, fases, setProyectos, createTarea, agregarHistorial])
+
   const proyectosPorFase = useMemo(() => {
     const r: Record<number, Proyecto[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
     const filtered = proyectos.filter(p => {
@@ -213,53 +290,6 @@ export default function ProyectosPage() {
     return r
   }, [proyectos, tareas])
 
-  const handleFase = useCallback((id: string, fase: number) => {
-    setProyectos(prev => {
-      const proyecto = prev.find(p => p.id === id)
-      if (!proyecto) return prev
-      if (isComercial && fase > 3) return prev
-      if (isTecnico && fase < 4) return prev
-
-      const faseAnterior = proyecto.fase_actual
-      const faseAnteriorNombre = fases.find(f => f.id === faseAnterior)?.nombre
-      const faseNuevaNombre = fases.find(f => f.id === fase)?.nombre
-
-      if (faseAnteriorNombre && faseNuevaNombre) {
-        agregarHistorial(id, 'cambio_fase', `Cambió de fase a "${faseNuevaNombre}"`)
-      }
-
-      if (fase > (faseAnterior || 0)) {
-        const plantillas = PLANTILLAS_POR_FASE.filter(p => p.fase_id === fase)
-        if (plantillas.length > 0) {
-          // Crear tareas usando el servicio
-          const crearTareas = async () => {
-            for (const pl of plantillas) {
-              const v = new Date()
-              v.setDate(v.getDate() + pl.dias_vencimiento)
-              await createTarea({
-                proyecto_id: id,
-                proyecto_nombre: proyecto.nombre,
-                fase_origen: fase,
-                fase_nombre: faseNuevaNombre || '',
-                categoria: pl.categoria,
-                nombre: pl.nombre,
-                descripcion: pl.descripcion,
-                prioridad: pl.prioridad,
-                estado: 'Pendiente' as EstadoTarea,
-                fecha_vencimiento: v.toISOString().split('T')[0],
-                orden: plantillas.indexOf(pl) + 1,
-                creado_por: 'Sistema',
-                asignado_a_cliente: pl.requiere_cliente,
-              })
-            }
-          }
-          crearTareas()
-        }
-      }
-      return prev.map(p => p.id === id ? { ...p, fase_actual: fase as FaseProyecto } : p)
-    })
-  }, [isComercial, isTecnico, fases, setProyectos, createTarea, agregarHistorial])
-
   const handleCerrar = useCallback((proyecto: Proyecto) => {
     setProyectoACerrar(proyecto); setMotivoCierre(''); setNotasCierre(''); setIsModalCerrar(true)
   }, [])
@@ -289,13 +319,18 @@ export default function ProyectosPage() {
     setIsModalEliminar(true)
   }, [])
 
-  const confirmarEliminar = useCallback(() => {
+  const confirmarEliminar = useCallback(async () => {
     if (!proyectoAEliminar) return
+    
+    // Eliminar todas las tareas asociadas al proyecto
+    await deleteTasksByProject(proyectoAEliminar.id)
+    
+    // Eliminar el proyecto
     deleteProyecto(proyectoAEliminar.id)
-    agregarHistorial(proyectoAEliminar.id, 'archivado', 'Eliminado permanentemente')
+    agregarHistorial(proyectoAEliminar.id, 'archivado', 'Proyecto eliminado permanentemente con todas sus tareas')
     setIsModalEliminar(false)
     setProyectoAEliminar(null)
-  }, [proyectoAEliminar, deleteProyecto, agregarHistorial])
+  }, [proyectoAEliminar, deleteProyecto, deleteTasksByProject, agregarHistorial])
 
   const handleArchivar = useCallback((proyecto: Proyecto) => {
     setProyectoAArchivar(proyecto)
@@ -303,6 +338,20 @@ export default function ProyectosPage() {
     setClasificacionArchivo(tFase5.length > 0 && tFase5.every(t => t.estado === 'Completada') ? 'completado' : 'inconcluso')
     setIsModalArchivar(true)
   }, [tareas])
+
+  // Handler para retroceder fase manualmente
+  const handleRetrocederFase = useCallback((proyecto: Proyecto) => {
+    if (proyecto.fase_actual <= 1) return
+    const faseAnterior = (proyecto.fase_actual - 1) as FaseProyecto
+    const faseAnteriorNombre = ['Prospecto', 'Diagnóstico', 'Propuesta', 'Implementación', 'Cierre'][faseAnterior - 1]
+    
+    setProyectos(prev => prev.map(p => 
+      p.id === proyecto.id 
+        ? { ...p, fase_actual: faseAnterior, fase_nombre: faseAnteriorNombre }
+        : p
+    ))
+    agregarHistorial(proyecto.id, 'cambio_fase', `Fase retrocedida manualmente a ${faseAnteriorNombre}`)
+  }, [setProyectos, agregarHistorial])
 
   const confirmarArchivar = useCallback(() => {
     if (!proyectoAArchivar) return
@@ -400,6 +449,7 @@ export default function ProyectosPage() {
               historial={historialProyectos[selected.id] || []}
               onCerrar={isAdmin ? handleCerrar : undefined}
               onArchivar={isAdmin ? handleArchivar : undefined}
+              onRetrocederFase={canMovePhases ? handleRetrocederFase : undefined}
               canClose={isAdmin}
             />
           ) : null
@@ -468,18 +518,12 @@ export default function ProyectosPage() {
                         title={p.nombre}
                         subtitle={p.cliente_nombre}
                         progress={infoTareasPorProyecto[p.id]?.progreso}
+                        fase={p.fase_actual}
                         assignee={{ name: p.responsable_nombre || '' }}
                         tasksInfo={infoTareasPorProyecto[p.id]}
                         onClick={() => setSelectedId(p.id)}
                         onMenuClick={isAdmin ? () => handleEditProyecto(p) : undefined}
-                      >
-                        {canMovePhases && (
-                          <div className="flex gap-1 mt-3 pt-2 border-t border-border/50">
-                            {fase.id > 1 && <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id - 1) }}><ChevronLeft className="h-4 w-4" /></Button>}
-                            {fase.id < 5 && <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleFase(p.id, fase.id + 1) }}><ChevronRight className="h-4 w-4" /></Button>}
-                          </div>
-                        )}
-                      </ProjectCard>
+                      />
                     ))}
                   </div>
                 </div>
