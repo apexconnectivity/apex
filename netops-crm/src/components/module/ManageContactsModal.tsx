@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { Empresa, Contacto } from '@/types/crm'
+import { Empresa, Contacto, type RolContacto } from '@/types/crm'
 import { User } from '@/types/auth'
 import { BaseModal, ModalHeader, ModalBody } from '@/components/base'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Building2,
   UserPlus,
@@ -23,8 +24,17 @@ import {
   Mail,
   Phone,
   Plus,
-  AlertCircle
+  AlertCircle,
+  Receipt,
+  ShoppingCart,
+  Wrench
 } from 'lucide-react'
+
+const ROLES_CONTACTO: { value: RolContacto; label: string; icon: React.ElementType }[] = [
+  { value: 'especializacion', label: 'Especialización', icon: Wrench },
+  { value: 'facturacion', label: 'Facturación', icon: Receipt },
+  { value: 'compras', label: 'Compras', icon: ShoppingCart },
+]
 
 interface ManageContactsModalProps {
   isOpen: boolean
@@ -57,18 +67,34 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
     const now = new Date().toISOString()
     const isNew = !editingContacto.id
     const contactoId = editingContacto.id || crypto.randomUUID()
+    const marcarComoPrincipal = editingContacto.es_principal
 
     // 1. Actualizar lista de contactos
     setContactos(prev => {
-      const updated = isNew
-        ? [...prev, {
+      let updated: Contacto[]
+      
+      if (isNew) {
+        updated = [...prev, {
           ...editingContacto,
           id: contactoId,
           empresa_id: empresaId,
           creado_en: now.split('T')[0],
           es_principal: false
         } as Contacto]
-        : prev.map(c => c.id === contactoId ? { ...c, ...editingContacto } as Contacto : c)
+      } else {
+        updated = prev.map(c => c.id === contactoId ? { ...c, ...editingContacto } as Contacto : c)
+      }
+      
+      // Si se marcó como principal, desmarcar los demás contactos de la empresa
+      if (marcarComoPrincipal) {
+        updated = updated.map(c => {
+          if (c.empresa_id === empresaId && c.id !== contactoId) {
+            return { ...c, es_principal: false }
+          }
+          return c
+        })
+      }
+      
       return updated
     })
 
@@ -167,7 +193,7 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-semibold text-sm truncate text-foreground">{contacto.nombre}</p>
                               {contacto.es_principal && (
                                 <Badge variant="secondary" className="h-4 text-[9px] uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
@@ -176,6 +202,11 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                               )}
                             </div>
                             <p className="text-[11px] text-muted-foreground truncate">{contacto.cargo || 'Sin cargo definido'}</p>
+                            {contacto.rol && (
+                              <Badge variant="outline" className="h-4 text-[9px] mt-1 bg-primary/5 border-primary/20 text-primary">
+                                {ROLES_CONTACTO.find(r => r.value === contacto.rol)?.label || contacto.rol}
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -185,7 +216,6 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-cyan-500 hover:bg-cyan-500/10"
-                              disabled={contacto.es_principal}
                               onClick={() => {
                                 setEditingContacto(contacto)
                                 setIsEditingContacto(true)
@@ -264,6 +294,22 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="manage_contact_rol" className="text-xs text-muted-foreground">Rol en la empresa</Label>
+                    <select
+                      id="manage_contact_rol"
+                      value={editingContacto?.rol || ''}
+                      onChange={e => setEditingContacto(prev => ({ ...prev, rol: (e.target.value as RolContacto) || undefined }))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Seleccionar rol...</option>
+                      {ROLES_CONTACTO.map(rol => (
+                        <option key={rol.value} value={rol.value}>
+                          {rol.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="manage_contact_telefono" className="text-xs text-muted-foreground">Teléfono de contacto</Label>
                     <InputPhone
                       id="manage_contact_telefono"
@@ -272,6 +318,18 @@ export function ManageContactsModal({ isOpen, onClose, empresaId, isReadOnly = f
                       placeholder="55 1234 5678"
                       className="bg-background/50 h-9"
                     />
+                  </div>
+                  
+                  {/* Opción de contacto principal */}
+                  <div className="flex items-center gap-3 pt-2 border-t border-border/30">
+                    <Checkbox
+                      id="manage_contact_principal"
+                      checked={editingContacto?.es_principal || false}
+                      onCheckedChange={(checked) => setEditingContacto(prev => ({ ...prev, es_principal: checked === true }))}
+                    />
+                    <Label htmlFor="manage_contact_principal" className="text-sm cursor-pointer select-none">
+                      Marcar como contacto principal
+                    </Label>
                   </div>
                 </div>
 

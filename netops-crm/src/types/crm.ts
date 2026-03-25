@@ -24,6 +24,8 @@ export type TipoContacto =
   | 'Soporte'
   | 'Otro'
 
+export type RolContacto = 'especializacion' | 'facturacion' | 'compras'
+
 export type MetodoPago = 'Transferencia' | 'Tarjeta' | 'Efectivo' | 'Cheque' | 'Otro'
 
 import type { Moneda } from './compartidos'
@@ -74,6 +76,7 @@ export interface Contacto {
   telefono?: string
   es_principal: boolean
   recibe_facturas: boolean
+  rol?: RolContacto
   notas?: string
   activo: boolean
   usuario_id?: string

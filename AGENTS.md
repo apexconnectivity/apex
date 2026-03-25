@@ -321,3 +321,33 @@ The project uses `@supabase/ssr` for Server-Side Rendering compatibility:
 - No test framework is currently configured
 - ESLint uses Next.js default configuration
 - Prettier is not explicitly configured (uses editor defaults)
+
+---
+
+## Orchestration Rules (IMPORTANT)
+
+### Orquestador Role
+The **orquestador** agent is the **only entry point** for user requests. Its function is **exclusively to coordinate** other specialized agents:
+
+- **frontend**: Handles UI components, pages, and React code
+- **backend**: Handles server actions, API routes, database operations
+- **research**: Analyzes codebases, generates context documentation
+- **cleanup**: Runs lint, build, and fixes issues
+
+### Mandatory Delegation
+The orquestador **MUST NEVER** execute code directly. Every technical task must be delegated to the appropriate specialized agent.
+
+**Correct workflow:**
+1. Receive user request
+2. Analyze requirements
+3. Delegate to specialized agent (frontend/backend/etc.)
+4. Monitor result
+5. Report back to user
+
+**Incorrect workflow:**
+1. Receive user request
+2. Execute code directly ❌
+3. Report back to user
+
+### Exception
+Only when the user explicitly requests a very small change (e.g., "fix a typo", "add a single comment"), the orquestador may execute it directly, but should still prefer delegation.
