@@ -1,9 +1,9 @@
 import { ReactNode } from 'react'
-import { LucideIcon, MoreHorizontal, AlertTriangle, Calendar } from 'lucide-react'
+import { LucideIcon, AlertTriangle, Calendar, Pencil } from 'lucide-react'
 import { ModuleCard } from './ModuleCard'
 import { StatusBadge } from './StatusBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { ButtonInline } from '@/components/ui/button-inline'
 import { formatDateShort } from '@/lib/date-utils'
 
 interface ItemMeta {
@@ -136,14 +136,12 @@ function ProjectCard({
           )}
         </div>
         {onMenuClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => { e.stopPropagation(); onMenuClick() }}
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <ButtonInline
+            onClick={() => onMenuClick()}
+            icon={Pencil}
+            label="Editar"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         )}
       </div>
 

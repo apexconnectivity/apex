@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface ButtonInlineProps {
-  onClick: () => void
+  onClick?: (e?: React.MouseEvent) => void
   icon: LucideIcon
   label: string
   className?: string
@@ -32,6 +32,11 @@ export function ButtonInline({
   className,
   disabled = false,
 }: ButtonInlineProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    e?.stopPropagation()
+    onClick?.(e)
+  }
+
   return (
     <Button
       variant="ghost"
@@ -43,7 +48,7 @@ export function ButtonInline({
           : 'hover:bg-primary/10 hover:text-primary',
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
     >
       <Icon className="h-3 w-3" />

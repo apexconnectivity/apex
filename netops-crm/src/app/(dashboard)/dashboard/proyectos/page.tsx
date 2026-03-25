@@ -317,6 +317,11 @@ export default function ProyectosPage() {
     setIsModalNuevo(true)
   }, [])
 
+  const handleEditProyecto = useCallback((proyecto: Proyecto) => {
+    setProyectoEditando(proyecto)
+    setIsModalNuevo(true)
+  }, [])
+
   const handleSaveProyecto = useCallback(async (data: Partial<Proyecto>, isNew: boolean) => {
     setIsSaving(true)
     const proyectoId = data.id || crypto.randomUUID()
@@ -466,6 +471,7 @@ export default function ProyectosPage() {
                         assignee={{ name: p.responsable_nombre || '' }}
                         tasksInfo={infoTareasPorProyecto[p.id]}
                         onClick={() => setSelectedId(p.id)}
+                        onMenuClick={isAdmin ? () => handleEditProyecto(p) : undefined}
                       >
                         {canMovePhases && (
                           <div className="flex gap-1 mt-3 pt-2 border-t border-border/50">
