@@ -2,7 +2,7 @@
 // Constantes centralizadas para el módulo de Compras
 // ============================================
 
-import { APP_COLORS } from './colors'
+import { APP_COLORS } from '@/lib/colors'
 
 // ============================================
 // IMPUESTOS

@@ -81,7 +81,6 @@ export function CreateEmpresaModal({
 }: CreateEmpresaModalProps) {
   const [formData, setFormData] = useState<Partial<Empresa>>(EMPRESA_VACIA)
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
-  const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
   const isSubmittingRef = React.useRef(false)
 
   const isEditing = !!empresa?.id
@@ -99,36 +98,27 @@ export function CreateEmpresaModal({
   }, [open, empresa])
 
   // Función para verificar si el formulario tiene los campos obligatorios llenos
+  // Usa las funciones de validación importadas
   const canSave = (): boolean => {
-    // Nombre: requerido, mínimo 3 caracteres
-    if (!formData.nombre?.trim() || formData.nombre.trim().length < 3) {
-      return false
-    }
-    // Razón Social: requerida
-    if (!formData.razon_social?.trim()) {
-      return false
-    }
-    // Tipo de entidad: requerido
-    if (!formData.tipo_entidad) {
-      return false
-    }
-    // Tipo de relación: requerido
-    if (!formData.tipo_relacion) {
-      return false
-    }
-    // Teléfono: requerido, 10 dígitos
-    const digits = formData.telefono_principal?.replace(/\s/g, '') || ''
-    if (digits.length < 10) {
-      return false
-    }
-    return true
+    const nombreValid = validateRequired(formData.nombre)
+    const razonSocialValid = validateRequired(formData.razon_social)
+    const telefonoDigits = formData.telefono_principal?.replace(/\s/g, '') || ''
+    const nombreTrim = formData.nombre?.trim() ?? ''
+    
+    return Boolean(
+      nombreValid.isValid &&
+      nombreTrim.length >= 3 &&
+      razonSocialValid.isValid &&
+      formData.tipo_entidad &&
+      formData.tipo_relacion &&
+      telefonoDigits.length >= 10
+    )
   }
 
   const handleSave = async () => {
     // Bloqueo sincrónico: si ya hay un submit en curso, ignorar
     if (isSubmittingRef.current || isSaving) return
     isSubmittingRef.current = true
-    setIsSubmittingLocal(true)
 
     // Recopilar TODOS los errores de validación en un solo objeto
     const validationErrors: Record<string, string> = {}
@@ -210,7 +200,6 @@ export function CreateEmpresaModal({
     if (Object.keys(validationErrors).length > 0) {
       setLocalErrors(validationErrors)
       isSubmittingRef.current = false
-      setIsSubmittingLocal(false)
       return
     }
 
@@ -220,13 +209,11 @@ export function CreateEmpresaModal({
     } catch (error) {
       console.error('Error guardando empresa:', error)
       isSubmittingRef.current = false
-      setIsSubmittingLocal(false)
       return // No cerrar el modal si hay error
     }
 
     // Desbloquear y cerrar el modal solo si el guardado fue exitoso
     isSubmittingRef.current = false
-    setIsSubmittingLocal(false)
     onOpenChange(false)
   }
 
@@ -507,8 +494,8 @@ export function CreateEmpresaModal({
         <Button variant="outline" className="flex-1" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button className="flex-1" onClick={handleSave} disabled={isSaving || isSubmittingLocal || !canSave()}>
-          {(isSaving || isSubmittingLocal) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving || isSubmittingRef.current || !canSave()}>
+          {(isSaving || isSubmittingRef.current) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           Guardar
         </Button>
       </ModalFooter>

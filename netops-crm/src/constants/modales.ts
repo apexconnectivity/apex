@@ -7,7 +7,7 @@
  */
 
 import { LucideIcon } from 'lucide-react'
-import { APP_COLORS } from './colors'
+import { APP_COLORS } from '@/lib/colors'
 import { COMMON_BUTTONS, COMMON_MESSAGES } from './common_text'
 import {
   Plus,

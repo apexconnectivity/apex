@@ -4,7 +4,7 @@
  */
 
 import type { StatVariant } from "@/components/ui/mini-stat"
-import { APP_COLORS, CHART_PALETTE } from "./colors"
+import { APP_COLORS, CHART_PALETTE } from '@/lib/colors'
 
 // ============================================================================
 // COLORES PARA GRÁFICOS

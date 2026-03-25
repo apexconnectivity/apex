@@ -3,6 +3,7 @@ import { ModuleCard } from './ModuleCard'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { TipoEntidad } from '@/types/crm'
+import { TIPO_COLORS, TIPO_LABELS } from '@/lib/colors'
 
 interface EmpresaCardProps {
   empresa: {
@@ -22,30 +23,6 @@ interface EmpresaCardProps {
   onClick?: () => void
   onMenuClick?: () => void
   className?: string
-}
-
-const TIPO_COLORS = {
-  cliente: {
-    bg: 'bg-cyan-500/20',
-    text: 'text-cyan-400',
-    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  },
-  proveedor: {
-    bg: 'bg-amber-500/20',
-    text: 'text-amber-400',
-    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  },
-  ambos: {
-    bg: 'bg-purple-500/20',
-    text: 'text-purple-400',
-    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  },
-}
-
-const TIPO_LABELS = {
-  cliente: 'Cliente',
-  proveedor: 'Proveedor',
-  ambos: 'Ambos',
 }
 
 export function EmpresaCard({

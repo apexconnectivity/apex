@@ -16,24 +16,7 @@ import type { User } from '@/types/auth'
 import type { Contacto as ContactoType } from '@/types/crm'
 import type { Ticket } from '@/types/soporte'
 import { ModalVariant } from '@/constants/modales'
-
-const TIPO_COLORS = {
-  cliente: {
-    bg: 'bg-cyan-500/20',
-    text: 'text-cyan-400',
-    label: 'Cliente',
-  },
-  proveedor: {
-    bg: 'bg-amber-500/20',
-    text: 'text-amber-400',
-    label: 'Proveedor',
-  },
-  ambos: {
-    bg: 'bg-purple-500/20',
-    text: 'text-purple-400',
-    label: 'Ambos',
-  },
-}
+import { TIPO_COLORS } from '@/lib/colors'
 
 interface EmpresaDetailModalProps {
   open: boolean

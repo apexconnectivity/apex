@@ -19,21 +19,21 @@ import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// Lazy loading para modales grandes con preload
+// Lazy loading para modales grandes
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CreateEmpresaModal = dynamic(
   () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
-  // @ts-ignore - preload is supported in Next.js 14 but types are not updated
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
 )
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ManageContactsModal = dynamic(
   () => import('@/components/module/ManageContactsModal').then(mod => mod.ManageContactsModal),
-  // @ts-ignore
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
 )
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EmpresaDetailModal = dynamic(
   () => import('@/components/module/EmpresaDetailModal').then(mod => mod.EmpresaDetailModal),
-  // @ts-ignore
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false, preload: true } as never
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
 )
 import {
   Building2,
@@ -60,15 +60,15 @@ import {
   PAGE_DESCRIPTION,
   BUTTON_LABELS,
   ALERT_LABELS,
-
   ACCESS_MESSAGES,
+  DIAS_INACTIVIDAD_PROSPECTO,
+  EMPRESAS_ASIGNADAS_TECNICO,
 } from '@/constants/crm'
 import { STORAGE_KEYS } from '@/constants/storage'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
 // ============================================
-const DIAS_INACTIVIDAD_PROSPECTO = 60
 const EMPRESAS_VACIA: Partial<Empresa> = {
   nombre: '',
   tipo_entidad: 'cliente',
@@ -259,8 +259,8 @@ export default function CRMPage() {
   // MEMOIZACIÓN: Filtrado de empresas
   // ============================================
   const filteredEmpresas = useMemo(() => {
-    // Simulación: IDs de empresas asignadas al técnico (en producción vendría de proyectos)
-    const empresasAsignadasTecnico = isTecnico ? ['1', '3'] : []
+    // IDs de empresas asignadas al técnico (usando constante centralizada)
+    const empresasAsignadasTecnico = isTecnico ? [...EMPRESAS_ASIGNADAS_TECNICO] : []
 
     return empresas.filter(e => {
       // Restricción de técnicos: solo ven clientes de proyectos asignados
@@ -323,31 +323,9 @@ export default function CRMPage() {
     return contactosByEmpresa.get(empresaId) || []
   }, [contactosByEmpresa])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getDocumentos = useCallback((empresaId: string) => {
-    return documentosByEmpresa.get(empresaId) || []
-  }, [documentosByEmpresa])
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getDocumentosInternos = useCallback((empresaId: string) => {
-    return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'interno')
-  }, [documentosByEmpresa])
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getDocumentosPublicos = useCallback((empresaId: string) => {
-    return (documentosByEmpresa.get(empresaId) || []).filter(d => d.visibilidad === 'publico')
-  }, [documentosByEmpresa])
-
   const getProyectos = useCallback((empresaId: string) => {
     return proyectosByEmpresa.get(empresaId) || []
   }, [proyectosByEmpresa])
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getTickets = useCallback((empresaId: string) => {
-    const empresaProyectos = proyectosByEmpresa.get(empresaId) || []
-    const proyectosIds = empresaProyectos.map(p => p.id!).filter(Boolean)
-    return tickets.filter(t => t.proyecto_id && proyectosIds.includes(t.proyecto_id))
-  }, [proyectosByEmpresa, tickets])
 
   // ============================================
   // MEMOIZACIÓN: Estadísticas

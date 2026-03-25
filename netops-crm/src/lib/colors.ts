@@ -908,6 +908,92 @@ export const ARCHIVE_CLASSES = {
 // COLORES PARA TARJETAS DE PROYECTO (ProjectCard)
 // ==========================================
 
+// Colores para tarjetas según la fase del pipeline
+// Proporciona diferenciación visual clara para cada etapa
+export const PROJECT_CARD_FASE_COLORS = {
+  // Fase 1: Prospecto (gris - evaluación inicial)
+  1: {
+    border: '#6b7280',           // gray-500
+    borderHover: '#9ca3af',      // gray-400
+    accent: '#6b7280',           // gray-500
+    gradient: 'from-gray-500/10 to-slate-500/10',
+    progress: '#6b7280',         // gray-500
+    progressGradient: 'linear-gradient(to right, #6b7280, #9ca3af)',
+    badge: {
+      bg: 'bg-gray-500/15',
+      text: 'text-gray-400',
+      border: 'border-gray-500/30',
+    },
+  },
+  // Fase 2: Diagnóstico (azul - análisis y evaluación)
+  2: {
+    border: '#3b82f6',           // blue-500
+    borderHover: '#60a5fa',      // blue-400
+    accent: '#3b82f6',           // blue-500
+    gradient: 'from-blue-500/10 to-indigo-500/10',
+    progress: '#3b82f6',         // blue-500
+    progressGradient: 'linear-gradient(to right, #3b82f6, #60a5fa)',
+    badge: {
+      bg: 'bg-blue-500/15',
+      text: 'text-blue-400',
+      border: 'border-blue-500/30',
+    },
+  },
+  // Fase 3: Propuesta (amarillo - negociación)
+  3: {
+    border: '#eab308',           // yellow-500
+    borderHover: '#facc15',      // yellow-400
+    accent: '#eab308',           // yellow-500
+    gradient: 'from-yellow-500/10 to-amber-500/10',
+    progress: '#eab308',         // yellow-500
+    progressGradient: 'linear-gradient(to right, #eab308, #facc15)',
+    badge: {
+      bg: 'bg-yellow-500/15',
+      text: 'text-yellow-400',
+      border: 'border-yellow-500/30',
+    },
+  },
+  // Fase 4: Implementación (emerald - ejecución)
+  4: {
+    border: '#10b981',           // emerald-500
+    borderHover: '#34d399',      // emerald-400
+    accent: '#10b981',           // emerald-500
+    gradient: 'from-emerald-500/10 to-green-500/10',
+    progress: '#10b981',         // emerald-500
+    progressGradient: 'linear-gradient(to right, #10b981, #34d399)',
+    badge: {
+      bg: 'bg-emerald-500/15',
+      text: 'text-emerald-400',
+      border: 'border-emerald-500/30',
+    },
+  },
+  // Fase 5: Cierre (violeta - завершение)
+  5: {
+    border: '#8b5cf6',           // violet-500
+    borderHover: '#a78bfa',      // violet-400
+    accent: '#8b5cf6',           // violet-500
+    gradient: 'from-violet-500/10 to-purple-500/10',
+    progress: '#8b5cf6',         // violet-500
+    progressGradient: 'linear-gradient(to right, #8b5cf6, #a78bfa)',
+    badge: {
+      bg: 'bg-violet-500/15',
+      text: 'text-violet-400',
+      border: 'border-violet-500/30',
+    },
+  },
+} as const
+
+// Tipo para las claves de fase
+export type FaseProyectoKey = 1 | 2 | 3 | 4 | 5
+
+/**
+ * Obtiene la configuración de color para una tarjeta de proyecto según su fase
+ */
+export function getProjectCardFaseColor(fase: number) {
+  const key = fase as FaseProyectoKey
+  return PROJECT_CARD_FASE_COLORS[key] || PROJECT_CARD_FASE_COLORS[1]
+}
+
 // Colores para barra de progreso según nivel
 export const PROJECT_CARD_PROGRESS_COLORS = {
   high: {
@@ -950,6 +1036,50 @@ export function getProjectCardProgressColor(progress: number): string {
   if (progress > 70) return PROJECT_CARD_PROGRESS_COLORS.high.gradient
   if (progress > 30) return PROJECT_CARD_PROGRESS_COLORS.medium.gradient
   return PROJECT_CARD_PROGRESS_COLORS.low.gradient
+}
+
+// ==========================================
+// COLORES PARA TIPOS DE ENTIDAD DE EMPRESA (CRM)
+// ==========================================
+
+import type { TipoEntidad } from '@/types/crm'
+
+/**
+ * Colores para cada tipo de entidad de empresa
+ */
+export const TIPO_COLORS: Record<TipoEntidad, {
+  bg: string
+  text: string
+  badge: string
+  label: string
+}> = {
+  cliente: {
+    bg: 'bg-cyan-500/20',
+    text: 'text-cyan-400',
+    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    label: 'Cliente',
+  },
+  proveedor: {
+    bg: 'bg-amber-500/20',
+    text: 'text-amber-400',
+    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    label: 'Proveedor',
+  },
+  ambos: {
+    bg: 'bg-purple-500/20',
+    text: 'text-purple-400',
+    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    label: 'Ambos',
+  },
+}
+
+/**
+ * Etiquetas para cada tipo de entidad de empresa
+ */
+export const TIPO_LABELS: Record<TipoEntidad, string> = {
+  cliente: 'Cliente',
+  proveedor: 'Proveedor',
+  ambos: 'Ambos',
 }
 
 /**

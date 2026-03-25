@@ -7,6 +7,7 @@ interface ModuleCardProps {
   hover?: boolean
   className?: string
   noPadding?: boolean
+  borderColor?: string
 }
 
 /**
@@ -20,7 +21,8 @@ export function ModuleCard({
   onClick,
   hover = true,
   className = '',
-  noPadding = false
+  noPadding = false,
+  borderColor
 }: ModuleCardProps) {
   return (
     <BaseCard
@@ -30,6 +32,7 @@ export function ModuleCard({
       glowOnHover={hover}
       padding={noPadding ? 'none' : 'md'}
       className={className}
+      borderColor={borderColor}
     >
       {children}
     </BaseCard>

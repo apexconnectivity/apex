@@ -3,7 +3,7 @@
  * Contains all labels, messages, and configuration for the archivos module
  */
 
-import { APP_COLORS } from './colors'
+import { APP_COLORS } from '@/lib/colors'
 import { COMMON_BUTTONS, COMMON_FILTER_LABELS } from './common_text'
 
 // ==========================================

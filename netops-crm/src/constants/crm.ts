@@ -3,6 +3,7 @@
  * Contains all labels, statuses, and configuration for the CRM module
  */
 
+import type { TipoEntidad } from '@/types/crm'
 import { COMMON_BUTTONS, COMMON_FORM_LABELS, COMMON_FILTER_LABELS } from './common_text'
 
 // ==========================================
@@ -232,3 +233,65 @@ export const CRM_EMPTY = {
 export const STATS_LABELS = {
   totalEmpresas: 'Total Empresas',
 } as const
+
+// ============================================
+// MAGIC NUMBERS - Constantes de negocio
+// ============================================
+
+/**
+ * Días de inactividad para considerar un prospecto como inactivo
+ */
+export const DIAS_INACTIVIDAD_PROSPECTO = 60
+
+/**
+ * IDs de empresas asignadas a técnicos (usuarios con rol especialista)
+ * En producción, estos vendrían de la relación proyecto-usuario
+ */
+export const EMPRESAS_ASIGNADAS_TECNICO: readonly string[] = ['1', '3']
+
+/**
+ * Dígitos mínimos requeridos para un número de teléfono válido
+ */
+export const TELEFONO_MIN_DIGITOS = 10
+
+// ==========================================
+// TIPO DE ENTIDAD - Colores y etiquetas para empresa
+// ==========================================
+
+/**
+ * Colores para cada tipo de entidad de empresa
+ */
+export const TIPO_COLORS: Record<TipoEntidad, {
+  bg: string
+  text: string
+  badge: string
+  label: string
+}> = {
+  cliente: {
+    bg: 'bg-cyan-500/20',
+    text: 'text-cyan-400',
+    badge: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+    label: 'Cliente',
+  },
+  proveedor: {
+    bg: 'bg-amber-500/20',
+    text: 'text-amber-400',
+    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    label: 'Proveedor',
+  },
+  ambos: {
+    bg: 'bg-purple-500/20',
+    text: 'text-purple-400',
+    badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    label: 'Ambos',
+  },
+}
+
+/**
+ * Etiquetas para cada tipo de entidad de empresa
+ */
+export const TIPO_LABELS: Record<TipoEntidad, string> = {
+  cliente: 'Cliente',
+  proveedor: 'Proveedor',
+  ambos: 'Ambos',
+}

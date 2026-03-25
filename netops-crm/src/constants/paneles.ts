@@ -7,7 +7,7 @@
  * import { SIDE_PANEL_VARIANT_COLORS, getSidePanelVariantColor, type SidePanelVariant } from '@/constants/paneles'
  */
 
-import { APP_COLORS } from './colors'
+import { APP_COLORS } from '@/lib/colors'
 
 // ============================================================================
 // TIPOS
