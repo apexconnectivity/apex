@@ -5,6 +5,13 @@ import { StatusBadge } from './StatusBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ButtonInline } from '@/components/ui/button-inline'
 import { formatDateShort } from '@/lib/date-utils'
+import {
+  PROJECT_CARD_PROGRESS_COLORS,
+  PROJECT_CARD_TASK_DOTS,
+  PROJECT_CARD_VALUE_COLORS,
+  getProjectCardProgressColor,
+  getProjectCardTaskDotColor,
+} from '@/lib/colors'
 
 interface ItemMeta {
   label: string
@@ -151,10 +158,13 @@ function ProjectCard({
             <span className="text-muted-foreground">{progressLabel}</span>
             <span className="font-medium">{progress}%</span>
           </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${progress}%`,
+                background: getProjectCardProgressColor(progress),
+              }}
             />
           </div>
         </div>
@@ -162,13 +172,22 @@ function ProjectCard({
 
       {tags && tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
-          {tags.map((tag, idx) => (
-            <StatusBadge
-              key={idx}
-              status={tag.label}
-              className="bg-slate-700/50 text-slate-300 text-xs hover:bg-slate-700/70"
-            />
-          ))}
+          {tags.map((tag, idx) => {
+            const tagColor = tag.color || PROJECT_CARD_PROGRESS_COLORS.high.gradient
+            return (
+              <span
+                key={idx}
+                className="px-2 py-0.5 rounded-full text-xs font-medium"
+                style={{
+                  backgroundColor: tag.color ? `${tag.color}20` : `${tagColor}20`,
+                  color: tag.color || PROJECT_CARD_TASK_DOTS.completed,
+                  border: tag.color ? `1px solid ${tag.color}40` : `1px solid ${PROJECT_CARD_TASK_DOTS.completed}40`,
+                }}
+              >
+                {tag.label}
+              </span>
+            )
+          })}
         </div>
       )}
 
@@ -178,17 +197,23 @@ function ProjectCard({
             <span className="text-muted-foreground">
               {tasksInfo.completadas}/{tasksInfo.total} tareas
             </span>
-            <div className="flex gap-0.5">
-              {Array.from({ length: tasksInfo.total }).map((_, i) => (
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(tasksInfo.total, 8) }).map((_, i) => (
                 <span
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    i < tasksInfo.completadas ? 'bg-emerald-500' :
-                    i < tasksInfo.completadas + tasksInfo.enProgreso ? 'bg-blue-500' :
-                    'bg-slate-400'
-                  }`}
+                  className="w-1.5 h-1.5 rounded-full ring-1 ring-white/20"
+                  style={{
+                    backgroundColor: getProjectCardTaskDotColor(
+                      i,
+                      tasksInfo.completadas,
+                      tasksInfo.enProgreso
+                    ),
+                  }}
                 />
               ))}
+              {tasksInfo.total > 8 && (
+                <span className="text-[10px] text-muted-foreground">+{tasksInfo.total - 8}</span>
+              )}
             </div>
           </div>
           
@@ -216,7 +241,7 @@ function ProjectCard({
         )}
         <div className="flex items-center gap-2 ml-auto">
           {value && (
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">
+            <span className={`text-xs font-bold px-2 py-1 rounded-lg bg-gradient-to-r ${PROJECT_CARD_VALUE_COLORS.gradient} ${PROJECT_CARD_VALUE_COLORS.text} border ${PROJECT_CARD_VALUE_COLORS.border}`}>
               {value}
             </span>
           )}

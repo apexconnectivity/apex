@@ -903,3 +903,64 @@ export const ARCHIVE_CLASSES = {
     border: 'border-amber-500/30',
   },
 } as const
+
+// ==========================================
+// COLORES PARA TARJETAS DE PROYECTO (ProjectCard)
+// ==========================================
+
+// Colores para barra de progreso según nivel
+export const PROJECT_CARD_PROGRESS_COLORS = {
+  high: {
+    gradient: 'linear-gradient(to right, #10b981, #34d399)', // success -> success-400
+    label: 'Alto',
+  },
+  medium: {
+    gradient: 'linear-gradient(to right, #f59e0b, #fbbf24)', // warning -> warning-400
+    label: 'Medio',
+  },
+  low: {
+    gradient: 'linear-gradient(to right, #ef4444, #f87171)', // danger -> danger-400
+    label: 'Bajo',
+  },
+} as const
+
+// Colores para indicadores de tareas (dots)
+export const PROJECT_CARD_TASK_DOTS = {
+  completed: '#10b981',   // emerald-500
+  inProgress: '#f59e0b',   // amber-500 (warning)
+  pending: '#6b7280',      // gray-500 (neutral)
+} as const
+
+// Colores para valor del proyecto (badge)
+export const PROJECT_CARD_VALUE_COLORS = {
+  bg: 'bg-violet-500/20',
+  border: 'border-violet-500/30',
+  gradient: 'from-violet-500/20 to-purple-500/20',
+  text: 'text-violet-600 dark:text-violet-400',
+} as const
+
+// ==========================================
+// FUNCIONES HELPER PARA PROJECT CARD
+// ==========================================
+
+/**
+ * Obtiene el color de progreso según el porcentaje
+ */
+export function getProjectCardProgressColor(progress: number): string {
+  if (progress > 70) return PROJECT_CARD_PROGRESS_COLORS.high.gradient
+  if (progress > 30) return PROJECT_CARD_PROGRESS_COLORS.medium.gradient
+  return PROJECT_CARD_PROGRESS_COLORS.low.gradient
+}
+
+/**
+ * Obtiene el color de un dot de tarea según su estado
+ */
+export function getProjectCardTaskDotColor(
+  index: number,
+  completed: number,
+  inProgress: number
+): string {
+  if (index < completed) return PROJECT_CARD_TASK_DOTS.completed
+  if (index < completed + inProgress) return PROJECT_CARD_TASK_DOTS.inProgress
+  return PROJECT_CARD_TASK_DOTS.pending
+}
