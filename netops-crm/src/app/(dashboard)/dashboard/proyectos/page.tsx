@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ModuleHeader, ModuleCard, ProjectCard, ModuleContainerWithPanel } from '@/components/module'
+import { ModuleHeader, ModuleCard, KanbanCard, ModuleContainerWithPanel } from '@/components/module'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -495,19 +495,26 @@ export default function ProyectosPage() {
                     <Badge variant="secondary" className="ml-auto">{proyectosPorFase[fase.id]?.length || 0}</Badge>
                   </div>
                   <div className="space-y-3">
-                    {proyectosPorFase[fase.id]?.map(p => (
-                      <ProjectCard
-                        key={p.id}
-                        title={p.nombre}
-                        subtitle={p.cliente_nombre}
-                        progress={infoTareasPorProyecto[p.id]?.progreso}
-                        fase={p.fase_actual}
-                        assignee={{ name: p.responsable_nombre || '' }}
-                        tasksInfo={infoTareasPorProyecto[p.id]}
-                        onClick={() => setSelectedId(p.id)}
-                        onMenuClick={isAdmin ? () => handleEditProyecto(p) : undefined}
-                      />
-                    ))}
+                    {proyectosPorFase[fase.id]?.map(p => {
+                      const faseColors: Record<number, string> = {
+                        1: '#64748b', // Prospecto
+                        2: '#3b82f6', // Diagnóstico
+                        3: '#f59e0b', // Propuesta
+                        4: '#10b981', // Implementación
+                        5: '#8b5cf6', // Cierre
+                      }
+                      return (
+                        <KanbanCard
+                          key={p.id}
+                          title={p.nombre}
+                          subtitle={p.cliente_nombre}
+                          progress={infoTareasPorProyecto[p.id]?.progreso}
+                          indicatorColor={faseColors[p.fase_actual] || '#64748b'}
+                          assignee={{ name: p.responsable_nombre || '' }}
+                          onClick={() => setSelectedId(p.id)}
+                        />
+                      )
+                    })}
                   </div>
                 </div>
               ))}

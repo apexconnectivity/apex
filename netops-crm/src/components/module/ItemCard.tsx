@@ -37,6 +37,154 @@ interface ItemCardProps {
   children?: ReactNode
 }
 
+// ============================================================================
+// KanbanCard - Componente base para tarjetas de Kanban/Pipeline
+// Usado por: Proyectos, Tareas, Soporte
+// ============================================================================
+
+interface KanbanCardProps {
+  /** Título principal */
+  title: string
+  /** Subtítulo/descripción breve */
+  subtitle?: string
+  /** Color del indicador lateral (borde) */
+  indicatorColor?: string
+  /** Fecha de vencimiento */
+  dueDate?: string
+  /** Etiquetas/badges */
+  badges?: { label: string; color?: string }[]
+  /** Responsable */
+  assignee?: { name: string; avatar?: string }
+  /** Progress bar */
+  progress?: number
+  progressLabel?: string
+  /** Valor monetario */
+  value?: string
+  /** Click handler */
+  onClick?: () => void
+  /** Clase CSS adicional */
+  className?: string
+  /** Contenido adicional */
+  children?: ReactNode
+}
+
+/**
+ * KanbanCard - Tarjeta base para pipelines/Kanban
+ * Incluye:
+ * - Borde lateral coloreable según tipo/estado/fase
+ * - Título y subtítulo
+ * - Progress bar opcional
+ * - Badges/etiquetas
+ * - Responsable con avatar
+ * - Fecha
+ */
+export function KanbanCard({
+  title,
+  subtitle,
+  indicatorColor,
+  dueDate,
+  badges,
+  assignee,
+  progress,
+  progressLabel = 'Progreso',
+  value,
+  onClick,
+  className = '',
+  children
+}: KanbanCardProps) {
+  return (
+    <ModuleCard 
+      onClick={onClick} 
+      className={`group relative ${className}`}
+      borderColor={indicatorColor}
+    >
+      {/* Indicador lateral de color */}
+      {indicatorColor && (
+        <div 
+          className="absolute top-0 left-0 w-1 h-full rounded-l-xl"
+          style={{ backgroundColor: indicatorColor }}
+        />
+      )}
+      
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm truncate text-foreground">
+            {title}
+          </h4>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground truncate">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Badges */}
+      {badges && badges.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {badges.map((badge, idx) => (
+            <span
+              key={idx}
+              className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
+              style={badge.color ? { backgroundColor: `${badge.color}20`, color: badge.color } : undefined}
+            >
+              {badge.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Progress bar */}
+      {progress !== undefined && (
+        <div className="mb-2">
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-muted-foreground">{progressLabel}</span>
+            <span className="font-medium">{progress}%</span>
+          </div>
+          <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${progress}%`,
+                background: indicatorColor 
+                  ? `linear-gradient(to right, ${indicatorColor}, ${indicatorColor}80)`
+                  : getProjectCardProgressColor(progress),
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+        {dueDate && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>{dueDate}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 ml-auto">
+          {value && (
+            <span className="text-xs font-medium text-emerald-400">
+              {value}
+            </span>
+          )}
+          {assignee && (
+            <Avatar className="h-6 w-6 border border-border">
+              <AvatarImage src={assignee.avatar} />
+              <AvatarFallback className="text-[10px]">
+                {assignee.name.split(' ').map((n) => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+          )}
+        </div>
+      </div>
+
+      {children}
+    </ModuleCard>
+  )
+}
+
 interface ProjectCardProps {
   title: string
   subtitle?: string
@@ -135,44 +283,26 @@ function ProjectCard({
   // Obtener colores según la fase del proyecto
   const faseColors = fase ? getProjectCardFaseColor(fase) : null
 
+  // ========================================================================
+  // RENDER: ProjectCard (usa KanbanCard como base)
+  // ========================================================================
   return (
-    <ModuleCard 
-      onClick={onClick} 
-      className={`group ${className}`}
-      borderColor={faseColors?.border}
+    <KanbanCard
+      title={title}
+      subtitle={subtitle}
+      indicatorColor={faseColors?.border}
+      progress={progress}
+      progressLabel={progressLabel}
+      dueDate={dueDate}
+      value={value}
+      assignee={assignee}
+      badges={tags?.map(tag => ({ label: tag.label || String(tag) }))}
+      onClick={onClick}
+      className={className}
     >
-      {/* Indicador de fase en el borde izquierdo */}
+      {/* Badge de fase adicional */}
       {faseColors && (
-        <div 
-          className="absolute top-0 left-0 w-1 h-full rounded-l-xl"
-          style={{ backgroundColor: faseColors.border }}
-        />
-      )}
-      
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-sm truncate text-foreground">
-            {title}
-          </h4>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground truncate">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        {onMenuClick && (
-          <ButtonInline
-            onClick={() => onMenuClick()}
-            icon={Pencil}
-            label="Editar"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          />
-        )}
-      </div>
-
-      {/* Badge de fase */}
-      {faseColors && (
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-2 flex items-center gap-2">
           <span 
             className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${faseColors.badge.bg} ${faseColors.badge.text} border ${faseColors.badge.border}`}
           >
@@ -181,47 +311,9 @@ function ProjectCard({
         </div>
       )}
 
-      {progress !== undefined && (
-        <div className="mb-3">
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-muted-foreground">{progressLabel}</span>
-            <span className="font-medium">{progress}%</span>
-          </div>
-          <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progress}%`,
-                background: faseColors?.progressGradient || getProjectCardProgressColor(progress),
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {tags && tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {tags.map((tag, idx) => {
-            const tagColor = tag.color || PROJECT_CARD_PROGRESS_COLORS.high.gradient
-            return (
-              <span
-                key={idx}
-                className="px-2 py-0.5 rounded-full text-xs font-medium"
-                style={{
-                  backgroundColor: tag.color ? `${tag.color}20` : `${tagColor}20`,
-                  color: tag.color || PROJECT_CARD_TASK_DOTS.completed,
-                  border: tag.color ? `1px solid ${tag.color}40` : `1px solid ${PROJECT_CARD_TASK_DOTS.completed}40`,
-                }}
-              >
-                {tag.label}
-              </span>
-            )
-          })}
-        </div>
-      )}
-
+      {/* Info de tareas (solo si hay) */}
       {tasksInfo && tasksInfo.total > 0 && (
-        <div className="space-y-1 mb-3">
+        <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">
               {tasksInfo.completadas}/{tasksInfo.total} tareas
@@ -240,9 +332,6 @@ function ProjectCard({
                   }}
                 />
               ))}
-              {tasksInfo.total > 8 && (
-                <span className="text-[10px] text-muted-foreground">+{tasksInfo.total - 8}</span>
-              )}
             </div>
           </div>
           
@@ -252,46 +341,22 @@ function ProjectCard({
               <span>{tasksInfo.bloqueadas} bloqueada{tasksInfo.bloqueadas > 1 ? 's' : ''}</span>
             </div>
           )}
-          
-          {tasksInfo.proximaVence && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span>Vence: {formatDateShort(tasksInfo.proximaVence)}</span>
-            </div>
-          )}
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-2 border-t border-border/50">
-        {dueDate && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{dueDate}</span>
-          </div>
-        )}
-        <div className="flex items-center gap-2 ml-auto">
-          {value && (
-            <span className={`text-xs font-bold px-2 py-1 rounded-lg bg-gradient-to-r ${PROJECT_CARD_VALUE_COLORS.gradient} ${PROJECT_CARD_VALUE_COLORS.text} border ${PROJECT_CARD_VALUE_COLORS.border}`}>
-              {value}
-            </span>
-          )}
-          {assignee && (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[10px]">
-                  {assignee.name.split(' ').map((n) => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                {assignee.name}
-              </span>
-            </div>
-          )}
+      {/* Menú de edición */}
+      {onMenuClick && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ButtonInline
+            onClick={() => onMenuClick()}
+            icon={Pencil}
+            label="Editar"
+          />
         </div>
-      </div>
+      )}
 
       {children}
-    </ModuleCard>
+    </KanbanCard>
   )
 }
 

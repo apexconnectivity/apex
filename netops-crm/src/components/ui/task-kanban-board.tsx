@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Circle, Clock, AlertCircle, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { TaskCard } from '@/components/ui/task-card'
+import { KanbanCard } from '@/components/module/ItemCard'
 import { cn } from '@/lib/utils'
 import { type Tarea, type EstadoTarea } from '@/types/tareas'
 
@@ -148,20 +148,37 @@ function KanbanColumn({
             <p className="text-xs">Sin tareas</p>
           </div>
         ) : (
-          tasks.map((tarea) => (
-            <TaskCard
-              key={tarea.id}
-              tarea={tarea}
-              variant="kanban"
-              onClick={() => onTaskClick?.(tarea)}
-              onComplete={() => onTaskComplete?.(tarea)}
-              isDragging={blockedTaskIds.includes(tarea.id)}
-              className={cn(
-                isBlocked && blockedTaskIds.includes(tarea.id) && 'border-red-500/50',
-                isCompleted && 'opacity-75'
-              )}
-            />
-          ))
+          tasks.map((tarea) => {
+            // Color del borde según estado
+            const estadoToColor: Record<EstadoTarea, string> = {
+              'Pendiente': '#64748b',    // slate-500
+              'En progreso': '#3b82f6',   // blue-500
+              'Bloqueada': '#ef4444',    // red-500
+              'Completada': '#10b981',   // emerald-500
+            }
+            const indicatorColor = estadoToColor[tarea.estado] || '#64748b'
+            
+            return (
+              <KanbanCard
+                key={tarea.id}
+                title={tarea.nombre}
+                subtitle={tarea.descripcion ? tarea.descripcion.substring(0, 60) + (tarea.descripcion.length > 60 ? '...' : '') : undefined}
+                indicatorColor={indicatorColor}
+                progress={tarea.estado === 'Completada' ? 100 : tarea.estado === 'En progreso' ? 50 : 0}
+                dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
+                assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
+                badges={[
+                  { label: tarea.prioridad },
+                  { label: tarea.categoria },
+                ]}
+                onClick={() => onTaskClick?.(tarea)}
+                className={cn(
+                  isBlocked && blockedTaskIds.includes(tarea.id) && 'border-red-500/50',
+                  isCompleted && 'opacity-75'
+                )}
+              />
+            )
+          })
         )}
       </div>
     </div>

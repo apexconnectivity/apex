@@ -20,7 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
 import { type User } from '@/types/auth'
-import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader } from '@/components/module'
+import { StatusBadge, ModuleCard, TaskDetailPanel, ModuleContainerWithPanel, ModuleHeader, KanbanCard } from '@/components/module'
 import { CreateTaskModal } from '@/components/module/CreateTaskModal'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
@@ -629,9 +629,26 @@ export default function TareasPage() {
                         <Badge variant="outline" className="bg-background/50 border-border/50 text-[10px] h-5">{tareasPorEstado[estado]?.length || 0}</Badge>
                       </div>
                       <div className="space-y-3 min-h-[500px] bg-muted/10 rounded-2xl p-2 border border-border/5 border-dashed">
-                        {tareasPorEstado[estado]?.map(tarea => (
-                          <TaskCard key={tarea.id} tarea={tarea} onClick={() => setSelectedId(tarea.id)} onStatusChange={handleStatusChange} />
-                        ))}
+                        {tareasPorEstado[estado]?.map(tarea => {
+                          const estadoToColor: Record<string, string> = {
+                            'Pendiente': '#64748b',
+                            'En progreso': '#3b82f6',
+                            'Bloqueada': '#ef4444',
+                            'Completada': '#10b981',
+                          }
+                          return (
+                            <KanbanCard
+                              key={tarea.id}
+                              title={tarea.nombre}
+                              subtitle={tarea.proyecto_nombre}
+                              indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                              badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
+                              dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
+                              assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
+                              onClick={() => setSelectedId(tarea.id)}
+                            />
+                          )
+                        })}
                         {tareasPorEstado[estado]?.length === 0 && (
                           <div className="flex flex-col items-center justify-center h-32 opacity-20 italic text-xs text-center border border-dashed border-border/20 rounded-xl">
                             Sin tareas {estado.toLowerCase()}s

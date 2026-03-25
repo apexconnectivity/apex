@@ -4,12 +4,11 @@ import * as React from "react"
 import { useProyectos } from "@/lib/data"
 import type { Proyecto } from "@/types/proyectos"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ModuleCard } from "@/components/module/ModuleCard"
+import { KanbanCard } from "@/components/module/ItemCard"
 import { PIPELINE_FASE_COLORS } from "@/lib/colors"
 import {
-  Calendar,
   DollarSign,
   TrendingUp,
   Target,
@@ -90,71 +89,6 @@ function mapProyectoToProject(proyecto: Proyecto): Project {
     },
     tags: proyecto.tags || [],
   }
-}
-
-function ProjectCard({ project }: { project: Project }) {
-  return (
-    <ModuleCard className="group">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-sm truncate text-foreground">
-            {project.name}
-          </h4>
-          <p className="text-xs text-muted-foreground truncate">
-            {project.client}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-3">
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-muted-foreground">Progreso</span>
-          <span className="font-medium">{project.progress}%</span>
-        </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
-            style={{ width: `${project.progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Tags */}
-      {project.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {project.tags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="text-[10px] px-1.5 py-0 h-5"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-border/50">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          <span>{project.dueDate}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-green-600 dark:text-green-400">
-            {project.value}
-          </span>
-          <Avatar className="h-6 w-6 border border-border">
-            <AvatarImage src={project.assignee.avatar} />
-            <AvatarFallback className="text-[10px]">
-              {project.assignee.name.split(" ").map((n) => n[0]).join("")}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-    </ModuleCard>
-  )
 }
 
 interface ProjectPipelineProps {
@@ -322,7 +256,17 @@ export function ProjectPipeline({
             {/* Projects */}
             <div className="space-y-3">
               {phase.projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <KanbanCard
+                  key={project.id}
+                  title={project.name}
+                  subtitle={project.client}
+                  progress={project.progress}
+                  indicatorColor={getFaseColor(project.phase)}
+                  dueDate={project.dueDate}
+                  value={project.value}
+                  assignee={project.assignee}
+                  badges={project.tags.map(tag => ({ label: tag }))}
+                />
               ))}
             </div>
           </div>

@@ -39,6 +39,7 @@ import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWit
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { StatusBadge } from '@/components/module/StatusBadge'
+import { KanbanCard } from '@/components/module/ItemCard'
 import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
 import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Plus } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
@@ -54,6 +55,20 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
   const isSlaWarning = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && !ticket.fecha_primera_respuesta
   const isSlaBreached = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && ticket.estado !== 'Resuelto' && ticket.estado !== 'Cerrado'
 
+  // Color según estado del ticket
+  const getStatusIndicatorColor = (estado: string): string => {
+    switch (estado) {
+      case 'Abierto': return '#ef4444' // red
+      case 'En progreso': return '#3b82f6' // blue
+      case 'Esperando cliente': return '#f59e0b' // amber
+      case 'Resuelto': return '#10b981' // green
+      case 'Cerrado': return '#6b7280' // gray
+      default: return '#6b7280'
+    }
+  }
+
+  const indicatorColor = getStatusIndicatorColor(ticket.estado)
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     transition,
@@ -61,38 +76,32 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
 
   return (
     <div ref={setNodeRef} style={style} className={isDragging ? 'opacity-50' : ''}>
-      <ModuleCard onClick={onClick} noPadding>
-        <CardContent className="p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded" onClick={(e) => e.stopPropagation()}>
-                <GripVertical className="h-3 w-3 text-muted-foreground" />
-              </button>
-              <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('error').text}`} />}
-              {isSlaWarning && !isSlaBreached && <AlertCircle className={`h-4 w-4 ${getStatusColor('warning').text}`} />}
-            </div>
+      <KanbanCard
+        title={ticket.titulo}
+        subtitle={ticket.contrato_nombre}
+        indicatorColor={indicatorColor}
+        dueDate={new Date(ticket.fecha_apertura).toLocaleDateString('es-ES')}
+        badges={[
+          { label: ticket.categoria },
+          { label: ticket.prioridad },
+        ]}
+        assignee={ticket.responsable_nombre ? { name: ticket.responsable_nombre } : undefined}
+        onClick={onClick}
+      >
+        {/* Indicadores SLA y grip */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-1">
+            <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded" onClick={(e) => e.stopPropagation()}>
+              <GripVertical className="h-3 w-3 text-muted-foreground" />
+            </button>
+            <span className="text-xs font-mono text-muted-foreground">{ticket.numero_ticket}</span>
           </div>
-          <h4 className="font-semibold text-sm line-clamp-2">{ticket.titulo}</h4>
-          <p className="text-xs text-muted-foreground truncate">{ticket.contrato_nombre}</p>
-          <div className="flex flex-wrap gap-1.5">
-            <StatusBadge status={ticket.categoria} type="categoria" />
-            <StatusBadge status={ticket.prioridad} type="prioridad" />
+          <div className="flex items-center gap-1">
+            {isSlaBreached && <AlertCircle className="h-4 w-4 text-red-400" />}
+            {isSlaWarning && !isSlaBreached && <AlertCircle className="h-4 w-4 text-amber-400" />}
           </div>
-          {ticket.responsable_nombre && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <User className="h-3 w-3" />
-              <span>{ticket.responsable_nombre}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>{new Date(ticket.fecha_apertura).toLocaleDateString('es-ES')}</span>
-          </div>
-        </CardContent>
-      </ModuleCard>
+        </div>
+      </KanbanCard>
     </div>
   )
 }

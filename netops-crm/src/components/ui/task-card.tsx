@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { TextDescriptionComments } from '@/components/ui/text-description-comments'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/module/StatusBadge'
+import { KanbanCard } from '@/components/module/ItemCard'
+import { getCategoryColor } from '@/lib/colors'
 import { type Tarea, type EstadoTarea } from '@/types/tareas'
 
 // ============================================================================
@@ -156,117 +158,70 @@ export function TaskCard({
     !isCompleted
 
   // ========================================================================
-  // RENDER: VARIANT KANBAN
+  // RENDER: VARIANT KANBAN (usa KanbanCard)
   // ========================================================================
   if (variant === 'kanban') {
+    // Obtener color según categoría
+    const categoryColors = getCategoryColor(tarea.categoria)
+    
     return (
-      <div
+      <KanbanCard
+        title={tarea.nombre}
+        subtitle={tarea.descripcion ? tarea.descripcion.substring(0, 50) + (tarea.descripcion.length > 50 ? '...' : '') : undefined}
+        indicatorColor={categoryColors.color.replace('text-', 'bg-').replace('400', '500')}
+        dueDate={tarea.fecha_vencimiento ? formatDate(tarea.fecha_vencimiento) : undefined}
+        badges={[
+          { label: tarea.prioridad },
+          { label: tarea.categoria },
+        ]}
+        assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
+        onClick={onClick}
         className={cn(
-          'group relative bg-card rounded-lg border border-border/50 p-3',
-          'hover:border-primary/30 hover:shadow-md transition-all duration-200',
-          'cursor-pointer',
           isDragging && 'opacity-50 shadow-lg rotate-2',
           isCompleted && 'opacity-60',
           isOverdue && 'border-red-500/30',
           className
         )}
-        onClick={onClick}
       >
-        {/* Indicador de categoría (strip lateral) */}
-        <div className={cn(
-          'absolute left-0 top-0 bottom-0 w-1 rounded-l-lg',
-          tarea.categoria === 'Técnica' && 'bg-purple-500',
-          tarea.categoria === 'Comercial' && 'bg-violet-500',
-          tarea.categoria === 'Compras' && 'bg-emerald-500',
-          tarea.categoria === 'Administrativa' && 'bg-amber-500',
-          tarea.categoria === 'General' && 'bg-slate-500',
-        )} />
-
-        {/* Contenido */}
-        <div className="pl-2 space-y-2">
-          {/* Header: Prioridad + Estado */}
-          <div className="flex items-center justify-between gap-2">
-            <StatusBadge status={tarea.prioridad} type="prioridad" />
-            {getEstadoIcon(tarea.estado, 'h-4 w-4')}
-          </div>
-
-          {/* Título */}
-          <h4 className={cn(
-            'text-sm font-medium line-clamp-2 leading-tight',
-            getEstadoTextClass(tarea.estado)
-          )}>
-            {tarea.nombre}
-          </h4>
-
-          {/* Meta info */}
-          <div className="space-y-1.5">
-            {/* Fecha */}
-            {tarea.fecha_vencimiento && (
-              <div className={cn(
-                'flex items-center gap-1.5 text-xs',
-                getDateColor(tarea.fecha_vencimiento)
-              )}>
-                <Calendar className="h-3 w-3" />
-                <span>{formatDate(tarea.fecha_vencimiento)}</span>
+        {/* Indicadores adicionales */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            {commentCount > 0 && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MessageSquare className="h-3 w-3" />
+                <span>{commentCount}</span>
               </div>
             )}
-
-            {/* Responsable o Cliente */}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {tarea.asignado_a_cliente ? (
-                <>
-                  <User className="h-3 w-3" />
-                  <span className="truncate">{tarea.contacto_cliente_nombre || 'Cliente'}</span>
-                </>
-              ) : tarea.responsable_nombre ? (
-                <>
-                  <User className="h-3 w-3" />
-                  <span className="truncate">{tarea.responsable_nombre}</span>
-                </>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Footer: indicadores adicionales */}
-          <div className="flex items-center justify-between pt-1 border-t border-border/30">
-            <div className="flex items-center gap-2">
-              {commentCount > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MessageSquare className="h-3 w-3" />
-                  <span>{commentCount}</span>
-                </div>
-              )}
-              {attachmentCount > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <FileText className="h-3 w-3" />
-                  <span>{attachmentCount}</span>
-                </div>
-              )}
-              {hasDependencies && (
-                <div className="flex items-center gap-1 text-xs text-amber-400">
-                  <Link2 className="h-3 w-3" />
-                  <span>{tarea.dependencias?.length}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Botón completar rápido */}
-            {!isCompleted && onComplete && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onComplete()
-                }}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-              </Button>
+            {attachmentCount > 0 && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <FileText className="h-3 w-3" />
+                <span>{attachmentCount}</span>
+              </div>
+            )}
+            {hasDependencies && (
+              <div className="flex items-center gap-1 text-xs text-amber-400">
+                <Link2 className="h-3 w-3" />
+                <span>{tarea.dependencias?.length}</span>
+              </div>
             )}
           </div>
+
+          {/* Botón completar rápido */}
+          {!isCompleted && onComplete && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation()
+                onComplete()
+              }}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            </Button>
+          )}
         </div>
-      </div>
+      </KanbanCard>
     )
   }
 
