@@ -484,96 +484,89 @@ function TareasPageContent() {
           }
         />
 
-        {/* Filtros */}
-        <FilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Buscar por nombre o descripción..."
-          filters={[
-            {
-              key: 'proyecto',
-              label: 'Proyecto',
-              options: [{ value: 'todos', label: 'Todos' }, ...proyectos.map(p => ({ value: p.id, label: p.nombre }))],
-              width: 'w-44',
-            },
-            {
-              key: 'estado',
-              label: 'Estado',
-              options: [{ value: 'todos', label: 'Todos' }, ...ESTADOS.map(e => ({ value: e, label: e }))],
-              width: 'w-40',
-            },
-            {
-              key: 'categoria',
-              label: 'Categoría',
-              options: [{ value: 'todas', label: 'Todas' }, ...CATEGORIAS.map(c => ({ value: c, label: c }))],
-              width: 'w-40',
-            },
-            {
-              key: 'prioridad',
-              label: 'Prioridad',
-              options: [{ value: 'todas', label: 'Todas' }, ...PRIORIDADES.map(p => ({ value: p, label: p }))],
-              width: 'w-36',
-            }
-          ]}
-          values={{ proyecto: filtroProyecto, estado: filtroEstado, categoria: filtroCategoria, prioridad: filtroPrioridad }}
-          dateValue={filtroFechaRange}
-          onDateChange={setFiltroFechaRange}
-          onFilterChange={(key, value) => {
-            if (key === 'proyecto') setFiltroProyecto(value)
-            else if (key === 'estado') setFiltroEstado(value)
-            else if (key === 'categoria') setFiltroCategoria(value)
-            else if (key === 'prioridad') setFiltroPrioridad(value)
-          }}
-          hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas || filtroFase !== null}
-          onClearFilters={() => {
-            setSearchQuery('')
-            setFiltroProyecto('todos')
-            setFiltroEstado('todos')
-            setFiltroCategoria('todas')
-            setFiltroPrioridad('todas')
-            setFiltroFechaRange({ from: undefined, to: undefined })
-            setFiltroVencidas(false)
-            setFiltroFase(null)
-          }}
-        />
-
-        {/* Filtros adicionales: Persona (admin), Fase, Vencidas */}
-        <div className="flex items-center gap-4 mb-6">
+        {/* Filtros - una sola línea */}
+        <div className="flex flex-wrap items-center gap-3">
+          <FilterBar
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Buscar por nombre o descripción..."
+            filters={[
+              {
+                key: 'proyecto',
+                label: 'Proyecto',
+                options: [{ value: 'todos', label: 'Todos' }, ...proyectos.map(p => ({ value: p.id, label: p.nombre }))],
+                width: 'w-44',
+              },
+              {
+                key: 'estado',
+                label: 'Estado',
+                options: [{ value: 'todos', label: 'Todos' }, ...ESTADOS.map(e => ({ value: e, label: e }))],
+                width: 'w-40',
+              },
+              {
+                key: 'categoria',
+                label: 'Categoría',
+                options: [{ value: 'todas', label: 'Todas' }, ...CATEGORIAS.map(c => ({ value: c, label: c }))],
+                width: 'w-40',
+              },
+              {
+                key: 'prioridad',
+                label: 'Prioridad',
+                options: [{ value: 'todas', label: 'Todas' }, ...PRIORIDADES.map(p => ({ value: p, label: p }))],
+                width: 'w-36',
+              }
+            ]}
+            values={{ proyecto: filtroProyecto, estado: filtroEstado, categoria: filtroCategoria, prioridad: filtroPrioridad }}
+            dateValue={filtroFechaRange}
+            onDateChange={setFiltroFechaRange}
+            onFilterChange={(key, value) => {
+              if (key === 'proyecto') setFiltroProyecto(value)
+              else if (key === 'estado') setFiltroEstado(value)
+              else if (key === 'categoria') setFiltroCategoria(value)
+              else if (key === 'prioridad') setFiltroPrioridad(value)
+            }}
+            hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas || filtroFase !== null}
+            onClearFilters={() => {
+              setSearchQuery('')
+              setFiltroProyecto('todos')
+              setFiltroEstado('todos')
+              setFiltroCategoria('todas')
+              setFiltroPrioridad('todas')
+              setFiltroFechaRange({ from: undefined, to: undefined })
+              setFiltroVencidas(false)
+              setFiltroFase(null)
+            }}
+          />
+          
+          {/* Filtros adicionales: Persona (admin), Fase, Vencidas */}
           {isAdmin && (
-            <div className="flex items-center gap-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Responsable:</Label>
-              <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-                <SelectTrigger className="w-44 h-9 bg-background/50 border-border/50"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {transformUsuarios(usuarios).map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          {/* Selector de Fase */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Fase:</Label>
-            <Select 
-              value={filtroFase?.toString() || 'actual'} 
-              onValueChange={(v) => setFiltroFase(v === 'actual' ? null : parseInt(v))}
-            >
-              <SelectTrigger className="w-48 h-9 bg-background/50 border-border/50">
-                <SelectValue placeholder="Fase actual" />
-              </SelectTrigger>
+            <Select value={filtroPersona} onValueChange={setFiltroPersona}>
+              <SelectTrigger className="w-44 h-9 bg-background/50 border-border/50"><SelectValue placeholder="Responsable" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="actual">Fase actual</SelectItem>
-                <SelectItem value="1">Fase 1: Prospecto</SelectItem>
-                <SelectItem value="2">Fase 2: Diagnóstico</SelectItem>
-                <SelectItem value="3">Fase 3: Propuesta</SelectItem>
-                <SelectItem value="4">Fase 4: Implementación</SelectItem>
-                <SelectItem value="5">Fase 5: Cierre</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
+                {transformUsuarios(usuarios).map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
+          )}
+          <Select 
+            value={filtroFase?.toString() || 'actual'} 
+            onValueChange={(v) => setFiltroFase(v === 'actual' ? null : parseInt(v))}
+          >
+            <SelectTrigger className="w-40 h-9 bg-background/50 border-border/50">
+              <SelectValue placeholder="Fase" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="actual">Fase actual</SelectItem>
+              <SelectItem value="1">Fase 1</SelectItem>
+              <SelectItem value="2">Fase 2</SelectItem>
+              <SelectItem value="3">Fase 3</SelectItem>
+              <SelectItem value="4">Fase 4</SelectItem>
+              <SelectItem value="5">Fase 5</SelectItem>
+            </SelectContent>
+          </Select>
           <label className="flex items-center gap-2 cursor-pointer bg-muted/30 px-3 py-1.5 rounded-full border border-border/50 hover:bg-muted/50 transition-colors">
             <Checkbox checked={filtroVencidas} onCheckedChange={(c) => setFiltroVencidas(c as boolean)} />
-            <span className="text-xs font-medium text-muted-foreground uppercase">Ver solo vencidas</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase">Vencidas</span>
           </label>
         </div>
 
