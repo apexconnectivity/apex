@@ -20,6 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { ROLE_DEFINITIONS } from '@/types/auth'
+import { MESSAGE_TIMEOUT_MS } from '@/constants/timing'
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth()
@@ -80,7 +81,7 @@ export default function ProfilePage() {
       setSaveMessage({ type: 'error', text: 'No se pudo actualizar el perfil' })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setSaveMessage(null), 3000)
+      setTimeout(() => setSaveMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 
@@ -110,7 +111,7 @@ export default function ProfilePage() {
       setPasswordMessage({ type: 'error', text: 'Error al cambiar la contraseña' })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setPasswordMessage(null), 3000)
+      setTimeout(() => setPasswordMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 

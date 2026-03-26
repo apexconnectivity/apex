@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SettingsCard, SettingsCardContent, SettingsCardFooter } from '@/components/ui/settings-card'
 import { SettingsSection, SettingsDivider } from '@/components/ui/settings-section'
 import { CONFIG_GENERAL_LABELS, ZONAS_HORARIAS, FORMATOS_FECHA, FORMATOS_HORA, IDIOMAS } from '@/constants/configuracion'
+import { MESSAGE_TIMEOUT_MS } from '@/constants/timing'
 import { ConfigGeneral } from '@/types/configuracion'
 
 interface SettingsGeneralProps {
@@ -30,7 +31,7 @@ export function SettingsGeneral({ config, onSave }: SettingsGeneralProps) {
       setSaveMessage({ type: 'error', text: CONFIG_GENERAL_LABELS.guardado_error })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setSaveMessage(null), 3000)
+      setTimeout(() => setSaveMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 

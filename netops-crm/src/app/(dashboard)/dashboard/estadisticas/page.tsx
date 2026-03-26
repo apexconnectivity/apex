@@ -49,6 +49,7 @@ import { VARIANT_COLORS } from "@/lib/colors"
 
 // Importar constantes de tareas para fechas
 import { DATE_LABELS } from "@/constants/tareas"
+import { MS_PER_DAY } from '@/constants/timing'
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -72,7 +73,7 @@ function getRelativeTime(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffInMs = now.getTime() - date.getTime()
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+  const diffInDays = Math.floor(diffInMs / MS_PER_DAY)
 
   if (diffInDays === 0) return DATE_LABELS.hoy
   if (diffInDays === 1) return DATE_LABELS.ayer

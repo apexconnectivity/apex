@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { DASHBOARD_STATS, SECTION_TITLES, ACTIVITY_TITLES, PRIORITY_LABELS, EMPTY_MESSAGES, DATE_RELATIVE, DUE_DATE } from "@/constants/dashboard"
 import { ACTIVITY_COLORS, HEX_COLORS, VARIANT_COLORS, getSectionIndicatorColor } from "@/lib/colors"
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@/constants/timing"
 
 function StatsSkeleton() {
   return (
@@ -178,9 +179,9 @@ function getRelativeTime(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffInMs = now.getTime() - date.getTime()
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+  const diffInMinutes = Math.floor(diffInMs / MS_PER_MINUTE)
+  const diffInHours = Math.floor(diffInMs / MS_PER_HOUR)
+  const diffInDays = Math.floor(diffInMs / MS_PER_DAY)
 
   if (diffInMinutes < 1) return DATE_RELATIVE.ahora
   if (diffInMinutes < 60) return DATE_RELATIVE.minutos(diffInMinutes)
@@ -197,7 +198,7 @@ function formatDueDate(dateString: string): string {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const diffInDays = Math.floor((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const diffInDays = Math.floor((targetDate.getTime() - today.getTime()) / MS_PER_DAY)
 
   if (diffInDays < 0) return DUE_DATE.vencida(Math.abs(diffInDays))
   if (diffInDays === 0) return DUE_DATE.hoy

@@ -15,6 +15,7 @@ import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { cn } from '@/lib/utils'
 import { type Tarea, type GrupoDashboardTareas } from '@/types/tareas'
 import { ESTADO_COLORS } from '@/lib/colors'
+import { SEVEN_DAYS_MS } from '@/constants/timing'
 
 // ============================================================================
 // PROPS
@@ -95,8 +96,8 @@ export default function TasksDashboardPage() {
   const groupedTasks = useCallback(() => {
     const now = new Date()
     const today = now.toISOString().split('T')[0]
-    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const sevenDaysLater = new Date(now.getTime() + SEVEN_DAYS_MS).toISOString().split('T')[0]
+    const sevenDaysAgo = new Date(now.getTime() - SEVEN_DAYS_MS).toISOString().split('T')[0]
 
     const grupos: Record<GrupoDashboardTareas, Tarea[]> = {
       vencen_hoy: [],

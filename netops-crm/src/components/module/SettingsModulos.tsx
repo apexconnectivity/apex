@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { SettingsCard, SettingsCardContent, SettingsCardFooter } from '@/components/ui/settings-card'
 import { SettingsSection, SettingsDivider } from '@/components/ui/settings-section'
 import { CONFIG_MODULOS_LABELS, CONFIG_COMMON_LABELS, CONFIG_COLORS } from '@/constants/configuracion'
+import { MESSAGE_TIMEOUT_MS } from '@/constants/timing'
 import { ConfigModulos, ModuloConfig } from '@/types/configuracion'
 
 interface SettingsModulosProps {
@@ -81,7 +82,7 @@ export function SettingsModulos({ config, onSave }: SettingsModulosProps) {
       setSaveMessage({ type: 'error', text: 'Error al guardar la configuración' })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setSaveMessage(null), 3000)
+      setTimeout(() => setSaveMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 

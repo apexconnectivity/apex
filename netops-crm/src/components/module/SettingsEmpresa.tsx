@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { SettingsCard, SettingsCardContent, SettingsCardFooter } from '@/components/ui/settings-card'
 import { SettingsSection, SettingsDivider } from '@/components/ui/settings-section'
 import { CONFIG_EMPRESA_LABELS, CONFIG_COLORS } from '@/constants/configuracion'
+import { MESSAGE_TIMEOUT_MS } from '@/constants/timing'
 import { ConfigEmpresa } from '@/types/configuracion'
 
 interface SettingsEmpresaProps {
@@ -29,7 +30,7 @@ export function SettingsEmpresa({ config, onSave }: SettingsEmpresaProps) {
       setSaveMessage({ type: 'error', text: CONFIG_EMPRESA_LABELS.guardado_error })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setSaveMessage(null), 3000)
+      setTimeout(() => setSaveMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 

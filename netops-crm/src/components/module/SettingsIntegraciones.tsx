@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { SettingsCard, SettingsCardContent, SettingsCardFooter } from '@/components/ui/settings-card'
 import { ToggleSwitch } from '@/components/ui/toggle'
 import { CONFIG_INTEGRACIONES_LABELS, CONFIG_COLORS } from '@/constants/configuracion'
+import { MESSAGE_TIMEOUT_MS } from '@/constants/timing'
 import { ConfigIntegraciones, IntegracionConfig } from '@/types/configuracion'
 
 interface SettingsIntegracionesProps {
@@ -92,7 +93,7 @@ export function SettingsIntegraciones({ config, onSave }: SettingsIntegracionesP
       setSaveMessage({ type: 'error', text: CONFIG_INTEGRACIONES_LABELS.guardado_error })
     } finally {
       setIsSaving(false)
-      setTimeout(() => setSaveMessage(null), 3000)
+      setTimeout(() => setSaveMessage(null), MESSAGE_TIMEOUT_MS)
     }
   }
 

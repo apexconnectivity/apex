@@ -62,6 +62,7 @@ import {
   EMPRESAS_ASIGNADAS_TECNICO,
 } from '@/constants/crm'
 import { STORAGE_KEYS } from '@/constants/storage'
+import { MS_PER_DAY } from '@/constants/timing'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
@@ -368,7 +369,7 @@ export default function CRMPage() {
       if ((e.tipo_entidad === 'cliente' || e.tipo_entidad === 'ambos') && e.tipo_relacion === 'Prospecto') {
         const fechaCreacion = new Date(e.creado_en)
         const hoy = new Date()
-        const diasInactivo = Math.floor((hoy.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60 * 24))
+        const diasInactivo = Math.floor((hoy.getTime() - fechaCreacion.getTime()) / MS_PER_DAY)
         if (diasInactivo > DIAS_INACTIVIDAD_PROSPECTO) {
           resultado.push({
             id: `inactivo-${e.id}`,
