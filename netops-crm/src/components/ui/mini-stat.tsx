@@ -9,6 +9,7 @@ interface StatConfig {
   iconColor: string
   valueColor: string
   borderColor?: string
+  glowClass?: string // Glow sutil para hover
 }
 
 const STAT_VARIANTS: Record<StatVariant, StatConfig> = {
@@ -16,36 +17,42 @@ const STAT_VARIANTS: Record<StatVariant, StatConfig> = {
     iconBg: 'bg-muted/50',
     iconColor: 'text-muted-foreground',
     valueColor: 'text-foreground',
+    glowClass: 'hover:shadow-md hover:shadow-muted-foreground/5',
   },
   primary: {
     iconBg: 'bg-cyan-500/15',
     iconColor: 'text-cyan-400',
     valueColor: 'text-cyan-400',
     borderColor: 'border-cyan-500/20',
+    glowClass: 'hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30',
   },
   success: {
     iconBg: 'bg-emerald-500/15',
     iconColor: 'text-emerald-400',
     valueColor: 'text-emerald-400',
     borderColor: 'border-emerald-500/20',
+    glowClass: 'hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-500/30',
   },
   warning: {
     iconBg: 'bg-amber-500/15',
     iconColor: 'text-amber-400',
     valueColor: 'text-amber-400',
     borderColor: 'border-amber-500/20',
+    glowClass: 'hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-500/30',
   },
   danger: {
     iconBg: 'bg-red-500/15',
     iconColor: 'text-red-400',
     valueColor: 'text-red-400',
     borderColor: 'border-red-500/20',
+    glowClass: 'hover:shadow-lg hover:shadow-red-500/10 hover:border-red-500/30',
   },
   info: {
     iconBg: 'bg-blue-500/15',
     iconColor: 'text-blue-400',
     valueColor: 'text-blue-400',
     borderColor: 'border-blue-500/20',
+    glowClass: 'hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/30',
   },
 }
 
@@ -82,8 +89,9 @@ export function MiniStat({
   
   return (
     <Card style={style} className={cn(
-      "card-hover overflow-hidden",
+      "card-hover overflow-hidden transition-all duration-300",
       showBorder && config.borderColor && `border ${config.borderColor}`,
+      config.glowClass,
       className
     )}>
       <CardContent className={cn(padding, "flex items-center justify-between", accentColor && "border-l-[3px]")} style={accentColor ? { borderLeftColor: accentColor } : undefined}>

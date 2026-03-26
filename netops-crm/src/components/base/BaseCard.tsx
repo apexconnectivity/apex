@@ -73,10 +73,10 @@ export function BaseCard({
   // Determinar si es interactivo
   const isInteractive = clickable || !!onClick
   
-  // Estilos de hover
+  // Estilos de hover - эффект glow sutil y elegante (10% opacity)
   const hoverEffect = hoverable 
     ? (glowOnHover 
-        ? "transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-500/30"
+        ? "transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/20"
         : "transition-all duration-200 hover:shadow-md hover:border-border")
     : ""
 
@@ -95,7 +95,7 @@ export function BaseCard({
         paddingClasses,
         hoverEffect,
         isInteractive && "cursor-pointer",
-        glowOnHover && isHovered && "ring-1 ring-cyan-500/30",
+        glowOnHover && isHovered && "ring-1 ring-cyan-500/15",
         className
       )}
       style={borderStyle}
