@@ -29,7 +29,7 @@ import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
 import { type Empresa } from '@/types/crm'
 import { cn } from '@/lib/utils'
 import { USUARIOS_PAGE, BUTTON_LABELS } from '@/constants/auth'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList, PageAnimation } from '@/components/ui/page-animation'
 
 // Roles internos disponibles
 const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing']
@@ -261,15 +261,16 @@ export default function UsersPage() {
       />
 
       {/* Users Grid */}
-      <div className="space-y-8">
-        {/* Sección Equipo Interno */}
-        {internalUsers.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Equipo NetOps
-            </h2>
-            <StaggeredList stagger={30}>
+      <PageAnimation delay={100}>
+        <div className="space-y-8">
+          {/* Sección Equipo Interno */}
+          {internalUsers.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Equipo NetOps
+              </h2>
+              <StaggeredList stagger={30}>
               <div className="grid gap-4">
                 {internalUsers.map((user: User) => (
                 <Card key={user.id} className={cn('hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5', !user.activo ? 'opacity-60' : '')}>
@@ -351,12 +352,13 @@ export default function UsersPage() {
 
         {/* Sección Empresas / Clientes */}
         {uniqueCompanies.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Directorios de Clientes
-            </h2>
-            <StaggeredList stagger={30}>
+          <PageAnimation delay={200}>
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Directorios de Clientes
+              </h2>
+              <StaggeredList stagger={30}>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {uniqueCompanies.map((emp) => (
                 <Card
@@ -392,8 +394,9 @@ export default function UsersPage() {
                 </Card>
               ))}
               </div>
-            </StaggeredList>
-          </div>
+              </StaggeredList>
+            </div>
+          </PageAnimation>
         )}
 
         {internalUsers.length === 0 && uniqueCompanies.length === 0 && (
@@ -401,7 +404,8 @@ export default function UsersPage() {
             <p className="text-muted-foreground">No se encontraron usuarios o empresas con los filtros actuales.</p>
           </div>
         )}
-      </div>
+        </div>
+      </PageAnimation>
 
       {/* Colaborator Modal - Usando componente reutilizable */}
       <ManageColaboratorModal

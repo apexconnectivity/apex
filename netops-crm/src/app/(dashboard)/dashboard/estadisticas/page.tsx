@@ -1000,35 +1000,45 @@ export default function EstadisticasPage() {
 
         {/* Resumen Tab */}
         <TabsContent value="resumen">
-          <ResumenGeneral
-            empresas={empresas}
-            proyectos={proyectos}
-            tareas={tareas}
-            tickets={tickets}
-            archivos={archivos}
-            reuniones={reuniones}
-            contratos={contratos}
-          />
+          <PageAnimation delay={300}>
+            <ResumenGeneral
+              empresas={empresas}
+              proyectos={proyectos}
+              tareas={tareas}
+              tickets={tickets}
+              archivos={archivos}
+              reuniones={reuniones}
+              contratos={contratos}
+            />
+          </PageAnimation>
         </TabsContent>
 
         {/* CRM Tab */}
         <TabsContent value="crm">
-          <CRMStats empresas={empresas} contactos={contactos} />
+          <PageAnimation delay={300}>
+            <CRMStats empresas={empresas} contactos={contactos} />
+          </PageAnimation>
         </TabsContent>
 
         {/* Proyectos Tab */}
         <TabsContent value="proyectos">
-          <ProyectosStats proyectos={proyectos} />
+          <PageAnimation delay={300}>
+            <ProyectosStats proyectos={proyectos} />
+          </PageAnimation>
         </TabsContent>
 
         {/* Tareas Tab */}
         <TabsContent value="tareas">
-          <TareasStats tareas={tareas} />
+          <PageAnimation delay={300}>
+            <TareasStats tareas={tareas} />
+          </PageAnimation>
         </TabsContent>
 
         {/* Tickets Tab */}
         <TabsContent value="tickets">
-          <TicketsStats tickets={tickets} />
+          <PageAnimation delay={300}>
+            <TicketsStats tickets={tickets} />
+          </PageAnimation>
         </TabsContent>
       </Tabs>
     </ModuleContainer>

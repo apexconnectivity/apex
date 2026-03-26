@@ -20,7 +20,7 @@ import {
   MessageSquare, Calendar, FileText, Building2, Ticket, User, Send, AlertTriangle
 } from 'lucide-react'
 import { NOTIFICACIONES_TEXTS, NOTIFICACIONES_STORAGE_KEYS, CONFIG_INICIAL, PREFERENCIA_INICIAL } from '@/constants/notificaciones'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList, PageAnimation } from '@/components/ui/page-animation'
 
 // Función para obtener el icono del canal
 function getCanalIconComponent(canal: string) {
@@ -440,44 +440,48 @@ export default function NotificacionesPage() {
       />
 
       {/* Stats */}
-      <StatGrid cols={4}>
-        <MiniStat value={stats.total} label={statsLabels.total} variant="primary" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.total} icon={<Bell className="h-5 w-5" />} />
-        <MiniStat value={stats.enviados} label={statsLabels.enviados} variant="success" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.enviados} icon={<Send className="h-5 w-5" />} />
-        <MiniStat value={stats.fallidos} label={statsLabels.fallidos} variant="danger" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.fallidos} icon={<AlertTriangle className="h-5 w-5" />} />
-        <MiniStat value={stats.pendientes} label={statsLabels.pendientes} variant="warning" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
-      </StatGrid>
+      <PageAnimation delay={100}>
+        <StatGrid cols={4}>
+          <MiniStat value={stats.total} label={statsLabels.total} variant="primary" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.total} icon={<Bell className="h-5 w-5" />} />
+          <MiniStat value={stats.enviados} label={statsLabels.enviados} variant="success" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.enviados} icon={<Send className="h-5 w-5" />} />
+          <MiniStat value={stats.fallidos} label={statsLabels.fallidos} variant="danger" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.fallidos} icon={<AlertTriangle className="h-5 w-5" />} />
+          <MiniStat value={stats.pendientes} label={statsLabels.pendientes} variant="warning" showBorder accentColor={NOTIFICACIONES_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
+        </StatGrid>
+      </PageAnimation>
 
-      <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
-        <TabsList>
-          <TabsTrigger value="config"><Settings className="h-4 w-4 mr-2" />{tabs.configuracion}</TabsTrigger>
-          <TabsTrigger value="eventos"><Bell className="h-4 w-4 mr-2" />{tabs.eventos}</TabsTrigger>
-          <TabsTrigger value="logs"><Activity className="h-4 w-4 mr-2" />{tabs.logs}</TabsTrigger>
-          <TabsTrigger value="mispreferencias"><User className="h-4 w-4 mr-2" />{tabs.misPreferencias}</TabsTrigger>
-        </TabsList>
+      <PageAnimation delay={200}>
+        <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
+          <TabsList>
+            <TabsTrigger value="config"><Settings className="h-4 w-4 mr-2" />{tabs.configuracion}</TabsTrigger>
+            <TabsTrigger value="eventos"><Bell className="h-4 w-4 mr-2" />{tabs.eventos}</TabsTrigger>
+            <TabsTrigger value="logs"><Activity className="h-4 w-4 mr-2" />{tabs.logs}</TabsTrigger>
+            <TabsTrigger value="mispreferencias"><User className="h-4 w-4 mr-2" />{tabs.misPreferencias}</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="config">
-          {isAdmin ? (
-            <ConfiguracionGlobalTab config={config} onUpdate={setConfig} />
-          ) : (
-            <AccessDeniedCard
-              icon={AlertCircle}
-              description={accesoDenegado.descripcion}
-            />
-          )}
-        </TabsContent>
+          <TabsContent value="config">
+            {isAdmin ? (
+              <ConfiguracionGlobalTab config={config} onUpdate={setConfig} />
+            ) : (
+              <AccessDeniedCard
+                icon={AlertCircle}
+                description={accesoDenegado.descripcion}
+              />
+            )}
+          </TabsContent>
 
-        <TabsContent value="eventos">
-          <EventosTab eventos={eventos} />
-        </TabsContent>
+          <TabsContent value="eventos">
+            <EventosTab eventos={eventos} />
+          </TabsContent>
 
-        <TabsContent value="logs">
-          <LogsTab logs={logs} />
-        </TabsContent>
+          <TabsContent value="logs">
+            <LogsTab logs={logs} />
+          </TabsContent>
 
-        <TabsContent value="mispreferencias">
-          <MisPreferenciasTab preferencia={preferencia} onUpdate={setPreferencia} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="mispreferencias">
+            <MisPreferenciasTab preferencia={preferencia} onUpdate={setPreferencia} />
+          </TabsContent>
+        </Tabs>
+      </PageAnimation>
     </ModuleContainer>
   )
 }
