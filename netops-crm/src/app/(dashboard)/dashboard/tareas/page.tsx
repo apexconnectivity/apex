@@ -658,7 +658,7 @@ function TareasPageContent() {
                         <Badge variant="outline" className="bg-background/50 border-border/50 text-[10px] h-5">{tareasPorEstado[estado]?.length || 0}</Badge>
                       </div>
                       <div className="space-y-3 min-h-[500px] bg-muted/10 rounded-2xl p-2 border border-border/5 border-dashed">
-                        <StaggeredList stagger={30}>
+                        <StaggeredList stagger={30} className="space-y-3">
                           {tareasPorEstado[estado]?.map(tarea => {
                             return (
                             <KanbanCard
