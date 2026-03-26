@@ -42,7 +42,7 @@ export function PageAnimation({
 
 // Componente para elementos staggerados
 interface StaggeredListProps {
-  children: ReactNode[]
+  children: ReactNode | ReactNode[]
   delay?: number
   stagger?: number
   className?: string

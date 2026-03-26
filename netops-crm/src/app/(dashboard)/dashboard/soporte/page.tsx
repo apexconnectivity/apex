@@ -44,6 +44,7 @@ import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWit
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { KanbanCard } from '@/components/module/ItemCard'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 
@@ -592,7 +593,8 @@ function SoportePageContent() {
             </div>
 
             <div className="grid gap-4">
-              {visibleContratos.map(contrato => (
+              <StaggeredList stagger={30}>
+                {visibleContratos.map(contrato => (
                 <Card key={contrato.id} className="hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
@@ -634,6 +636,7 @@ function SoportePageContent() {
                   </CardContent>
                 </Card>
               ))}
+              </StaggeredList>
             </div>
           </>
         )}

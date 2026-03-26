@@ -16,6 +16,7 @@ import {
   STAT_COLORS, ACCESS_DENIED
 } from '@/constants/archivos'
 import { useEmpresas, useProyectos } from '@/hooks'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 export default function ArchivosPage() {
   const { user } = useAuth()
@@ -155,7 +156,8 @@ export default function ArchivosPage() {
             </CardContent>
           </Card>
         ) : (
-          archivosFiltrados.map(archivo => (
+          <StaggeredList stagger={30}>
+            {archivosFiltrados.map(archivo => (
             <Card key={archivo.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -173,7 +175,8 @@ export default function ArchivosPage() {
                 </div>
               </CardContent>
             </Card>
-          ))
+          ))}
+          </StaggeredList>
         )}
       </div>
     </ModuleContainer>

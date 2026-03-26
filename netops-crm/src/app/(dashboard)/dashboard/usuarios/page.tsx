@@ -29,6 +29,7 @@ import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
 import { type Empresa } from '@/types/crm'
 import { cn } from '@/lib/utils'
 import { USUARIOS_PAGE, BUTTON_LABELS } from '@/constants/auth'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // Roles internos disponibles
 const INTERNAL_ROLES: Role[] = ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing']
@@ -268,8 +269,9 @@ export default function UsersPage() {
               <Shield className="h-4 w-4" />
               Equipo NetOps
             </h2>
-            <div className="grid gap-4">
-              {internalUsers.map((user: User) => (
+            <StaggeredList stagger={30}>
+              <div className="grid gap-4">
+                {internalUsers.map((user: User) => (
                 <Card key={user.id} className={cn('hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5', !user.activo ? 'opacity-60' : '')}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -338,11 +340,12 @@ export default function UsersPage() {
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </StaggeredList>
           </div>
         )}
 
@@ -353,8 +356,9 @@ export default function UsersPage() {
               <Building2 className="h-4 w-4" />
               Directorios de Clientes
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {uniqueCompanies.map((emp) => (
+            <StaggeredList stagger={30}>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {uniqueCompanies.map((emp) => (
                 <Card
                   key={emp.id}
                   className="cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group border-border/50 bg-muted/10"
@@ -387,7 +391,8 @@ export default function UsersPage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+              </div>
+            </StaggeredList>
           </div>
         )}
 

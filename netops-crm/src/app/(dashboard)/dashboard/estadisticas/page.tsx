@@ -8,6 +8,7 @@ import { type ContratoSoporte, type Ticket } from "@/types/soporte"
 import { type Reunion } from "@/types/calendario"
 import { type Empresa } from "@/types/crm"
 import { type Archivo } from "@/types/archivos"
+import { PageAnimation } from '@/components/ui/page-animation'
 import { ModuleContainer } from "@/components/module/ModuleContainer"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -958,17 +959,19 @@ export default function EstadisticasPage() {
   return (
     <ModuleContainer>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Zap className="h-8 w-8 text-cyan-400" />
-            {STATS_LABELS.tituloPagina}
-          </h1>
-          <p className="text-muted-foreground">
-            {STATS_LABELS.descripcionPagina}
-          </p>
+      <PageAnimation delay={100}>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Zap className="h-8 w-8 text-cyan-400" />
+              {STATS_LABELS.tituloPagina}
+            </h1>
+            <p className="text-muted-foreground">
+              {STATS_LABELS.descripcionPagina}
+            </p>
+          </div>
         </div>
-      </div>
+      </PageAnimation>
 
       {/* Tabs */}
       <Tabs defaultValue="resumen" className="space-y-6">

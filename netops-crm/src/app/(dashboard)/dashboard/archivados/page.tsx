@@ -16,6 +16,7 @@ import {
 } from '@/constants/archivado'
 import { Archive, CheckSquare, AlertTriangle } from 'lucide-react'
 import { useMemo } from 'react'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 export default function ArchivadoPage() {
   const { user } = useAuth()
@@ -106,7 +107,7 @@ export default function ArchivadoPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <StaggeredList stagger={30}>
                 {filteredCerrados.map(p => (
                   <Card key={p.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-4">
@@ -122,7 +123,7 @@ export default function ArchivadoPage() {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+              </StaggeredList>
             )}
           </div>
         </TabsContent>
@@ -169,7 +170,7 @@ export default function ArchivadoPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <StaggeredList stagger={30}>
                 {filteredArchivados.map(p => (
                   <Card key={p.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-4">
@@ -186,7 +187,7 @@ export default function ArchivadoPage() {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+              </StaggeredList>
             )}
           </div>
         </TabsContent>

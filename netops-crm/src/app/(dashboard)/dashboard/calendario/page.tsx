@@ -49,6 +49,7 @@ import {
   DURATION_OPTIONS,
   FORM_LABELS_REUNION,
 } from '@/constants/calendario'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // Constantes para filtros y estados (moved/removed hardcoded users)
 
@@ -64,9 +65,10 @@ function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; titl
         {sortedReuniones.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">{EMPTY_MESSAGES.noReuniones}</p>
         ) : (
-          <div className="space-y-3">
-            {sortedReuniones.map(reunion => (
-              <div key={reunion.id} className="p-3 border rounded-lg hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer" onClick={() => onVer(reunion)}>
+          <StaggeredList stagger={30}>
+            <div className="space-y-3">
+              {sortedReuniones.map(reunion => (
+                <div key={reunion.id} className="p-3 border rounded-lg hover:shadow-xl hover:shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer" onClick={() => onVer(reunion)}>
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getTipoReunionIcon(reunion.tipo)}</span>
@@ -84,7 +86,8 @@ function ReunionesList({ reuniones, title, onVer }: { reuniones: Reunion[]; titl
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </StaggeredList>
         )}
       </CardContent>
     </Card>

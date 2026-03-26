@@ -20,6 +20,7 @@ import {
   MessageSquare, Calendar, FileText, Building2, Ticket, User, Send, AlertTriangle
 } from 'lucide-react'
 import { NOTIFICACIONES_TEXTS, NOTIFICACIONES_STORAGE_KEYS, CONFIG_INICIAL, PREFERENCIA_INICIAL } from '@/constants/notificaciones'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // Función para obtener el icono del canal
 function getCanalIconComponent(canal: string) {
@@ -233,8 +234,9 @@ function EventosTab({ eventos }: { eventos: EventoNotificacion[] }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {evs.map(evento => (
+            <StaggeredList stagger={30}>
+              <div className="space-y-2">
+                {evs.map(evento => (
                 <div key={evento.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="flex-1">
                     <p className="font-medium">{evento.nombre}</p>
@@ -251,7 +253,8 @@ function EventosTab({ eventos }: { eventos: EventoNotificacion[] }) {
                   </Button>
                 </div>
               ))}
-            </div>
+              </div>
+            </StaggeredList>
           </CardContent>
         </Card>
       ))}
@@ -269,9 +272,10 @@ function LogsTab({ logs }: { logs: LogNotificacion[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {logs.map(log => (
-            <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
+        <StaggeredList stagger={30}>
+          <div className="space-y-2">
+            {logs.map(log => (
+              <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex-1">
                 <p className="font-medium">{log.evento_tipo}</p>
                 <p className="text-sm text-muted-foreground">
@@ -286,7 +290,8 @@ function LogsTab({ logs }: { logs: LogNotificacion[] }) {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        </StaggeredList>
       </CardContent>
     </Card>
   )

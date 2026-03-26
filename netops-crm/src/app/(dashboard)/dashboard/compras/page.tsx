@@ -47,6 +47,7 @@ import {
   ChevronRight, ClipboardList, SendHorizontal, PackageCheck, X,
   Mail, Phone
 } from 'lucide-react'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
@@ -70,7 +71,8 @@ function ProveedoresTab({ proveedores }: { proveedores: Proveedor[] }) {
       />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map(proveedor => (
+        <StaggeredList stagger={30}>
+          {filtered.map(proveedor => (
           <Card key={proveedor.id} className="hover-lift">
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-3">
@@ -98,6 +100,7 @@ function ProveedoresTab({ proveedores }: { proveedores: Proveedor[] }) {
             </CardContent>
           </Card>
         ))}
+        </StaggeredList>
       </div>
     </div>
   )
@@ -439,7 +442,8 @@ export default function ComprasPage() {
                 <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />{TITULO_PENDIENTES_APROBACION} ({stats.pendientes})</CardTitle>
               </CardHeader>
               <CardContent>
-                {ordenes.filter(o => o.estado === 'Pendiente aprobación').map(orden => (
+                <StaggeredList stagger={30}>
+                  {ordenes.filter(o => o.estado === 'Pendiente aprobación').map(orden => (
                   <div key={orden.id} className="p-3 border rounded-lg mb-2 hover-lift cursor-pointer" onClick={() => setSelectedOrden(orden)}>
                     <div className="flex items-center justify-between">
                       <div>
@@ -453,6 +457,7 @@ export default function ComprasPage() {
                     </div>
                   </div>
                 ))}
+                </StaggeredList>
               </CardContent>
             </Card>
 
@@ -461,7 +466,8 @@ export default function ComprasPage() {
                 <CardTitle className="flex items-center gap-2"><Truck className="h-5 w-5 text-[hsl(var(--info))]" />{TITULO_PENDIENTES_RECEPCION} ({stats.enviadas})</CardTitle>
               </CardHeader>
               <CardContent>
-                {ordenes.filter(o => o.estado === 'Enviada').map(orden => (
+                <StaggeredList stagger={30}>
+                  {ordenes.filter(o => o.estado === 'Enviada').map(orden => (
                   <div key={orden.id} className="p-3 border rounded-lg mb-2 hover-lift cursor-pointer" onClick={() => setSelectedOrden(orden)}>
                     <div className="flex items-center justify-between">
                       <div>
@@ -474,6 +480,7 @@ export default function ComprasPage() {
                     </div>
                   </div>
                 ))}
+                </StaggeredList>
               </CardContent>
             </Card>
           </div>
@@ -506,7 +513,8 @@ export default function ComprasPage() {
             />
 
             <div className="space-y-2">
-              {ordenesFiltradas.map(orden => (
+              <StaggeredList stagger={30}>
+                {ordenesFiltradas.map(orden => (
                 <Card key={orden.id} className="hover-lift cursor-pointer" onClick={() => setSelectedOrden(orden)}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -528,6 +536,7 @@ export default function ComprasPage() {
                   </CardContent>
                 </Card>
               ))}
+              </StaggeredList>
             </div>
           </div>
         </TabsContent>

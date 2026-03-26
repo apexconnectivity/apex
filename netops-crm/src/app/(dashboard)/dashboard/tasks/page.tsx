@@ -12,6 +12,7 @@ import { useTareas } from '@/hooks/useTareas'
 import { useProyectos } from '@/hooks/useProyectos'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
+import { StaggeredList } from '@/components/ui/page-animation'
 import { cn } from '@/lib/utils'
 import { type Tarea, type GrupoDashboardTareas } from '@/types/tareas'
 import { ESTADO_COLORS } from '@/lib/colors'
@@ -293,7 +294,8 @@ export default function TasksDashboardPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <StaggeredList stagger={50}>
+          <div className="space-y-6">
           {/* Grupo: Vencen Hoy */}
           {grupos.vencen_hoy.length > 0 && (
             <TaskGroup type="vencen_hoy" count={grupos.vencen_hoy.length}>
@@ -383,7 +385,8 @@ export default function TasksDashboardPage() {
               ))}
             </TaskGroup>
           )}
-        </div>
+          </div>
+        </StaggeredList>
       )}
     </ModuleContainer>
   )

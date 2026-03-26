@@ -28,6 +28,7 @@ import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { TaskGanttChart } from '@/components/ui/task-gantt-chart'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 import { v4 as uuidv4 } from 'uuid'
 
@@ -657,8 +658,9 @@ function TareasPageContent() {
                         <Badge variant="outline" className="bg-background/50 border-border/50 text-[10px] h-5">{tareasPorEstado[estado]?.length || 0}</Badge>
                       </div>
                       <div className="space-y-3 min-h-[500px] bg-muted/10 rounded-2xl p-2 border border-border/5 border-dashed">
-                        {tareasPorEstado[estado]?.map(tarea => {
-                          return (
+                        <StaggeredList stagger={30}>
+                          {tareasPorEstado[estado]?.map(tarea => {
+                            return (
                             <KanbanCard
                               key={tarea.id}
                               title={tarea.nombre}
@@ -669,8 +671,9 @@ function TareasPageContent() {
                               assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                               onClick={() => setSelectedId(tarea.id)}
                             />
-                          )
-                        })}
+                            )
+                          })}
+                        </StaggeredList>
                         {tareasPorEstado[estado]?.length === 0 && (
                           <div className="flex flex-col items-center justify-center h-32 opacity-20 italic text-xs text-center border border-dashed border-border/20 rounded-xl">
                             Sin tareas {estado.toLowerCase()}s
@@ -685,24 +688,26 @@ function TareasPageContent() {
 
             {_view === 'lista' && (
               <div className="space-y-2">
-                {visibleTareas.map(tarea => (
-                  <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <h4 className="font-semibold">{tarea.nombre}</h4>
-                          <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} • {tarea.fase_nombre}</p>
+                <StaggeredList stagger={30}>
+                  {visibleTareas.map(tarea => (
+                    <Card key={tarea.id} className={`cursor-pointer bg-card border-border/50 transition-all duration-200 hover:scale-[1.01] hover:shadow-lg hover:${VARIANT_COLORS.primary.gradient} hover:${VARIANT_COLORS.primary.borderColor}`} onClick={() => setSelectedId(tarea.id)}>
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <h4 className="font-semibold">{tarea.nombre}</h4>
+                            <p className="text-sm text-muted-foreground">{tarea.proyecto_nombre} - {tarea.fase_nombre}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={tarea.categoria} type="categoria" />
-                        <StatusBadge status={tarea.prioridad} type="prioridad" />
-                        <StatusBadge status={tarea.estado} type="estado" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={tarea.categoria} type="categoria" />
+                          <StatusBadge status={tarea.prioridad} type="prioridad" />
+                          <StatusBadge status={tarea.estado} type="estado" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </StaggeredList>
               </div>
             )}
 

@@ -23,6 +23,7 @@ const ProjectDetailPanel = dynamic(
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { StaggeredList } from '@/components/ui/page-animation'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
@@ -527,19 +528,21 @@ function ProyectosPageContent() {
                     <h3 className="font-semibold">{fase.nombre}</h3>
                     <Badge variant="secondary" className="ml-auto">{proyectosPorFase[fase.id]?.length || 0}</Badge>
                   </div>
-                  <div className="space-y-3">
-                    {proyectosPorFase[fase.id]?.map(p => (
-                        <KanbanCard
-                          key={p.id}
-                          title={p.nombre}
-                          subtitle={p.cliente_nombre}
-                          progress={infoTareasPorProyecto[p.id]?.progreso}
-                          indicatorColor={getPipelineFaseColor(p.fase_actual)}
-                          badges={[{ label: `Fase ${p.fase_actual}` }]}
-                          assignee={{ name: p.responsable_nombre || '' }}
-                          onClick={() => setSelectedId(p.id)}
-                        />
-                      ))}
+                    <div className="space-y-3">
+                    <StaggeredList stagger={30}>
+                      {proyectosPorFase[fase.id]?.map(p => (
+                          <KanbanCard
+                            key={p.id}
+                            title={p.nombre}
+                            subtitle={p.cliente_nombre}
+                            progress={infoTareasPorProyecto[p.id]?.progreso}
+                            indicatorColor={getPipelineFaseColor(p.fase_actual)}
+                            badges={[{ label: `Fase ${p.fase_actual}` }]}
+                            assignee={{ name: p.responsable_nombre || '' }}
+                            onClick={() => setSelectedId(p.id)}
+                          />
+                        ))}
+                    </StaggeredList>
                     </div>
                   </div>
                 ))}
@@ -549,7 +552,8 @@ function ProyectosPageContent() {
 
         {view === 'cerrados' && (
           <div className="space-y-3">
-            {proyectosCerrados.map(p => (
+            <StaggeredList stagger={30}>
+              {proyectosCerrados.map(p => (
               <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)}>
                 <div className="flex items-center justify-between w-full">
                   <div>
@@ -588,6 +592,7 @@ function ProyectosPageContent() {
                 </div>
               </ModuleCard>
             ))}
+            </StaggeredList>
           </div>
         )}
 
@@ -598,17 +603,19 @@ function ProyectosPageContent() {
                 No hay proyectos archivados
               </div>
             ) : (
-              proyectosArchivados.map(p => (
-                <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)}>
-                  <div className="flex items-center justify-between w-full">
-                    <div>
-                      <h3 className="font-semibold">{p.nombre}</h3>
-                      <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
+              <StaggeredList stagger={30}>
+                {proyectosArchivados.map(p => (
+                  <ModuleCard key={p.id} onClick={() => setSelectedId(p.id)}>
+                    <div className="flex items-center justify-between w-full">
+                      <div>
+                        <h3 className="font-semibold">{p.nombre}</h3>
+                        <p className="text-sm text-muted-foreground">{p.cliente_nombre}</p>
+                      </div>
+                      <Badge variant="secondary">Archivado</Badge>
                     </div>
-                    <Badge variant="secondary">Archivado</Badge>
-                  </div>
-                </ModuleCard>
-              ))
+                  </ModuleCard>
+                ))}
+              </StaggeredList>
             )}
           </div>
         )}
