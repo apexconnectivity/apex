@@ -78,10 +78,12 @@ export default function ArchivadoPage() {
 
   return (
     <ModuleContainer>
-      <ModuleHeader
-        title={ARCHIVADO_TITULOS.titulo}
-        description={ARCHIVADO_TITULOS.descripcion}
-      />
+      <PageAnimation delay={0}>
+        <ModuleHeader
+          title={ARCHIVADO_TITULOS.titulo}
+          description={ARCHIVADO_TITULOS.descripcion}
+        />
+      </PageAnimation>
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>
         <TabsList>

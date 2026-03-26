@@ -49,7 +49,7 @@ import {
   DURATION_OPTIONS,
   FORM_LABELS_REUNION,
 } from '@/constants/calendario'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 // Constantes para filtros y estados (moved/removed hardcoded users)
 
@@ -558,24 +558,26 @@ export default function CalendarioPage() {
 
   return (
     <ModuleContainer>
-      <ModuleHeader
-        title="Calendario"
-        description="Gestión de reuniones y eventos"
-        tabs={[
-          { value: 'calendario', label: 'Calendario' },
-          { value: 'lista', label: 'Lista' },
-          { value: 'solicitudes', label: 'Solicitudes' }
-        ]}
-        activeTab={vista}
-        onTabChange={(v) => setVista(v as typeof vista)}
-        actions={
-          canCreate && vista !== 'solicitudes' && (
-            <Button onClick={() => setShowNueva(true)}>
-              <Plus className="h-4 w-4 mr-2" />Nueva Reunión
-            </Button>
-          )
-        }
-      />
+      <PageAnimation delay={0}>
+        <ModuleHeader
+          title="Calendario"
+          description="Gestión de reuniones y eventos"
+          tabs={[
+            { value: 'calendario', label: 'Calendario' },
+            { value: 'lista', label: 'Lista' },
+            { value: 'solicitudes', label: 'Solicitudes' }
+          ]}
+          activeTab={vista}
+          onTabChange={(v) => setVista(v as typeof vista)}
+          actions={
+            canCreate && vista !== 'solicitudes' && (
+              <Button onClick={() => setShowNueva(true)}>
+                <Plus className="h-4 w-4 mr-2" />Nueva Reunión
+              </Button>
+            )
+          }
+        />
+      </PageAnimation>
 
       {/* Filtros */}
       <FilterBar

@@ -16,7 +16,7 @@ import {
   STAT_COLORS, ACCESS_DENIED
 } from '@/constants/archivos'
 import { useEmpresas, useProyectos } from '@/hooks'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 export default function ArchivosPage() {
   const { user } = useAuth()
@@ -94,17 +94,19 @@ export default function ArchivosPage() {
 
   return (
     <ModuleContainer>
-      <ModuleHeader
-        title={PAGE_TITLE}
-        description={PAGE_DESCRIPTION}
-        tabs={[
-          { value: 'todos', label: TABS_LABELS.todos },
-          { value: 'empresas', label: TABS_LABELS.empresas },
-          { value: 'proyectos', label: TABS_LABELS.proyectos }
-        ]}
-        activeTab={view}
-        onTabChange={(v) => setView(v as typeof view)}
-      />
+      <PageAnimation delay={0}>
+        <ModuleHeader
+          title={PAGE_TITLE}
+          description={PAGE_DESCRIPTION}
+          tabs={[
+            { value: 'todos', label: TABS_LABELS.todos },
+            { value: 'empresas', label: TABS_LABELS.empresas },
+            { value: 'proyectos', label: TABS_LABELS.proyectos }
+          ]}
+          activeTab={view}
+          onTabChange={(v) => setView(v as typeof view)}
+        />
+      </PageAnimation>
 
       <FilterBar
         searchValue={searchQuery}

@@ -28,7 +28,7 @@ import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import type { CreateTaskData } from '@/components/module/CreateTaskModal'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { TaskGanttChart } from '@/components/ui/task-gantt-chart'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 import { v4 as uuidv4 } from 'uuid'
 
@@ -472,17 +472,19 @@ function TareasPageContent() {
         }
         panelOpen={!!selectedId}
       >
-        <ModuleHeader
-          title="Tareas"
-          description="Gestión operativa de proyectos"
-          actions={
-            canCreate && (
-              <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">
-                <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
-              </Button>
-            )
-          }
-        />
+        <PageAnimation delay={0}>
+          <ModuleHeader
+            title="Tareas"
+            description="Gestión operativa de proyectos"
+            actions={
+              canCreate && (
+                <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">
+                  <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
+                </Button>
+              )
+            }
+          />
+        </PageAnimation>
 
         {/* Filtros */}
         <FilterBar

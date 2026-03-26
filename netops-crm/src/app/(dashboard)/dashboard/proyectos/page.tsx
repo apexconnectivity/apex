@@ -23,7 +23,7 @@ const ProjectDetailPanel = dynamic(
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
@@ -473,29 +473,31 @@ function ProyectosPageContent() {
         }
         panelOpen={!!selectedId}
       >
-        <ModuleHeader
-          title="Proyectos"
-          description="Pipeline de proyectos"
-          actions={
-            <>
-              {canMovePhases && (
-                <Button onClick={handleNewProyecto}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nuevo Proyecto
-                </Button>
-              )}
-            </>
-          }
-          tabs={[
-            { value: 'pipeline', label: 'Pipeline' },
-            ...(!user?.roles.includes('cliente') ? [
-              { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length },
-              ...(isAdmin ? [{ value: 'archivados', label: 'Archivados', count: proyectosArchivados.length }] : [])
-            ] : [])
-          ]}
-          activeTab={view}
-          onTabChange={(v) => setView(v as 'pipeline' | 'cerrados' | 'archivados')}
-        />
+        <PageAnimation delay={0}>
+          <ModuleHeader
+            title="Proyectos"
+            description="Pipeline de proyectos"
+            actions={
+              <>
+                {canMovePhases && (
+                  <Button onClick={handleNewProyecto}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Proyecto
+                  </Button>
+                )}
+              </>
+            }
+            tabs={[
+              { value: 'pipeline', label: 'Pipeline' },
+              ...(!user?.roles.includes('cliente') ? [
+                { value: 'cerrados', label: 'Cerrados', count: proyectosCerrados.length },
+                ...(isAdmin ? [{ value: 'archivados', label: 'Archivados', count: proyectosArchivados.length }] : [])
+              ] : [])
+            ]}
+            activeTab={view}
+            onTabChange={(v) => setView(v as 'pipeline' | 'cerrados' | 'archivados')}
+          />
+        </PageAnimation>
 
         <FilterBar
           searchValue={searchQuery}

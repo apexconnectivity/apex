@@ -44,7 +44,7 @@ import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWit
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { KanbanCard } from '@/components/module/ItemCard'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 
@@ -418,23 +418,25 @@ function SoportePageContent() {
         }
         panelOpen={!!selectedId}
       >
-        <ModuleHeader
-          title={SOPORTE_TITULOS.titulo}
-          description={SOPORTE_TITULOS.descripcion}
-          tabs={[
-            { value: 'tickets', label: SOPORTE_TABS.tickets },
-            { value: 'contratos', label: SOPORTE_TABS.contratos }
-          ]}
-          activeTab={view}
-          onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
-          actions={
-            canCreate && (
-              <Button onClick={() => setShowCreateTicket(true)}>
-                <Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}
-              </Button>
-            )
-          }
-        />
+        <PageAnimation delay={0}>
+          <ModuleHeader
+            title={SOPORTE_TITULOS.titulo}
+            description={SOPORTE_TITULOS.descripcion}
+            tabs={[
+              { value: 'tickets', label: SOPORTE_TABS.tickets },
+              { value: 'contratos', label: SOPORTE_TABS.contratos }
+            ]}
+            activeTab={view}
+            onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
+            actions={
+              canCreate && (
+                <Button onClick={() => setShowCreateTicket(true)}>
+                  <Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}
+                </Button>
+              )
+            }
+          />
+        </PageAnimation>
 
         {view === 'tickets' && (
           <>

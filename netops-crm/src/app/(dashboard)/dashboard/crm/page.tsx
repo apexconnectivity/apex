@@ -16,7 +16,7 @@ import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList, PageAnimation } from '@/components/ui/page-animation'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
 
@@ -622,18 +622,20 @@ function CRMPageContent() {
 
   return (
     <ModuleContainer>
-      <ModuleHeader
-        title={PAGE_TITLE}
-        description={PAGE_DESCRIPTION}
-        actions={
-          canEdit && (
-            <Button onClick={handleNewEmpresa}>
-              <Plus className="h-4 w-4 mr-2" />
-              {BUTTON_LABELS.nuevaEmpresa}
-            </Button>
-          )
-        }
-      />
+      <PageAnimation delay={0}>
+        <ModuleHeader
+          title={PAGE_TITLE}
+          description={PAGE_DESCRIPTION}
+          actions={
+            canEdit && (
+              <Button onClick={handleNewEmpresa}>
+                <Plus className="h-4 w-4 mr-2" />
+                {BUTTON_LABELS.nuevaEmpresa}
+              </Button>
+            )
+          }
+        />
+      </PageAnimation>
 
       {/* Error general (localStorage) */}
       {errors.general && (

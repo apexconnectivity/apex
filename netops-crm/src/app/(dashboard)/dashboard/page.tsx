@@ -124,7 +124,9 @@ export default function DashboardPage() {
   // Dashboard para usuarios internos
   return (
     <ModuleContainer>
-      <WelcomeHeader />
+      <PageAnimation delay={0}>
+        <WelcomeHeader />
+      </PageAnimation>
 
       {/* Stats Section con Suspense */}
       <Suspense fallback={<DashboardStatsSkeleton />}>

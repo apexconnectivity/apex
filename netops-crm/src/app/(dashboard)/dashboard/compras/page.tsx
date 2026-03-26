@@ -47,7 +47,7 @@ import {
   ChevronRight, ClipboardList, SendHorizontal, PackageCheck, X,
   Mail, Phone
 } from 'lucide-react'
-import { StaggeredList } from '@/components/ui/page-animation'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio
@@ -409,17 +409,19 @@ export default function ComprasPage() {
 
   return (
     <ModuleContainer>
-      <ModuleHeader
-        title={COMPRAS_TITLE}
-        description={COMPRAS_DESCRIPTION}
-        actions={
-          canCreate && (
-            <Button onClick={() => setShowNuevaOrden(true)}>
-              <Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}
-            </Button>
-          )
-        }
-      />
+      <PageAnimation delay={0}>
+        <ModuleHeader
+          title={COMPRAS_TITLE}
+          description={COMPRAS_DESCRIPTION}
+          actions={
+            canCreate && (
+              <Button onClick={() => setShowNuevaOrden(true)}>
+                <Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}
+              </Button>
+            )
+          }
+        />
+      </PageAnimation>
 
       <StatGrid cols={4}>
         <MiniStat value={stats.pendientes} label={STAT_PENDIENTES} variant="warning" showBorder accentColor={COMPRAS_STATS_COLORS.pendientes} icon={<ClipboardList className="h-5 w-5" />} />
