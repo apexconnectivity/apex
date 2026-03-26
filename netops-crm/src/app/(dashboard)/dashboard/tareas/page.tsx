@@ -45,7 +45,7 @@ const transformUsuarios = (users: User[]): { id: string; nombre: string; rol: st
     }))
 }
 
-function TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
+function _TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
   const isBlocked = tarea.estado === 'Bloqueada' || (tarea.dependencias && tarea.dependencias.length > 0)
 
@@ -234,13 +234,6 @@ export default function TareasPage() {
     bloqueadas: visibleTareas.filter(t => t.estado === 'Bloqueada').length,
     overdue: visibleTareas.filter(t => t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada').length,
   }), [visibleTareas])
-
-  const handleStatusChange = useCallback(async (id: string, estado: EstadoTarea) => {
-    await updateTask(id, {
-      estado,
-      fecha_completado: estado === 'Completada' ? new Date().toISOString() : undefined
-    })
-  }, [updateTask])
 
   // Handler para crear proyecto desde tareas (reservado para uso futuro)
   const _handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {

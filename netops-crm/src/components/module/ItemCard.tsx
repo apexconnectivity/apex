@@ -4,16 +4,7 @@ import { ModuleCard } from './ModuleCard'
 import { StatusBadge } from './StatusBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ButtonInline } from '@/components/ui/button-inline'
-import { formatDateShort } from '@/lib/date-utils'
-import {
-  PROJECT_CARD_PROGRESS_COLORS,
-  PROJECT_CARD_TASK_DOTS,
-  PROJECT_CARD_VALUE_COLORS,
-  getProjectCardProgressColor,
-  getProjectCardTaskDotColor,
-  getProjectCardFaseColor,
-  getBadgeColorByLabel,
-} from '@/lib/colors'
+import { getProjectCardProgressColor, getProjectCardTaskDotColor, getProjectCardFaseColor, getBadgeColorByLabel } from '@/lib/colors'
 
 interface ItemMeta {
   label: string

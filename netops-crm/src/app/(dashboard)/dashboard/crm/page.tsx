@@ -20,20 +20,17 @@ import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
 // Lazy loading para modales grandes
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CreateEmpresaModal = dynamic(
-  () => import('@/components/module/CreateEmpresaModal').then(mod => mod.CreateEmpresaModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
+  () => import('@/components/module/CreateEmpresaModal').then(mod => ({ default: mod.CreateEmpresaModal })),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ManageContactsModal = dynamic(
-  () => import('@/components/module/ManageContactsModal').then(mod => mod.ManageContactsModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
+  () => import('@/components/module/ManageContactsModal').then(mod => ({ default: mod.ManageContactsModal })),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EmpresaDetailModal = dynamic(
-  () => import('@/components/module/EmpresaDetailModal').then(mod => mod.EmpresaDetailModal),
-  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false } as any
+  () => import('@/components/module/EmpresaDetailModal').then(mod => ({ default: mod.EmpresaDetailModal })),
+  { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import {
   Building2,
@@ -85,7 +82,7 @@ export default function CRMPage() {
   const [contactos, setContactos] = useContactos()
   const [documentos, setDocumentos] = useDocumentos()
   const [proyectos, setProyectos] = useProyectos()
-  const { tasks: tickets } = useTareas()
+  useTareas()
 
   // Usuarios
   const [usuarios] = useLocalStorage<User[]>(STORAGE_KEYS.usuarios, [])
@@ -296,7 +293,7 @@ export default function CRMPage() {
     return map
   }, [contactos])
 
-  const documentosByEmpresa = useMemo(() => {
+  const _documentosByEmpresa = useMemo(() => {
     const map = new Map<string, (Documento | Archivo)[]>()
     documentos.forEach(d => {
       if (d.entidad_tipo === 'empresa') {

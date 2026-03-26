@@ -14,6 +14,7 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { cn } from '@/lib/utils'
 import { type Tarea, type GrupoDashboardTareas } from '@/types/tareas'
+import { ESTADO_COLORS } from '@/lib/colors'
 
 // ============================================================================
 // PROPS
@@ -170,11 +171,6 @@ export default function TasksDashboardPage() {
     console.log('Task clicked:', tarea.id)
   }
 
-  const handleTaskComplete = async (tarea: Tarea) => {
-    // Completar la tarea
-    console.log('Complete task:', tarea.id)
-  }
-
   // Verificar acceso
   const canView = user?.roles.some(r => 
     ['admin', 'especialista', 'comercial', 'compras', 'facturacion'].includes(r)
@@ -302,130 +298,90 @@ export default function TasksDashboardPage() {
           {/* Grupo: Vencen Hoy */}
           {grupos.vencen_hoy.length > 0 && (
             <TaskGroup type="vencen_hoy" count={grupos.vencen_hoy.length}>
-              {grupos.vencen_hoy.map(tarea => {
-                const estadoToColor: Record<string, string> = {
-                  'Pendiente': '#64748b',
-                  'En progreso': '#3b82f6',
-                  'Bloqueada': '#ef4444',
-                  'Completada': '#10b981',
-                }
-                return (
+              {grupos.vencen_hoy.map(tarea => (
                   <KanbanCard
                     key={tarea.id}
                     title={tarea.nombre}
                     subtitle={tarea.proyecto_nombre}
-                    indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                    indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                     badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                     dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                     assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                     onClick={() => handleTaskClick(tarea)}
                   />
-                )
-              })}
+              ))}
             </TaskGroup>
           )}
 
           {/* Grupo: Próximos 7 días */}
           {grupos.proximos_7_dias.length > 0 && (
             <TaskGroup type="proximos_7_dias" count={grupos.proximos_7_dias.length}>
-              {grupos.proximos_7_dias.map(tarea => {
-                const estadoToColor: Record<string, string> = {
-                  'Pendiente': '#64748b',
-                  'En progreso': '#3b82f6',
-                  'Bloqueada': '#ef4444',
-                  'Completada': '#10b981',
-                }
-                return (
+              {grupos.proximos_7_dias.map(tarea => (
                   <KanbanCard
                     key={tarea.id}
                     title={tarea.nombre}
                     subtitle={tarea.proyecto_nombre}
-                    indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                    indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                     badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                     dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                     assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                     onClick={() => handleTaskClick(tarea)}
                   />
-                )
-              })}
+              ))}
             </TaskGroup>
           )}
 
           {/* Grupo: En Progreso */}
           {grupos.en_progreso.length > 0 && (
             <TaskGroup type="en_progreso" count={grupos.en_progreso.length}>
-              {grupos.en_progreso.map(tarea => {
-                const estadoToColor: Record<string, string> = {
-                  'Pendiente': '#64748b',
-                  'En progreso': '#3b82f6',
-                  'Bloqueada': '#ef4444',
-                  'Completada': '#10b981',
-                }
-                return (
+              {grupos.en_progreso.map(tarea => (
                   <KanbanCard
                     key={tarea.id}
                     title={tarea.nombre}
                     subtitle={tarea.proyecto_nombre}
-                    indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                    indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                     badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                     dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                     assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                     onClick={() => handleTaskClick(tarea)}
                   />
-                )
-              })}
+              ))}
             </TaskGroup>
           )}
 
           {/* Grupo: Sin Vencimiento */}
           {grupos.sin_vencimiento.length > 0 && (
             <TaskGroup type="sin_vencimiento" count={grupos.sin_vencimiento.length}>
-              {grupos.sin_vencimiento.map(tarea => {
-                const estadoToColor: Record<string, string> = {
-                  'Pendiente': '#64748b',
-                  'En progreso': '#3b82f6',
-                  'Bloqueada': '#ef4444',
-                  'Completada': '#10b981',
-                }
-                return (
+              {grupos.sin_vencimiento.map(tarea => (
                   <KanbanCard
                     key={tarea.id}
                     title={tarea.nombre}
                     subtitle={tarea.proyecto_nombre}
-                    indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                    indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                     badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                     dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                     assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                     onClick={() => handleTaskClick(tarea)}
                   />
-                )
-              })}
+              ))}
             </TaskGroup>
           )}
 
           {/* Grupo: Completadas Recientes */}
           {grupos.completadas_recientes.length > 0 && (
             <TaskGroup type="completadas_recientes" count={grupos.completadas_recientes.length} defaultExpanded={false}>
-              {grupos.completadas_recientes.map(tarea => {
-                const estadoToColor: Record<string, string> = {
-                  'Pendiente': '#64748b',
-                  'En progreso': '#3b82f6',
-                  'Bloqueada': '#ef4444',
-                  'Completada': '#10b981',
-                }
-                return (
+              {grupos.completadas_recientes.map(tarea => (
                   <KanbanCard
                     key={tarea.id}
                     title={tarea.nombre}
                     subtitle={tarea.proyecto_nombre}
-                    indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                    indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                     badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                     dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                     assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
                     onClick={() => handleTaskClick(tarea)}
                   />
-                )
-              })}
+              ))}
             </TaskGroup>
           )}
         </div>

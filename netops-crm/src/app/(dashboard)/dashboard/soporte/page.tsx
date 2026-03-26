@@ -30,22 +30,20 @@ const CreateEmpresaModal = dynamic(
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import { SOPORTE_TITULOS, SOPORTE_BOTONES, SOPORTE_STATS, SOPORTE_TABS, SOPORTE_EMPTY, SOPORTE_CONTRATOS } from '@/constants/soporte'
-import { getStatusColor, SOPORTE_STATS_COLORS } from '@/lib/colors'
+import { getStatusColor, SOPORTE_STATS_COLORS, TICKET_ESTADO_COLORS, APP_COLORS } from '@/lib/colors'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ModuleCard } from '@/components/module/ModuleCard'
-import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWithPanel'
-import { ModuleHeader } from '@/components/module/ModuleHeader'
-import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
-import { StatusBadge } from '@/components/module/StatusBadge'
-import { KanbanCard } from '@/components/module/ItemCard'
 import { StatGrid, MiniStat } from '@/components/ui/mini-stat'
-import { GripVertical, AlertCircle, User, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Plus } from 'lucide-react'
+import { GripVertical, AlertCircle, Clock, Headphones, FileText, CircleDot, CheckCircle, Archive, Siren, Plus } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { DndContext, closestCorners, DragOverlay, useSensors, useSensor, PointerSensor, KeyboardSensor, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWithPanel'
+import { ModuleHeader } from '@/components/module/ModuleHeader'
+import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
+import { KanbanCard } from '@/components/module/ItemCard'
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 
@@ -55,19 +53,7 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
   const isSlaWarning = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && !ticket.fecha_primera_respuesta
   const isSlaBreached = ticket.fecha_limite_respuesta && new Date(ticket.fecha_limite_respuesta) < new Date() && ticket.estado !== 'Resuelto' && ticket.estado !== 'Cerrado'
 
-  // Color según estado del ticket
-  const getStatusIndicatorColor = (estado: string): string => {
-    switch (estado) {
-      case 'Abierto': return '#ef4444' // red
-      case 'En progreso': return '#3b82f6' // blue
-      case 'Esperando cliente': return '#f59e0b' // amber
-      case 'Resuelto': return '#10b981' // green
-      case 'Cerrado': return '#6b7280' // gray
-      default: return '#6b7280'
-    }
-  }
-
-  const indicatorColor = getStatusIndicatorColor(ticket.estado)
+  const indicatorColor = TICKET_ESTADO_COLORS[ticket.estado] || APP_COLORS.neutral
 
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,

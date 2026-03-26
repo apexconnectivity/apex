@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { KanbanCard } from '@/components/module/ItemCard'
 import { cn } from '@/lib/utils'
 import { type Tarea, type EstadoTarea } from '@/types/tareas'
+import { ESTADO_COLORS } from '@/lib/colors'
 
 // ============================================================================
 // PROPS
@@ -94,7 +95,7 @@ function KanbanColumn({
   tasks,
   blockedTaskIds = [],
   onTaskClick,
-  onTaskComplete,
+  onTaskComplete: _onTaskComplete,
   readOnly = false,
   showAddButton = false,
   onAddTask,
@@ -149,14 +150,7 @@ function KanbanColumn({
           </div>
         ) : (
           tasks.map((tarea) => {
-            // Color del borde según estado
-            const estadoToColor: Record<EstadoTarea, string> = {
-              'Pendiente': '#64748b',    // slate-500
-              'En progreso': '#3b82f6',   // blue-500
-              'Bloqueada': '#ef4444',    // red-500
-              'Completada': '#10b981',   // emerald-500
-            }
-            const indicatorColor = estadoToColor[tarea.estado] || '#64748b'
+            const indicatorColor = ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']
             
             return (
               <KanbanCard

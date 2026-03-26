@@ -4,10 +4,9 @@
  */
 
 // ==========================================
-// COLORES BASE DEL THEME
+// COLORES BASE - APP_COLORS (debe declararse primero)
 // ==========================================
 
-// Paleta de colores principal de la aplicación
 export const APP_COLORS = {
   // Colores principales
   primary: '#06b6d4',    // cyan-500
@@ -38,6 +37,29 @@ export const APP_COLORS = {
 } as const
 
 export type AppColorKey = keyof typeof APP_COLORS
+
+// ==========================================
+// COLORES DE ESTADOS DE TAREA (para indicadores)
+// ==========================================
+
+export const TASK_ESTADO_COLORS: Record<string, string> = {
+  'Pendiente': APP_COLORS.neutral,
+  'En progreso': APP_COLORS.info,
+  'Bloqueada': APP_COLORS.danger,
+  'Completada': APP_COLORS.success,
+}
+
+export const ESTADO_COLORS = TASK_ESTADO_COLORS
+
+// ==========================================
+// COLORES DE SOPORTE/TICKETS
+// ==========================================
+export const TICKET_ESTADO_COLORS: Record<string, string> = {
+  'Abierto': APP_COLORS.danger,
+  'En progreso': APP_COLORS.info,
+  'Resuelto': APP_COLORS.success,
+  'Esperando cliente': APP_COLORS.warning,
+}
 
 // Paleta para gráficos (colores que rotan)
 export const CHART_PALETTE = [
@@ -1157,4 +1179,44 @@ export function getBadgeColorByLabel(label: string): string {
   // DEFAULT
   // ========================================
   return APP_COLORS.neutral
+}
+
+// ==========================================
+// COLORES DE ESTADOS (usando APP_COLORS)
+// ==========================================
+
+export const TASK_ESTADO_COLORS_MAP: Record<string, string> = {
+  'Pendiente': APP_COLORS.neutral,
+  'En progreso': APP_COLORS.info,
+  'Bloqueada': APP_COLORS.danger,
+  'Completada': APP_COLORS.success,
+}
+
+export const ESTADO_COLORS_MAP = TASK_ESTADO_COLORS_MAP
+
+export const TICKET_ESTADO_COLORS_MAP: Record<string, string> = {
+  'Abierto': APP_COLORS.danger,
+  'En progreso': APP_COLORS.info,
+  'Resuelto': APP_COLORS.success,
+  'Esperando cliente': APP_COLORS.warning,
+}
+
+export const PIPELINE_FASE_COLORS_MAP: Record<number, string> = {
+  1: APP_COLORS.neutral,
+  2: APP_COLORS.info,
+  3: APP_COLORS.warning,
+  4: APP_COLORS.success,
+  5: APP_COLORS.purple,
+}
+
+export function getTareaEstadoColor(estado: string): string {
+  return TASK_ESTADO_COLORS_MAP[estado] || APP_COLORS.neutral
+}
+
+export function getTicketEstadoColorSupport(estado: string): string {
+  return TICKET_ESTADO_COLORS_MAP[estado] || APP_COLORS.neutral
+}
+
+export function getPipelineFaseColor(fase: number): string {
+  return PIPELINE_FASE_COLORS_MAP[fase] || APP_COLORS.neutral
 }

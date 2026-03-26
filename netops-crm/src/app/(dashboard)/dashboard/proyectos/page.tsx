@@ -32,10 +32,7 @@ import { Proyecto, FASES, FaseProyecto, HistorialProyecto } from '@/types/proyec
 import { EstadoTarea, PLANTILLAS_POR_FASE } from '@/types/tareas'
 import { User } from '@/types/auth'
 import { useEmpresas, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
-
-
-
-// USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
+import { getPipelineFaseColor } from '@/lib/colors'
 
 // Constante para formulario de nuevo proyecto
 const PROYECTO_VACIO: Partial<Proyecto> = {
@@ -349,11 +346,6 @@ export default function ProyectosPage() {
     setIsModalNuevo(true)
   }, [])
 
-  const handleEditProyecto = useCallback((proyecto: Proyecto) => {
-    setProyectoEditando(proyecto)
-    setIsModalNuevo(true)
-  }, [])
-
   const handleSaveProyecto = useCallback(async (data: Partial<Proyecto>, isNew: boolean) => {
     setIsSaving(true)
     const proyectoId = data.id || crypto.randomUUID()
@@ -495,33 +487,24 @@ export default function ProyectosPage() {
                     <Badge variant="secondary" className="ml-auto">{proyectosPorFase[fase.id]?.length || 0}</Badge>
                   </div>
                   <div className="space-y-3">
-                    {proyectosPorFase[fase.id]?.map(p => {
-                      const faseColors: Record<number, string> = {
-                        1: '#64748b', // Prospecto
-                        2: '#3b82f6', // Diagnóstico
-                        3: '#f59e0b', // Propuesta
-                        4: '#10b981', // Implementación
-                        5: '#8b5cf6', // Cierre
-                      }
-                      return (
+                    {proyectosPorFase[fase.id]?.map(p => (
                         <KanbanCard
                           key={p.id}
                           title={p.nombre}
                           subtitle={p.cliente_nombre}
                           progress={infoTareasPorProyecto[p.id]?.progreso}
-                          indicatorColor={faseColors[p.fase_actual] || '#64748b'}
+                          indicatorColor={getPipelineFaseColor(p.fase_actual)}
                           badges={[{ label: `Fase ${p.fase_actual}` }]}
                           assignee={{ name: p.responsable_nombre || '' }}
                           onClick={() => setSelectedId(p.id)}
                         />
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {view === 'cerrados' && (
           <div className="space-y-3">
