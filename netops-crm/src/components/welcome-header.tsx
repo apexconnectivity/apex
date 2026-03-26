@@ -7,6 +7,7 @@ import { MiniStat } from "@/components/ui/mini-stat"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FolderKanban, CheckSquare, Headphones } from "lucide-react"
 import { VARIANT_COLORS } from "@/lib/colors"
+import { PageAnimation } from "@/components/ui/page-animation"
 
 export function WelcomeHeader() {
   const { user } = useAuth()
@@ -48,49 +49,53 @@ export function WelcomeHeader() {
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {getGreeting()}, {user?.nombre?.split(' ')[0] || 'Usuario'}
-          </h1>
-          <p className="text-muted-foreground mt-1 capitalize">
-            {getDateDisplay()}
-          </p>
-        </div>
+        <PageAnimation delay={0}>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {getGreeting()}, {user?.nombre?.split(' ')[0] || 'Usuario'}
+            </h1>
+            <p className="text-muted-foreground mt-1 capitalize">
+              {getDateDisplay()}
+            </p>
+          </div>
+        </PageAnimation>
 
         {/* Quick Stats - Solo para internos */}
         {user?.roles?.some(r => ['admin', 'comercial', 'especialista'].includes(r)) && (
-          <div className="flex gap-3">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-[76px] w-[120px] rounded-lg" />
-                <Skeleton className="h-[76px] w-[120px] rounded-lg" />
-                <Skeleton className="h-[76px] w-[120px] rounded-lg" />
-              </>
-            ) : (
-              <>
-                <MiniStat
-                  value={proyectosActivos}
-                  label={QUICK_STATS.proyectos}
-                  icon={<FolderKanban className={`h-4 w-4 ${VARIANT_COLORS.primary.iconColor}`} />}
-                  className={`bg-gradient-to-br ${VARIANT_COLORS.primary.gradient} ${VARIANT_COLORS.primary.borderColor}`}
-                />
-                <MiniStat
-                  value={tareasPendientes}
-                  label={QUICK_STATS.tareas}
-                  valueColor={VARIANT_COLORS.success.valueColor}
-                  icon={<CheckSquare className={`h-4 w-4 ${VARIANT_COLORS.success.iconColor}`} />}
-                  className={`bg-gradient-to-br ${VARIANT_COLORS.success.gradient} ${VARIANT_COLORS.success.borderColor}`}
-                />
-                <MiniStat
-                  value={ticketsAbiertos}
-                  label={QUICK_STATS.tickets}
-                  valueColor={VARIANT_COLORS.warning.valueColor}
-                  icon={<Headphones className={`h-4 w-4 ${VARIANT_COLORS.warning.iconColor}`} />}
-                  className={`bg-gradient-to-br ${VARIANT_COLORS.warning.gradient} ${VARIANT_COLORS.warning.borderColor}`}
-                />
-              </>
-            )}
-          </div>
+          <PageAnimation delay={100}>
+            <div className="flex gap-3">
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-[76px] w-[120px] rounded-lg" />
+                  <Skeleton className="h-[76px] w-[120px] rounded-lg" />
+                  <Skeleton className="h-[76px] w-[120px] rounded-lg" />
+                </>
+              ) : (
+                <>
+                  <MiniStat
+                    value={proyectosActivos}
+                    label={QUICK_STATS.proyectos}
+                    icon={<FolderKanban className={`h-4 w-4 ${VARIANT_COLORS.primary.iconColor}`} />}
+                    className={`bg-gradient-to-br ${VARIANT_COLORS.primary.gradient} ${VARIANT_COLORS.primary.borderColor}`}
+                  />
+                  <MiniStat
+                    value={tareasPendientes}
+                    label={QUICK_STATS.tareas}
+                    valueColor={VARIANT_COLORS.success.valueColor}
+                    icon={<CheckSquare className={`h-4 w-4 ${VARIANT_COLORS.success.iconColor}`} />}
+                    className={`bg-gradient-to-br ${VARIANT_COLORS.success.gradient} ${VARIANT_COLORS.success.borderColor}`}
+                  />
+                  <MiniStat
+                    value={ticketsAbiertos}
+                    label={QUICK_STATS.tickets}
+                    valueColor={VARIANT_COLORS.warning.valueColor}
+                    icon={<Headphones className={`h-4 w-4 ${VARIANT_COLORS.warning.iconColor}`} />}
+                    className={`bg-gradient-to-br ${VARIANT_COLORS.warning.gradient} ${VARIANT_COLORS.warning.borderColor}`}
+                  />
+                </>
+              )}
+            </div>
+          </PageAnimation>
         )}
       </div>
     </>

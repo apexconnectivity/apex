@@ -409,19 +409,17 @@ export default function ComprasPage() {
 
   return (
     <ModuleContainer>
-      <PageAnimation delay={0}>
-        <ModuleHeader
-          title={COMPRAS_TITLE}
-          description={COMPRAS_DESCRIPTION}
-          actions={
-            canCreate && (
-              <Button onClick={() => setShowNuevaOrden(true)}>
-                <Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}
-              </Button>
-            )
-          }
-        />
-      </PageAnimation>
+      <ModuleHeader
+        title={COMPRAS_TITLE}
+        description={COMPRAS_DESCRIPTION}
+        actions={
+          canCreate && (
+            <Button onClick={() => setShowNuevaOrden(true)}>
+              <Plus className="h-4 w-4 mr-2" />{BOTON_NUEVA_ORDEN}
+            </Button>
+          )
+        }
+      />
 
       <StatGrid cols={4}>
         <MiniStat value={stats.pendientes} label={STAT_PENDIENTES} variant="warning" showBorder accentColor={COMPRAS_STATS_COLORS.pendientes} icon={<ClipboardList className="h-5 w-5" />} />

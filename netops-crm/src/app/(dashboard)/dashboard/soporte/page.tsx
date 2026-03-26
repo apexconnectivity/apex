@@ -418,25 +418,23 @@ function SoportePageContent() {
         }
         panelOpen={!!selectedId}
       >
-        <PageAnimation delay={0}>
-          <ModuleHeader
-            title={SOPORTE_TITULOS.titulo}
-            description={SOPORTE_TITULOS.descripcion}
-            tabs={[
-              { value: 'tickets', label: SOPORTE_TABS.tickets },
-              { value: 'contratos', label: SOPORTE_TABS.contratos }
-            ]}
-            activeTab={view}
-            onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
-            actions={
-              canCreate && (
-                <Button onClick={() => setShowCreateTicket(true)}>
-                  <Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}
-                </Button>
-              )
-            }
-          />
-        </PageAnimation>
+        <ModuleHeader
+          title={SOPORTE_TITULOS.titulo}
+          description={SOPORTE_TITULOS.descripcion}
+          tabs={[
+            { value: 'tickets', label: SOPORTE_TABS.tickets },
+            { value: 'contratos', label: SOPORTE_TABS.contratos }
+          ]}
+          activeTab={view}
+          onTabChange={(v) => setView(v as 'contratos' | 'tickets')}
+          actions={
+            canCreate && (
+              <Button onClick={() => setShowCreateTicket(true)}>
+                <Plus className="h-4 w-4 mr-2" /> {SOPORTE_BOTONES.nuevoTicket}
+              </Button>
+            )
+          }
+        />
 
         {view === 'tickets' && (
           <>

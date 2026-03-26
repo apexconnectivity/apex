@@ -12,7 +12,7 @@ import { useTareas } from '@/hooks/useTareas'
 import { useProyectos } from '@/hooks/useProyectos'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 import { cn } from '@/lib/utils'
 import { type Tarea, type GrupoDashboardTareas } from '@/types/tareas'
 import { ESTADO_COLORS } from '@/lib/colors'
@@ -194,31 +194,29 @@ export default function TasksDashboardPage() {
   return (
     <ModuleContainer>
       {/* Header */}
-      <PageAnimation delay={0}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/15">
-              <CheckSquare className="h-6 w-6 text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Mis Tareas</h1>
-              <p className="text-sm text-muted-foreground">
-                Dashboard personal de tareas asignadas
-              </p>
-            </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-500/15">
+            <CheckSquare className="h-6 w-6 text-blue-400" />
           </div>
-
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={cn('h-4 w-4 mr-2', isRefreshing && 'animate-spin')} />
-            Actualizar
-          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Mis Tareas</h1>
+            <p className="text-sm text-muted-foreground">
+              Dashboard personal de tareas asignadas
+            </p>
+          </div>
         </div>
-      </PageAnimation>
+
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={cn('h-4 w-4 mr-2', isRefreshing && 'animate-spin')} />
+          Actualizar
+        </Button>
+      </div>
 
       {/* Filtros */}
       <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">

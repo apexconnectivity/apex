@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { PageAnimation } from '@/components/ui/page-animation'
 
 interface ModuleHeaderProps {
   title: string
@@ -10,6 +11,7 @@ interface ModuleHeaderProps {
   activeTab?: string
   onTabChange?: (value: string) => void
   className?: string
+  animate?: boolean  // Por defecto true
 }
 
 export function ModuleHeader({
@@ -19,9 +21,10 @@ export function ModuleHeader({
   tabs,
   activeTab,
   onTabChange,
-  className = ''
+  className = '',
+  animate = true
 }: ModuleHeaderProps) {
-  return (
+  const headerContent = (
     <div className={cn('flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/30', className)}>
       <div>
         <h1 className="text-3xl font-bold">{title}</h1>
@@ -60,4 +63,10 @@ export function ModuleHeader({
       </div>
     </div>
   )
+
+  if (animate) {
+    return <PageAnimation delay={0}>{headerContent}</PageAnimation>
+  }
+
+  return headerContent
 }

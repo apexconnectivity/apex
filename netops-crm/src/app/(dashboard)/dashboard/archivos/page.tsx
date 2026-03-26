@@ -94,19 +94,17 @@ export default function ArchivosPage() {
 
   return (
     <ModuleContainer>
-      <PageAnimation delay={0}>
-        <ModuleHeader
-          title={PAGE_TITLE}
-          description={PAGE_DESCRIPTION}
-          tabs={[
-            { value: 'todos', label: TABS_LABELS.todos },
-            { value: 'empresas', label: TABS_LABELS.empresas },
-            { value: 'proyectos', label: TABS_LABELS.proyectos }
-          ]}
-          activeTab={view}
-          onTabChange={(v) => setView(v as typeof view)}
-        />
-      </PageAnimation>
+      <ModuleHeader
+        title={PAGE_TITLE}
+        description={PAGE_DESCRIPTION}
+        tabs={[
+          { value: 'todos', label: TABS_LABELS.todos },
+          { value: 'empresas', label: TABS_LABELS.empresas },
+          { value: 'proyectos', label: TABS_LABELS.proyectos }
+        ]}
+        activeTab={view}
+        onTabChange={(v) => setView(v as typeof view)}
+      />
 
       <FilterBar
         searchValue={searchQuery}

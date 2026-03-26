@@ -558,26 +558,24 @@ export default function CalendarioPage() {
 
   return (
     <ModuleContainer>
-      <PageAnimation delay={0}>
-        <ModuleHeader
-          title="Calendario"
-          description="Gestión de reuniones y eventos"
-          tabs={[
-            { value: 'calendario', label: 'Calendario' },
-            { value: 'lista', label: 'Lista' },
-            { value: 'solicitudes', label: 'Solicitudes' }
-          ]}
-          activeTab={vista}
-          onTabChange={(v) => setVista(v as typeof vista)}
-          actions={
-            canCreate && vista !== 'solicitudes' && (
-              <Button onClick={() => setShowNueva(true)}>
-                <Plus className="h-4 w-4 mr-2" />Nueva Reunión
-              </Button>
-            )
-          }
-        />
-      </PageAnimation>
+      <ModuleHeader
+        title="Calendario"
+        description="Gestión de reuniones y eventos"
+        tabs={[
+          { value: 'calendario', label: 'Calendario' },
+          { value: 'lista', label: 'Lista' },
+          { value: 'solicitudes', label: 'Solicitudes' }
+        ]}
+        activeTab={vista}
+        onTabChange={(v) => setVista(v as typeof vista)}
+        actions={
+          canCreate && vista !== 'solicitudes' && (
+            <Button onClick={() => setShowNueva(true)}>
+              <Plus className="h-4 w-4 mr-2" />Nueva Reunión
+            </Button>
+          )
+        }
+      />
 
       {/* Filtros */}
       <FilterBar

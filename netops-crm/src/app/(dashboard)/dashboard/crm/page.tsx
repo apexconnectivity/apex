@@ -622,20 +622,18 @@ function CRMPageContent() {
 
   return (
     <ModuleContainer>
-      <PageAnimation delay={0}>
-        <ModuleHeader
-          title={PAGE_TITLE}
-          description={PAGE_DESCRIPTION}
-          actions={
-            canEdit && (
-              <Button onClick={handleNewEmpresa}>
-                <Plus className="h-4 w-4 mr-2" />
-                {BUTTON_LABELS.nuevaEmpresa}
-              </Button>
-            )
-          }
-        />
-      </PageAnimation>
+      <ModuleHeader
+        title={PAGE_TITLE}
+        description={PAGE_DESCRIPTION}
+        actions={
+          canEdit && (
+            <Button onClick={handleNewEmpresa}>
+              <Plus className="h-4 w-4 mr-2" />
+              {BUTTON_LABELS.nuevaEmpresa}
+            </Button>
+          )
+        }
+      />
 
       {/* Error general (localStorage) */}
       {errors.general && (

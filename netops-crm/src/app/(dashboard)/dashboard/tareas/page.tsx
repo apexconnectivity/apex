@@ -472,19 +472,17 @@ function TareasPageContent() {
         }
         panelOpen={!!selectedId}
       >
-        <PageAnimation delay={0}>
-          <ModuleHeader
-            title="Tareas"
-            description="Gestión operativa de proyectos"
-            actions={
-              canCreate && (
-                <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">
-                  <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
-                </Button>
-              )
-            }
-          />
-        </PageAnimation>
+        <ModuleHeader
+          title="Tareas"
+          description="Gestión operativa de proyectos"
+          actions={
+            canCreate && (
+              <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">
+                <Plus className="h-4 w-4 mr-2" /> Nueva Tarea
+              </Button>
+            )
+          }
+        />
 
         {/* Filtros */}
         <FilterBar
