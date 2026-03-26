@@ -167,10 +167,7 @@ function KanbanColumn({
                 progress={tarea.estado === 'Completada' ? 100 : tarea.estado === 'En progreso' ? 50 : 0}
                 dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                 assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
-                badges={[
-                  { label: tarea.prioridad },
-                  { label: tarea.categoria },
-                ]}
+                badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                 onClick={() => onTaskClick?.(tarea)}
                 className={cn(
                   isBlocked && blockedTaskIds.includes(tarea.id) && 'border-red-500/50',

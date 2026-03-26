@@ -1094,3 +1094,50 @@ export function getProjectCardTaskDotColor(
   if (index < completed + inProgress) return PROJECT_CARD_TASK_DOTS.inProgress
   return PROJECT_CARD_TASK_DOTS.pending
 }
+
+// ============================================================================
+// COLORES PARA BADGES
+// Se mapean a APP_COLORS para mantener consistencia
+// ============================================================================
+
+export function getBadgeColorByLabel(label: string): string {
+  const key = label.toLowerCase().trim()
+  
+  // ========================================
+  // PRIORIDADES
+  // ========================================
+  if (key.includes('urgente') || key === 'alta' || key === 'high') return APP_COLORS.danger
+  if (key === 'media' || key === 'normal' || key === 'medium' || key === 'intermedia') return APP_COLORS.warning
+  if (key === 'baja' || key === 'low') return APP_COLORS.success
+  
+  // ========================================
+  // ESTADOS
+  // ========================================
+  if (key.includes('progreso') || key === 'in progress' || key === 'en curso') return APP_COLORS.info
+  if (key.includes('bloque')) return APP_COLORS.danger
+  if (key.includes('complet') || key.includes('done') || key.includes('resuelto')) return APP_COLORS.success
+  if (key.includes('cerrado') || key === 'closed') return APP_COLORS.neutral
+  if (key === 'pendiente' || key === 'pending') return APP_COLORS.neutral
+  
+  // ========================================
+  // CATEGORÍAS DE TAREA
+  // ========================================
+  if (key.includes('técnica') || key.includes('tecnica') || key.includes('technical')) return '#a855f7' // purple (no hay en APP_COLORS)
+  if (key.includes('comercial') || key.includes('commercial')) return APP_COLORS.purple
+  if (key.includes('compra') || key.includes('purchase')) return APP_COLORS.success
+  if (key.includes('admin')) return APP_COLORS.warning
+  if (key.includes('general')) return APP_COLORS.neutral
+  
+  // ========================================
+  // CATEGORÍAS DE SOPORTE
+  // ========================================
+  if (key.includes('incidente') || key.includes('incident')) return APP_COLORS.danger
+  if (key.includes('soporte') || key.includes('support')) return APP_COLORS.info
+  if (key.includes('mejora') || key.includes('improvement') || key.includes('feature')) return APP_COLORS.success
+  if (key.includes('consulta') || key.includes('question')) return APP_COLORS.purple
+  
+  // ========================================
+  // DEFAULT
+  // ========================================
+  return APP_COLORS.neutral
+}

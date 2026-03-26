@@ -12,6 +12,7 @@ import {
   getProjectCardProgressColor,
   getProjectCardTaskDotColor,
   getProjectCardFaseColor,
+  getBadgeColorByLabel,
 } from '@/lib/colors'
 
 interface ItemMeta {
@@ -51,10 +52,13 @@ interface KanbanCardProps {
   indicatorColor?: string
   /** Fecha de vencimiento */
   dueDate?: string
-  /** Etiquetas/badges */
+  /** Etiquetas/badges (incluye badge principal como primer elemento si se desea) */
   badges?: { label: string; color?: string }[]
   /** Responsable */
-  assignee?: { name: string; avatar?: string }
+  assignee?: {
+    name: string
+    avatar?: string
+  }
   /** Progress bar */
   progress?: number
   progressLabel?: string
@@ -122,15 +126,22 @@ export function KanbanCard({
       {/* Badges */}
       {badges && badges.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
-          {badges.map((badge, idx) => (
-            <span
-              key={idx}
-              className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
-              style={badge.color ? { backgroundColor: `${badge.color}20`, color: badge.color } : undefined}
-            >
-              {badge.label}
-            </span>
-          ))}
+          {badges.map((b, idx) => {
+            // Color automático según el texto del badge
+            const badgeColor = b.color || getBadgeColorByLabel(b.label)
+            return (
+              <span
+                key={idx}
+                className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                style={{ 
+                  backgroundColor: `${badgeColor}20`, 
+                  color: badgeColor 
+                }}
+              >
+                {b.label}
+              </span>
+            )
+          })}
         </div>
       )}
 

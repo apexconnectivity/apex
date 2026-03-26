@@ -510,6 +510,7 @@ export default function ProyectosPage() {
                           subtitle={p.cliente_nombre}
                           progress={infoTareasPorProyecto[p.id]?.progreso}
                           indicatorColor={faseColors[p.fase_actual] || '#64748b'}
+                          badges={[{ label: `Fase ${p.fase_actual}` }]}
                           assignee={{ name: p.responsable_nombre || '' }}
                           onClick={() => setSelectedId(p.id)}
                         />
