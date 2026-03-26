@@ -10,6 +10,7 @@ import { WelcomeHeader } from "@/components/welcome-header"
 import { AccessDeniedCard } from "@/components/ui/access-denied-card"
 import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PageAnimation } from "@/components/ui/page-animation"
 import { Building2, FolderKanban, CheckSquare, Headphones, Shield } from "lucide-react"
 import { DASHBOARD_STATS, ACCESS_MESSAGES } from '@/constants/dashboard'
 import { STATS_LABELS } from '@/constants/estadisticas'
@@ -127,58 +128,68 @@ export default function DashboardPage() {
 
       {/* Stats Section con Suspense */}
       <Suspense fallback={<DashboardStatsSkeleton />}>
-        <DashboardStats />
+        <PageAnimation delay={100}>
+          <DashboardStats />
+        </PageAnimation>
       </Suspense>
 
       {/* Pipeline Section con Suspense */}
       {canAccessModule('proyectos') && (
         <Suspense fallback={<Skeleton className="h-64" />}>
-          <ProjectPipeline
-            showAllPhases={isAdmin}
-            showCommercialPhases={isComercial}
-            showAssignedOnly={isTecnico}
-          />
+          <PageAnimation delay={200}>
+            <ProjectPipeline
+              showAllPhases={isAdmin}
+              showCommercialPhases={isComercial}
+              showAssignedOnly={isTecnico}
+            />
+          </PageAnimation>
         </Suspense>
       )}
 
       {/* CRM Stats - solo comerciales y admin */}
       {isAdmin && (
-        <StatGrid cols={2}>
-          <MiniStat
-            value={empresas.length}
-            label={DASHBOARD_STATS.empresasActivas}
-            icon={<Building2 className="h-6 w-6" />}
-            variant="primary"
-            showBorder
-            accentColor={HEX_COLORS.primary}
-          />
-          <MiniStat
-            value={contactos.length}
-            label={STATS_LABELS.contactos}
-            icon={<Headphones className="h-6 w-6" />}
-            variant="info"
-            showBorder
-            accentColor={HEX_COLORS.info}
-          />
-        </StatGrid>
+        <PageAnimation delay={300}>
+          <StatGrid cols={2}>
+            <MiniStat
+              value={empresas.length}
+              label={DASHBOARD_STATS.empresasActivas}
+              icon={<Building2 className="h-6 w-6" />}
+              variant="primary"
+              showBorder
+              accentColor={HEX_COLORS.primary}
+            />
+            <MiniStat
+              value={contactos.length}
+              label={STATS_LABELS.contactos}
+              icon={<Headphones className="h-6 w-6" />}
+              variant="info"
+              showBorder
+              accentColor={HEX_COLORS.info}
+            />
+          </StatGrid>
+        </PageAnimation>
       )}
 
       {/* Bottom section - filtered by role con Suspense */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Suspense fallback={<ActivitySkeleton />}>
-          <RecentActivity
-            empresas={empresas}
-            proyectos={proyectos}
-            tareas={tareas}
-            tickets={tickets}
-          />
+          <PageAnimation delay={400}>
+            <RecentActivity
+              empresas={empresas}
+              proyectos={proyectos}
+              tareas={tareas}
+              tickets={tickets}
+            />
+          </PageAnimation>
         </Suspense>
         {(isAdmin || isTecnico) && (
           <Suspense fallback={<TasksSkeleton />}>
-            <UpcomingTasks
-              tareas={tareas}
-              proyectos={proyectos}
-            />
+            <PageAnimation delay={500}>
+              <UpcomingTasks
+                tareas={tareas}
+                proyectos={proyectos}
+              />
+            </PageAnimation>
           </Suspense>
         )}
       </div>
