@@ -83,6 +83,8 @@ export default function DashboardLayout({
 
   // Cargar usuarios desde localStorage
   const [usuarios, setUsuarios] = useState<User[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
+
   useEffect(() => {
     if (typeof window === 'undefined') return
     const stored = localStorage.getItem('netops_usuarios')
@@ -93,6 +95,11 @@ export default function DashboardLayout({
         // Error al cargar usuarios
       }
     }
+  }, [])
+
+  useEffect(() => {
+    // Animación de entrada después de que el contenido esté listo
+    setIsLoaded(true)
   }, [])
 
   // Función para manejar la creación de un nuevo proyecto
@@ -181,7 +188,10 @@ export default function DashboardLayout({
 
         {/* Page content */}
         <DataProvider>
-          <main className="px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto">
+          <main className={cn(
+            "px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto transition-opacity duration-500",
+            isLoaded ? "opacity-100" : "opacity-0"
+          )}>
             {children}
           </main>
         </DataProvider>

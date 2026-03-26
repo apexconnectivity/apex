@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEmpresas, useProyectos, useTareas, useTickets } from "@/lib/data"
 import { MiniStat, StatGrid } from "@/components/ui/mini-stat"
+import { PageAnimation } from "@/components/ui/page-animation"
 import type { Empresa } from "@/types/crm"
 import type { Proyecto } from "@/types/proyectos"
 import type { Tarea } from "@/types/tareas"
@@ -138,38 +139,46 @@ export function DashboardStats() {
 
   return (
     <StatGrid cols={4}>
-      <MiniStat
-        value={clientesActivos}
-        label={DASHBOARD_STATS.clientesActivos}
-        icon={<Building2 className="h-5 w-5" />}
-        variant="primary"
-        showBorder
-        accentColor={HEX_COLORS.primary}
-      />
-      <MiniStat
-        value={proyectosActivos}
-        label={DASHBOARD_STATS.proyectosActivos}
-        icon={<FolderKanban className="h-5 w-5" />}
-        variant="info"
-        showBorder
-        accentColor={HEX_COLORS.info}
-      />
-      <MiniStat
-        value={tareasPendientes}
-        label={DASHBOARD_STATS.tareasPendientes}
-        icon={<CheckSquare className="h-5 w-5" />}
-        variant="warning"
-        showBorder
-        accentColor={HEX_COLORS.warning}
-      />
-      <MiniStat
-        value={ticketsAbiertos}
-        label={DASHBOARD_STATS.ticketsAbiertos}
-        icon={<Headphones className="h-5 w-5" />}
-        variant="danger"
-        showBorder
-        accentColor={HEX_COLORS.danger}
-      />
+      <PageAnimation delay={100}>
+        <MiniStat
+          value={clientesActivos}
+          label={DASHBOARD_STATS.clientesActivos}
+          icon={<Building2 className="h-5 w-5" />}
+          variant="primary"
+          showBorder
+          accentColor={HEX_COLORS.primary}
+        />
+      </PageAnimation>
+      <PageAnimation delay={150}>
+        <MiniStat
+          value={proyectosActivos}
+          label={DASHBOARD_STATS.proyectosActivos}
+          icon={<FolderKanban className="h-5 w-5" />}
+          variant="info"
+          showBorder
+          accentColor={HEX_COLORS.info}
+        />
+      </PageAnimation>
+      <PageAnimation delay={200}>
+        <MiniStat
+          value={tareasPendientes}
+          label={DASHBOARD_STATS.tareasPendientes}
+          icon={<CheckSquare className="h-5 w-5" />}
+          variant="warning"
+          showBorder
+          accentColor={HEX_COLORS.warning}
+        />
+      </PageAnimation>
+      <PageAnimation delay={250}>
+        <MiniStat
+          value={ticketsAbiertos}
+          label={DASHBOARD_STATS.ticketsAbiertos}
+          icon={<Headphones className="h-5 w-5" />}
+          variant="danger"
+          showBorder
+          accentColor={HEX_COLORS.danger}
+        />
+      </PageAnimation>
     </StatGrid>
   )
 }

@@ -16,6 +16,7 @@ import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
+import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
 
@@ -779,7 +780,7 @@ function CRMPageContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <StaggeredList stagger={30}>
           {filteredEmpresas.map(empresa => (
             <EmpresaCard
               key={empresa.id}
@@ -791,7 +792,7 @@ function CRMPageContent() {
               onClick={() => setSelectedEmpresa(empresa)}
             />
           ))}
-        </div>
+        </StaggeredList>
       )}
 
       {/* Modal de Empresa */}
