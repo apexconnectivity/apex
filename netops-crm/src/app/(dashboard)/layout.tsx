@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
+import { DataProvider } from '@/contexts/data-context'
 import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/sidebar'
 import { DashboardHeader } from '@/components/dashboard-header'
@@ -179,9 +180,11 @@ export default function DashboardLayout({
         />
 
         {/* Page content */}
-        <main className="px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto">
-          {children}
-        </main>
+        <DataProvider>
+          <main className="px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto">
+            {children}
+          </main>
+        </DataProvider>
       </div>
 
       {/* Modal para nuevo proyecto desde el header */}

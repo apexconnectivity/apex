@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from 'react'
+import { Suspense, useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
@@ -93,6 +93,39 @@ function SortableTicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () =
 }
 
 export default function SoportePage() {
+  return (
+    <Suspense fallback={<SoporteLoading />}>
+      <SoportePageContent />
+    </Suspense>
+  )
+}
+
+function SoporteLoading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-20 w-full" />
+      <div className="grid grid-cols-4 gap-4">
+        {[1,2,3,4].map(i => (
+          <Skeleton key={i} className="h-24" />
+        ))}
+      </div>
+      <div className="grid grid-cols-4 gap-6 min-w-[1000px] pb-6">
+        {['Abierto', 'En progreso', 'Pendiente', 'Resuelto'].map(estado => (
+          <div key={estado} className="space-y-3">
+            <div className="flex items-center justify-between px-2">
+              <Skeleton className="h-4 w-20" />
+            </div>
+            {[1,2,3].map(j => (
+              <Skeleton key={j} className="h-32" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SoportePageContent() {
   const { user } = useAuth()
   const [empresas, setEmpresas] = useEmpresas()
   const [proyectos, setProyectos] = useProyectos()

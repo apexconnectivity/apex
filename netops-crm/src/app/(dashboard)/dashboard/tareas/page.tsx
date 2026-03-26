@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from 'react'
+import { Suspense, useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
@@ -18,6 +18,7 @@ import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
 import { type User } from '@/types/auth'
@@ -138,6 +139,39 @@ function _TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: 
 
 
 export default function TareasPage() {
+  return (
+    <Suspense fallback={<TareasLoading />}>
+      <TareasPageContent />
+    </Suspense>
+  )
+}
+
+function TareasLoading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-20 w-full" />
+      <div className="grid grid-cols-6 gap-4">
+        {[1,2,3,4,5,6].map(i => (
+          <Skeleton key={i} className="h-24" />
+        ))}
+      </div>
+      <div className="grid grid-cols-4 gap-6 min-w-[1200px] pb-6">
+        {['Pendiente', 'En progreso', 'Completada', 'Bloqueada'].map(estado => (
+          <div key={estado} className="space-y-3">
+            <div className="flex items-center justify-between px-2">
+              <Skeleton className="h-4 w-20" />
+            </div>
+            {[1,2,3].map(j => (
+              <Skeleton key={j} className="h-32" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TareasPageContent() {
   const { user } = useAuth()
   const {
     tasks: tareas,

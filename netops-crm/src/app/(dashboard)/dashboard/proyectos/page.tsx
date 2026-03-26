@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Suspense, useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { FilterBar } from '@/components/ui/filter-bar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, FolderKanban, Rocket, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ModuleHeader, ModuleCard, KanbanCard, ModuleContainerWithPanel } from '@/components/module'
 import dynamic from 'next/dynamic'
-import { Skeleton } from '@/components/ui/skeleton'
 
 const ProjectDetailPanel = dynamic(
   () => import('@/components/module/ProjectDetailPanel').then(mod => mod.ProjectDetailPanel),
@@ -52,6 +52,36 @@ const PROYECTO_VACIO: Partial<Proyecto> = {
 }
 
 export default function ProyectosPage() {
+  return (
+    <Suspense fallback={<ProyectosLoading />}>
+      <ProyectosPageContent />
+    </Suspense>
+  )
+}
+
+function ProyectosLoading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-20 w-full" />
+      <div className="grid grid-cols-5 gap-4">
+        {[1,2,3,4,5].map(i => (
+          <Skeleton key={i} className="h-24" />
+        ))}
+      </div>
+      <div className="flex gap-4 min-w-[1400px]">
+        {[1,2,3,4,5].map(i => (
+          <div key={i} className="flex-1 min-w-[280px] space-y-3">
+            {[1,2,3].map(j => (
+              <Skeleton key={j} className="h-40" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ProyectosPageContent() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
 

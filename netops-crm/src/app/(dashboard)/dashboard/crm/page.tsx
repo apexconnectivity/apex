@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect, useDeferredValue } from 'react'
+import { Suspense, useState, useMemo, useCallback, useEffect, useDeferredValue } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
@@ -8,6 +8,7 @@ import { useEmpresas, useContactos, useProyectos, useTareas, useDocumentos } fro
 import { Card, CardContent } from '@/components/ui/card'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { UploadDocumentModal } from '@/components/module/UploadDocumentModal'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { ModuleContainer } from '@/components/module/ModuleContainer'
@@ -17,7 +18,6 @@ import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/bas
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
-import { Skeleton } from '@/components/ui/skeleton'
 
 // Lazy loading para modales grandes
 const CreateEmpresaModal = dynamic(
@@ -76,6 +76,32 @@ const EMPRESAS_VACIA: Partial<Empresa> = {
 
 
 export default function CRMPage() {
+  return (
+    <Suspense fallback={<CRMLoading />}>
+      <CRMPageContent />
+    </Suspense>
+  )
+}
+
+function CRMLoading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-20 w-full" />
+      <div className="grid grid-cols-4 gap-4">
+        {[1,2,3,4].map(i => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        {[1,2,3,4,5,6].map(i => (
+          <Skeleton key={i} className="h-48" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CRMPageContent() {
   const { user } = useAuth()
 
   // Hooks individuales para cada tipo de dato
