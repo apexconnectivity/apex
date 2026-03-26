@@ -10,8 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'IBM Plex Sans', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
