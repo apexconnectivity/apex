@@ -27,6 +27,12 @@ export { useDocumentos } from './useDocumentos'
 export { useHistorialProyectos } from './useHistorialProyectos'
 
 // ============================================================================
+// STATS HOOKS - Hooks de estadísticas
+// ============================================================================
+
+export { useModuleStats, useTareasStats, useProyectosStats, useTicketsStats, useEmpresasStats } from './useModuleStats'
+
+// ============================================================================
 // STORAGE HOOKS - Hooks específicos de storage
 // ============================================================================
 
