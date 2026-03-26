@@ -6,13 +6,13 @@ import { useEmpresas } from '@/hooks/useEmpresas'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
+import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS, ESTADO_COLORS } from '@/lib/colors'
 import { TAREAS_STATS } from '@/constants/estadisticas'
 
 // Importar constantes
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
@@ -658,18 +658,12 @@ function TareasPageContent() {
                       </div>
                       <div className="space-y-3 min-h-[500px] bg-muted/10 rounded-2xl p-2 border border-border/5 border-dashed">
                         {tareasPorEstado[estado]?.map(tarea => {
-                          const estadoToColor: Record<string, string> = {
-                            'Pendiente': '#64748b',
-                            'En progreso': '#3b82f6',
-                            'Bloqueada': '#ef4444',
-                            'Completada': '#10b981',
-                          }
                           return (
                             <KanbanCard
                               key={tarea.id}
                               title={tarea.nombre}
                               subtitle={tarea.proyecto_nombre}
-                              indicatorColor={estadoToColor[tarea.estado] || '#64748b'}
+                              indicatorColor={ESTADO_COLORS[tarea.estado] || ESTADO_COLORS['Pendiente']}
                               badges={[{ label: tarea.prioridad }, { label: tarea.categoria }]}
                               dueDate={tarea.fecha_vencimiento ? new Date(tarea.fecha_vencimiento).toLocaleDateString('es-ES') : undefined}
                               assignee={tarea.responsable_nombre ? { name: tarea.responsable_nombre } : undefined}
