@@ -7,7 +7,6 @@ import { DataProvider } from '@/contexts/data-context'
 import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/sidebar'
 import { DashboardHeader } from '@/components/dashboard-header'
-import { BackgroundPattern } from '@/components/ui/background-pattern'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
 import { useEmpresas, useContactos, useProyectos } from '@/hooks'
 import { Proyecto } from '@/types/proyectos'
@@ -193,10 +192,7 @@ export default function DashboardLayout({
             "relative px-6 min-h-[calc(100vh-8rem)] w-full overflow-x-hidden overflow-y-auto transition-opacity duration-500",
             isLoaded ? "opacity-100" : "opacity-0"
           )}>
-            <BackgroundPattern variant="grid-noise" opacity={0.02} className="z-0" />
-            <div className="relative z-10">
-              {children}
-            </div>
+            {children}
           </main>
         </DataProvider>
       </div>
