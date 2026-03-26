@@ -90,6 +90,24 @@ export const STATS_LABELS = {
   sinRelacion: 'Sin relación',
   vencido: 'Vencida',
   vencidoPlural: 'Vencidas',
+
+  // Tareas
+  completadas: 'Completadas',
+  bloqueadas: 'Bloqueadas',
+  overdue: 'Vencidas',
+} as const
+
+// ============================================================================
+// ESTADÍSTICAS DE TAREAS (MiniStat)
+// ============================================================================
+
+export const TAREAS_STATS = {
+  total: STATS_LABELS.total,
+  pendientes: STATS_LABELS.pendientes,
+  enProgreso: STATS_LABELS.enProgreso,
+  completadas: STATS_LABELS.completadas,
+  bloqueadas: STATS_LABELS.bloqueadas,
+  overdue: STATS_LABELS.overdue,
 } as const
 
 // ============================================================================

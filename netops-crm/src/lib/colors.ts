@@ -18,6 +18,23 @@ export const APP_COLORS = {
   purple: '#8b5cf6',     // violet-500
   neutral: '#6b7280',    // gray-500
   slate: '#334155',      // slate-700 (para datos vacíos)
+  // Colores adicionales
+  yellow: '#eab308',     // yellow-500
+  green: '#22c55e',      // green-500
+  pink: '#ec4899',       // pink-500
+  orange: '#f97316',     // orange-500
+  indigo: '#6366f1',     // indigo-500
+  darkRed: '#dc2626',    // red-600
+  teal: '#14b8a6',      // teal-500
+  darkPurple: '#a855f7', // purple-500
+  // Variantes claras (hover)
+  primaryLight: '#9ca3af',
+  successLight: '#34d399',
+  warningLight: '#fbbf24',
+  dangerLight: '#f87171',
+  infoLight: '#60a5fa',
+  purpleLight: '#a78bfa',
+  neutralLight: '#9ca3af',
 } as const
 
 export type AppColorKey = keyof typeof APP_COLORS
@@ -30,8 +47,8 @@ export const CHART_PALETTE = [
   APP_COLORS.warning,
   APP_COLORS.success,
   APP_COLORS.danger,
-  '#ec4899', // pink-500
-  '#14b8a6', // teal-500
+  APP_COLORS.pink,
+  APP_COLORS.teal,
 ] as const
 
 export const STATUS_COLORS = {
@@ -417,12 +434,12 @@ export function getTipoReunionIcon(tipo: string): string {
 // ==========================================
 
 const BASE_STATS_COLORS = {
-  total: '#06b6d4',       // cyan-500
-  info: '#3b82f6',       // blue-500
-  success: '#10b981',    // emerald-500
-  warning: '#f59e0b',    // amber-500
-  danger: '#ef4444',     // red-500
-  slate: '#64748b',      // slate-500
+  total: APP_COLORS.primary,
+  info: APP_COLORS.info,
+  success: APP_COLORS.success,
+  warning: APP_COLORS.warning,
+  danger: APP_COLORS.danger,
+  slate: APP_COLORS.neutral,
 } as const
 
 // ==========================================
@@ -435,7 +452,20 @@ export const SOPORTE_STATS_COLORS = {
   enProgreso: BASE_STATS_COLORS.info,
   resueltos: BASE_STATS_COLORS.success,
   cerrados: BASE_STATS_COLORS.slate,
-  urgentes: '#dc2626',    // red-600 (especial para urgentes)
+  urgentes: APP_COLORS.darkRed,
+} as const
+
+// ==========================================
+// COLORES DE ESTADÍSTICAS DE TAREAS (MiniStat accentColor)
+// ==========================================
+
+export const TAREAS_STATS_COLORS = {
+  total: BASE_STATS_COLORS.total,
+  pendientes: BASE_STATS_COLORS.warning,
+  enProgreso: BASE_STATS_COLORS.info,
+  completadas: BASE_STATS_COLORS.success,
+  bloqueadas: BASE_STATS_COLORS.danger,
+  overdue: APP_COLORS.darkRed,
 } as const
 
 // ==========================================
@@ -482,28 +512,15 @@ export const CRM_STATS_COLORS = {
 } as const
 
 // ==========================================
-// COLORES DE ESTADÍSTICAS DE TAREAS (MiniStat accentColor)
-// ==========================================
-
-export const TAREAS_STATS_COLORS = {
-  total: BASE_STATS_COLORS.total,
-  pendientes: BASE_STATS_COLORS.warning,
-  enProgreso: BASE_STATS_COLORS.info,
-  completadas: BASE_STATS_COLORS.success,
-  bloqueadas: BASE_STATS_COLORS.danger,
-  overdue: '#dc2626',    // red-600 (especial para overdue)
-} as const
-
-// ==========================================
 // COLORES DE FASES DE PIPELINE (Proyectos)
 // ==========================================
 
 export const PIPELINE_FASE_COLORS = {
-  1: '#6b7280',   // gray-500
-  2: '#3b82f6',   // blue-500
-  3: '#eab308',   // yellow-500
-  4: '#10b981',   // emerald-500
-  5: '#8b5cf6',   // violet-500
+  1: APP_COLORS.neutral,
+  2: APP_COLORS.info,
+  3: APP_COLORS.yellow,
+  4: APP_COLORS.success,
+  5: APP_COLORS.purple,
 } as const
 
 // ==========================================
@@ -511,23 +528,23 @@ export const PIPELINE_FASE_COLORS = {
 // ==========================================
 
 export const CHART_COLORS = {
-  empty: '#334155',  // slate-700
-  default: '#06b6d4', // cyan-500
+  empty: APP_COLORS.slate,
+  default: APP_COLORS.primary,
 } as const
 
 export const HEX_COLORS = {
-  primary: '#06b6d4',   // cyan-500
-  info: '#3b82f6',      // blue-500
-  success: '#10b981',   // emerald-500
-  warning: '#f59e0b',   // amber-500
-  danger: '#ef4444',    // red-500
-  purple: '#8b5cf6',    // violet-500
-  pink: '#ec4899',
-  orange: '#f97316',
-  green: '#22c55e',     // green-500
-  slate: '#64748b',
-  indigo: '#6366f1',
-  urgent: '#dc2626',    // red-600
+  primary: APP_COLORS.primary,
+  info: APP_COLORS.info,
+  success: APP_COLORS.success,
+  warning: APP_COLORS.warning,
+  danger: APP_COLORS.danger,
+  purple: APP_COLORS.purple,
+  pink: APP_COLORS.pink,
+  orange: APP_COLORS.orange,
+  green: APP_COLORS.green,
+  slate: APP_COLORS.neutral,
+  indigo: APP_COLORS.indigo,
+  urgent: APP_COLORS.darkRed,
 } as const
 
 // ==========================================
@@ -913,12 +930,12 @@ export const ARCHIVE_CLASSES = {
 export const PROJECT_CARD_FASE_COLORS = {
   // Fase 1: Prospecto (gris - evaluación inicial)
   1: {
-    border: '#6b7280',           // gray-500
-    borderHover: '#9ca3af',      // gray-400
-    accent: '#6b7280',           // gray-500
+    border: APP_COLORS.neutral,
+    borderHover: APP_COLORS.neutralLight,
+    accent: APP_COLORS.neutral,
     gradient: 'from-gray-500/10 to-slate-500/10',
-    progress: '#6b7280',         // gray-500
-    progressGradient: 'linear-gradient(to right, #6b7280, #9ca3af)',
+    progress: APP_COLORS.neutral,
+    progressGradient: `linear-gradient(to right, ${APP_COLORS.neutral}, ${APP_COLORS.neutralLight})`,
     badge: {
       bg: 'bg-gray-500/15',
       text: 'text-gray-400',
@@ -927,12 +944,12 @@ export const PROJECT_CARD_FASE_COLORS = {
   },
   // Fase 2: Diagnóstico (azul - análisis y evaluación)
   2: {
-    border: '#3b82f6',           // blue-500
-    borderHover: '#60a5fa',      // blue-400
-    accent: '#3b82f6',           // blue-500
+    border: APP_COLORS.info,
+    borderHover: APP_COLORS.infoLight,
+    accent: APP_COLORS.info,
     gradient: 'from-blue-500/10 to-indigo-500/10',
-    progress: '#3b82f6',         // blue-500
-    progressGradient: 'linear-gradient(to right, #3b82f6, #60a5fa)',
+    progress: APP_COLORS.info,
+    progressGradient: `linear-gradient(to right, ${APP_COLORS.info}, ${APP_COLORS.infoLight})`,
     badge: {
       bg: 'bg-blue-500/15',
       text: 'text-blue-400',
@@ -941,12 +958,12 @@ export const PROJECT_CARD_FASE_COLORS = {
   },
   // Fase 3: Propuesta (amarillo - negociación)
   3: {
-    border: '#eab308',           // yellow-500
-    borderHover: '#facc15',      // yellow-400
-    accent: '#eab308',           // yellow-500
+    border: APP_COLORS.yellow,
+    borderHover: APP_COLORS.warningLight,
+    accent: APP_COLORS.yellow,
     gradient: 'from-yellow-500/10 to-amber-500/10',
-    progress: '#eab308',         // yellow-500
-    progressGradient: 'linear-gradient(to right, #eab308, #facc15)',
+    progress: APP_COLORS.yellow,
+    progressGradient: `linear-gradient(to right, ${APP_COLORS.yellow}, ${APP_COLORS.warningLight})`,
     badge: {
       bg: 'bg-yellow-500/15',
       text: 'text-yellow-400',
@@ -955,12 +972,12 @@ export const PROJECT_CARD_FASE_COLORS = {
   },
   // Fase 4: Implementación (emerald - ejecución)
   4: {
-    border: '#10b981',           // emerald-500
-    borderHover: '#34d399',      // emerald-400
-    accent: '#10b981',           // emerald-500
+    border: APP_COLORS.success,
+    borderHover: APP_COLORS.successLight,
+    accent: APP_COLORS.success,
     gradient: 'from-emerald-500/10 to-green-500/10',
-    progress: '#10b981',         // emerald-500
-    progressGradient: 'linear-gradient(to right, #10b981, #34d399)',
+    progress: APP_COLORS.success,
+    progressGradient: `linear-gradient(to right, ${APP_COLORS.success}, ${APP_COLORS.successLight})`,
     badge: {
       bg: 'bg-emerald-500/15',
       text: 'text-emerald-400',
@@ -969,12 +986,12 @@ export const PROJECT_CARD_FASE_COLORS = {
   },
   // Fase 5: Cierre (violeta - завершение)
   5: {
-    border: '#8b5cf6',           // violet-500
-    borderHover: '#a78bfa',      // violet-400
-    accent: '#8b5cf6',           // violet-500
+    border: APP_COLORS.purple,
+    borderHover: APP_COLORS.purpleLight,
+    accent: APP_COLORS.purple,
     gradient: 'from-violet-500/10 to-purple-500/10',
-    progress: '#8b5cf6',         // violet-500
-    progressGradient: 'linear-gradient(to right, #8b5cf6, #a78bfa)',
+    progress: APP_COLORS.purple,
+    progressGradient: `linear-gradient(to right, ${APP_COLORS.purple}, ${APP_COLORS.purpleLight})`,
     badge: {
       bg: 'bg-violet-500/15',
       text: 'text-violet-400',
@@ -997,24 +1014,24 @@ export function getProjectCardFaseColor(fase: number) {
 // Colores para barra de progreso según nivel
 export const PROJECT_CARD_PROGRESS_COLORS = {
   high: {
-    gradient: 'linear-gradient(to right, #10b981, #34d399)', // success -> success-400
+    gradient: `linear-gradient(to right, ${APP_COLORS.success}, ${APP_COLORS.successLight})`,
     label: 'Alto',
   },
   medium: {
-    gradient: 'linear-gradient(to right, #f59e0b, #fbbf24)', // warning -> warning-400
+    gradient: `linear-gradient(to right, ${APP_COLORS.warning}, ${APP_COLORS.warningLight})`,
     label: 'Medio',
   },
   low: {
-    gradient: 'linear-gradient(to right, #ef4444, #f87171)', // danger -> danger-400
+    gradient: `linear-gradient(to right, ${APP_COLORS.danger}, ${APP_COLORS.dangerLight})`,
     label: 'Bajo',
   },
 } as const
 
 // Colores para indicadores de tareas (dots)
 export const PROJECT_CARD_TASK_DOTS = {
-  completed: '#10b981',   // emerald-500
-  inProgress: '#f59e0b',   // amber-500 (warning)
-  pending: '#6b7280',      // gray-500 (neutral)
+  completed: APP_COLORS.success,
+  inProgress: APP_COLORS.warning,
+  pending: APP_COLORS.neutral,
 } as const
 
 // Colores para valor del proyecto (badge)
@@ -1122,7 +1139,7 @@ export function getBadgeColorByLabel(label: string): string {
   // ========================================
   // CATEGORÍAS DE TAREA
   // ========================================
-  if (key.includes('técnica') || key.includes('tecnica') || key.includes('technical')) return '#a855f7' // purple (no hay en APP_COLORS)
+  if (key.includes('técnica') || key.includes('tecnica') || key.includes('technical')) return APP_COLORS.darkPurple
   if (key.includes('comercial') || key.includes('commercial')) return APP_COLORS.purple
   if (key.includes('compra') || key.includes('purchase')) return APP_COLORS.success
   if (key.includes('admin')) return APP_COLORS.warning

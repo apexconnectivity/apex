@@ -6,7 +6,8 @@ import { useEmpresas } from '@/hooks/useEmpresas'
 import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS } from '@/lib/colors'
+import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS } from '@/lib/colors'
+import { TAREAS_STATS } from '@/constants/estadisticas'
 
 // Importar constantes
 import { Card, CardContent } from '@/components/ui/card'
@@ -557,12 +558,12 @@ export default function TareasPage() {
           <>
             {/* Stats */}
             <StatGrid cols={6}>
-              <MiniStat value={stats.total} label="Total" variant="primary" showBorder icon={<FileText className="h-4 w-4" />} />
-              <MiniStat value={stats.pendientes} label="Pendientes" variant="warning" showBorder icon={<Clock className="h-4 w-4" />} />
-              <MiniStat value={stats.enProgreso} label="En Progreso" variant="info" showBorder icon={<Loader2 className="h-4 w-4" />} />
-              <MiniStat value={stats.completadas} label="Completadas" variant="success" showBorder icon={<CheckCircle className="h-4 w-4" />} />
-              <MiniStat value={stats.bloqueadas} label="Bloqueadas" variant="danger" showBorder icon={<Ban className="h-4 w-4" />} />
-              <MiniStat value={stats.overdue} label="Vencidas" variant="danger" showBorder icon={<AlertTriangle className="h-4 w-4" />} />
+              <MiniStat value={stats.total} label={TAREAS_STATS.total} variant="primary" showBorder accentColor={TAREAS_STATS_COLORS.total} icon={<FileText className="h-5 w-5" />} />
+              <MiniStat value={stats.pendientes} label={TAREAS_STATS.pendientes} variant="warning" showBorder accentColor={TAREAS_STATS_COLORS.pendientes} icon={<Clock className="h-5 w-5" />} />
+              <MiniStat value={stats.enProgreso} label={TAREAS_STATS.enProgreso} variant="info" showBorder accentColor={TAREAS_STATS_COLORS.enProgreso} icon={<Loader2 className="h-5 w-5" />} />
+              <MiniStat value={stats.completadas} label={TAREAS_STATS.completadas} variant="success" showBorder accentColor={TAREAS_STATS_COLORS.completadas} icon={<CheckCircle className="h-5 w-5" />} />
+              <MiniStat value={stats.bloqueadas} label={TAREAS_STATS.bloqueadas} variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.bloqueadas} icon={<Ban className="h-5 w-5" />} />
+              <MiniStat value={stats.overdue} label={TAREAS_STATS.overdue} variant="danger" showBorder accentColor={TAREAS_STATS_COLORS.overdue} icon={<AlertTriangle className="h-5 w-5" />} />
             </StatGrid>
 
             {/* View Selector */}
