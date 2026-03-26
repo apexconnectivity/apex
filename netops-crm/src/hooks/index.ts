@@ -41,6 +41,12 @@ export { useDataSource, useLocalStorageData } from './useDataSource'
 export type { DataSource, UseDataSourceOptions, UseDataSourceReturn } from './useDataSource'
 
 // ============================================================================
+// SWR HOOKS - Client-side caching
+// ============================================================================
+
+export { useFetcher } from './useFetcher'
+
+// ============================================================================
 // UTILITY HOOKS - Hooks de utilidad general
 // ============================================================================
 
