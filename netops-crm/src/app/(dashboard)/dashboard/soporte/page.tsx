@@ -239,7 +239,7 @@ export default function SoportePage() {
     urgentes: tickets.filter(t => t.prioridad === 'Urgente' && t.estado !== 'Cerrado').length,
   }), [tickets])
 
-  const handleCreateTicket = (data: CreateTicketData) => {
+  const handleCreateTicket = useCallback((data: CreateTicketData) => {
     const year = new Date().getFullYear()
     const num = tickets.length + 1
     const newTicket: Ticket = {
@@ -254,14 +254,14 @@ export default function SoportePage() {
     }
     setTickets(prev => [...prev, newTicket])
     setComentarios(prev => ({ ...prev, [newTicket.id]: [] }))
-  }
+  }, [tickets, user, setTickets, setComentarios])
 
-  const handleUpdateTicket = (updated: Ticket) => {
+  const handleUpdateTicket = useCallback((updated: Ticket) => {
     setTickets(prev => prev.map(t => t.id === updated.id ? updated : t))
     setSelectedId(updated.id)
-  }
+  }, [setTickets])
 
-  const handleChangeState = (ticketId: string, estado: EstadoTicket) => {
+  const handleChangeState = useCallback((ticketId: string, estado: EstadoTicket) => {
     // Buscar el ticket antes de cambiar
     const ticket = tickets.find(t => t.id === ticketId)
 
@@ -292,9 +292,9 @@ export default function SoportePage() {
     }
 
     setSelectedId(null)
-  }
+  }, [tickets, setTickets, setContratos])
 
-  const handleAddComentario = (ticketId: string, comentario: string, es_interno: boolean) => {
+  const handleAddComentario = useCallback((ticketId: string, comentario: string, es_interno: boolean) => {
     const newComentario: ComentarioTicket = {
       id: Date.now().toString(),
       ticket_id: ticketId,
@@ -305,16 +305,16 @@ export default function SoportePage() {
       fecha: new Date().toISOString(),
     }
     setComentarios(prev => ({ ...prev, [ticketId]: [...(prev[ticketId] || []), newComentario] }))
-  }
+  }, [user, setComentarios])
 
-  const handleCreateContract = (data: CreateContractData) => {
+  const handleCreateContract = useCallback((data: CreateContractData) => {
     const newContract: ContratoSoporte = {
       ...data.contrato,
       id: Date.now().toString(),
       creado_en: new Date().toISOString(),
     }
     setContratos(prev => [...prev, newContract])
-  }
+  }, [setContratos])
 
   // Handler para crear proyecto desde soporte
   const handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {

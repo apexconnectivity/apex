@@ -1,0 +1,18 @@
+// Barrel export para componentes de UI
+// Permite: import { Button, Card } from '@/components/ui'
+
+export * from './button'
+export * from './card'
+export * from './input'
+export * from './badge'
+export * from './dialog'
+export * from './select'
+export * from './tabs'
+export * from './avatar'
+export * from './skeleton'
+export * from './checkbox'
+export * from './label'
+export * from './textarea'
+export * from './dropdown-menu'
+export * from './toggle'
+// Agregar más conforme existan componentes como progress, separator, tooltip

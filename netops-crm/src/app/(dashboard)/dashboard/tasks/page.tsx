@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { CheckSquare, Search, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,11 +36,12 @@ export default function TasksDashboardPage() {
   const [proyectos] = useProyectos()
   
   // Filtros
-  const [filters, setFilters] = useState<TaskDashboardFilters>({})
+  const [filters, setFilters] = useState<TaskDashboardFilters>(() => ({
+    proyectoId: undefined,
+    categoria: undefined,
+    busqueda: undefined
+  }))
   const [isRefreshing, setIsRefreshing] = useState(false)
-
-  // Tareas filtradas para el usuario actual
-  const [filteredTasks, setFilteredTasks] = useState<Tarea[]>([])
 
   // Obtener categorías únicas de las tareas
   const categoriasDisponibles = Array.from(new Set(tasks.map(t => t.categoria)))
@@ -51,11 +52,8 @@ export default function TasksDashboardPage() {
     .filter(Boolean)
 
   // Filtrar tareas según el usuario y filtros
-  useEffect(() => {
-    if (!user || tasks.length === 0) {
-      setFilteredTasks([])
-      return
-    }
+  const filteredTasks = useMemo(() => {
+    if (!user || tasks.length === 0) return []
 
     let result = tasks
 
@@ -80,17 +78,17 @@ export default function TasksDashboardPage() {
     }
 
     // Determinar categorías visibles según rol del usuario
-    const _isAdmin = user.roles.includes('admin')
+    const isAdmin = user.roles.includes('admin')
 
     // Si no es admin, filtrar por responsable_id
-    if (!_isAdmin) {
+    if (!isAdmin) {
       result = result.filter(t => 
         t.responsable_id === user.id || 
         (t.responsable_id === undefined && !t.asignado_a_cliente)
       )
     }
 
-    setFilteredTasks(result)
+    return result
   }, [tasks, filters, user])
 
   // Agrupar tareas según las reglas del Dashboard Personal
@@ -159,17 +157,17 @@ export default function TasksDashboardPage() {
   }, [filteredTasks])
 
   // Handlers
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
     await refresh()
     setIsRefreshing(false)
-  }
+  }, [refresh])
 
-  const handleTaskClick = (tarea: Tarea) => {
+  const handleTaskClick = useCallback((tarea: Tarea) => {
     // Navegar a la página del proyecto con la tarea seleccionada
     // Por ahora solo logueamos
     console.log('Task clicked:', tarea.id)
-  }
+  }, [])
 
   // Verificar acceso
   const canView = user?.roles.some(r => 

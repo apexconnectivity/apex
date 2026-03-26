@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useDeferredValue } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useAuth } from '@/contexts/auth-context'
 import { type User } from '@/types/auth'
@@ -97,6 +97,7 @@ export default function CRMPage() {
   })
 
   const searchQuery = searchState.query
+  const deferredSearchQuery = useDeferredValue(searchQuery)
   const tipoFilter = searchState.tipo
   const industriaFilter = searchState.industria
 
@@ -268,9 +269,9 @@ export default function CRMPage() {
       if (!canViewClientes && e.tipo_entidad === 'cliente') return false
       if (!canViewProveedores && (e.tipo_entidad === 'proveedor' || e.tipo_entidad === 'ambos')) return false
 
-      // Filtrado simple sin valores deferidos
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
+      // Filtrado con valor diferido para mantener input responsivo
+      if (deferredSearchQuery) {
+        const q = deferredSearchQuery.toLowerCase()
         if (!e.nombre.toLowerCase().includes(q) &&
           !e.sitio_web?.toLowerCase().includes(q) &&
           !e.ciudad?.toLowerCase().includes(q)) return false
@@ -279,7 +280,7 @@ export default function CRMPage() {
       if (industriaFilter !== 'todas' && e.industria !== industriaFilter) return false
       return true
     })
-  }, [empresas, isTecnico, canViewClientes, canViewProveedores, searchQuery, tipoFilter, industriaFilter])
+  }, [empresas, isTecnico, canViewClientes, canViewProveedores, deferredSearchQuery, tipoFilter, industriaFilter])
 
   // ============================================
   // MEMOIZACIÓN: Índices para getters rápidos

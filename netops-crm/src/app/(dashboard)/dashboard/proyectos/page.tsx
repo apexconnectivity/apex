@@ -33,6 +33,7 @@ import { EstadoTarea, PLANTILLAS_POR_FASE } from '@/types/tareas'
 import { User } from '@/types/auth'
 import { useEmpresas, useProyectos, useTareas, useHistorialProyectos } from '@/hooks'
 import { getPipelineFaseColor } from '@/lib/colors'
+import { AUTO_ADVANCE_DELAY_MS } from '@/constants/timing'
 
 // Constante para formulario de nuevo proyecto
 const PROYECTO_VACIO: Partial<Proyecto> = {
@@ -200,7 +201,7 @@ export default function ProyectosPage() {
           }
         }
       })
-    }, 1000) // Delay para evitar múltiples actualizaciones simultáneas
+    }, AUTO_ADVANCE_DELAY_MS) // Delay para evitar múltiples actualizaciones simultáneas
 
     return () => clearTimeout(timer)
   }, [tareas, proyectos, isAdmin, fases, setProyectos, createTarea, agregarHistorial])
@@ -254,19 +255,29 @@ export default function ProyectosPage() {
       proximaVence: string | null
     }
     const r: Record<string, InfoTareasProyecto> = {}
-    proyectos.forEach(p => {
-      const pTareas = tareas.filter(t => t.proyecto_id === p.id)
-      const total = pTareas.length
-      const completadas = pTareas.filter(t => t.estado === 'Completada').length
+    
+    for (const p of proyectos) {
+      // Un solo loop para calcular todo
+      let total = 0, completadas = 0, enProgreso = 0, bloqueadas = 0
+      
+      for (const t of tareas) {
+        if (t.proyecto_id === p.id) {
+          total++
+          if (t.estado === 'Completada') completadas++
+          else if (t.estado === 'En progreso') enProgreso++
+          else if (t.estado === 'Bloqueada') bloqueadas++
+        }
+      }
+      
       r[p.id] = {
         total,
         completadas,
         progreso: total === 0 ? 0 : Math.round((completadas / total) * 100),
-        enProgreso: pTareas.filter(t => t.estado === 'En progreso').length,
-        bloqueadas: pTareas.filter(t => t.estado === 'Bloqueada').length,
+        enProgreso,
+        bloqueadas,
         proximaVence: null,
       }
-    })
+    }
     return r
   }, [proyectos, tareas])
 
