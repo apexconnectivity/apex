@@ -100,15 +100,23 @@ export function CreateEmpresaModal({
   // Función para verificar si el formulario tiene los campos obligatorios llenos
   // Usa las funciones de validación importadas
   const canSave = (): boolean => {
-    const nombreValid = validateRequired(formData.nombre)
-    const razonSocialValid = validateRequired(formData.razon_social)
-    const telefonoDigits = formData.telefono_principal?.replace(/\s/g, '') || ''
     const nombreTrim = formData.nombre?.trim() ?? ''
+    const razonSocialTrim = formData.razon_social?.trim() ?? ''
+    const telefono = formData.telefono_principal || ''
+    const telefonoDigits = telefono.replace(/\s/g, '')
+    
+    // Debug temporal
+    console.log('canSave check:', {
+      nombre: nombreTrim.length >= 3,
+      razon: razonSocialTrim.length > 0,
+      tipoEntidad: !!formData.tipo_entidad,
+      tipoRelacion: !!formData.tipo_relacion,
+      telefono: telefonoDigits.length >= 10
+    })
     
     return Boolean(
-      nombreValid.isValid &&
       nombreTrim.length >= 3 &&
-      razonSocialValid.isValid &&
+      razonSocialTrim.length > 0 &&
       formData.tipo_entidad &&
       formData.tipo_relacion &&
       telefonoDigits.length >= 10
@@ -355,7 +363,7 @@ export function CreateEmpresaModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Teléfono</Label>
+              <Label>Teléfono *</Label>
               <InputPhone
                 value={formData.telefono_principal || ''}
                 onChange={(value) => setFormData({ ...formData, telefono_principal: value })}
