@@ -16,7 +16,7 @@ import {
 } from '@/constants/archivado'
 import { Archive, CheckSquare, AlertTriangle } from 'lucide-react'
 import { useMemo } from 'react'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 export default function ArchivadoPage() {
   const { user } = useAuth()

@@ -16,7 +16,7 @@ import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { EmpresaCard } from '@/components/module/EmpresaCard'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { StaggeredList, PageAnimation } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 import { STATUS_COLORS, CRM_STATS_COLORS } from '@/lib/colors'
 import dynamic from 'next/dynamic'
 

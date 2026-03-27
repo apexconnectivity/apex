@@ -49,7 +49,7 @@ import {
   DURATION_OPTIONS,
   FORM_LABELS_REUNION,
 } from '@/constants/calendario'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // Constantes para filtros y estados (moved/removed hardcoded users)
 

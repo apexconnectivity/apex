@@ -16,7 +16,7 @@ import {
   STAT_COLORS, ACCESS_DENIED
 } from '@/constants/archivos'
 import { useEmpresas, useProyectos } from '@/hooks'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 export default function ArchivosPage() {
   const { user } = useAuth()

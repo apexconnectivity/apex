@@ -47,7 +47,7 @@ import {
   ChevronRight, ClipboardList, SendHorizontal, PackageCheck, X,
   Mail, Phone
 } from 'lucide-react'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // ============================================
 // MAGIC NUMBERS - Constantes de negocio

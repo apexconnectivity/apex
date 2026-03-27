@@ -44,7 +44,7 @@ import { ModuleContainerWithPanel } from '@/components/module/ModuleContainerWit
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { TicketDetailPanel } from '@/components/module/TicketDetailPanel'
 import { KanbanCard } from '@/components/module/ItemCard'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 
 // USUARIOS_INTERNOS removidos para usar datos reales del módulo de usuarios
 

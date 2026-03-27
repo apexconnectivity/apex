@@ -23,7 +23,7 @@ const ProjectDetailPanel = dynamic(
   { loading: () => <div className="p-4"><Skeleton className="h-64 w-full" /></div>, ssr: false }
 )
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
-import { PageAnimation, StaggeredList } from '@/components/ui/page-animation'
+import { StaggeredList } from '@/components/ui/page-animation'
 import { AccessDeniedCard } from '@/components/ui/access-denied-card'
 import { BaseModal, ModalHeader, ModalBody, ModalFooter } from '@/components/base'
 import { CreateProjectModal } from '@/components/module/CreateProjectModal'
