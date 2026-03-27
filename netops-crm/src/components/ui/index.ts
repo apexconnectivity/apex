@@ -16,4 +16,6 @@ export * from './label'
 export * from './textarea'
 export * from './dropdown-menu'
 export * from './toggle'
+export * from './filter-tag'
+export * from './filter-toggle'
 // Agregar más conforme existan componentes como progress, separator, tooltip

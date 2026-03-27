@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { FilterBar } from '@/components/ui/filter-bar'
 import { DateRange } from '@/components/ui/date-range-picker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
+import { FilterToggle } from '@/components/ui/filter-toggle'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Calendar, User as UserIcon, AlertCircle, ChevronRight, GripVertical, FileText, Clock, Loader2, CheckCircle, Ban, AlertTriangle, Plus, LayoutGrid, List, GanttChart } from 'lucide-react'
 import { Tarea, Subtarea, Comentario, CATEGORIAS, PRIORIDADES, ESTADOS, EstadoTarea } from '@/types/tareas'
@@ -494,9 +494,36 @@ function TareasPageContent() {
                 label: 'Prioridad',
                 options: [{ value: 'todas', label: 'Todas' }, ...PRIORIDADES.map(p => ({ value: p, label: p }))],
                 width: 'w-36',
+              },
+              // Filtros adicionales unificados
+              ...(isAdmin ? [{
+                key: 'responsable',
+                label: 'Responsable',
+                options: [{ value: 'todos', label: 'Todos' }, ...transformUsuarios(usuarios).map(u => ({ value: u.id, label: u.nombre }))],
+                width: 'w-44',
+              }] : []),
+              {
+                key: 'fase',
+                label: 'Fase',
+                options: [
+                  { value: 'actual', label: 'Fase actual' },
+                  { value: '1', label: 'Fase 1' },
+                  { value: '2', label: 'Fase 2' },
+                  { value: '3', label: 'Fase 3' },
+                  { value: '4', label: 'Fase 4' },
+                  { value: '5', label: 'Fase 5' },
+                ],
+                width: 'w-40',
               }
             ]}
-            values={{ proyecto: filtroProyecto, estado: filtroEstado, categoria: filtroCategoria, prioridad: filtroPrioridad }}
+            values={{ 
+              proyecto: filtroProyecto, 
+              estado: filtroEstado, 
+              categoria: filtroCategoria, 
+              prioridad: filtroPrioridad,
+              responsable: filtroPersona,
+              fase: filtroFase?.toString() || 'actual'
+            }}
             dateValue={filtroFechaRange}
             onDateChange={setFiltroFechaRange}
             onFilterChange={(key, value) => {
@@ -504,50 +531,31 @@ function TareasPageContent() {
               else if (key === 'estado') setFiltroEstado(value)
               else if (key === 'categoria') setFiltroCategoria(value)
               else if (key === 'prioridad') setFiltroPrioridad(value)
+              else if (key === 'responsable') setFiltroPersona(value)
+              else if (key === 'fase') setFiltroFase(value === 'actual' ? null : parseInt(value))
             }}
-            hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas || filtroFase !== null}
+            hasActiveFilters={filtroProyecto !== 'todos' || filtroEstado !== 'todos' || filtroCategoria !== 'todas' || filtroPrioridad !== 'todas' || filtroPersona !== 'todos' || filtroFase !== null || !!searchQuery || !!filtroFechaRange.from || !!filtroVencidas}
             onClearFilters={() => {
               setSearchQuery('')
               setFiltroProyecto('todos')
               setFiltroEstado('todos')
               setFiltroCategoria('todas')
               setFiltroPrioridad('todas')
+              setFiltroPersona('todos')
+              setFiltroFase(null)
               setFiltroFechaRange({ from: undefined, to: undefined })
               setFiltroVencidas(false)
-              setFiltroFase(null)
             }}
           />
           
-          {/* Filtros adicionales: Persona (admin), Fase, Vencidas */}
-          {isAdmin && (
-            <Select value={filtroPersona} onValueChange={setFiltroPersona}>
-              <SelectTrigger className="w-44 h-9 bg-background/50 border-border/50"><SelectValue placeholder="Responsable" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                {transformUsuarios(usuarios).map(u => <SelectItem key={u.id} value={u.id}>{u.nombre}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
-          <Select 
-            value={filtroFase?.toString() || 'actual'} 
-            onValueChange={(v) => setFiltroFase(v === 'actual' ? null : parseInt(v))}
-          >
-            <SelectTrigger className="w-40 h-9 bg-background/50 border-border/50">
-              <SelectValue placeholder="Fase" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="actual">Fase actual</SelectItem>
-              <SelectItem value="1">Fase 1</SelectItem>
-              <SelectItem value="2">Fase 2</SelectItem>
-              <SelectItem value="3">Fase 3</SelectItem>
-              <SelectItem value="4">Fase 4</SelectItem>
-              <SelectItem value="5">Fase 5</SelectItem>
-            </SelectContent>
-          </Select>
-          <label className="flex items-center gap-2 cursor-pointer bg-muted/30 px-3 py-1.5 rounded-full border border-border/50 hover:bg-muted/50 transition-colors">
-            <Checkbox checked={filtroVencidas} onCheckedChange={(c) => setFiltroVencidas(c as boolean)} />
-            <span className="text-xs font-medium text-muted-foreground uppercase">Vencidas</span>
-          </label>
+          {/* Toggle de Vencidas - fuera del FilterBar para mejor UX */}
+          <FilterToggle 
+            label="Vencidas" 
+            active={filtroVencidas} 
+            onChange={setFiltroVencidas}
+            variant="warning"
+            icon={<AlertTriangle className="h-3 w-3" />}
+          />
         </div>
 
         {isTasksLoading ? (

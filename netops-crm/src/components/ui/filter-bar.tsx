@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DateRangePicker, type DateRange } from '@/components/ui/date-range-picker'
+import { FilterTag } from './filter-tag'
 import { cn } from '@/lib/utils'
 
 // ============================================
@@ -162,6 +163,25 @@ export function FilterBar({
           <X className="h-3 w-3 mr-1.5 transition-transform duration-300" />
           Limpiar filtros
         </Button>
+      )}
+
+      {/* Active Filters Tags */}
+      {hasActiveFilters && Object.entries(values).filter(([_, v]) => v && v !== 'todos' && v !== 'todas').length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {Object.entries(values).map(([key, value]) => {
+            const filter = filters.find(f => f.key === key)
+            const option = filter?.options?.find(o => o.value === value)
+            if (!value || value === 'todos' || value === 'todas') return null
+            return (
+              <FilterTag
+                key={key}
+                label={filter?.label || key}
+                value={option?.label || value}
+                onRemove={() => onFilterChange(key, filter?.options?.[0]?.value || '')}
+              />
+            )
+          })}
+        </div>
       )}
     </div>
   )
