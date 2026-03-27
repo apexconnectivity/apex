@@ -31,20 +31,20 @@ interface StatsConfig {
 interface ModuleStats {
   total: number
   // Por estado
-  pendientes?: number
-  enProgreso?: number
-  completadas?: number
-  bloqueadas?: number
+  pendientes: number
+  enProgreso: number
+  completadas: number
+  bloqueadas: number
   // Por prioridad
-  alta?: number
-  media?: number
-  baja?: number
+  alta: number
+  media: number
+  baja: number
   // Por categoría (mapa)
   porCategoria?: Record<string, number>
   // Por fase (mapa)
   porFase?: Record<number, number>
   // Vencidas
-  overdue?: number
+  overdue: number
   // Raw counts
   counts?: Record<string, number>
 }
@@ -75,7 +75,15 @@ export function useModuleStats<T extends Entity>(
 
   return useMemo(() => {
     const result: ModuleStats = {
-      total: total ? data.length : 0
+      total: total ? data.length : 0,
+      pendientes: 0,
+      enProgreso: 0,
+      completadas: 0,
+      bloqueadas: 0,
+      alta: 0,
+      media: 0,
+      baja: 0,
+      overdue: 0,
     }
 
     const now = new Date()

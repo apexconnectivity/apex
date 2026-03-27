@@ -4,7 +4,7 @@ import { Suspense, useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
-import { useEmpresas, useProyectos, useContactos } from '@/hooks'
+import { useEmpresas, useProyectos, useContactos, useTicketsStats } from '@/hooks'
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -264,14 +264,15 @@ function SoportePageContent() {
     return r
   }, [filteredTickets])
 
+  const ticketsStats = useTicketsStats(tickets)
   const stats = useMemo(() => ({
-    total: tickets.length,
-    abiertos: tickets.filter(t => t.estado === 'Abierto').length,
-    enProgreso: tickets.filter(t => t.estado === 'En progreso').length,
-    resueltos: tickets.filter(t => t.estado === 'Resuelto').length,
-    cerrados: tickets.filter(t => t.estado === 'Cerrado').length,
+    total: ticketsStats.total,
+    abiertos: ticketsStats.pendientes || 0,
+    enProgreso: ticketsStats.enProgreso || 0,
+    resueltos: ticketsStats.completadas || 0,
+    cerrados: ticketsStats.counts?.['Cerrado'] || 0,
     urgentes: tickets.filter(t => t.prioridad === 'Urgente' && t.estado !== 'Cerrado').length,
-  }), [tickets])
+  }), [ticketsStats, tickets])
 
   const handleCreateTicket = useCallback((data: CreateTicketData) => {
     const year = new Date().getFullYear()

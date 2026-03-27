@@ -3,7 +3,7 @@
 import { Suspense, useState, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { useEmpresas } from '@/hooks/useEmpresas'
-import { useTareas, useProyectos, useSubtareas, useComentarios } from '@/hooks'
+import { useTareas, useProyectos, useSubtareas, useComentarios, useTareasStats } from '@/hooks'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { VARIANT_COLORS, TASK_STATUS_COLORS, PRIORITY_COLORS, TAREAS_STATS_COLORS, ESTADO_COLORS } from '@/lib/colors'
@@ -32,19 +32,7 @@ import { StaggeredList } from '@/components/ui/page-animation'
 import { v4 as uuidv4 } from 'uuid'
 
 import { cn } from '@/lib/utils'
-
-// Transformar usuarios del formato User al formato requerido por CreateTaskModal
-// Filtra solo usuarios internos (colaboradores) para el selector de responsable
-const transformUsuarios = (users: User[]): { id: string; nombre: string; rol: string }[] => {
-  const ROLES_INTERNOS = ['admin', 'comercial', 'especialista', 'compras', 'facturacion', 'marketing']
-  return users
-    .filter(u => u.activo && u.roles.some(r => ROLES_INTERNOS.includes(r))) // Solo usuarios internos activos
-    .map(u => ({
-      id: u.id,
-      nombre: u.nombre,
-      rol: u.roles[0] || 'cliente' // Primer rol como string
-    }))
-}
+import { transformUsuarios } from '@/lib/user-utils'
 
 function _TaskCard({ tarea, onClick, onStatusChange }: { tarea: Tarea; onClick: () => void; onStatusChange: (id: string, estado: EstadoTarea) => void }) {
   const isOverdue = tarea.fecha_vencimiento && new Date(tarea.fecha_vencimiento) < new Date() && tarea.estado !== 'Completada'
@@ -260,14 +248,7 @@ function TareasPageContent() {
     return r
   }, [visibleTareas])
 
-  const stats = useMemo(() => ({
-    total: visibleTareas.length,
-    pendientes: visibleTareas.filter(t => t.estado === 'Pendiente').length,
-    enProgreso: visibleTareas.filter(t => t.estado === 'En progreso').length,
-    completadas: visibleTareas.filter(t => t.estado === 'Completada').length,
-    bloqueadas: visibleTareas.filter(t => t.estado === 'Bloqueada').length,
-    overdue: visibleTareas.filter(t => t.fecha_vencimiento && new Date(t.fecha_vencimiento) < new Date() && t.estado !== 'Completada').length,
-  }), [visibleTareas])
+  const stats = useTareasStats(visibleTareas)
 
   // Handler para crear proyecto desde tareas (reservado para uso futuro)
   const _handleSaveProyecto = async (proyecto: Partial<import('@/types/proyectos').Proyecto>, isNew: boolean) => {
