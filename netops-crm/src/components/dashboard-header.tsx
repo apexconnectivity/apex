@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
-import { ButtonInline } from '@/components/ui/button-inline'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +10,6 @@ import {
   ChevronRight,
   Bell,
   Plus,
-  Building2,
 } from 'lucide-react'
 import { STATUS_COLORS } from '@/lib/colors'
 import { ManageContactsModal } from '@/components/module/ManageContactsModal'
@@ -154,36 +152,28 @@ export function DashboardHeader({ showSearch = true, showNewProject = true, onNe
             </Button>
 
             {user && (
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-3 pl-3 border-l border-border/50">
+                <div className="hidden md:flex flex-col items-start">
+                  <span className="text-sm font-semibold truncate max-w-[120px]">{user.nombre.split(' ')[0]}</span>
+                  <Badge variant="secondary" className="h-4 text-[9px] uppercase tracking-tighter px-1.5 bg-primary/10 text-primary border-primary/20">
+                    {getRoleLabel(user.roles[0])}
+                  </Badge>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-2 h-10 px-2 group overflow-hidden"
+                  className="h-10 px-1.5 gap-2"
                   asChild
                 >
                   <Link href="/dashboard/perfil">
-                    <Avatar className="h-8 w-8 ring-2 ring-transparent group-hover:ring-primary/20 transition-all shadow-sm">
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/20 shadow-lg shadow-primary/10">
                       <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" />
-                      <AvatarFallback className="text-xs bg-slate-800 text-slate-200">
+                      <AvatarFallback className="text-xs bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
                         {getInitials(user.nombre)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="hidden md:flex flex-col items-start min-w-[80px]">
-                      <span className="text-sm font-semibold truncate max-w-[120px]">{user.nombre.split(' ')[0]}</span>
-                      <Badge variant="secondary" className="h-4 text-[9px] uppercase tracking-tighter px-1.5 bg-primary/10 text-primary border-primary/20">
-                        {getRoleLabel(user.roles[0])}
-                      </Badge>
-                    </div>
                   </Link>
                 </Button>
-                
-                {isCliente && empresa && (
-                  <ButtonInline
-                    onClick={() => setIsCompanyModalOpen(true)}
-                    icon={Building2}
-                    label={empresa.nombre}
-                  />
-                )}
               </div>
             )}
           </div>

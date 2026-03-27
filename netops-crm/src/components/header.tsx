@@ -60,7 +60,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar proyectos, clientes, tareas..."
-                className="w-80 pl-10 bg-slate-50 dark:bg-slate-900/50"
+                className="w-80 pl-10 bg-background/50"
               />
             </div>
           </div>
