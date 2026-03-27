@@ -8,7 +8,7 @@ import { ModuleContainer } from '@/components/module/ModuleContainer'
 import { ModuleHeader } from '@/components/module/ModuleHeader'
 import { MiniStat, StatGrid } from '@/components/ui/mini-stat'
 import { useArchivosStorage } from '@/hooks/useArchivosStorage'
-import { Folder, Building2, Briefcase, Ticket, Files, HardDrive } from 'lucide-react'
+import { Folder, Building2, Briefcase, Ticket, Files, HardDrive, FileText } from 'lucide-react'
 import { FilterBar } from '@/components/ui/filter-bar'
 import {
   PAGE_TITLE, PAGE_DESCRIPTION, TABS_LABELS, STATS_LABELS,
@@ -97,6 +97,7 @@ export default function ArchivosPage() {
       <ModuleHeader
         title={PAGE_TITLE}
         description={PAGE_DESCRIPTION}
+        icon={<FileText className="h-8 w-8" />}
         tabs={[
           { value: 'todos', label: TABS_LABELS.todos },
           { value: 'empresas', label: TABS_LABELS.empresas },

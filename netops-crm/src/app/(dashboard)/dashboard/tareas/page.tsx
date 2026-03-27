@@ -455,6 +455,7 @@ function TareasPageContent() {
         <ModuleHeader
           title="Tareas"
           description="Gestión operativa de proyectos"
+          icon={<CheckCircle className="h-8 w-8" />}
           actions={
             canCreate && (
               <Button onClick={() => setShowCreate(true)} className="shadow-lg shadow-primary/20">

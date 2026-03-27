@@ -625,6 +625,7 @@ function CRMPageContent() {
       <ModuleHeader
         title={PAGE_TITLE}
         description={PAGE_DESCRIPTION}
+        icon={<Building2 className="h-8 w-8" />}
         actions={
           canEdit && (
             <Button onClick={handleNewEmpresa}>

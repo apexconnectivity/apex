@@ -45,7 +45,7 @@ import {
   AlertTriangle, DollarSign,
   Star, Save, Send, Download,
   ChevronRight, ClipboardList, SendHorizontal, PackageCheck, X,
-  Mail, Phone
+  Mail, Phone, ShoppingCart
 } from 'lucide-react'
 import { StaggeredList } from '@/components/ui/page-animation'
 
@@ -412,6 +412,7 @@ export default function ComprasPage() {
       <ModuleHeader
         title={COMPRAS_TITLE}
         description={COMPRAS_DESCRIPTION}
+        icon={<ShoppingCart className="h-8 w-8" />}
         actions={
           canCreate && (
             <Button onClick={() => setShowNuevaOrden(true)}>

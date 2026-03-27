@@ -561,6 +561,7 @@ export default function CalendarioPage() {
       <ModuleHeader
         title="Calendario"
         description="Gestión de reuniones y eventos"
+        icon={<Calendar className="h-8 w-8" />}
         tabs={[
           { value: 'calendario', label: 'Calendario' },
           { value: 'lista', label: 'Lista' },

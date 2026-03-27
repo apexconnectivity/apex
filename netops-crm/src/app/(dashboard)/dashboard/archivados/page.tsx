@@ -81,6 +81,7 @@ export default function ArchivadoPage() {
       <ModuleHeader
         title={ARCHIVADO_TITULOS.titulo}
         description={ARCHIVADO_TITULOS.descripcion}
+        icon={<Archive className="h-8 w-8" />}
       />
 
       <Tabs value={vista} onValueChange={(v) => setVista(v as typeof vista)}>

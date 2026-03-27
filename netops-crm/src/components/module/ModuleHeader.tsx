@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { PageAnimation } from '@/components/ui/page-animation'
+import { VARIANT_COLORS } from '@/lib/colors'
 
 interface ModuleHeaderProps {
   title: string
@@ -12,6 +13,8 @@ interface ModuleHeaderProps {
   onTabChange?: (value: string) => void
   className?: string
   animate?: boolean  // Por defecto true
+  icon?: ReactNode
+  iconColor?: string
 }
 
 export function ModuleHeader({
@@ -22,12 +25,37 @@ export function ModuleHeader({
   activeTab,
   onTabChange,
   className = '',
-  animate = true
+  animate = true,
+  icon,
+  iconColor = VARIANT_COLORS.primary.iconColor
 }: ModuleHeaderProps) {
+  // Función para renderizar el icono con color
+  const renderIcon = (iconNode: ReactNode) => {
+    // Verificar si el icono es un elemento React con props (contains className)
+    if (iconNode && typeof iconNode === 'object' && 'props' in iconNode) {
+      const iconProps = iconNode.props as { className?: string }
+      const hasTextColor = iconProps.className?.includes('text-')
+      
+      if (hasTextColor) {
+        return iconNode
+      }
+    }
+    
+    // Envolver en span con el color por defecto
+    return (
+      <span className={iconColor}>
+        {iconNode}
+      </span>
+    )
+  }
+
   const headerContent = (
     <div className={cn('flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/30', className)}>
       <div>
-        <h1 className="text-3xl font-bold">{title}</h1>
+        <h1 className={cn('text-3xl font-bold', icon && 'flex items-center gap-3')}>
+          {icon && renderIcon(icon)}
+          {title}
+        </h1>
         {description && (
           <p className="text-muted-foreground mt-1">{description}</p>
         )}

@@ -422,6 +422,7 @@ function SoportePageContent() {
         <ModuleHeader
           title={SOPORTE_TITULOS.titulo}
           description={SOPORTE_TITULOS.descripcion}
+          icon={<Headphones className="h-8 w-8" />}
           tabs={[
             { value: 'tickets', label: SOPORTE_TABS.tickets },
             { value: 'contratos', label: SOPORTE_TABS.contratos }

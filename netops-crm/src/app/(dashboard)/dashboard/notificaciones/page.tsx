@@ -429,6 +429,7 @@ export default function NotificacionesPage() {
       <ModuleHeader
         title={titulos.titulo}
         description={titulos.descripcion}
+        icon={<Bell className="h-8 w-8" />}
         actions={
           logs.length === 0 ? (
             <Button variant="outline" onClick={handleAddLog}>

@@ -24,6 +24,7 @@ import {
   Phone,
   AlertTriangle,
   Building2,
+  UserCog,
 } from 'lucide-react'
 import { Role, ROLE_DEFINITIONS, type User } from '@/types/auth'
 import { type Empresa } from '@/types/crm'
@@ -214,6 +215,7 @@ export default function UsersPage() {
   return (
     <ModuleContainer>
       <ModuleHeader
+        icon={<UserCog className="h-8 w-8" />}
         title={USUARIOS_PAGE.titulo}
         description={USUARIOS_PAGE.descripcion}
         actions={

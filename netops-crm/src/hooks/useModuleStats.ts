@@ -17,6 +17,11 @@ import type { Empresa } from '@/types/crm'
 // Tipo genérico base para cualquier entidad (sin index signature)
 type Entity = Tarea | Proyecto | Ticket | Empresa | Record<string, unknown>
 
+// Helper para obtener valor de cualquier objeto de forma segura
+function getValue<T extends Entity>(obj: T, key: string): unknown {
+  return (obj as Record<string, unknown>)[key]
+}
+
 // Configuración de qué métricas calcular
 interface StatsConfig {
   countByEstado?: boolean
@@ -67,11 +72,6 @@ export function useModuleStats<T extends Entity>(
     countOverdue = true,
     total = true
   } = config
-
-  // Helper para obtener valor de cualquier objeto de forma segura
-  const getValue = (obj: T, key: string): unknown => {
-    return (obj as Record<string, unknown>)[key]
-  }
 
   return useMemo(() => {
     const result: ModuleStats = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Database } from 'lucide-react'
+import { Bell, Database, Settings } from 'lucide-react'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/auth-context'
 import { ModuleContainer, ModuleHeader } from '@/components/module'
@@ -134,6 +134,7 @@ export default function ConfiguracionPage() {
       <ModuleHeader
         title="Configuración"
         description="Gestiona la configuración de la aplicación y tu organización"
+        icon={<Settings className="h-8 w-8" />}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={(value) => setActiveTab(value as SettingsTab)}

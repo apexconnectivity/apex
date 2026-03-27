@@ -13,7 +13,6 @@ interface PageAnimationProps {
 export function PageAnimation({ 
   children, 
   delay = 0, 
-  stagger = 50,
   className 
 }: PageAnimationProps) {
   const [isVisible, setIsVisible] = useState(false)

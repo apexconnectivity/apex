@@ -476,6 +476,7 @@ function ProyectosPageContent() {
         <ModuleHeader
           title="Proyectos"
           description="Pipeline de proyectos"
+          icon={<FolderKanban className="h-8 w-8" />}
           actions={
             <>
               {canMovePhases && (
