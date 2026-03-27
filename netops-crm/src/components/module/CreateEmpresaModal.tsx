@@ -16,7 +16,6 @@ import {
   Tamaño,
   Origen,
   TipoRelacion,
-  TipoContrato,
   MetodoPago,
 } from '@/types/crm'
 import { ModalVariant } from '@/constants/modales'
@@ -48,7 +47,6 @@ const EMPRESA_VACIA: Partial<Empresa> = {
   tamaño: undefined,
   origen: undefined,
   tipo_relacion: 'Cliente',
-  tipo_contrato: 'Ninguno',
   telefono_principal: '',
   sitio_web: '',
   direccion: '',
@@ -98,21 +96,11 @@ export function CreateEmpresaModal({
   }, [open, empresa])
 
   // Función para verificar si el formulario tiene los campos obligatorios llenos
-  // Usa las funciones de validación importadas
   const canSave = (): boolean => {
     const nombreTrim = formData.nombre?.trim() ?? ''
     const razonSocialTrim = formData.razon_social?.trim() ?? ''
     const telefono = formData.telefono_principal || ''
     const telefonoDigits = telefono.replace(/\s/g, '')
-    
-    // Debug temporal
-    console.log('canSave check:', {
-      nombre: nombreTrim.length >= 3,
-      razon: razonSocialTrim.length > 0,
-      tipoEntidad: !!formData.tipo_entidad,
-      tipoRelacion: !!formData.tipo_relacion,
-      telefono: telefonoDigits.length >= 10
-    })
     
     return Boolean(
       nombreTrim.length >= 3 &&
@@ -349,15 +337,6 @@ export function CreateEmpresaModal({
                 optionsType="tipos_relacion"
               />
               {allErrors.tipo_relacion && <p className="text-red-500 text-sm">{allErrors.tipo_relacion}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Tipo de Contrato</Label>
-              <SelectWithAdd
-                label="Tipo de Contrato"
-                value={formData.tipo_contrato || 'Ninguno'}
-                onValueChange={(value) => setFormData({ ...formData, tipo_contrato: value as TipoContrato })}
-                optionsType="tipos_contrato"
-              />
             </div>
           </div>
 
